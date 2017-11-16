@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <script id="vertex-shader" type="x-shader/x-vertex">
+    attribute vec4 vPosition;
+    //attribute vec4 vColor;
+    //varying vec4 fcolor;
+    
+    uniform mat4 mvMatrix;
+    uniform mat4 pMatrix;
+		
+    void main() 
+    {
+      gl_Position = pMatrix*mvMatrix*vPosition;
+      //fcolor = vColor;
+    } 
+  </script>
+  
+  <script id="fragment-shader" type="x-shader/x-fragment">
+    precision mediump float;
+    //varying vec4 fcolor;
+    
+		uniform vec4 color;
+    
+    void main()
+    {
+      //gl_FragColor = fcolor;
+      //gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+      gl_FragColor = color;
+    }
+  </script>
+  
+  <script type="text/javascript" src="./common/webgl-utils.js"></script>
+  <script type="text/javascript" src="./common/initShaders.js"></script>
+  <script type="text/javascript" src="./common/MV.js"></script>
+  <script type="text/javascript" src="parabola.js"></script>
+  <script type="text/javascript" src="circle.js"></script>
+  <script type="text/javascript" src="line.js"></script>
+  <script type="text/javascript" src="tinyqueue.js"></script>
+  <script type="text/javascript" src="beachfront.js"></script>
+  <script type="text/javascript" src="main.js"></script>
+  <script type="text/javascript" src="programs.js"></script>
+
+  </head>  
+  
+  <body onload="init()">
+    <canvas id="gl-canvas" width="512" height="512">
+      Oops ... your browser doesn't support the HTML5 canvas element
+    </canvas>
+  </body>
+</html>
