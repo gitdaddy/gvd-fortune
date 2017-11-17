@@ -60,7 +60,8 @@ function intersect(h1, k1, p1, h2, k2, p2) {
 // focus is at k+p
 // start drawing from x0 and stop at x1
 // y = (x-h)^2/(4p) + k
-Parabola = function(h, k, p) {
+Parabola = function(focus, h, k, p) {
+	this.focus = focus;
 	this.h = h;
 	this.k = k;
 	this.p = p;
@@ -71,7 +72,7 @@ function createParabola(focus, directrix) {
 	var h = focus.x();
 	var k = (directrix+focus.y())/2;
 	var p = (focus.y()-directrix)/2;
-	return new Parabola(h, k, p);
+	return new Parabola(focus, h, k, p);
 }
 
 Parabola.prototype.intersect = function(para) {

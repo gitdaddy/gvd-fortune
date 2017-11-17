@@ -76,6 +76,6 @@ function equidistant(c1, c2, c3) {
 	var a = dot(u, u);
 	var p0p3 = subtract(p0, c3);
 	var t = (-dot(p0p3, p0p3) + a) / (2 * dot(p0p3, v));
-	console.log("p0p3 = " + p0p3 + " a = " + a + " t = " + t);
-	return add(p0, mult(t, v));
+	// console.log("p0p3 = " + p0p3 + " a = " + a + " t = " + t);
+	return vec2(add(p0, mult(t, v)));
 }

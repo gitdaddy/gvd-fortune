@@ -13,11 +13,13 @@ var pMatrix;
 
 var points = [];
 var vverts = [];
+var everts = [];
+var lines = [];
 var directrix = -0.15;//-0.75;//0.8;
 
 var events = new TinyQueue([], function(a, b) {
   return a[1] > b[1] ? -1 : a[1] < b[1] ? 1 : 0;
-	});
+});
 
 // var reverseEvents = new TinyQueue([], function(a, b) {
 //   return a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0;
@@ -115,11 +117,11 @@ function init() {
 
 	points = [
 		vec2(-0.26166085486097, 0.7282501083050381),
-		// vec2(-0.5918022688644832, -0.04853266881009186),
-		// vec2(0.6187162825759516, 0.3677732886626375),
-		// vec2(0.16004879258276095, -0.7865965217117346),
-		// vec2(-0.8998955678143981, -0.9169239545442052),
-		// vec2(0.734375,0.05),
+		vec2(-0.5918022688644832, -0.04853266881009186),
+		vec2(0.6187162825759516, 0.3677732886626375),
+		vec2(0.16004879258276095, -0.7865965217117346),
+		vec2(-0.8998955678143981, -0.9169239545442052),
+		vec2(0.734375,0.05),
 		vec2(0.734375,-0.02734375),
 		vec2(-0.12109375,0.1328125),
 	];
@@ -140,28 +142,45 @@ function init() {
 }
 
 function fortune() {
-	// console.log("fortune");
 	var visited = [];
 	vverts = [];
-	points.forEach(function(p) {
-		// console.log("new beachfront");
-		var beachfront = new Beachfront();
+	everts = [];
+	lines = [];
+	var pointsCopy = points.slice();
+	var events = new TinyQueue(pointsCopy, function(a, b) {
+		return a[1] > b[1] ? -1 : a[1] < b[1] ? 1 : 0;
+	});
+	// points.forEach(function(p) {
+	while (events.length > 0) {
+		var p = events.pop();
+		var beachline = new Beachline();
 		// directrix
 		var direct = p[1];
 		visited.push(p);
 		visited.forEach(function(v) {
 			var parabola = createParabola(v, direct);
-			var newVerts = beachfront.update(parabola);
-			// console.log(newVerts);
-			// vverts = vverts.concat(newVerts);
+			beachline.update(parabola);
 		});
-		vverts = vverts.concat(beachfront.vertices());
-	});
+		vverts = vverts.concat(beachline.vertices());
+		for (var i = 1; i < beachline.segments.length-1; ++i) {
+			var left = vec3(beachline.segments[i-1].parabola.focus);
+			var center = vec3(beachline.segments[i].parabola.focus);
+			var right = vec3(beachline.segments[i+1].parabola.focus);
+			// var equi = equidistant(left, center, right);
+			// var r = length(subtract(center, equi));
+			// // console.log(equi);
+			// if (equi.x() == equi.x() && center.y() > left.y() &&
+			// 		center.y() > right.y()) {
+			// 	equi.sety(equi.y() - r);
+			// 	everts.push(equi);
+			// }
+			// // var r = length(subtract(left, equi));
+		}
+	}
 }
 
 var render = function() {
 	fortune();
-	// console.log("render");
 
   gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -180,21 +199,25 @@ var render = function() {
 		}
 	});
 
-	var beachfront = new Beachfront();
+	var beachline = new Beachline();
 	parabolas.forEach(function(parabola) {
-		beachfront.update(parabola);
+		beachline.update(parabola);
 	});
-	beachfront.render(program, vec4(1.0, 0.0, 0.0, 1.0));
+	beachline.render(program, vec4(1.0, 0.0, 0.0, 1.0));
 
 	points.forEach(function(p) {
 		circle.render(program, vec3(p[0], p[1], 0));
 	});
 
 	var c = vec4(0.7, 0.0, 0.7);
-	vverts.forEach(function(px) {
-		var p = px;//.p;
-		// console.log(p);
-		circle.render(program, vec3(p[0], p[1], 0), 0.01, false, c);
+	// vverts.forEach(function(px) {
+	// 	var p = px;//.p;
+	// 	circle.render(program, vec3(p[0], p[1], 0), 0.01, false, c);
+	// });
+
+	c = vec4(0.0, 0.7, 0.7);
+	everts.forEach(function(p) {
+		circle.render(program, vec3(p.x(), p.y(), 0), 0.01, false, c);
 	});
 
 	line.render(program, directrix, vec4(0,0,0,1));

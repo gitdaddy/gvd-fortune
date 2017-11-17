@@ -32,14 +32,14 @@ Segment.prototype.intersect = function(parabola, prefix="") {
 }
 
 //------------------------------------------------------------
-// Beachfront
+// Beachline
 //------------------------------------------------------------
 
-var Beachfront = function() {
+var Beachline = function() {
 	this.segments = [];
 }
 
-Beachfront.prototype.vertices = function() {
+Beachline.prototype.vertices = function() {
 	var verts = [];
 	for (var i = 0; i < this.segments.length - 1; ++i) {
 		verts.push(this.segments[i].right);
@@ -47,13 +47,13 @@ Beachfront.prototype.vertices = function() {
 	return verts;
 }
 
-Beachfront.prototype.render = function(program, color) {
+Beachline.prototype.render = function(program, color) {
 	this.segments.forEach(function(segment) {
 		segment.render(program, color);
 	});
 }
 
-Beachfront.prototype.add = function(segment, newSegments, prefix="") {
+Beachline.prototype.add = function(segment, newSegments, prefix="") {
 	// if (prefix != "") {
 	// 	console.log(prefix + " adding h=" + segment.parabola.h +
 	// 							" left=" + segment.left + " right=" + segment.right);
@@ -70,7 +70,7 @@ var Vertex = function(p, s1, s2) {
 
 // Returns intersections of the given parabola with any other parabola. Call
 // them vertices.
-Beachfront.prototype.update = function(parabola) {
+Beachline.prototype.update = function(parabola) {
 	// console.log("updating");
 	if (this.segments.length == 0) {
 		if (Math.abs(parabola.p) > 0.000001) {

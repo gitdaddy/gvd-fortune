@@ -57,11 +57,15 @@ function vec3()
   case 2: result.push( 0.0 );
   }
 
-	// result.x = result[0];
-	// result.y = result[1];
-	// result.z = result[2];
-
-  return result.splice( 0, 3 );
+  // return result.splice( 0, 3 );
+  result = result.splice( 0, 3 );
+	result.x = function() { return this[0]; }
+	result.y = function() { return this[1]; }
+	result.z = function() { return this[2]; }
+	result.setx = function(x) { this[0] = x; }
+	result.sety = function(y) { this[1] = y; }
+	result.setz = function(z) { this[2] = z; }
+	return result;
 }
 
 function vec4()
@@ -491,6 +495,7 @@ function scalem( x, y, z )
 function lookAt( eye, at, up )
 {
   if ( !Array.isArray(eye) || eye.length != 3) {
+  // if ( eye.length != 3) {
     throw "lookAt(): first parameter [eye] must be an a vec3";
   }
 
