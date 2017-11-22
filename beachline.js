@@ -1,55 +1,136 @@
+const LEFT_CHILD = 0;
+const RIGHT_CHILD = 1;
+
 var Beachline2 = function() {
 	this.root = null;
 }
 
-Beachline2.prototype.replaceChild = function(parent, left, node) {
-	if (left) {
-		var left = parent.left;
-		var right = new SiteNode(parent.left.site);
-		parent.left = new EdgeNode(left, new EdgeNode(node, right));
-	}
-}
-
-function splitSiteNode(toSplit, node) {
+//------------------------------------------------------------
+// Utility function
+//------------------------------------------------------------
+function splitArcNode(toSplit, node) {
 	var left = toSplit;
-	var right = new SiteNode(toSplit.site);
+	var right = new ArcNode(toSplit.site);
 	return new EdgeNode(left, new EdgeNode(node, right));
 }
 
+//------------------------------------------------------------
+// createCircleEvent
+//------------------------------------------------------------
+function createCircleEvent(arcNode) {
+	if (arcNode == null) return null;
+
+	// var left = prevArc(arcNode);
+	var left = arcNode.prevArc();
+	// var right = nextArc(arcNode);
+	var right = arcNode.nextArc();
+	if (left != null && right != null) {
+		var equi = equidistant(left.site, arcNode.site, right.site);
+		var r = length(subtract(arcNode.site, equi));
+		return new CircleEvent(equi.y()-r, arcNode);
+	}
+	return null;
+}
+
+//------------------------------------------------------------
+// add
+//
 // site is a vec3
+//------------------------------------------------------------
 Beachline2.prototype.add = function(site) {
-	var node = new SiteNode(site);
+	var newNode = null;
+	var node = new ArcNode(site);
 	if (this.root == null) {
 		this.root = node;
-	} else if (this.root.isLeaf) {
-		this.root = splitSiteNode(this.root, node);
+		newNode = this.root;
+	} else if (this.root.isArc) {
+		this.root = splitArcNode(this.root, node);
+		newNode = this.root;
 	} else {
 		var directrix = site.y();
 		var parent = this.root;
 		var x = parent.intersection(directrix).x();
-		var side = (site.x() < x) ? LEFT : RIGHT;
+		var side = (site.x() < x) ? LEFT_CHILD : RIGHT_CHILD;
 		var child = parent.getChild(side);
-		// console.log("left = " + (side == LEFT));
-		// console.log(child.site.x());
-		// console.log(parent.left.site.x());
 		while (child.isEdge) {
 			parent = child;
 			x = parent.intersection(directrix).x();
-			// console.log("dir = " + directrix + " x = " PBPB
-			side = (site.x() < x) ? LEFT : RIGHT;
+			side = (site.x() < x) ? LEFT_CHILD : RIGHT_CHILD;
 			child = parent.getChild(side);
-			// console.log("left = " + (side == LEFT));
-			// console.log(child.site.x());
-			// console.log(parent.left.site.x());
 		}
-		console.log("left = " + (side == LEFT));
-		parent.setChild(splitSiteNode(child, node), side);
+		var newNode = splitArcNode(child, node);
+		parent.setChild(newNode, side);
 	}
+
+	// Create close events
+	var closeEvents = [];
+	// var e = createCircleEvent(prevArc(node));
+	var e = createCircleEvent(node.prevArc());
+	if (e != null) {
+		closeEvents.push(e);
+	}
+	// e = createCircleEvent(nextArc(node));
+	e = createCircleEvent(node.nextArc());
+	if (e != null) {
+		closeEvents.push(e);
+	}
+
+	return closeEvents;
 }
 
+// //------------------------------------------------------------
+// // prevArc
+// // Returns the previous in-order arc node
+// //------------------------------------------------------------
+// function prevArc(node) {
+// 	while (node.parent != null && node.parent.left == node) {
+// 		node = node.parent;
+// 	}
+// 	if (node.parent == null) return null;
+// 	node = node.parent.left;
+// 	while (!node.isArc) {
+// 		node = node.right;
+// 	}
+// 	return node;
+// }
+
+// //------------------------------------------------------------
+// // nextArc
+// // Returns the next in-order arc node
+// //------------------------------------------------------------
+// function nextArc(node) {
+// 	while (node.parent != null && node.parent.right == node) {
+// 		node = node.parent;
+// 	}
+// 	if (node.parent == null) return null;
+// 	node = node.parent.right;
+// 	while (!node.isArc) {
+// 		node = node.left;
+// 	}
+// 	return node;
+// }
+
+//------------------------------------------------------------
+// remove
+//------------------------------------------------------------
+Beachline2.prototype.remove = function(node) {
+	if (!node.isArc) throw "Unexpected edge in remove";
+
+	var parent = node.parent;
+	var grandparent = parent.parent;
+	var side = (parent.left == node) ? LEFT_CHILD : RIGHT_CHILD;
+	var parentSide = (grandparent.left == parent) ? LEFT_CHILD : RIGHT_CHILD;
+
+	var sibling = parent.getChild(1-side);
+	grandparent.setChild(sibling, parentSide);
+}
+
+//------------------------------------------------------------
+// render
+//------------------------------------------------------------
+
 Beachline2.prototype.renderImpl = function(program, directrix, node, leftx, rightx) {
-	if (node.isLeaf) {
-		console.log("site = " + node.site + " [" + leftx + "," + rightx + "]");
+	if (node.isArc) {
 		createParabola(node.site, directrix).render(program, leftx, rightx);
 	} else {
 		var p = node.intersection(directrix);
@@ -59,37 +140,49 @@ Beachline2.prototype.renderImpl = function(program, directrix, node, leftx, righ
 }
 
 Beachline2.prototype.render = function(program, directrix) {
-	console.log("Render beachline");
 	if (this.root == null) return;
 	this.renderImpl(program, directrix, this.root, -1, 1);
-
-	this.toDot(program, directrix);
 }
 
-Beachline2.prototype.toDotImpl = function(program, directrix, node, leftx, rightx, level) {
+//------------------------------------------------------------
+// toDot
+//------------------------------------------------------------
+
+function toDotImpl(directrix, node, leftx, rightx, level) {
 	var s = "";
-	if (node.isLeaf) {
-		// console.log("site = " + node.site + " [" + leftx + "," + rightx + "]");
-		// console.log("\"" + node.site.x() + "\"");
-		// createParabola(node.site, directrix).render(program, leftx, rightx);
+	if (node.isArc) {
 	} else {
 		var p = node.intersection(directrix);
-		s = "\"" + level + " " + node.site.x() + "\" -> \"" + (level+1) + " " + node.left.site.x() + "\"\n";
-		s += "\"" + level + " " + node.site.x() + "\" -> \"" + (level+1) + " " + node.right.site.x() + "\"\n";
-		s += this.toDotImpl(program, directrix, node.left, leftx, p.x(), level+1);
-		s += this.toDotImpl(program, directrix, node.right, p.x(), rightx, level+1);
+		s += node.toDot() + " -> " + node.left.toDot() + "\n";
+		s += node.toDot() + " -> " + node.right.toDot() + "\n";
+		s += toDotImpl(directrix, node.left, leftx, p.x(), level+1);
+		s += toDotImpl(directrix, node.right, p.x(), rightx, level+1);
 	}
 	return s;
 }
 
-Beachline2.prototype.toDot = function(program, directrix) {
+Beachline2.prototype.toDot = function(directrix) {
 	var s = "digraph G {";
 	if (this.root != null) {
-		s += this.toDotImpl(program, directrix, this.root, -1, 1, 0);
+		s += toDotImpl(directrix, this.root, -1, 1, 0);
 	}
 	s += "}";
-	console.log(s);
+	return s;
 }
+
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
 
 //------------------------------------------------------------
 // Segment
@@ -178,8 +271,8 @@ Beachline.prototype.update = function(parabola) {
 	// console.log("updating");
 	if (this.segments.length == 0) {
 		if (Math.abs(parabola.p) > 0.000001) {
-			var left = vec2(-1.0, parabola.f(-1.0));
-			var right = vec2(1.0, parabola.f(1.0));
+			var left = vec3(-1.0, parabola.f(-1.0), 0);
+			var right = vec3(1.0, parabola.f(1.0), 0);
 			this.add(new Segment(parabola, left, right), this.segments, "0");
 		}
 		return [];
@@ -242,7 +335,7 @@ Beachline.prototype.update = function(parabola) {
 	}
 	if (i == this.segments.length) {
 		// This parabola covers all other parabolas
-		this.add(new Segment(parabola, left, vec2(1.0, parabola.f(1.0))),
+		this.add(new Segment(parabola, left, vec3(1.0, parabola.f(1.0), 0)),
 						 newSegments, "3");
 	} else {
 		left.setx(Math.max(left.x(), -1.0));

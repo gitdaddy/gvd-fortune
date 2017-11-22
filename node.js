@@ -1,100 +1,111 @@
 //------------------------------------------------------------
-// Node in the binary search tree
-//
-// Leaf nodes have a site property which is a vec3. Internal
-// nodes are edge nodes and have an edge property.
+// ArcNode
 //------------------------------------------------------------
 
-var SiteNode = function(site) {
+var nodeId = 0;
+
+var ArcNode = function(site) {
+	this.id = nodeId++;
 	this.site = site;
-	this.isLeaf = true;
+	this.isArc = true;
 	this.isEdge = false;
+	this.toDot = function() {
+		return "\"" + this.site.x() + " (" + this.id + ")" + "\"";
+	};
 }
 
+//------------------------------------------------------------
+// prevArc
+// Returns the previous in-order arc node
+//------------------------------------------------------------
+ArcNode.prototype.prevArc = function() {
+	var node = this;
+	while (node.parent != null && node.parent.left == node) {
+		node = node.parent;
+	}
+	if (node.parent == null) return null;
+	return node.parent.prevArc();
+}
+
+//------------------------------------------------------------
+// nextArc
+// Returns the next in-order arc node
+//------------------------------------------------------------
+ArcNode.prototype.nextArc = function() {
+	var node = this;
+	while (node.parent != null && node.parent.right == node) {
+		node = node.parent;
+	}
+	if (node.parent == null) return null;
+	return node.parent.nextArc();
+	// node = node.parent.right;
+	// while (!node.isArc) {
+	// 	node = node.left;
+	// }
+	// return node;
+}
+
+//------------------------------------------------------------
+// EdgeNode
 // left and right are the left and right children.
+//------------------------------------------------------------
 var EdgeNode = function(left, right) {
-	this.edge = bisector(left.site, right.site);
-	this.isLeaf = false;
+	this.id = nodeId++;
+	// this.edge = bisector(left.site, right.site);
+	this.isArc = false;
 	this.isEdge = true;
-	this.site = left.site;
+	// this.site = left.site;
 	this.left = left;
 	this.right = right;
+
+	left.parent = this;
+	right.parent = this;
+
+	this.toDot = function() {
+		return "\"" + this.id + "\"";
+	};
+}
+
+EdgeNode.prototype.prevArc = function() {
+	var node = this;
+	// node = node.parent.left;
+	node = node.left;
+	while (!node.isArc) {
+		node = node.right;
+	}
+	return node;
+}
+
+EdgeNode.prototype.nextArc = function() {
+	var node = this;
+	// node = node.parent.right;
+	node = node.right;
+	while (!node.isArc) {
+		node = node.left;
+	}
+	return node;
 }
 
 EdgeNode.prototype.getChild = function(side) {
-	if (side == LEFT) return this.left;
+	if (side == LEFT_CHILD) return this.left;
 	return this.right;
 }
 
 EdgeNode.prototype.setChild = function(node, side) {
-	if (side == LEFT) this.left = node;
-	else this.right = node;
+	if (side == LEFT_CHILD) {
+		this.left = node;
+	} else {
+		this.right = node;
+	}
+	node.parent = this;
 }
 
 EdgeNode.prototype.intersection = function(directrix) {
-	var pleft = createParabola(this.left.site, directrix);
-	var pright = createParabola(this.right.site, directrix);
+	// This is inefficient. We should be storing sites in edge nodes.
+	var pleft = createParabola(this.prevArc().site, directrix);
+	var pright = createParabola(this.nextArc().site, directrix);
 	var intersections = pleft.intersect(pright);
 	if (intersections.length == 1) return intersections[0];
 	if (pleft.focus.y() > pright.focus.y()) return intersections[0];
 	return intersections[1];
 };
-
-
-// var Node = {
-// 	isLeaf: function() {
-// 		return !this.hasOwnProperty("left");
-// 	},
-// 	isEdge: function() {
-// 		return !this.isLeaf();
-// 	}
-// };
-
-// function siteNode(site) {
-// 	var n = Object.create(Node);
-// 	n.site = site;
-// 	return n;
-// }
-
-// // left and right are the left and right children.
-// function edgeNode(left, right) {
-// 	var edge = bisector(left.site, right.site);
-// 	var n = Object.create(Node);
-// 	n.edge = edge;
-// 	n.site = left.site;
-// 	n.left = left;
-// 	n.right = right;
-// 	n.intersection = function(directrix) {
-// 		return siteSiteDirectrixIntersection(n.left.site, n.right.site, directrix);
-// 	};
-// 	return n;
-// }
-
-// //------------------------------------------------------------
-// // Test function
-// //------------------------------------------------------------
-// function testNode() {
-// 	var root = siteNode(vec3(0, 0, 0));
-// 	var newSiteNode = siteNode(vec3(1, 0, 0));
-// 	root = edgeNode(root, newSiteNode);
-// 	console.log(root.site + " " + root.isLeaf());
-// 	console.log(root.left.site + " " + root.left.isLeaf());
-// 	console.log(root.right.site + " " + root.right.isLeaf());
-// }
-
-// var Node = function() {
-// }
-
-// Node.prototype.isLeaf = function() {
-// 	return this.hasOwnProperty("site");
-// }
-
-// Node.prototype.isEdge = function() {
-// 	return !this.isLeaf();
-// }
-
-// function leafNode(site) {
-// 	return new Node() {
-// 		site: site
-// 	};
-// }

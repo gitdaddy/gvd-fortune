@@ -77,8 +77,8 @@ function mouseclick(e) {
 	x = (x / rect.width) * 2.0 - 1.0;
 	y = (1.0 - y / rect.height) * 2.0 - 1.0;
 
-	console.log("Adding point " + vec2(x, y));
-	points.push(vec2(x, y));
+	console.log("Adding point " + vec3(x, y, 0));
+	points.push(vec3(x, y, 0));
 	sortPoints();
 	render();
 }
@@ -121,20 +121,20 @@ function init() {
 	program = new LineProgram();
 
 	points = [
-		vec2(-0.26166085486097, 0.7282501083050381),
-		vec2(-0.5918022688644832, -0.04853266881009186),
-		vec2(0.6187162825759516, 0.3677732886626375),
-		vec2(0.16004879258276095, -0.7865965217117346),
-		vec2(-0.8998955678143981, -0.9169239545442052),
-		vec2(0.734375,0.05),
-		vec2(0.734375,-0.02734375),
-		vec2(-0.12109375,0.1328125),
+		vec3(-0.26, 0.73, 0),
+		vec3(-0.59, -0.05, 0),
+		vec3(0.62, 0.37, 0),
+		vec3(0.16, -0.79, 0),
+		vec3(-0.90, -0.92, 0),
+		// vec3(0.73,0.05, 0),
+		vec3(0.73,-0.03, 0),
+		vec3(-0.12,0.13, 0),
 	];
 
 	sortPoints();
 
 	// for (var i = 0; i < 5; ++i) {
-	// 	var p = vec2(Math.random()*2-1, Math.random()*2-1);
+	// 	var p = vec3(Math.random()*2-1, Math.random()*2-1, 0);
 	// 	console.log(p);
 	// 	points.push(p);
 	// }
@@ -187,7 +187,7 @@ function init() {
 // 					center.y() > right.y()) {
 // 				var r = length(subtract(center, equi));
 // 				everts.push(equi);
-// 				var newEvent = vec2(equi.x(), equi.y()-r);
+// 				var newEvent = vec3(equi.x(), equi.y()-r, 0);
 // 				if (newEvent.y() < y) {
 // 					// console.log("cur point: " + p);
 // 					console.log("new event: " + newEvent);
@@ -256,7 +256,7 @@ function fortune(stopDirectrix) {
 					center.y() > right.y()) {
 				var r = length(subtract(center, equi));
 				everts.push(equi);
-				var newEvent = vec2(equi.x(), equi.y()-r);
+				var newEvent = vec3(equi.x(), equi.y()-r, 0);
 				if (newEvent.y() < y) {
 					// console.log("cur point: " + p);
 					console.log("new event: " + newEvent);
@@ -287,7 +287,7 @@ function fortune(stopDirectrix) {
 // }
 
 var render = function() {
-	fortune(directrix);
+	// fortune(directrix);
 
   gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -309,19 +309,19 @@ var render = function() {
 	// Get only parabolas participating in the beachline.
 	parabolas = [];
 	// console.log("Directrix = " + directrix);
-	fortune(directrix).forEach(function(p) {
-		// console.log("Adding " + p);
-		var para = createParabola(p, directrix);
-		parabolas.push(para);
-		para.render(program, -1, 1, vec4(0.9,0.9,0.9,1));
-	});
+	// fortune(directrix).forEach(function(p) {
+	// 	// console.log("Adding " + p);
+	// 	var para = createParabola(p, directrix);
+	// 	parabolas.push(para);
+	// 	para.render(program, -1, 1, vec4(0.9,0.9,0.9,1));
+	// });
 
-	var beachline = new Beachline();
-	parabolas.forEach(function(parabola) {
-		console.log(parabola.focus);
-		beachline.update(parabola);
-	});
-	beachline.render(program, vec4(1.0, 0.0, 0.0, 1.0));
+	// var beachline = new Beachline();
+	// parabolas.forEach(function(parabola) {
+	// 	console.log(parabola.focus);
+	// 	beachline.update(parabola);
+	// });
+	// beachline.render(program, vec4(1.0, 0.0, 0.0, 1.0));
 
 	points.forEach(function(p) {
 		circle.render(program, vec3(p[0], p[1], 0));
@@ -356,10 +356,39 @@ var render = function() {
 	// circle.render(program, c2, r, false, c);
 	// circle.render(program, c3, r, false, c);
 
+	var circleEvents = [];
 	var b2 = new Beachline2();
-	b2.add(points[0]);
-	b2.add(points[1]);
-	b2.add(points[2]);
+	var pointsCopy = points.slice();
+	var events = new TinyQueue(pointsCopy, function(a, b) {
+		// return a[1] > b[1] ? -1 : a[1] < b[1] ? 1 : 0;
+		return a.y() > b.y() ? -1 : a.y() < b.y() ? 1 : 0;
+	});
+	var i = 0;
+	// while (i < 4 && events.length > 0) {
+	while (events.length > 0 && events.peek().y() > directrix) {
+		i++;
+		var e = events.pop();
+		console.log(e);
+		if (e.hasOwnProperty('node')) {
+			console.log("circle event");
+			// Circle event
+			b2.remove(e.node);
+		} else {
+			console.log("site event: " + e);
+			var newEvents = b2.add(e);
+			newEvents.forEach(function(ev) {
+				console.log("Pushing new event:");
+				console.log(ev);
+				events.push(ev);
+			});
+		}
+		console.log(b2.toDot(directrix));
+	}
+
 	b2.render(program, directrix);
+
+	// circleEvents.forEach(function(p) {
+	// 	circle.render(program, p);
+	// });
 }
 
