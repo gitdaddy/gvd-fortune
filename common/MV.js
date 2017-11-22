@@ -292,7 +292,12 @@ function subtract( u, v )
       result.push( u[i] - v[i] );
     }
 
-    return result;
+    // return result;
+		if (u.length == 2)
+			return vec2(result);
+		if (u.length == 3)
+			return vec3(result);
+		return result;
   }
 }
 

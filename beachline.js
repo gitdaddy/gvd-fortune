@@ -1,3 +1,96 @@
+var Beachline2 = function() {
+	this.root = null;
+}
+
+Beachline2.prototype.replaceChild = function(parent, left, node) {
+	if (left) {
+		var left = parent.left;
+		var right = new SiteNode(parent.left.site);
+		parent.left = new EdgeNode(left, new EdgeNode(node, right));
+	}
+}
+
+function splitSiteNode(toSplit, node) {
+	var left = toSplit;
+	var right = new SiteNode(toSplit.site);
+	return new EdgeNode(left, new EdgeNode(node, right));
+}
+
+// site is a vec3
+Beachline2.prototype.add = function(site) {
+	var node = new SiteNode(site);
+	if (this.root == null) {
+		this.root = node;
+	} else if (this.root.isLeaf) {
+		this.root = splitSiteNode(this.root, node);
+	} else {
+		var directrix = site.y();
+		var parent = this.root;
+		var x = parent.intersection(directrix).x();
+		var side = (site.x() < x) ? LEFT : RIGHT;
+		var child = parent.getChild(side);
+		// console.log("left = " + (side == LEFT));
+		// console.log(child.site.x());
+		// console.log(parent.left.site.x());
+		while (child.isEdge) {
+			parent = child;
+			x = parent.intersection(directrix).x();
+			// console.log("dir = " + directrix + " x = " PBPB
+			side = (site.x() < x) ? LEFT : RIGHT;
+			child = parent.getChild(side);
+			// console.log("left = " + (side == LEFT));
+			// console.log(child.site.x());
+			// console.log(parent.left.site.x());
+		}
+		console.log("left = " + (side == LEFT));
+		parent.setChild(splitSiteNode(child, node), side);
+	}
+}
+
+Beachline2.prototype.renderImpl = function(program, directrix, node, leftx, rightx) {
+	if (node.isLeaf) {
+		console.log("site = " + node.site + " [" + leftx + "," + rightx + "]");
+		createParabola(node.site, directrix).render(program, leftx, rightx);
+	} else {
+		var p = node.intersection(directrix);
+		this.renderImpl(program, directrix, node.left, leftx, p.x());
+		this.renderImpl(program, directrix, node.right, p.x(), rightx);
+	}
+}
+
+Beachline2.prototype.render = function(program, directrix) {
+	console.log("Render beachline");
+	if (this.root == null) return;
+	this.renderImpl(program, directrix, this.root, -1, 1);
+
+	this.toDot(program, directrix);
+}
+
+Beachline2.prototype.toDotImpl = function(program, directrix, node, leftx, rightx, level) {
+	var s = "";
+	if (node.isLeaf) {
+		// console.log("site = " + node.site + " [" + leftx + "," + rightx + "]");
+		// console.log("\"" + node.site.x() + "\"");
+		// createParabola(node.site, directrix).render(program, leftx, rightx);
+	} else {
+		var p = node.intersection(directrix);
+		s = "\"" + level + " " + node.site.x() + "\" -> \"" + (level+1) + " " + node.left.site.x() + "\"\n";
+		s += "\"" + level + " " + node.site.x() + "\" -> \"" + (level+1) + " " + node.right.site.x() + "\"\n";
+		s += this.toDotImpl(program, directrix, node.left, leftx, p.x(), level+1);
+		s += this.toDotImpl(program, directrix, node.right, p.x(), rightx, level+1);
+	}
+	return s;
+}
+
+Beachline2.prototype.toDot = function(program, directrix) {
+	var s = "digraph G {";
+	if (this.root != null) {
+		s += this.toDotImpl(program, directrix, this.root, -1, 1, 0);
+	}
+	s += "}";
+	console.log(s);
+}
+
 //------------------------------------------------------------
 // Segment
 //------------------------------------------------------------
@@ -9,7 +102,16 @@ var Segment = function(parabola, left, right) {
 	this.parabola = parabola;
 	this.left = left;
 	this.right = right;
-};
+	if (left.x() == LEFT || left.x() == RIGHT ||
+			right.x() == LEFT || right.x() == RIGHT) {
+		throw "Bad segment: left = " + left + " right = " + right;
+	}
+}
+
+Segment.prototype.isDegenerate = function() {
+	const EPSILON = 0.0000001;
+	return Math.abs(this.left.x() - this.right.x()) < EPSILON;
+}
 
 Segment.prototype.render = function(program, color) {
 	this.parabola.render(program, this.left.x(), this.right.x(), color);
@@ -58,7 +160,9 @@ Beachline.prototype.add = function(segment, newSegments, prefix="") {
 	// 	console.log(prefix + " adding h=" + segment.parabola.h +
 	// 							" left=" + segment.left + " right=" + segment.right);
 	// }
-	newSegments.push(segment);
+	if (!segment.isDegenerate()) {
+		newSegments.push(segment);
+	}
 }
 
 // point, site one and site two
@@ -74,9 +178,9 @@ Beachline.prototype.update = function(parabola) {
 	// console.log("updating");
 	if (this.segments.length == 0) {
 		if (Math.abs(parabola.p) > 0.000001) {
-			this.add(new Segment(parabola,
-													 vec2(-1.0, parabola.f(-1.0)), vec2(1.0, parabola.f(1.0))),
-							 this.segments, "0");
+			var left = vec2(-1.0, parabola.f(-1.0));
+			var right = vec2(1.0, parabola.f(1.0));
+			this.add(new Segment(parabola, left, right), this.segments, "0");
 		}
 		return [];
 	}
@@ -86,6 +190,13 @@ Beachline.prototype.update = function(parabola) {
 	var i = 0;
 	var segment = this.segments[i];
 	var intersections = segment.intersect(parabola, "1");
+	// if (intersections.length == 0) {
+	// 	console.log("no intersections");
+	// 	console.log(segment.parabola.focus);
+	// 	console.log(segment.parabola.p);
+	// 	console.log(parabola.focus);
+	// 	console.log(parabola.p);
+	// }
 	var left = intersections[0];
 	// Search from left to right until we find a segment
 	// that the parabola intersects with
@@ -94,6 +205,11 @@ Beachline.prototype.update = function(parabola) {
 		++i;
 		segment = this.segments[i];
 		intersections = segment.intersect(parabola, "2");
+		if (intersections.length == 0) {
+			console.log("no intersections");
+			console.log(segment.parabola.focus);
+			console.log(parabola.focus);
+		}
 		left = intersections[0];
 	}
 	// The parabola's left intersection is either to the left of or in
@@ -120,12 +236,18 @@ Beachline.prototype.update = function(parabola) {
 			segment = this.segments[i];
 			intersections = segment.intersect(parabola, "3");
 			right = intersections[1];
+			// console.log("right");
+			// console.log(right);
 		}
 	}
 	if (i == this.segments.length) {
-		this.add(new Segment(parabola, left, vec2(1.0, parabola.f(1.0))), newSegments, "3");
+		// This parabola covers all other parabolas
+		this.add(new Segment(parabola, left, vec2(1.0, parabola.f(1.0))),
+						 newSegments, "3");
 	} else {
-		this.add(new Segment(parabola, left, right), newSegments, "3.5");
+		left.setx(Math.max(left.x(), -1.0));
+		this.add(new Segment(parabola, left, right),
+						 newSegments, "3.5");
 		// console.log("1 pushing " + right);
 		vertices.push(new Vertex(right, 0, 0));
 		this.add(new Segment(segment.parabola, right, segment.right), newSegments, "4");

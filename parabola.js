@@ -2,6 +2,7 @@ function f(x, h, k, p) {
 	return (x-h)*(x-h)/(4*p) + k;
 }
 
+// Returns intersections ordered by x value
 // h - x offset
 // k - y offset
 // p - scale factor (distance from parabola to directrix)
@@ -65,6 +66,44 @@ Parabola = function(focus, h, k, p) {
 	this.h = h;
 	this.k = k;
 	this.p = p;
+}
+
+//   \             /
+//    \     *     /
+//     \  left   /
+//      \       /           /
+//       --__--x    *      /
+//              \ right   /
+//               \       /
+//                --__--
+//
+// ------------------------------------- directrix
+//
+//
+//   \             /
+//    \     *     /
+//     \  left   /
+//      \       /
+//      x--__--
+//      |  *  |
+//      |right|
+//       \___/ 
+// ------------------------------------- directrix
+//
+//
+//   \             /
+//    \     *     /
+//     \  right  /
+//      \       /
+//       --__-x
+//      |  *  |
+//      |left |
+//       \___/ 
+// ------------------------------------- directrix
+function siteSiteDirectrixIntersection(left, right, directrix) {
+	var pleft = createParabola(left, directrix);
+	var pright = createParabola(right, directrix);
+	return pleft.intersect(pright)[0];
 }
 
 // The directrix is assumed to be horizontal and is given as a y-value.
