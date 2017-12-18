@@ -37,16 +37,15 @@ function popMatrix() {
 
 function keydown(event) {
   var x = event.keyCode;
+	var key = event.key;
 	var changed = false;
   if (x == 40) {
 		// Down arrow
 		directrix -= 0.01;
-		console.log("directrix = " + directrix);
 		changed = true;
   } else if (x == 38) {
 		// Up arrow
 		directrix += 0.01;
-		console.log("directrix = " + directrix);
 		changed = true;
   } else if (x == 39) {
 		// Right arrow
@@ -64,6 +63,9 @@ function keydown(event) {
 			directrix = p[1];
 			changed = true;
 		}
+	} else if (key == "d") {
+		// Print the directrix value
+		console.log("directrix = " + directrix);
 	}
 	if (changed) {
 		render();
@@ -146,149 +148,32 @@ function init() {
   render();
 }
 
-// function fortune(stopDirectrix) {
-// 	console.log("fortune()");
-// 	var visited = [];
-// 	vverts = [];
-// 	everts = [];
-// 	lines = [];
-// 	var sites = [];
-// 	var pointsCopy = points.slice();
-// 	var events = new TinyQueue(pointsCopy, function(a, b) {
-// 		return a[1] > b[1] ? -1 : a[1] < b[1] ? 1 : 0;
-// 	});
-// 	var beachline = new Beachline();
-// 	while (events.length > 0) {
-// 		var p = events.pop();
-// 		if (p.y() < stopDirectrix) {
-// 			break;
-// 		}
-// 		console.log("Event: " + p);
-// 		beachline = new Beachline();
-// 		// directrix
-// 		var y = p[1];
-// 		visited.push(p);
-// 		visited.forEach(function(v) {
-// 			var parabola = createParabola(v, y);
-// 			beachline.update(parabola);
-// 		});
-// 		vverts = vverts.concat(beachline.vertices());
-// 		for (var i = 1; i < beachline.segments.length-1; ++i) {
-// 			var left = vec3(beachline.segments[i-1].parabola.focus);
-// 			var center = vec3(beachline.segments[i].parabola.focus);
-// 			var right = vec3(beachline.segments[i+1].parabola.focus);
-// 			// console.log("points");
-// 			// console.log(left);
-// 			// console.log(center);
-// 			// console.log(right);
-// 			var equi = equidistant(left, center, right);
-// 			// console.log(equi);
-// 			if (equi.x() == equi.x() && center.y() > left.y() &&
-// 					center.y() > right.y()) {
-// 				var r = length(subtract(center, equi));
-// 				everts.push(equi);
-// 				var newEvent = vec3(equi.x(), equi.y()-r, 0);
-// 				if (newEvent.y() < y) {
-// 					// console.log("cur point: " + p);
-// 					console.log("new event: " + newEvent);
-// 					// events.push(newEvent);
-// 				}
-// 				// equi.sety(equi.y() - r);
-// 				// console.log("equi");
-// 				// console.log(equi);
-// 				// events.push(equi);
-// 			}
-// 		}
-// 	}
-// 	sites = [];
-// 	console.log("Adding segments");
-// 	beachline.segments.forEach(function(s) {
-// 		// console.log("pushing " + s.parabola.focus + " " + s.left);
-// 		// console.log("pushing [" + s.left.x() + ", " + s.right.x() + "]");
-// 		sites.push(s.parabola.focus);
-// 	});
-// 	sites = [...new Set(sites)];
-// 	sites.sort(pointCompare);
-// 	return sites;
-// }
-
-function fortune(stopDirectrix) {
-	console.log("fortune()");
-	var visited = [];
-	vverts = [];
-	everts = [];
-	lines = [];
-	var sites = [];
+function fortune() {
+	var circleEvents = [];
+	var beachline = new Beachline2();
 	var pointsCopy = points.slice();
 	var events = new TinyQueue(pointsCopy, function(a, b) {
-		return a[1] > b[1] ? -1 : a[1] < b[1] ? 1 : 0;
+		return a.y() > b.y() ? -1 : a.y() < b.y() ? 1 : 0;
 	});
-	var beachline = new Beachline();
-	while (events.length > 0) {
-		var p = events.pop();
-		if (p.y() < stopDirectrix) {
-			break;
-		}
-		console.log("Event: " + p);
-		beachline = new Beachline();
-		// directrix
-		var y = p[1];
-		// var parabola = createParabola(p, y);
-		// beachline.update(parabola);
-		// console.log("beachline size = " + beachline.segments.length);
-		visited.push(p);
-		visited.forEach(function(v) {
-			var parabola = createParabola(v, y);
-			beachline.update(parabola);
-		});
-		vverts = vverts.concat(beachline.vertices());
-		for (var i = 1; i < beachline.segments.length-1; ++i) {
-			var left = vec3(beachline.segments[i-1].parabola.focus);
-			var center = vec3(beachline.segments[i].parabola.focus);
-			var right = vec3(beachline.segments[i+1].parabola.focus);
-			// console.log("points");
-			// console.log(left);
-			// console.log(center);
-			// console.log(right);
-			var equi = equidistant(left, center, right);
-			// console.log(equi);
-			if (equi.x() == equi.x() && center.y() > left.y() &&
-					center.y() > right.y()) {
-				var r = length(subtract(center, equi));
-				everts.push(equi);
-				var newEvent = vec3(equi.x(), equi.y()-r, 0);
-				if (newEvent.y() < y) {
-					// console.log("cur point: " + p);
-					console.log("new event: " + newEvent);
-					// events.push(newEvent);
-				}
-				// equi.sety(equi.y() - r);
-				// console.log("equi");
-				// console.log(equi);
-				// events.push(equi);
-			}
+	everts = [];
+	while (events.length > 0 && events.peek().y() > directrix) {
+		var e = events.pop();
+		if (e.hasOwnProperty('node')) {
+			// Circle event
+			beachline.remove(e.node);
+		} else {
+			// Site event
+			var newEvents = beachline.add(e);
+			newEvents.forEach(function(ev) {
+				events.push(ev);
+				everts.push(ev.equi);
+			});
 		}
 	}
-	sites = [];
-	console.log("Adding segments");
-	beachline.segments.forEach(function(s) {
-		// console.log("pushing " + s.parabola.focus + " " + s.left);
-		// console.log("pushing [" + s.left.x() + ", " + s.right.x() + "]");
-		sites.push(s.parabola.focus);
-	});
-	sites = [...new Set(sites)];
-	sites.sort(pointCompare);
-	return sites;
+	return beachline;
 }
 
-// Given a directrix, returns sites in the beachline in reverse
-// order of y value.
-// function sitesInBeachline(directrix) {
-// }
-
 var render = function() {
-	// fortune(directrix);
-
   gl.clear(gl.COLOR_BUFFER_BIT);
 
 	var eye = vec3(0, 0, 5);
@@ -316,13 +201,6 @@ var render = function() {
 	// 	para.render(program, -1, 1, vec4(0.9,0.9,0.9,1));
 	// });
 
-	// var beachline = new Beachline();
-	// parabolas.forEach(function(parabola) {
-	// 	console.log(parabola.focus);
-	// 	beachline.update(parabola);
-	// });
-	// beachline.render(program, vec4(1.0, 0.0, 0.0, 1.0));
-
 	points.forEach(function(p) {
 		circle.render(program, vec3(p[0], p[1], 0));
 	});
@@ -333,59 +211,15 @@ var render = function() {
 	// 	circle.render(program, vec3(p[0], p[1], 0), 0.01, false, c);
 	// });
 
+	line.render(program, directrix, vec4(0,0,0,1));
+
+	var beachline = fortune();
+	beachline.render(program, directrix);
+
 	c = vec4(0.0, 0.7, 0.7);
 	everts.forEach(function(p) {
 		circle.render(program, vec3(p.x(), p.y(), 0), 0.01, false, c);
 	});
-
-	line.render(program, directrix, vec4(0,0,0,1));
-
-	// var c1 = vec3(-0.1, 0.5, 0.0);
-	// var c2 = vec3(0.5, 0.7, 0.0);
-	// var c3 = vec3(-0.2, -0.5, 0.0);
-	// var c = vec4(0.7, 0.0, 0.7);
-	// circle.render(program, c1, 0.01, false, c);
-	// circle.render(program, c2, 0.01, false, c);
-	// circle.render(program, c3, 0.01, false, c);
-
-	// var p = equidistant(c1, c2, c3);
-	// var r = length(subtract(c1, p));
-	// console.log(r);
-	// circle.render(program, p, 0.01, false, c);
-	// circle.render(program, c1, r, false, c);
-	// circle.render(program, c2, r, false, c);
-	// circle.render(program, c3, r, false, c);
-
-	var circleEvents = [];
-	var b2 = new Beachline2();
-	var pointsCopy = points.slice();
-	var events = new TinyQueue(pointsCopy, function(a, b) {
-		// return a[1] > b[1] ? -1 : a[1] < b[1] ? 1 : 0;
-		return a.y() > b.y() ? -1 : a.y() < b.y() ? 1 : 0;
-	});
-	var i = 0;
-	// while (i < 4 && events.length > 0) {
-	while (events.length > 0 && events.peek().y() > directrix) {
-		i++;
-		var e = events.pop();
-		console.log(e);
-		if (e.hasOwnProperty('node')) {
-			console.log("circle event");
-			// Circle event
-			b2.remove(e.node);
-		} else {
-			console.log("site event: " + e);
-			var newEvents = b2.add(e);
-			newEvents.forEach(function(ev) {
-				console.log("Pushing new event:");
-				console.log(ev);
-				events.push(ev);
-			});
-		}
-		console.log(b2.toDot(directrix));
-	}
-
-	b2.render(program, directrix);
 
 	// circleEvents.forEach(function(p) {
 	// 	circle.render(program, p);
