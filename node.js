@@ -49,7 +49,7 @@ ArcNode.prototype.nextArc = function() {
 // EdgeNode
 // left and right are the left and right children.
 //------------------------------------------------------------
-var EdgeNode = function(left, right) {
+var EdgeNode = function(left, right, vertex) {
 	this.id = nodeId++;
 	// this.edge = bisector(left.site, right.site);
 	this.isArc = false;
@@ -57,6 +57,9 @@ var EdgeNode = function(left, right) {
 	// this.site = left.site;
 	this.left = left;
 	this.right = right;
+	// this.children = [ left, right ];
+	this.avertex = vertex;
+	this.bvertex = null;
 
 	left.parent = this;
 	right.parent = this;

@@ -7,11 +7,13 @@ var Beachline2 = function() {
 
 //------------------------------------------------------------
 // Utility function
+// toSplit is an arc node. node is also an arc node.
 //------------------------------------------------------------
 function splitArcNode(toSplit, node) {
+	var vertex = mult(add(toSplit.site, node.site), 0.5);
 	var left = toSplit;
 	var right = new ArcNode(toSplit.site);
-	return new EdgeNode(left, new EdgeNode(node, right));
+	return new EdgeNode(left, new EdgeNode(node, right, vertex), vertex);
 }
 
 //------------------------------------------------------------
@@ -39,6 +41,7 @@ function createCircleEvent(arcNode) {
 //------------------------------------------------------------
 Beachline2.prototype.add = function(site) {
 	var node = new ArcNode(site);
+	// console.log(node);
 	if (this.root == null) {
 		this.root = node;
 	} else if (this.root.isArc) {
@@ -96,6 +99,10 @@ Beachline2.prototype.renderImpl = function(program, directrix, node, leftx, righ
 	if (node.isArc) {
 		createParabola(node.site, directrix).render(program, leftx, rightx);
 	} else {
+		// circle.render(program, vec3(p.x(), p.y(), 0), 0.01, false, c);
+		var color = vec4(0.0, 0.7, 0.7);
+		// console.log(node);
+		circle.render(program, node.avertex, 0.01, false, color);
 		var p = node.intersection(directrix);
 		this.renderImpl(program, directrix, node.left, leftx, p.x());
 		this.renderImpl(program, directrix, node.right, p.x(), rightx);

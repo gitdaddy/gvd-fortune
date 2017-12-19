@@ -224,5 +224,8 @@ var render = function() {
 	// circleEvents.forEach(function(p) {
 	// 	circle.render(program, p);
 	// });
+	// showTree(treeData);
+	showTree(beachline.root);
+
 }
 
