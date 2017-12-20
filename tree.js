@@ -59,7 +59,7 @@ function showTree(treeData) {
     return [ d.left, d.right ];
   });
 
-	// maps the node data to the tree layout
+	// maps the arcNode data to the tree layout
 	nodes = treemap(nodes);
 
 	// append the svg object to the body of the page
@@ -93,23 +93,23 @@ function showTree(treeData) {
 		// .attr("d", diagonal)
 	;
 
-	// adds each node as a group
-	var node = g.selectAll(".node")
+	// adds each arcNode as a group
+	var node = g.selectAll(".arcNode")
     .data(nodes.descendants())
 		.enter().append("g")
     .attr("class", function(d) { 
-      return "node" + 
-        (d.children ? " node--internal" : " node--leaf"); })
+      return "arcNode" +
+        (d.children ? " arcNode--internal" : " arcNode--leaf"); })
     .attr("transform", function(d) { 
       return "translate(" + d.x + "," + d.y + ")"; });
 
-	// adds the circle to the node
+	// adds the circle to the arcNode
 	node.append("circle")
 		.attr("r", function(d) { return 10;/*d.data.value;*/ })
 		.style("stroke", function(d) { return nodeColor(d.data); })
 		.style("fill", function(d) { return nodeColor(d.data); })
   
-	// adds the text to the node
+	// adds the text to the arcNode
 	node.append("text")
 		.attr("dy", ".35em")
 		// .attr("x", function(d) { return d.children ? 
@@ -119,5 +119,15 @@ function showTree(treeData) {
 		// .style("text-anchor", function(d) { 
 		// 	return d.children ? "end" : "start"; })
 		.style("text-anchor", function(d) { return "end"; })
-		.text(function(d) { return "abc"; });//d.data.name; });
+		// .text(function(d) { return "abc"; });//d.data.name; });
+		.text(function(d) {
+      // console.log(d);
+			if (d.data.closeEvent) {
+				return d.data.closeEvent.y().toFixed(2);
+			}
+      if (d.data.id) {
+        return d.data.id;
+      }
+			return "abc";
+		});//d.data.name; });
 }

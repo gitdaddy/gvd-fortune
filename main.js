@@ -158,25 +158,27 @@ function init() {
 }
 
 function fortune() {
+  nodeId = 1;
 	dcel = new DCEL();
-	var circleEvents = [];
+	// var circleEvents = [];
 	var beachline = new Beachline();
 	var pointsCopy = points.slice();
 	var events = new TinyQueue(pointsCopy, function(a, b) {
-		console.log("b = " + b);
-		return a.y() > b.y() ? -1 : a.y() < b.y() ? 1 : 0;
-	});
-	everts = [];
-	lines = [];
-	while (events.length > 0 && events.peek().y() > directrix) {
-		var e = events.pop();
-		if (e.node) {
-			// Circle event. The node is an arc node -- the arc that
-			// closed up.
-			e.node.prevEdge().dcelEdge.dest.point = e.equi;
-			e.node.nextEdge().dcelEdge.dest.point = e.equi;
-			beachline.remove(e.node);
-			everts.push(e.equi);
+    return a.y() > b.y() ? -1 : a.y() < b.y() ? 1 : 0;
+  });
+  everts = [];
+  lines = [];
+  while (events.length > 0 && events.peek().y() > directrix) {
+    var e = events.pop();
+    if (e.isCloseEvent) {
+      if (e.live) {
+				e.arcNode.prevEdge().dcelEdge.dest.point = e.equi;
+				e.arcNode.nextEdge().dcelEdge.dest.point = e.equi;
+				beachline.remove(e.arcNode, e.equi);
+				everts.push(e.equi);
+			} else {
+				console.log("canceled");
+			}
 		} else {
 			// Site event
 			var newEvents = beachline.add(e);

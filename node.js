@@ -16,7 +16,7 @@ var ArcNode = function(site) {
 
 //------------------------------------------------------------
 // prevEdge
-// Returns the previous in-order edge node
+// Returns the previous in-order edge arcNode
 //------------------------------------------------------------
 ArcNode.prototype.prevEdge = function() {
 	var node = this;
@@ -28,7 +28,7 @@ ArcNode.prototype.prevEdge = function() {
 
 //------------------------------------------------------------
 // prevArc
-// Returns the previous in-order arc node
+// Returns the previous in-order arc arcNode
 //------------------------------------------------------------
 ArcNode.prototype.prevArc = function() {
 	var node = this.prevEdge();
@@ -38,20 +38,20 @@ ArcNode.prototype.prevArc = function() {
 
 // //------------------------------------------------------------
 // // prevArc
-// // Returns the previous in-order arc node
+// // Returns the previous in-order arc arcNode
 // //------------------------------------------------------------
 // ArcNode.prototype.prevArc = function() {
-// 	var node = this;
-// 	while (node.parent != null && node.parent.left == node) {
-// 		node = node.parent;
+// 	var arcNode = this;
+// 	while (arcNode.parent != null && arcNode.parent.left == arcNode) {
+// 		arcNode = arcNode.parent;
 // 	}
-// 	if (node.parent == null) return null;
-// 	return node.parent.prevArc();
+// 	if (arcNode.parent == null) return null;
+// 	return arcNode.parent.prevArc();
 // }
 
 //------------------------------------------------------------
 // nextEdge
-// Returns the next in-order edge node
+// Returns the next in-order edge arcNode
 //------------------------------------------------------------
 ArcNode.prototype.nextEdge = function() {
 	var node = this;
@@ -63,7 +63,7 @@ ArcNode.prototype.nextEdge = function() {
 
 //------------------------------------------------------------
 // nextArc
-// Returns the next in-order arc node
+// Returns the next in-order arc arcNode
 //------------------------------------------------------------
 ArcNode.prototype.nextArc = function() {
 	var node = this.nextEdge();
@@ -73,37 +73,39 @@ ArcNode.prototype.nextArc = function() {
 
 // //------------------------------------------------------------
 // // nextArc
-// // Returns the next in-order arc node
+// // Returns the next in-order arc arcNode
 // //------------------------------------------------------------
 // ArcNode.prototype.nextArc = function() {
-// 	var node = this;
-// 	while (node.parent != null && node.parent.right == node) {
-// 		node = node.parent;
+// 	var arcNode = this;
+// 	while (arcNode.parent != null && arcNode.parent.right == arcNode) {
+// 		arcNode = arcNode.parent;
 // 	}
-// 	if (node.parent == null) return null;
-// 	return node.parent.nextArc();
+// 	if (arcNode.parent == null) return null;
+// 	return arcNode.parent.nextArc();
 // }
 
 //------------------------------------------------------------
 // EdgeNode
 // left and right are the left and right children.
 //------------------------------------------------------------
-var EdgeNode = function(left, right, vertex) {
+var EdgeNode = function(left_, right, vertex) {
 	this.id = nodeId++;
-	// this.edge = bisector(left.site, right.site);
+	// this.edge = bisector(left_.site, right.site);
 	this.isArc = false;
 	this.isEdge = true;
-	// this.site = left.site;
-	this.left = left;
+	// this.site = left_.site;
+	this._left = left_;
+	// get left() {
+  //   return left_;
+  // };
 	this.right = right;
-	// this.children = [ left, right ];
 	this.avertex = vertex;
 	this.bvertex = null;
 
 	this.dcelEdge = dcel.makeEdge();
 	this.dcelEdge.origin.point = vertex;
 
-	left.parent = this;
+	left_.parent = this;
 	right.parent = this;
 
 	this.toDot = function() {
@@ -111,9 +113,22 @@ var EdgeNode = function(left, right, vertex) {
 	};
 }
 
+Object.defineProperty(EdgeNode.prototype, "left", {
+  configurable: true,
+  enumerable: true,
+  // writable: false,
+  // value: this._left
+  get: function() {
+    return this._left;
+  },
+  set: function (x) {
+    // console.assert(false, "Setter for EdgeNode left is not defined");
+    this._left = x;
+  }
+});
+
 EdgeNode.prototype.prevArc = function() {
 	var node = this;
-	// node = node.parent.left;
 	node = node.left;
 	while (!node.isArc) {
 		node = node.right;
@@ -123,7 +138,6 @@ EdgeNode.prototype.prevArc = function() {
 
 EdgeNode.prototype.nextArc = function() {
 	var node = this;
-	// node = node.parent.right;
 	node = node.right;
 	while (!node.isArc) {
 		node = node.left;
