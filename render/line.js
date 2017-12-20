@@ -1,4 +1,4 @@
-Line = function() {
+SweepLine = function() {
 	this.points = [ vec4(-1.0, 0.0, 0.0, 1.0), vec4(1.0, 0.0, 0.0, 1.0) ];
 
   this.pointsBuffer = gl.createBuffer();
@@ -6,7 +6,7 @@ Line = function() {
   gl.bufferData(gl.ARRAY_BUFFER, flatten(this.points), gl.STATIC_DRAW);
 }
 
-Line.prototype.render = function(program, y, color=vec4(0,0,1,1)) {
+SweepLine.prototype.render = function(program, y, color=vec4(0,0,1,1)) {
 	program.use();
 
 	pushMatrix();

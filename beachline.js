@@ -1,7 +1,24 @@
+//------------------------------------------------------------
+// CircleEvent
+//------------------------------------------------------------
+var CircleEvent = function(y, arcNode, equi, a, b) {
+	this.yval = y;
+	this.y = function() { return this.yval; }
+	// Point that is equidistant from the three points
+	this.equi = equi;
+	// Node is an ArcNode.
+	this.node = arcNode;
+	this.a = a;
+	this.b = b;
+};
+
+//------------------------------------------------------------
+// Beachline
+//------------------------------------------------------------
 const LEFT_CHILD = 0;
 const RIGHT_CHILD = 1;
 
-var Beachline2 = function() {
+var Beachline = function() {
 	this.root = null;
 }
 
@@ -39,7 +56,7 @@ function createCircleEvent(arcNode) {
 //
 // Site is a vec3 or a CircleEvent.
 //------------------------------------------------------------
-Beachline2.prototype.add = function(site) {
+Beachline.prototype.add = function(site) {
 	var node = new ArcNode(site);
 	// console.log(node);
 	if (this.root == null) {
@@ -79,7 +96,7 @@ Beachline2.prototype.add = function(site) {
 //------------------------------------------------------------
 // remove
 //------------------------------------------------------------
-Beachline2.prototype.remove = function(node) {
+Beachline.prototype.remove = function(node) {
 	if (!node.isArc) throw "Unexpected edge in remove";
 
 	var parent = node.parent;
@@ -95,7 +112,7 @@ Beachline2.prototype.remove = function(node) {
 // render
 //------------------------------------------------------------
 
-Beachline2.prototype.renderImpl = function(program, directrix, node, leftx, rightx) {
+Beachline.prototype.renderImpl = function(program, directrix, node, leftx, rightx) {
 	if (node.isArc) {
 		createParabola(node.site, directrix).render(program, leftx, rightx);
 	} else {
@@ -109,7 +126,7 @@ Beachline2.prototype.renderImpl = function(program, directrix, node, leftx, righ
 	}
 }
 
-Beachline2.prototype.render = function(program, directrix) {
+Beachline.prototype.render = function(program, directrix) {
 	if (this.root == null) return;
 	this.renderImpl(program, directrix, this.root, -1, 1);
 }
@@ -131,7 +148,7 @@ function toDotImpl(directrix, node, leftx, rightx, level) {
 	return s;
 }
 
-Beachline2.prototype.toDot = function(directrix) {
+Beachline.prototype.toDot = function(directrix) {
 	var s = "digraph G {";
 	if (this.root != null) {
 		s += toDotImpl(directrix, this.root, -1, 1, 0);

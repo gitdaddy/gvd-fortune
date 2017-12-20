@@ -7,7 +7,7 @@ var gl;
 
 // var parabola;
 var circle;
-var line;
+var sweepLine;
 var program;
 
 var mvMatrix;
@@ -17,6 +17,7 @@ var points = [];
 var vverts = [];
 var everts = [];
 var lines = [];
+var dcel;
 
 var events = new TinyQueue([], function(a, b) {
   return a[1] > b[1] ? -1 : a[1] < b[1] ? 1 : 0;
@@ -41,11 +42,20 @@ function keydown(event) {
 	var changed = false;
   if (x == 40) {
 		// Down arrow
-		directrix -= 0.01;
+		if (event.shiftKey) {
+			directrix -= 0.001;
+		} else {
+			directrix -= 0.01;
+		}
 		changed = true;
   } else if (x == 38) {
 		// Up arrow
-		directrix += 0.01;
+		if (event.shiftKey) {
+			directrix += 0.001;
+		} else {
+			directrix += 0.01;
+		}
+		// directrix += 0.01;
 		changed = true;
   } else if (x == 39) {
 		// Right arrow
@@ -118,7 +128,7 @@ function init() {
 
 	// parabola = new Parabola();
 	circle = new Circle();
-	line = new Line();
+	sweepLine = new SweepLine();
 
 	program = new LineProgram();
 
@@ -148,24 +158,30 @@ function init() {
 }
 
 function fortune() {
+	dcel = new DCEL();
 	var circleEvents = [];
-	var beachline = new Beachline2();
+	var beachline = new Beachline();
 	var pointsCopy = points.slice();
 	var events = new TinyQueue(pointsCopy, function(a, b) {
+		console.log("b = " + b);
 		return a.y() > b.y() ? -1 : a.y() < b.y() ? 1 : 0;
 	});
 	everts = [];
+	lines = [];
 	while (events.length > 0 && events.peek().y() > directrix) {
 		var e = events.pop();
-		if (e.hasOwnProperty('node')) {
-			// Circle event
+		if (e.node) {
+			// Circle event. The node is an arc node -- the arc that
+			// closed up.
+			e.node.prevEdge().dcelEdge.dest.point = e.equi;
+			e.node.nextEdge().dcelEdge.dest.point = e.equi;
 			beachline.remove(e.node);
+			everts.push(e.equi);
 		} else {
 			// Site event
 			var newEvents = beachline.add(e);
 			newEvents.forEach(function(ev) {
 				events.push(ev);
-				everts.push(ev.equi);
 			});
 		}
 	}
@@ -210,10 +226,14 @@ var render = function() {
 	// 	circle.render(program, vec3(p[0], p[1], 0), 0.01, false, c);
 	// });
 
-	line.render(program, directrix, vec4(0,0,0,1));
+	sweepLine.render(program, directrix, vec4(0,0,0,1));
 
 	var beachline = fortune();
 	beachline.render(program, directrix);
+
+	// lines.forEach(function(l) {
+	// 	sweepLine.render(program, )
+	// });
 
 	c = vec4(0.0, 0.7, 0.7);
 	everts.forEach(function(p) {
@@ -223,8 +243,95 @@ var render = function() {
 	// circleEvents.forEach(function(p) {
 	// 	circle.render(program, p);
 	// });
-	// showTree(treeData);
+
 	showTree(beachline.root);
 
+	// var DCEL = require("../lib/dcel").DCEL;
+
+	// var e0 = dcel.makeEdge();
+	// var e1 = dcel.makeEdge();
+	// var e2 = dcel.makeEdge();
+	// e0.name = "0";
+	// e1.name = "1";
+	// e2.name = "2";
+	// e0.origin.point = vec3(0,0,0);
+	// e1.origin.point = vec3(0.4,0,0);
+	// e2.origin.point = vec3(0.4,0.4,0);
+
+	// dcel.splice(e2, e0.lnext);
+  // dcel.splice(e2.sym, e1);
+  // dcel.splice(e2, e2.sym.lnext);
+  // dcel.splice(e2.sym, e2.lnext);
+
+	// console.log(e0.origin.point);
+	// console.log(e0.dest.point);
+	// console.log(e2.origin.point);
+	// console.log(e2.dest.point);
+
+	// var e0 = dcel.makeEdge();
+	// var e1 = dcel.addEdgeVertex(e0);
+	// var e2 = dcel.addEdgeVertex(e1);
+	// var e3 = dcel.connect(e2, e0);
+	// e0.name = "0";
+	// e1.name = "1";
+	// e2.name = "2";
+	// e2.name = "3";
+	// e0.origin.point = vec3(0,0,0);
+	// e1.origin.point = vec3(0.4,0,0);
+	// e2.origin.point = vec3(0.4,0.4,0);
+	// e3.origin.point = vec3(0,0.4,0);
+
+	// e0.left.name = "left face";
+	// e0.right.name = "right face";
+
+	// console.log(e0.origin.point);
+	// console.log(e0.dest.point);
+	// console.log(e1.origin.point);
+	// console.log(e1.dest.point);
+	// console.log(e2.origin.point);
+	// console.log(e2.dest.point);
+	// console.log(e2.left.name);
+	// console.log(e3.origin.point);
+	// console.log(e3.dest.point);
+	// console.log(e3.left.name);
+
+	// console.log(e3.sym.dest.point);
+	// console.log(e3.sym.left.name);
+	// console.log(e3.sym.right.name);
+
+	// var iter = dcel.edges;
+	// var count = 0;
+	// var result = iter.next();
+	// while (!result.done) {
+	// 	count++;
+	// 	result = iter.next();
+	// }
+	// console.log(count);
+
+	renderDcel(program, dcel, vec4(1, 0, 0, 1));
+	
+	// lines.forEach(function(l) {
+	// });
+	
+
+	// console.log(e0);
+
+	// var length = 10;
+  // var es = new Array(length);
+  // for (var index = 0; index < length; index += 1) {
+  //   es[index] = dcel.makeEdge();
+  // }
+
+	// console.log(es[0]);
+
+  // var eiterator = dcel.edges;
+  // var viterator = dcel.vertices;
+  // var eresult = eiterator.next();
+  // for (var index = 0; index < length; index += 1) {
+	// 	// eresult.done == false
+	// 	// eresult.value == es[index]
+  //   eresult = eiterator.next();
+  // }
+	// // eresult.done == true
 }
 

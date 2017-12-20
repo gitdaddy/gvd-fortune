@@ -15,16 +15,50 @@ var ArcNode = function(site) {
 }
 
 //------------------------------------------------------------
-// prevArc
-// Returns the previous in-order arc node
+// prevEdge
+// Returns the previous in-order edge node
 //------------------------------------------------------------
-ArcNode.prototype.prevArc = function() {
+ArcNode.prototype.prevEdge = function() {
 	var node = this;
 	while (node.parent != null && node.parent.left == node) {
 		node = node.parent;
 	}
-	if (node.parent == null) return null;
-	return node.parent.prevArc();
+	return node.parent;
+}
+
+//------------------------------------------------------------
+// prevArc
+// Returns the previous in-order arc node
+//------------------------------------------------------------
+ArcNode.prototype.prevArc = function() {
+	var node = this.prevEdge();
+	if (node == null) return null;
+	return node.prevArc();
+}
+
+// //------------------------------------------------------------
+// // prevArc
+// // Returns the previous in-order arc node
+// //------------------------------------------------------------
+// ArcNode.prototype.prevArc = function() {
+// 	var node = this;
+// 	while (node.parent != null && node.parent.left == node) {
+// 		node = node.parent;
+// 	}
+// 	if (node.parent == null) return null;
+// 	return node.parent.prevArc();
+// }
+
+//------------------------------------------------------------
+// nextEdge
+// Returns the next in-order edge node
+//------------------------------------------------------------
+ArcNode.prototype.nextEdge = function() {
+	var node = this;
+	while (node.parent != null && node.parent.right == node) {
+		node = node.parent;
+	}
+	return node.parent;
 }
 
 //------------------------------------------------------------
@@ -32,18 +66,23 @@ ArcNode.prototype.prevArc = function() {
 // Returns the next in-order arc node
 //------------------------------------------------------------
 ArcNode.prototype.nextArc = function() {
-	var node = this;
-	while (node.parent != null && node.parent.right == node) {
-		node = node.parent;
-	}
-	if (node.parent == null) return null;
-	return node.parent.nextArc();
-	// node = node.parent.right;
-	// while (!node.isArc) {
-	// 	node = node.left;
-	// }
-	// return node;
+	var node = this.nextEdge();
+	if (node == null) return null;
+	return node.nextArc();
 }
+
+// //------------------------------------------------------------
+// // nextArc
+// // Returns the next in-order arc node
+// //------------------------------------------------------------
+// ArcNode.prototype.nextArc = function() {
+// 	var node = this;
+// 	while (node.parent != null && node.parent.right == node) {
+// 		node = node.parent;
+// 	}
+// 	if (node.parent == null) return null;
+// 	return node.parent.nextArc();
+// }
 
 //------------------------------------------------------------
 // EdgeNode
@@ -60,6 +99,9 @@ var EdgeNode = function(left, right, vertex) {
 	// this.children = [ left, right ];
 	this.avertex = vertex;
 	this.bvertex = null;
+
+	this.dcelEdge = dcel.makeEdge();
+	this.dcelEdge.origin.point = vertex;
 
 	left.parent = this;
 	right.parent = this;
