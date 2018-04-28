@@ -38,6 +38,10 @@ function nodeColor(node) {
 	return node.isEdge ? "red" : "blue";
 }
 
+function getInfo(d) {
+  return d.data.dcelEdge.a + "-" + d.data.dcelEdge.b;
+}
+
 function showTree(treeData) {
 	// set the dimensions and margins of the diagram
 	// var margin = {top: 20, right: 90, bottom: 30, left: 90},
@@ -71,7 +75,8 @@ function showTree(treeData) {
     .attr("height", height + margin.top + margin.bottom),
   g = svg.append("g")
     .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
+          "translate(" + margin.left + "," + margin.top + ")")
+  ;
 
 	// adds the links between the nodes
 	var link = g.selectAll(".link")
@@ -101,7 +106,22 @@ function showTree(treeData) {
       return "arcNode" +
         (d.children ? " arcNode--internal" : " arcNode--leaf"); })
     .attr("transform", function(d) { 
-      return "translate(" + d.x + "," + d.y + ")"; });
+      return "translate(" + d.x + "," + d.y + ")"; })
+    .on("click", function(d) { console.log("click"); })
+    .on("mouseover", function(d) {
+      var g = d3.select(this); // The node
+      // The class is used to remove the additional text later
+      var info = g.append('text')
+        .classed('info', true)
+        .attr('x', 20)
+        .attr('y', 10)
+        .text(getInfo(d)/*'More info'*/);
+    })
+    .on("mouseout", function() {
+      // Remove the info text on mouse out.
+      d3.select(this).select('text.info').remove()
+    })
+  ;
 
 	// adds the circle to the arcNode
 	node.append("circle")
@@ -122,11 +142,14 @@ function showTree(treeData) {
 		// .text(function(d) { return "abc"; });//d.data.name; });
 		.text(function(d) {
       // console.log(d);
+      var star = "";
 			if (d.data.closeEvent) {
-				return d.data.closeEvent.y().toFixed(2);
+				// return d.data.closeEvent.y().toFixed(2);
+        // star = "*";
+				star = " (" + d.data.closeEvent.y().toFixed(1) + ")";
 			}
       if (d.data.id) {
-        return d.data.id;
+        return d.data.id() + star;
       }
 			return "abc";
 		});//d.data.name; });

@@ -49,8 +49,15 @@ function createCloseEvent(arcNode) {
 
   var left = arcNode.prevArc();
   var right = arcNode.nextArc();
-  if (left != null && right != null) {
+  // if (left != null && right != null &&
+  //     left.site.y() < arcNode.site.y() && right.site.y() < arcNode.site.y()) {
+  // if (left != null && right != null &&
+  //     left.site.x() < arcNode.site.x() && right.site.x() > arcNode.site.x()) {
+  if (left != null && right != null &&
+      (left.site.x() < arcNode.site.x() || right.site.x() > arcNode.site.x())) {
+  // if (left != null && right != null) {
     var equi = equidistant(left.site, arcNode.site, right.site);
+    console.log("equi = " + equi + " " + left.site.id + " " + arcNode.site.id + " " + right.site.id);
     var r = length(subtract(arcNode.site, equi));
     return new CloseEvent(equi.y()-r, arcNode, equi);
   }
@@ -106,19 +113,24 @@ Beachline.prototype.add = function(site) {
 //------------------------------------------------------------
 Beachline.prototype.remove = function(arcNode, point) {
   if (!arcNode.isArc) throw "Unexpected edge in remove";
-
-  var rightEdge = arcNode.nextEdge();
+  
   var parent = arcNode.parent;
   var grandparent = parent.parent;
   var side = (parent.left == arcNode) ? LEFT_CHILD : RIGHT_CHILD;
   var parentSide = (grandparent.left == parent) ? LEFT_CHILD : RIGHT_CHILD;
 
+  // Get newEdge before updating children etc.
+  var newEdge = arcNode.nextEdge();
+  if (side == LEFT_CHILD) {
+    newEdge = arcNode.prevEdge();
+  }
+
   var sibling = parent.getChild(1-side);
   grandparent.setChild(sibling, parentSide);
+  sibling.parent = grandparent;
 
-  // console.log("modifying " + rightEdge.id);
-  rightEdge.dcelEdge = dcel.makeEdge();
-  rightEdge.dcelEdge.origin.point = point;
+  console.log("Update " + newEdge.id());
+  newEdge.updateEdge(point);
 }
 
 //------------------------------------------------------------

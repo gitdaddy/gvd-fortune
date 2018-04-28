@@ -1,14 +1,17 @@
-//------------------------------------------------------------
+//---------------------------------------------------------------------------
 // ArcNode
-//------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 var nodeId = 0;
 
 var ArcNode = function(site) {
-	this.id = nodeId++;
+	// this.id = nodeId++;
 	this.site = site;
 	this.isArc = true;
 	this.isEdge = false;
+  this.id = function() {
+    return site.id;
+  }
 	this.toDot = function() {
 		return "\"" + this.site.x() + " (" + this.id + ")" + "\"";
 	};
@@ -84,12 +87,16 @@ ArcNode.prototype.nextArc = function() {
 // 	return arcNode.parent.nextArc();
 // }
 
+//---------------------------------------------------------------------------
+// EdgeNode
+//---------------------------------------------------------------------------
+
 //------------------------------------------------------------
 // EdgeNode
 // left and right are the left and right children.
 //------------------------------------------------------------
 var EdgeNode = function(left_, right, vertex) {
-	this.id = nodeId++;
+	// this.id = nodeId++;
 	// this.edge = bisector(left_.site, right.site);
 	this.isArc = false;
 	this.isEdge = true;
@@ -102,15 +109,25 @@ var EdgeNode = function(left_, right, vertex) {
 	this.avertex = vertex;
 	this.bvertex = null;
 
-	this.dcelEdge = dcel.makeEdge();
-	this.dcelEdge.origin.point = vertex;
+  this.updateEdge(vertex);
 
 	left_.parent = this;
 	right.parent = this;
 
+  this.id = function() {
+    return this.prevArc().site.id + "-" + this.nextArc().site.id;
+  }
+
 	this.toDot = function() {
 		return "\"" + this.id + "\"";
 	};
+}
+
+EdgeNode.prototype.updateEdge = function(vertex) {
+	this.dcelEdge = dcel.makeEdge();
+	this.dcelEdge.origin.point = vertex;
+  this.dcelEdge.a = this.prevArc().site.id;
+  this.dcelEdge.b = this.nextArc().site.id;
 }
 
 Object.defineProperty(EdgeNode.prototype, "left", {
