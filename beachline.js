@@ -3,13 +3,13 @@
 //------------------------------------------------------------
 var CloseEvent = function(y, arcNode, equi) {
   this.yval = y;
-	this.y = function() { return this.yval; }
-	// Point that is equidistant from the three points
-	this.equi = equi;
-	this.arcNode = arcNode;
-	this.arcNode.closeEvent = this;
-	this.isCloseEvent = true;
-	this.live = true;
+  this.y = function() { return this.yval; }
+  // Point that is equidistant from the three points
+  this.equi = equi;
+  this.arcNode = arcNode;
+  this.arcNode.closeEvent = this;
+  this.isCloseEvent = true;
+  this.live = true;
 };
 
 //------------------------------------------------------------
@@ -22,7 +22,7 @@ const LEFT_CHILD = 0;
 const RIGHT_CHILD = 1;
 
 var Beachline = function() {
-	this.root = null;
+  this.root = null;
 }
 
 //------------------------------------------------------------
@@ -50,16 +50,33 @@ function createCloseEvent(arcNode) {
   var left = arcNode.prevArc();
   var right = arcNode.nextArc();
   // if (left != null && right != null &&
-  //     left.site.y() < arcNode.site.y() && right.site.y() < arcNode.site.y()) {
+  //     left.site.y() < arcNode.site.y() && 
+  //     right.site.y() < arcNode.site.y()) {
   // if (left != null && right != null &&
-  //     left.site.x() < arcNode.site.x() && right.site.x() > arcNode.site.x()) {
-  if (left != null && right != null &&
-      (left.site.x() < arcNode.site.x() || right.site.x() > arcNode.site.x())) {
-  // if (left != null && right != null) {
+  //     left.site.x() < arcNode.site.x() &&
+  //     right.site.x() > arcNode.site.x()) {
+  if (left != null && right != null) {// &&
+      // (left.site.x() < arcNode.site.x() ||
+      //  right.site.x() > arcNode.site.x())) {// &&
+      // (left.site.y() < arcNode.site.y() &&
+      //  right.site.y() < arcNode.site.y())) {
+    // if (left != null && right != null) {
     var equi = equidistant(left.site, arcNode.site, right.site);
-    console.log("equi = " + equi + " " + left.site.id + " " + arcNode.site.id + " " + right.site.id);
-    var r = length(subtract(arcNode.site, equi));
-    return new CloseEvent(equi.y()-r, arcNode, equi);
+    var u = subtract(left.site, arcNode.site);
+    var v = subtract(left.site, right.site);
+    //console.log("cross " + u);
+    //console.log("cross " + cross);
+    var cr = cross(u, v);
+    // console.log("cross " + cr[2]);
+    if (cross(u, v)[2] < 0) {
+      var r = length(subtract(arcNode.site, equi));
+      // if (arcNode.id() == 5) {
+      //   console.log("equi = (" + equi + ") (" + left.site.id + " " +
+      //               arcNode.site.id + " " + right.site.id + ") r = " +
+      //              (equi.y()-r).toString());
+      // }
+      return new CloseEvent(equi.y()-r, arcNode, equi);
+    }
   }
   return null;
 }
@@ -71,6 +88,9 @@ function createCloseEvent(arcNode) {
 //------------------------------------------------------------
 Beachline.prototype.add = function(site) {
   var arcNode = new ArcNode(site);
+  // if (arcNode.id() == 5) {
+  //   console.log(arcNode.id());
+  // }
   if (this.root == null) {
     this.root = arcNode;
   } else if (this.root.isArc) {
@@ -104,7 +124,8 @@ Beachline.prototype.add = function(site) {
   if (e != null) {
     closeEvents.push(e);
   }
-
+  
+  // console.log("Adding " + closeEvents.length + " events");
   return closeEvents;
 }
 
@@ -119,7 +140,7 @@ Beachline.prototype.remove = function(arcNode, point) {
   var side = (parent.left == arcNode) ? LEFT_CHILD : RIGHT_CHILD;
   var parentSide = (grandparent.left == parent) ? LEFT_CHILD : RIGHT_CHILD;
 
-  // Get newEdge before updating children etc.
+  // Get newEdge (an EdgeNode) before updating children etc.
   var newEdge = arcNode.nextEdge();
   if (side == LEFT_CHILD) {
     newEdge = arcNode.prevEdge();
@@ -129,31 +150,60 @@ Beachline.prototype.remove = function(arcNode, point) {
   grandparent.setChild(sibling, parentSide);
   sibling.parent = grandparent;
 
-  console.log("Update " + newEdge.id());
+  // console.log("Update " + newEdge.id());
   newEdge.updateEdge(point);
+
+  // Cancel the close event for this arc and adjoining arcs.
+  // Add new close events for adjoining arcs.
+  var closeEvents = [];
+  var prevArc = newEdge.prevArc();
+  if (prevArc.closeEvent) {
+    prevArc.closeEvent.live = false;
+    // console.log("live = false");
+  }
+  var e = createCloseEvent(prevArc);
+  if (e != null) {
+    // console.log("Creating prev close event ");
+    // console.log(e);
+    closeEvents.push(e);
+  }
+  var nextArc = newEdge.nextArc();
+  if (nextArc.closeEvent) {
+    nextArc.closeEvent.live = false;
+    // console.log("live = false");
+  }
+  e = createCloseEvent(nextArc);
+  if (e != null) {
+    // console.log("Creating next close event ");
+    // console.log(e);
+    closeEvents.push(e);
+  }
+  return closeEvents;
 }
 
 //------------------------------------------------------------
 // render
 //------------------------------------------------------------
 
-Beachline.prototype.renderImpl = function(program, directrix, node, leftx, rightx) {
+Beachline.prototype.renderImpl = function(
+  program, directrix, node, leftx, rightx, renderEvents) {
   if (node.isArc) {
-    createParabola(node.site, directrix).render(program, leftx, rightx);
+    color = siteColor(node.id());
+    createParabola(node.site, directrix).render(program, leftx, rightx, color);
   } else {
-    // circle.render(program, vec3(p.x(), p.y(), 0), 0.01, false, c);
     var color = vec4(0.0, 0.7, 0.7);
-    // console.log(arcNode);
-    circle.render(program, node.avertex, 0.01, false, color);
+    if (renderEvents) {
+      circle.render(program, node.avertex, 0.01, false, color);
+    }
     var p = node.intersection(directrix);
     this.renderImpl(program, directrix, node.left, leftx, p.x());
     this.renderImpl(program, directrix, node.right, p.x(), rightx);
   }
 }
 
-Beachline.prototype.render = function(program, directrix) {
+Beachline.prototype.render = function(program, directrix, renderEvents) {
   if (this.root == null) return;
-  this.renderImpl(program, directrix, this.root, -1, 1);
+  this.renderImpl(program, directrix, this.root, -1, 1, renderEvents);
 }
 
 //------------------------------------------------------------

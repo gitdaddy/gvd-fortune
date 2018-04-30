@@ -16,9 +16,9 @@
 // }
 
 function renderDcel(program, dcel, color) {
-	program.use();
+  program.use();
 
-	var points = []
+  var points = []
 
   var iter = dcel.edges;
   var result = iter.next();
@@ -49,9 +49,9 @@ function renderDcel(program, dcel, color) {
   gl.bindBuffer(gl.ARRAY_BUFFER, pointsBuffer);
   gl.vertexAttribPointer(program.vertexLoc, 4, gl.FLOAT, false, 0, 0);
 
-	gl.drawArrays(gl.LINES, 0, points.length);
+  gl.drawArrays(gl.LINES, 0, points.length);
 
-	gl.deleteBuffer(pointsBuffer);
+  gl.deleteBuffer(pointsBuffer);
 }
 
 // function equidistant(c1, c2, c3) {
@@ -83,13 +83,13 @@ function renderDcel(program, dcel, color) {
 // 	return Math.sqrt(rsq);
 // }
 function equidistant(c1, c2, c3) {
-	var u = mult(0.5, subtract(c1, c2));
-	var p0 = add(c2, u);
-	var v = normalize(vec3(-u[1], u[0], 0));
-	// return add(p0, v);
-	var a = dot(u, u);
-	var p0p3 = subtract(p0, c3);
-	var t = (-dot(p0p3, p0p3) + a) / (2 * dot(p0p3, v));
-	// console.log("p0p3 = " + p0p3 + " a = " + a + " t = " + t);
-	return vec3(add(p0, mult(t, v)));
+  var u = mult(0.5, subtract(c1, c2));
+  var p0 = add(c2, u);
+  var v = normalize(vec3(-u[1], u[0], 0));
+  // return add(p0, v);
+  var a = dot(u, u);
+  var p0p3 = subtract(p0, c3);
+  var t = (-dot(p0p3, p0p3) + a) / (2 * dot(p0p3, v));
+  // console.log("p0p3 = " + p0p3 + " a = " + a + " t = " + t);
+  return vec3(add(p0, mult(t, v)));
 }

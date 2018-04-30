@@ -1,5 +1,5 @@
 SweepLine = function() {
-	this.points = [ vec4(-1.0, 0.0, 0.0, 1.0), vec4(1.0, 0.0, 0.0, 1.0) ];
+  this.points = [ vec4(-1.0, 0.0, 0.0, 1.0), vec4(1.0, 0.0, 0.0, 1.0) ];
 
   this.pointsBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, this.pointsBuffer);
@@ -7,12 +7,12 @@ SweepLine = function() {
 }
 
 SweepLine.prototype.render = function(program, y, color=vec4(0,0,1,1)) {
-	program.use();
+  program.use();
 
-	pushMatrix();
-	mvMatrix = mult(mvMatrix, translate(0, y, 0));
+  pushMatrix();
+  mvMatrix = mult(mvMatrix, translate(0, y, 0));
   gl.uniformMatrix4fv(program.mvMatrixLoc, false, flatten(mvMatrix));
-	popMatrix();
+  popMatrix();
 
   gl.uniformMatrix4fv(program.pMatrixLoc, false, flatten(pMatrix));
   gl.uniform4fv(program.colorLoc, flatten(color));

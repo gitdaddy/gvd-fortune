@@ -1,25 +1,25 @@
 <!DOCTYPE html>
 <html>
   <head>
-		<style> /* set the CSS */
-			
-			.node circle {
-			fill: #fff;
-			stroke: steelblue;
-			stroke-width: 3px;
-			}
+    <style> /* set the CSS */
+      
+      .node circle {
+      fill: #fff;
+      stroke: steelblue;
+      stroke-width: 3px;
+      }
 
-			.node text { font: 12px sans-serif; }
+      .node text { font: 12px sans-serif; }
 
-			.node--internal text {
-			text-shadow: 0 1px 0 #fff, 0 -1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff;
-			}
+      .node--internal text {
+      text-shadow: 0 1px 0 #fff, 0 -1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff;
+      }
 
-			.link {
-			fill: none;
-			stroke: #ccc;
-			stroke-width: 2px;
-			}
+      .link {
+      fill: none;
+      stroke: #ccc;
+      stroke-width: 2px;
+      }
 
       /* Tooltip container */
       .tooltip {
@@ -47,52 +47,53 @@
       .tooltip:hover .tooltiptext {
       visibility: visible;
       }
-		</style>
+    </style>
 
-  <script id="vertex-shader" type="x-shader/x-vertex">
-    attribute vec4 vPosition;
-    //attribute vec4 vColor;
-    //varying vec4 fcolor;
-    
-    uniform mat4 mvMatrix;
-    uniform mat4 pMatrix;
-		
-    void main() 
-    {
+    <script id="vertex-shader" type="x-shader/x-vertex">
+      attribute vec4 vPosition;
+      //attribute vec4 vColor;
+      //varying vec4 fcolor;
+      
+      uniform mat4 mvMatrix;
+      uniform mat4 pMatrix;
+      
+      void main() 
+      {
       gl_Position = pMatrix*mvMatrix*vPosition;
       //fcolor = vColor;
-    } 
-  </script>
-  
-  <script id="fragment-shader" type="x-shader/x-fragment">
-    precision mediump float;
-    //varying vec4 fcolor;
+      } 
+    </script>
     
-		uniform vec4 color;
-    
-    void main()
-    {
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      precision mediump float;
+      //varying vec4 fcolor;
+      
+      uniform vec4 color;
+      
+      void main()
+      {
       //gl_FragColor = fcolor;
       //gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
       gl_FragColor = color;
-    }
-  </script>
-  
-  <script type="text/javascript" src="./d3.min.js"></script>
-  <script type="text/javascript" src="./dcel.js"></script>
-  <script type="text/javascript" src="./common/webgl-utils.js"></script>
-  <script type="text/javascript" src="./common/initShaders.js"></script>
-  <script type="text/javascript" src="./common/MV.js"></script>
-  <script type="text/javascript" src="parabola.js"></script>
-  <script type="text/javascript" src="render/circle.js"></script>
-  <script type="text/javascript" src="render/line.js"></script>
-  <script type="text/javascript" src="render/dcelRender.js"></script>
-  <script type="text/javascript" src="tinyqueue.js"></script>
-  <script type="text/javascript" src="node.js"></script>
-  <script type="text/javascript" src="beachline.js"></script>
-  <script type="text/javascript" src="tree.js"></script>
-  <script type="text/javascript" src="main.js"></script>
-  <script type="text/javascript" src="render/programs.js"></script>
+      }
+    </script>
+    
+    <script type="text/javascript" src="./d3.min.js"></script>
+    <script type="text/javascript" src="./dcel.js"></script>
+    <script type="text/javascript" src="./common/webgl-utils.js"></script>
+    <script type="text/javascript" src="./common/initShaders.js"></script>
+    <script type="text/javascript" src="./common/MV.js"></script>
+    <script type="text/javascript" src="parabola.js"></script>
+    <script type="text/javascript" src="render/circle.js"></script>
+    <script type="text/javascript" src="render/line.js"></script>
+    <script type="text/javascript" src="render/dcelRender.js"></script>
+    <script type="text/javascript" src="tinyqueue.js"></script>
+    <script type="text/javascript" src="node.js"></script>
+    <script type="text/javascript" src="beachline.js"></script>
+    <script type="text/javascript" src="tree.js"></script>
+    <script type="text/javascript" src="seedrandom.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+    <script type="text/javascript" src="render/programs.js"></script>
 
   </head>  
   
@@ -100,7 +101,8 @@
     <canvas id="gl-canvas" width="512" height="512">
       Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
-		<svg class="tree">
-		</svg>
+    <label id="directrixLabel">d=</label>
+    <svg class="tree">
+    </svg>
   </body>
 </html>
