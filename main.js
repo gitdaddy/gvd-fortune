@@ -20,6 +20,7 @@ var everts = [];
 var dcel;
 
 function siteColor(id) {
+  return vec4(0, 0, 1, 1);
   Math.seedrandom(id.toString());
   var r = Math.random();
   var g = Math.random();
@@ -45,7 +46,7 @@ function keydown(event) {
   var x = event.keyCode;
   var key = event.key;
   var changed = false;
-  var inc = 0.1;
+  var inc = 0.01;
   if (x == 40) {
     // Down arrow
     if (event.shiftKey) {
@@ -167,7 +168,7 @@ function init() {
   ];
 
   Math.seedrandom('3');
-  var numRandom = 100;
+  var numRandom = 0;
   for (var i = 0; i < numRandom; ++i) {
   	var p = vec3(Math.random()*2-1, Math.random()*2-1, 0);
   	// console.log(p);
@@ -208,8 +209,6 @@ function fortune() {
           }
         });
 	everts.push(e.equi);
-      } else {
-	// console.log("canceled");
       }
     } else {
       // Site event
@@ -221,21 +220,15 @@ function fortune() {
       });
     }
   }
-  // if (events.length > 0) {
-  //   console.log("Next event:");
-  //   var e = events.pop();
-  //   console.log(e.y());
-  //   console.log(e);
-  // }
-  // console.log("Remaining events:");
-  // while (events.length > 0) {
-  //   var e = events.pop();
-  //   console.log(e.y());
-  // }
   return beachline;
 }
 
 var render = function() {
+  var t0 = performance.now();
+  var beachline = fortune();
+  var t1 = performance.now();
+  console.log("Call to fortune took " + (t1 - t0) + " milliseconds.")
+
   gl.clear(gl.COLOR_BUFFER_BIT);
 
   var eye = vec3(0, 0, 5);
@@ -244,19 +237,14 @@ var render = function() {
   mvMatrix = lookAt(eye, at, up);
   pMatrix = ortho(-1, 1, -1, 1, 4, 6);
 
-  // points.forEach(function(p) {
-  //   var c = siteColor(p.id);
-  //   circle.render(program, vec3(p[0], p[1], 0), 0.01, true, c);
-  // });
+  points.forEach(function(p) {
+    var c = siteColor(p.id);
+    circle.render(program, vec3(p[0], p[1], 0), 0.01, true, c);
+  });
 
-  // sweepLine.render(program, directrix, vec4(0,0,0,1));
+  sweepLine.render(program, directrix, vec4(0,0,0,1));
 
   var renderEvents = false;
-
-  var t0 = performance.now();
-  var beachline = fortune();
-  var t1 = performance.now();
-  console.log("Call to fortune took " + (t1 - t0) + " milliseconds.")
 
   beachline.render(program, directrix);
 

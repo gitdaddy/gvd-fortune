@@ -124,20 +124,29 @@ Parabola.prototype.f = function(x) {
   return f(x, this.h, this.k, this.p);
 }
 
+var paraPointsBuffer = null;
+var numParaPoints = 20;
+var paraPoints = new Array(numParaPoints);
+
 Parabola.prototype.render = function(program, x0, x1, color=vec4(0,0,1,1)) {
   program.use();
 
-  this.points = []
-  for (var x = x0; x < x1; x += 0.01) {
+  var inc = (x1-x0) / numParaPoints;
+  for (var i = 0; i < numParaPoints-1; ++i) {
+    var x = x0 + i * inc;
     var y = this.f(x);
-    this.points.push(vec4(x, y, 0, 1));
+    paraPoints[i] = vec4(x, y, 0, 1);
   }
   var y = this.f(x1);
-  this.points.push(vec4(x1, y, 0, 1));
+  paraPoints[numParaPoints-1] = vec4(x1, y, 0, 1);
 
-  this.pointsBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, this.pointsBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, flatten(this.points), gl.STATIC_DRAW);
+  if (paraPointsBuffer == null) {
+    paraPointsBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, paraPointsBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(paraPoints), gl.STATIC_DRAW);
+  }
+  gl.bindBuffer(gl.ARRAY_BUFFER, paraPointsBuffer);
+  gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(paraPoints));
 
   gl.uniformMatrix4fv(program.mvMatrixLoc, false, flatten(mvMatrix));
 
@@ -145,11 +154,11 @@ Parabola.prototype.render = function(program, x0, x1, color=vec4(0,0,1,1)) {
   gl.uniform4fv(program.colorLoc, flatten(color));
 
   gl.enableVertexAttribArray(program.vertexLoc);
-  gl.bindBuffer(gl.ARRAY_BUFFER, this.pointsBuffer);
+  gl.bindBuffer(gl.ARRAY_BUFFER, paraPointsBuffer);
   gl.vertexAttribPointer(program.vertexLoc, 4, gl.FLOAT, false, 0, 0);
 
-  gl.drawArrays(gl.LINE_STRIP, 0, this.points.length);
+  gl.drawArrays(gl.LINE_STRIP, 0, paraPoints.length);
 
-  gl.deleteBuffer(this.pointsBuffer);
+  // gl.deleteBuffer(paraPointsBuffer);
 }
 
