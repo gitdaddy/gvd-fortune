@@ -4,6 +4,11 @@ function f(x, h, k, p) {
   return (x-h)*(x-h)/(4*p) + k;
 }
 
+// Computes the inverse of f
+function f_(y, h, k, p) {
+  return quadratic(1/(4*p), -2*h/(4*p), h*h/(4*p)+k-y);
+}
+
 //------------------------------------------------------------
 // WARNING! This returns points corresponding only to positive
 // t values.
@@ -145,8 +150,14 @@ Parabola.prototype.intersectSegment = function(s) {
   return spIntersect(this.h, this.k, this.p, s[0], s[1]);
 }
 
+// y = f(x)
 Parabola.prototype.f = function(x) {
   return f(x, this.h, this.k, this.p);
+}
+
+// Inverse of f. x = f_(y)
+Parabola.prototype.f_ = function(y) {
+  return f_(y, this.h, this.k, this.p);
 }
 
 var paraPointsBuffer = null;
@@ -156,6 +167,29 @@ var paraPoints = new Array(numParaPoints);
 Parabola.prototype.render = function(program, x0, x1, color=vec4(0,0,1,1)) {
   program.use();
 
+  if (x0 > 1 || x1 < -1) return;
+
+  // Optimize the boundaries for a smooth draw
+  x0 = Math.max(x0, -1);
+  x1 = Math.min(x1, 1);
+  if (this.f(x0) > 1) {
+    var xvalues = this.f_(1);
+    if (xvalues.length > 0) {
+      x0 = xvalues.reduce(function(a, b) {
+        return Math.min(a, b);
+      });
+    }
+  }
+  if (this.f(x1) > 1) {
+    var xvalues = this.f_(1);
+    if (xvalues.length > 0) {
+      x1 = xvalues.reduce(function(a, b) {
+        return Math.max(a, b);
+      });
+    }
+  }
+
+  // Construct line segments
   var inc = (x1-x0) / numParaPoints;
   for (var i = 0; i < numParaPoints-1; ++i) {
     var x = x0 + i * inc;

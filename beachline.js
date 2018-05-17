@@ -76,6 +76,10 @@ function createCloseEvent(arcNode) {
 //------------------------------------------------------------
 Beachline.prototype.add = function(site) {
   var arcNode = new ArcNode(site);
+  if (isSegment(site)) {
+    console.log("Segment " + site);
+    return [];
+  }
   if (this.root == null) {
     this.root = arcNode;
   } else if (this.root.isArc) {

@@ -135,10 +135,20 @@ EdgeNode.prototype.setChild = function(node, side) {
   node.parent = this;
 }
 
+EdgeNode.prototype.createBeachlineSegment = function(site, directrix) {
+  if (isSegment(site)) {
+    // TODO create a v segment
+    return createParabola(site[0], directrix);
+  }
+  return createParabola(site, directrix);
+}
+
 EdgeNode.prototype.intersection = function(directrix) {
   // This is inefficient. We should be storing sites in edge nodes.
-  var pleft = createParabola(this.prevArc().site, directrix);
-  var pright = createParabola(this.nextArc().site, directrix);
+  // var pleft = createParabola(this.prevArc().site, directrix);
+  // var pright = createParabola(this.nextArc().site, directrix);
+  var pleft = this.createBeachlineSegment(this.prevArc().site, directrix);
+  var pright = this.createBeachlineSegment(this.nextArc().site, directrix);
   var intersections = pleft.intersect(pright);
   if (intersections.length == 1) return intersections[0];
   if (pleft.focus.y > pright.focus.y) return intersections[0];
