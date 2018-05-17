@@ -13,13 +13,25 @@ function getAngle(s) {
 // Return the angle of the bisecting line of two segments.
 // The bisector is between the angle s to the angle t.
 // s,t are arrays of length 2
-function getBisector(s, t) {
+function getSegmentsBisector(s, t) {
   var stheta = getAngle(s);
   var ttheta = getAngle(t);
   if (ttheta < stheta) {
     ttheta += 2.0 * Math.PI;
   }
   return (stheta + ttheta) / 2.0;
+}
+
+// Return the line bisecting two points. v will be oriented
+// in the negative y direction.
+function getPointsBisector(p1, p2) {
+  var v = subtract(p2, p1);
+  var q = add(p1, mult(v, 0.5));
+  [v.x, v.y] = [-v.y, v.x];
+  if (v.y > 0) {
+    v = negate(v);
+  }
+  return v;
 }
 
 // ax^2 + bx + c = 0

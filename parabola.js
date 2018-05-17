@@ -10,24 +10,30 @@ function f_(y, h, k, p) {
 }
 
 //------------------------------------------------------------
-// WARNING! This returns points corresponding only to positive
-// t values.
+// line/parabola intersections
+// The line is given by a ray q(t) = q + tv.
+// Returns t values.
 //------------------------------------------------------------
-function spIntersect(h, k, p, p1, p2) {
+function lpIntersect(h, k, p, q, v) {
   // v = p1 --> p2
-  var q = p1;
-  var v = subtract(p2, q);
+  // var q = p1;
+  // var v = subtract(p2, q);
   var a = v.x*v.x/(4*p);
   var b = 2*v.x*(q.x-h)/(4*p) - v.y;
   var c = (q.x*q.x-2*q.x*h+h*h)/(4*p) + k - q.y;
   var tvals = quadratic(a, b, c);
-  var ret = [];
-  tvals.forEach(function(t) {
-    if (t >= 0) {
-      ret.push(add(p1, mult(v,t)));
-    }
-  });
-  return ret;
+  // console.log("a = " + a);
+  // console.log("b = " + b);
+  // console.log("c = " + c);
+  // console.log("tvals = " + tvals);
+  return tvals;
+  // var ret = [];
+  // tvals.forEach(function(t) {
+  //   if (t >= 0) {
+  //     ret.push(add(p1, mult(v,t)));
+  //   }
+  // });
+  // return ret;
 }
 
 // Returns intersections ordered by x value
@@ -82,20 +88,6 @@ function ppIntersect(h1, k1, p1, h2, k2, p2) {
   return ret;
 }
 
-// h - x offset
-// k - y offset
-// p - scale factor
-// directrix is at k-p
-// focus is at k+p
-// start drawing from x0 and stop at x1
-// y = (x-h)^2/(4p) + k
-Parabola = function(focus, h, k, p) {
-  this.focus = focus;
-  this.h = h;
-  this.k = k;
-  this.p = p;
-}
-
 //   \             /
 //    \     *     /
 //     \  left   /
@@ -134,20 +126,125 @@ function siteSiteDirectrixIntersection(left, right, directrix) {
   return pleft.intersect(pright)[0];
 }
 
+//------------------------------------------------------------
+// Parabola class
+//------------------------------------------------------------
+
+// h - x offset
+// k - y offset
+// p - scale factor
+// directrix is at k-p
+// focus is at k+p
+// start drawing from x0 and stop at x1
+// y = (x-h)^2/(4p) + k
+Parabola = function(focus, h, k, p, theta, offset) {
+  this.focus = focus;
+  this.h = h;
+  this.k = k;
+  this.p = p;
+  this.theta = theta;
+  this.offset = offset;
+  this.Rz = rotateZ(degrees(-this.theta));
+  this.nRz = rotateZ(degrees(this.theta));
+}
+
 // The directrix is assumed to be horizontal and is given as a y-value.
 function createParabola(focus, directrix) {
   var h = focus.x;
   var k = (directrix+focus.y)/2;
   var p = (focus.y-directrix)/2;
-  return new Parabola(focus, h, k, p);
+  return new Parabola(focus, h, k, p, 0, 0);
+}
+
+// The directrix is a general line given as an array of two points
+// on the line.
+function createGeneralParabola(focus, directrix) {
+  var a = directrix[0];
+  var b = directrix[1];
+  // Make sure a and b are ordered such that the focus is located
+  // on the left of b-a.
+  var v = normalize(subtract(b, a));
+  var vxf = cross(v, subtract(focus,a));
+  if (vxf.z < 0) {
+    v = negate(v);
+    [a, b] = [b, a];
+    vxf.z = -vxf.z;
+  }
+  var k = length(vxf) / 2.0;
+  var p = k;
+  var h = focus.x;
+  var theta = Math.atan2(v.y, v.x);
+  return new Parabola(focus, h, k, p, theta, 0);
 }
 
 Parabola.prototype.intersect = function(para) {
   return ppIntersect(this.h, this.k, this.p, para.h, para.k, para.p);
 }
 
-Parabola.prototype.intersectSegment = function(s) {
-  return spIntersect(this.h, this.k, this.p, s[0], s[1]);
+Parabola.prototype.transformPoint = function(p) {
+  if (this.theta == 0) return p;
+
+  // Don't remove this code. It explains what we're doing below.
+  // var M = translate(this.h, 2*this.k, 0);
+  // M = mult(M, rotateZ(degrees(-this.theta)));
+  // M = mult(M, translate(-this.focus.x, -this.focus.y, 0));
+  // p = mult(M, vec4(p));
+
+  // translate, rotate, translate manually for performance.
+  p = vec4(p);
+  p.x += -this.focus.x;
+  p.y += -this.focus.y;
+  p = mult(this.Rz, p);
+  p.x += this.h;
+  p.y += 2*this.k;
+  return p;
+}
+
+Parabola.prototype.transformVector = function(v) {
+  if (this.theta == 0) return v;
+
+  v = mult(this.Rz, vec4(v));
+  // Not sure why w is getting set to 1.
+  v.w = 0;
+  return v;
+}
+
+Parabola.prototype.untransformPoint = function(p) {
+  if (this.theta == 0) return p;
+
+  // translate, rotate, translate manually for performance
+  p = vec4(p);
+  p.x += -this.h;
+  p.y += -2*this.k;
+  p = mult(this.nRz, p);
+  p.x += this.focus.x;
+  p.y += this.focus.y;
+  return p;
+}
+
+// Intersect the positive portion of the ray.
+// If there are two intersections, the intersections will
+// be returned in order of t value.
+Parabola.prototype.intersectRay = function(p, v) {
+  p = this.transformPoint(p);
+  v = this.transformVector(v);
+
+  var tvals = lpIntersect(this.h, this.k, this.p, p, v);
+  // Sort tvals in increasing order
+  if (tvals.length == 2 && tvals[1] < tvals[0]) {
+    tvals = [tvals[1], tvals[0]];
+  }
+
+  pthis = this;
+  var ret = [];
+  tvals.forEach(function(t) {
+    if (t >= 0) {
+      var q = add(p, mult(v,t));
+      q = pthis.untransformPoint(q);
+      ret.push(q);
+    }
+  });
+  return ret;
 }
 
 // y = f(x)
@@ -207,7 +304,15 @@ Parabola.prototype.render = function(program, x0, x1, color=vec4(0,0,1,1)) {
   gl.bindBuffer(gl.ARRAY_BUFFER, paraPointsBuffer);
   gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(paraPoints));
 
+  // gl.uniformMatrix4fv(program.mvMatrixLoc, false, flatten(mvMatrix));
+  pushMatrix();
+  if (this.theta != 0) {
+    mvMatrix = mult(mvMatrix, translate(this.focus.x, this.focus.y, 0));
+    mvMatrix = mult(mvMatrix, rotateZ(degrees(this.theta)));
+    mvMatrix = mult(mvMatrix, translate(-this.h, -2*this.k, 0));
+  }
   gl.uniformMatrix4fv(program.mvMatrixLoc, false, flatten(mvMatrix));
+  popMatrix();
 
   gl.uniformMatrix4fv(program.pMatrixLoc, false, flatten(pMatrix));
   gl.uniform4fv(program.colorLoc, flatten(color));

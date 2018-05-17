@@ -52,6 +52,28 @@ function vecn(v) {
     }
   });
 
+  Object.defineProperty(v, "z", {
+    configurable: true,
+    enumerable: true,
+    get: function() {
+      return this[2];
+    },
+    set: function(z) {
+      this[2] = z;
+    }
+  });
+
+  Object.defineProperty(v, "w", {
+    configurable: true,
+    enumerable: true,
+    get: function() {
+      return this[3];
+    },
+    set: function(w) {
+      this[3] = w;
+    }
+  });
+
   return v;
 }
 
@@ -309,11 +331,11 @@ function subtract( u, v )
     }
 
     // return result;
-		if (u.length == 2)
-			return vec2(result);
-		if (u.length == 3)
-			return vec3(result);
-		return result;
+    // if (u.length == 2)
+    //   return vec2(result);
+    // if (u.length == 3)
+    //   return vec3(result);
+    return vecn(result);
   }
 }
 
@@ -357,26 +379,22 @@ function mult( u, v )
 
     for ( var i = 0; i < u.length; ++i ) {
       if ( u[i].length != v.length ) {
-        throw "mult(): trying to mult matrix/vector of different dimensions: M = " + u[i].length + " V = " + v.length;
+        throw "mult(): trying to mult matrix/vector of different dimensions:" +
+          " M = " + u[i].length + " V = " + v.length;
       }
     }
 
     for ( var i = 0; i < u.length; ++i ) {
-      // result.push( [] );
-
-      // for ( var j = 0; j < v.length; ++j ) {
       var sum = 0.0;
       for ( var k = 0; k < u.length; ++k ) {
         sum += u[i][k] * v[k];
       }
-      // result[i].push( sum );
       result.push( sum );
-      // }
     }
 
     // result.matrix = false;
 
-    return result;
+    return vecn(result);
   }
   else if ( u.length == v.length ) {
     for ( var i = 0; i < u.length; ++i ) {
@@ -430,7 +448,7 @@ function translate( x, y, z )
   result[1][3] = y;
   result[2][3] = z;
 
-  return result;
+  return vecn(result);
 }
 
 //----------------------------------------------------------------------------
@@ -458,34 +476,34 @@ function rotate( angle, axis )
     vec4()
   );
 
-  return result;
+  return vecn(result);
 }
 
 function rotateX(theta) {
   var c = Math.cos( radians(theta) );
   var s = Math.sin( radians(theta) );
   var rx = mat4( 1.0,  0.0,  0.0, 0.0,
-								 0.0,  c,  -s, 0.0,
-								 0.0, s,  c, 0.0,
-								 0.0,  0.0,  0.0, 1.0 );
+		 0.0,  c,  -s, 0.0,
+		 0.0, s,  c, 0.0,
+		 0.0,  0.0,  0.0, 1.0 );
   return rx;
 }
 function rotateY(theta) {
   var c = Math.cos( radians(theta) );
   var s = Math.sin( radians(theta) );
   var ry = mat4( c, 0.0, s, 0.0,
-								 0.0, 1.0,  0.0, 0.0,
-								 -s, 0.0,  c, 0.0,
-								 0.0, 0.0,  0.0, 1.0 );
+		 0.0, 1.0,  0.0, 0.0,
+		 -s, 0.0,  c, 0.0,
+		 0.0, 0.0,  0.0, 1.0 );
   return ry;
 }
 function rotateZ(theta) {
   var c = Math.cos( radians(theta) );
   var s = Math.sin( radians(theta) );
   var rz = mat4( c, -s, 0.0, 0.0,
-								 s,  c, 0.0, 0.0,
-								 0.0,  0.0, 1.0, 0.0,
-								 0.0,  0.0, 0.0, 1.0 );
+		 s,  c, 0.0, 0.0,
+		 0.0,  0.0, 1.0, 0.0,
+		 0.0,  0.0, 0.0, 1.0 );
   return rz;
 }
 
@@ -516,7 +534,7 @@ function scalem( x, y, z )
 function lookAt( eye, at, up )
 {
   if ( !Array.isArray(eye) || eye.length != 3) {
-  // if ( eye.length != 3) {
+    // if ( eye.length != 3) {
     throw "lookAt(): first parameter [eye] must be an a vec3";
   }
 
@@ -644,7 +662,7 @@ function negate( u )
     result.push( -u[i] );
   }
 
-  return result;
+  return vecn(result);
 }
 
 //----------------------------------------------------------------------------
@@ -665,7 +683,7 @@ function cross( u, v )
     u[0]*v[1] - u[1]*v[0]
   ];
 
-  return result;
+  return vecn(result);
 }
 
 //----------------------------------------------------------------------------

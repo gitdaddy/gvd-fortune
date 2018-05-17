@@ -320,12 +320,13 @@ var render = function() {
         p1, p2, vec3(-100, sweepline, 0), vec3(100, sweepline, 0));
       // circle.render(program, p, 0.01, true, red);
       var theta_ =
-        getBisector([vec3(-1, sweepline, 0), vec3(1, sweepline, 0)], s);
+        getSegmentsBisector([vec3(-1, sweepline, 0), vec3(1, sweepline, 0)], s);
       [theta_, theta_+Math.PI/2].forEach(function(theta) {
         line.render_ray(program, p.x, p.y, theta);
         var pp = createParabola(points[0], sweepline);
         var v = vec3(Math.cos(theta), Math.sin(theta), 0);
-        var pint = pp.intersectSegment([p, add(p,v)]);
+        // var pint = pp.intersectSegment([p, add(p,v)]);
+        var pint = pp.intersectRay(p, v);
         pint.forEach(function(pi) {
           circle.render(program, pi, 0.01, true);
         });
@@ -348,5 +349,8 @@ var render = function() {
   renderDcel(program, dcel, vec4(1, 0, 0, 1));
 
   showTree(beachline.root);
+
+  runTests();
+
 }
 
