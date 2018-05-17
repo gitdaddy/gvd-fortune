@@ -5,17 +5,18 @@
 var nodeId = 0;
 
 var ArcNode = function(site) {
-  // this.id = nodeId++;
   this.site = site;
   this.isArc = true;
   this.isEdge = false;
-  this.id = function() {
-    return site.id;
-  }
-  this.toDot = function() {
-    return "\"" + this.site.x() + " (" + this.id + ")" + "\"";
-  };
 }
+
+Object.defineProperty(ArcNode.prototype, "id", {
+  configurable: true,
+  enumerable: true,
+  get: function() {
+    return this.site.id;
+  },
+});
 
 //------------------------------------------------------------
 // prevEdge
@@ -72,32 +73,28 @@ ArcNode.prototype.nextArc = function() {
 // left and right are the left and right children.
 //------------------------------------------------------------
 var EdgeNode = function(left_, right, vertex) {
-  // this.id = nodeId++;
-  // this.edge = bisector(left_.site, right.site);
   this.isArc = false;
   this.isEdge = true;
-  // this.site = left_.site;
-  this._left = left_;
-  // get left() {
-  //   return left_;
-  // };
+  this.left = left_;
   this.right = right;
-  this.avertex = vertex;
-  this.bvertex = null;
 
   this.updateEdge(vertex);
 
   left_.parent = this;
   right.parent = this;
 
-  this.id = function() {
-    return this.prevArc().site.id + "-" + this.nextArc().site.id;
-  }
-
   this.toDot = function() {
     return "\"" + this.id + "\"";
   };
 }
+
+Object.defineProperty(EdgeNode.prototype, "id", {
+  configurable: true,
+  enumerable: true,
+  get: function() {
+    return this.prevArc().site.id + "-" + this.nextArc().site.id;
+  },
+});
 
 EdgeNode.prototype.updateEdge = function(vertex) {
   this.dcelEdge = dcel.makeEdge();
@@ -105,20 +102,6 @@ EdgeNode.prototype.updateEdge = function(vertex) {
   this.dcelEdge.a = this.prevArc().site.id;
   this.dcelEdge.b = this.nextArc().site.id;
 }
-
-Object.defineProperty(EdgeNode.prototype, "left", {
-  configurable: true,
-  enumerable: true,
-  // writable: false,
-  // value: this._left
-  get: function() {
-    return this._left;
-  },
-  set: function (x) {
-    // console.assert(false, "Setter for EdgeNode left is not defined");
-    this._left = x;
-  }
-});
 
 EdgeNode.prototype.prevArc = function() {
   var node = this;
@@ -158,6 +141,6 @@ EdgeNode.prototype.intersection = function(directrix) {
   var pright = createParabola(this.nextArc().site, directrix);
   var intersections = pleft.intersect(pright);
   if (intersections.length == 1) return intersections[0];
-  if (pleft.focus.y() > pright.focus.y()) return intersections[0];
+  if (pleft.focus.y > pright.focus.y) return intersections[0];
   return intersections[1];
 };

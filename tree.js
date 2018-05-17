@@ -40,7 +40,7 @@ function nodeColor(node) {
     return "red";
   }
   // arc node
-  var c = siteColor(node.id());
+  var c = siteColor(node.id);
   var color = d3.rgb(c[0]*255, c[1]*255, c[2]*255);
   return color;
 }
@@ -52,8 +52,8 @@ function getInfo(d) {
     var arcNode = d.data;
     var prev = arcNode.prevArc();
     var next = arcNode.nextArc();
-    return arcNode.closeEvent.y().toFixed(3) + " " + prev.id() + " " +
-      next.id();
+    return arcNode.closeEvent.y().toFixed(3) + " " + prev.id + " " +
+      next.id;
   }
   return '';
 }
@@ -165,7 +165,7 @@ function showTree(treeData) {
 	// star = " (" + d.data.closeEvent.y().toFixed(1) + ")";
       }
       if (d.data.id) {
-        return d.data.id() + star;
+        return d.data.id + star;
       }
       return "abc";
     });//d.data.name; });

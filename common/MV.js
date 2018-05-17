@@ -29,6 +29,32 @@ function degrees( radians ) {
 //  Vector Constructors
 //
 
+function vecn(v) {
+  Object.defineProperty(v, "x", {
+    configurable: true,
+    enumerable: true,
+    get: function() {
+      return this[0];
+    },
+    set: function(x) {
+      this[0] = x;
+    }
+  });
+
+  Object.defineProperty(v, "y", {
+    configurable: true,
+    enumerable: true,
+    get: function() {
+      return this[1];
+    },
+    set: function(y) {
+      this[1] = y;
+    }
+  });
+
+  return v;
+}
+
 function vec2()
 {
   var result = _argumentsToArray( arguments );
@@ -37,14 +63,9 @@ function vec2()
   case 0: result.push( 0.0 );
   case 1: result.push( 0.0 );
   }
-	
-  // return result.splice( 0, 2 );
+  
   result = result.splice( 0, 2 );
-	result.x = function() { return this[0]; }
-	result.y = function() { return this[1]; }
-	result.setx = function(x) { this[0] = x; }
-	result.sety = function(y) { this[1] = y; }
-	return result;
+  return vecn(result);
 }
 
 function vec3()
@@ -57,15 +78,8 @@ function vec3()
   case 2: result.push( 0.0 );
   }
 
-  // return result.splice( 0, 3 );
   result = result.splice( 0, 3 );
-	result.x = function() { return this[0]; }
-	result.y = function() { return this[1]; }
-	result.z = function() { return this[2]; }
-	result.setx = function(x) { this[0] = x; }
-	result.sety = function(y) { this[1] = y; }
-	result.setz = function(z) { this[2] = z; }
-	return result;
+  return vecn(result);
 }
 
 function vec4()
@@ -79,7 +93,7 @@ function vec4()
   case 3: result.push( 1.0 );
   }
 
-  return result.splice( 0, 4 );
+  return vecn(result.splice( 0, 4 ));
 }
 
 //----------------------------------------------------------------------------
@@ -247,9 +261,11 @@ function add( u, v )
 
     for ( var i = 0; i < u.length; ++i ) {
       result.push( u[i] + v[i] );
+      // console.log("aaa " + u[i] + "    " + v[i]);
     }
 
-    return result;
+    return vecn(result);
+    // return result;
   }
 }
 
@@ -367,21 +383,21 @@ function mult( u, v )
       result.push( u[i] * v[i] );
     }
 
-    return result;
+    return vecn(result);
   }
   else if (typeof v === "number") {
     for (var i = 0; i < u.length; ++i) {
       result.push( u[i] * v );
     }
 
-    return result;
+    return vecn(result);
   }
   else if (typeof u === "number") {
     for (var i = 0; i < v.length; ++i) {
       result.push( v[i] * u );
     }
 
-    return result;
+    return vecn(result);
   }
   else {
     if ( u.length != v.length ) {
@@ -392,7 +408,7 @@ function mult( u, v )
       result.push( u[i] * v[i] );
     }
 
-    return result;
+    return vecn(result);
   }
 }
 

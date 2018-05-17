@@ -4,11 +4,32 @@ function f(x, h, k, p) {
   return (x-h)*(x-h)/(4*p) + k;
 }
 
+//------------------------------------------------------------
+// WARNING! This returns points corresponding only to positive
+// t values.
+//------------------------------------------------------------
+function spIntersect(h, k, p, p1, p2) {
+  // v = p1 --> p2
+  var q = p1;
+  var v = subtract(p2, q);
+  var a = v.x*v.x/(4*p);
+  var b = 2*v.x*(q.x-h)/(4*p) - v.y;
+  var c = (q.x*q.x-2*q.x*h+h*h)/(4*p) + k - q.y;
+  var tvals = quadratic(a, b, c);
+  var ret = [];
+  tvals.forEach(function(t) {
+    if (t >= 0) {
+      ret.push(add(p1, mult(v,t)));
+    }
+  });
+  return ret;
+}
+
 // Returns intersections ordered by x value
 // h - x offset
 // k - y offset
 // p - scale factor (distance from parabola to directrix)
-function intersect(h1, k1, p1, h2, k2, p2) {
+function ppIntersect(h1, k1, p1, h2, k2, p2) {
   // Check for degenerate parabolas
   const EPSILON = 0.00000001;
   if (Math.abs(p1) < EPSILON) {
@@ -110,14 +131,18 @@ function siteSiteDirectrixIntersection(left, right, directrix) {
 
 // The directrix is assumed to be horizontal and is given as a y-value.
 function createParabola(focus, directrix) {
-  var h = focus.x();
-  var k = (directrix+focus.y())/2;
-  var p = (focus.y()-directrix)/2;
+  var h = focus.x;
+  var k = (directrix+focus.y)/2;
+  var p = (focus.y-directrix)/2;
   return new Parabola(focus, h, k, p);
 }
 
 Parabola.prototype.intersect = function(para) {
-  return intersect(this.h, this.k, this.p, para.h, para.k, para.p);
+  return ppIntersect(this.h, this.k, this.p, para.h, para.k, para.p);
+}
+
+Parabola.prototype.intersectSegment = function(s) {
+  return spIntersect(this.h, this.k, this.p, s[0], s[1]);
 }
 
 Parabola.prototype.f = function(x) {

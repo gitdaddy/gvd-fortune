@@ -3,7 +3,6 @@
 //------------------------------------------------------------
 var CloseEvent = function(y, arcNode, equi) {
   this.yval = y;
-  this.y = function() { return this.yval; }
   // Point that is equidistant from the three points
   this.equi = equi;
   this.arcNode = arcNode;
@@ -11,6 +10,14 @@ var CloseEvent = function(y, arcNode, equi) {
   this.isCloseEvent = true;
   this.live = true;
 };
+
+Object.defineProperty(CloseEvent.prototype, "y", {
+  configurable: true,
+  enumerable: true,
+  get: function() {
+    return this.yval;
+  },
+});
 
 //------------------------------------------------------------
 // Beachline
@@ -33,8 +40,8 @@ function splitArcNode(toSplit, node) {
   if (toSplit.closeEvent) {
     toSplit.closeEvent.live = false;
   }
-  var x = node.site.x();
-  var y = createParabola(toSplit.site, node.site.y()).f(x);
+  var x = node.site.x;
+  var y = createParabola(toSplit.site, node.site.y).f(x);
   var vertex = vec3(x, y, 0);
   var left = toSplit;
   var right = new ArcNode(toSplit.site);
@@ -49,33 +56,14 @@ function createCloseEvent(arcNode) {
 
   var left = arcNode.prevArc();
   var right = arcNode.nextArc();
-  // if (left != null && right != null &&
-  //     left.site.y() < arcNode.site.y() && 
-  //     right.site.y() < arcNode.site.y()) {
-  // if (left != null && right != null &&
-  //     left.site.x() < arcNode.site.x() &&
-  //     right.site.x() > arcNode.site.x()) {
   if (left != null && right != null) {// &&
-      // (left.site.x() < arcNode.site.x() ||
-      //  right.site.x() > arcNode.site.x())) {// &&
-      // (left.site.y() < arcNode.site.y() &&
-      //  right.site.y() < arcNode.site.y())) {
-    // if (left != null && right != null) {
     var equi = equidistant(left.site, arcNode.site, right.site);
     var u = subtract(left.site, arcNode.site);
     var v = subtract(left.site, right.site);
-    //console.log("cross " + u);
-    //console.log("cross " + cross);
     var cr = cross(u, v);
-    // console.log("cross " + cr[2]);
     if (cross(u, v)[2] < 0) {
       var r = length(subtract(arcNode.site, equi));
-      // if (arcNode.id() == 5) {
-      //   console.log("equi = (" + equi + ") (" + left.site.id + " " +
-      //               arcNode.site.id + " " + right.site.id + ") r = " +
-      //              (equi.y()-r).toString());
-      // }
-      return new CloseEvent(equi.y()-r, arcNode, equi);
+      return new CloseEvent(equi.y-r, arcNode, equi);
     }
   }
   return null;
@@ -88,9 +76,6 @@ function createCloseEvent(arcNode) {
 //------------------------------------------------------------
 Beachline.prototype.add = function(site) {
   var arcNode = new ArcNode(site);
-  // if (arcNode.id() == 5) {
-  //   console.log(arcNode.id());
-  // }
   if (this.root == null) {
     this.root = arcNode;
   } else if (this.root.isArc) {
@@ -98,15 +83,15 @@ Beachline.prototype.add = function(site) {
   } else {
     // Do a binary search to find the arc node that the new
     // site intersects with
-    var directrix = site.y();
+    var directrix = site.y;
     var parent = this.root;
-    var x = parent.intersection(directrix).x();
-    var side = (site.x() < x) ? LEFT_CHILD : RIGHT_CHILD;
+    var x = parent.intersection(directrix).x;
+    var side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
     var child = parent.getChild(side);
     while (child.isEdge) {
       parent = child;
-      x = parent.intersection(directrix).x();
-      side = (site.x() < x) ? LEFT_CHILD : RIGHT_CHILD;
+      x = parent.intersection(directrix).x;
+      side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
       child = parent.getChild(side);
     }
     // Child is an arc node. Split it.
@@ -125,7 +110,6 @@ Beachline.prototype.add = function(site) {
     closeEvents.push(e);
   }
   
-  // console.log("Adding " + closeEvents.length + " events");
   return closeEvents;
 }
 
@@ -150,7 +134,6 @@ Beachline.prototype.remove = function(arcNode, point) {
   grandparent.setChild(sibling, parentSide);
   sibling.parent = grandparent;
 
-  // console.log("Update " + newEdge.id());
   newEdge.updateEdge(point);
 
   // Cancel the close event for this arc and adjoining arcs.
@@ -159,23 +142,17 @@ Beachline.prototype.remove = function(arcNode, point) {
   var prevArc = newEdge.prevArc();
   if (prevArc.closeEvent) {
     prevArc.closeEvent.live = false;
-    // console.log("live = false");
   }
   var e = createCloseEvent(prevArc);
   if (e != null) {
-    // console.log("Creating prev close event ");
-    // console.log(e);
     closeEvents.push(e);
   }
   var nextArc = newEdge.nextArc();
   if (nextArc.closeEvent) {
     nextArc.closeEvent.live = false;
-    // console.log("live = false");
   }
   e = createCloseEvent(nextArc);
   if (e != null) {
-    // console.log("Creating next close event ");
-    // console.log(e);
     closeEvents.push(e);
   }
   return closeEvents;
@@ -188,7 +165,7 @@ Beachline.prototype.remove = function(arcNode, point) {
 Beachline.prototype.renderImpl = function(
   program, directrix, node, leftx, rightx, renderEvents) {
   if (node.isArc) {
-    color = siteColor(node.id());
+    color = siteColor(node.id);
     createParabola(node.site, directrix).render(program, leftx, rightx, color);
   } else {
     var color = vec4(0.0, 0.7, 0.7);
@@ -196,8 +173,8 @@ Beachline.prototype.renderImpl = function(
       circle.render(program, node.avertex, 0.01, false, color);
     }
     var p = node.intersection(directrix);
-    this.renderImpl(program, directrix, node.left, leftx, p.x());
-    this.renderImpl(program, directrix, node.right, p.x(), rightx);
+    this.renderImpl(program, directrix, node.left, leftx, p.x);
+    this.renderImpl(program, directrix, node.right, p.x, rightx);
   }
 }
 
@@ -205,30 +182,3 @@ Beachline.prototype.render = function(program, directrix, renderEvents) {
   if (this.root == null) return;
   this.renderImpl(program, directrix, this.root, -1, 1, renderEvents);
 }
-
-//------------------------------------------------------------
-// toDot
-//------------------------------------------------------------
-
-function toDotImpl(directrix, node, leftx, rightx, level) {
-  var s = "";
-  if (node.isArc) {
-  } else {
-    var p = node.intersection(directrix);
-    s += node.toDot() + " -> " + node.left.toDot() + "\n";
-    s += node.toDot() + " -> " + node.right.toDot() + "\n";
-    s += toDotImpl(directrix, node.left, leftx, p.x(), level+1);
-    s += toDotImpl(directrix, node.right, p.x(), rightx, level+1);
-  }
-  return s;
-}
-
-Beachline.prototype.toDot = function(directrix) {
-  var s = "digraph G {";
-  if (this.root != null) {
-    s += toDotImpl(directrix, this.root, -1, 1, 0);
-  }
-  s += "}";
-  return s;
-}
-
