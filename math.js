@@ -22,8 +22,8 @@ function getSegmentsBisector(s, t) {
   return (stheta + ttheta) / 2.0;
 }
 
-// Return the line bisecting two points. v will be oriented
-// in the negative y direction.
+// Return the line bisecting two points. Returns two points [q1,q2] defining
+// the line. The vector v=q2-q1 will be oriented in the negative y direction.
 function getPointsBisector(p1, p2) {
   var v = subtract(p2, p1);
   var q = add(p1, mult(v, 0.5));
@@ -31,7 +31,7 @@ function getPointsBisector(p1, p2) {
   if (v.y > 0) {
     v = negate(v);
   }
-  return v;
+  return [q, add(q, v)];
 }
 
 // ax^2 + bx + c = 0

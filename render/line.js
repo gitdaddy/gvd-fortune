@@ -55,12 +55,26 @@ Line.prototype.render = function(program, x1, y1, x2, y2, color=vec4(0,0,1,1)) {
   gl.drawArrays(gl.LINES, 0, this.points.length);
 }
 
+Line.prototype.render_segment = function(program, p1, p2, color=blue) {
+  // var r = 10;
+  // var p = vec4(x,y,0,0);
+  // var v = vec4(Math.cos(theta),Math.sin(theta),0,0);
+  // var p2 = add(p, mult(v,r));
+  this.render(program, p1.x, p1.y, p2.x, p2.y, color);
+}
+
 Line.prototype.render_ray = function(program, x, y, theta, color=blue) {
   var r = 10;
-  // this.render(program, x, y, vec4(x+r*Math.cos(theta), y+r*Math.sin(theta), color));
   var p = vec4(x,y,0,0);
   var v = vec4(Math.cos(theta),Math.sin(theta),0,0);
   var p2 = add(p, mult(v,r));
   this.render(program, x, y, p2.x, p2.y, color);
+}
+
+Line.prototype.render_line = function(program, p, q, color=blue) {
+  var v = normalize(subtract(q, p));
+  var p1 = add(p, mult(v, -10));
+  var p2 = add(p, mult(v, 10));
+  this.render(program, p1.x, p1.y, p2.x, p2.y, color);
 }
 

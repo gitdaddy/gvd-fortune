@@ -191,9 +191,15 @@ Parabola.prototype.transformPoint = function(p) {
   // p = mult(M, vec4(p));
 
   // translate, rotate, translate manually for performance.
+  // console.log("p="+p);
+  // var pp = vec4(p);
+  // console.log("pp="+pp);
+  // console.log("pp1="+p);
   p = vec4(p);
+  // console.log("pp2="+p);
   p.x += -this.focus.x;
   p.y += -this.focus.y;
+  // console.log("p="+p);
   p = mult(this.Rz, p);
   p.x += this.h;
   p.y += 2*this.k;
@@ -225,6 +231,7 @@ Parabola.prototype.untransformPoint = function(p) {
 // Intersect the positive portion of the ray.
 // If there are two intersections, the intersections will
 // be returned in order of t value.
+// The ray is given in parametric form p(t) = p + tv
 Parabola.prototype.intersectRay = function(p, v) {
   p = this.transformPoint(p);
   v = this.transformVector(v);
@@ -247,6 +254,30 @@ Parabola.prototype.intersectRay = function(p, v) {
   return ret;
 }
 
+// Intersect all intersections of a line and parabola.
+// If there are two intersections, the intersections will
+// be returned in order of t value.
+// The line is given in parametric form p(t) = p + tv
+Parabola.prototype.intersectLine = function(p, v) {
+  p = this.transformPoint(p);
+  v = this.transformVector(v);
+
+  var tvals = lpIntersect(this.h, this.k, this.p, p, v);
+  // Sort tvals in increasing order
+  if (tvals.length == 2 && tvals[1] < tvals[0]) {
+    tvals = [tvals[1], tvals[0]];
+  }
+
+  pthis = this;
+  var ret = [];
+  tvals.forEach(function(t) {
+    var q = add(p, mult(v,t));
+    q = pthis.untransformPoint(q);
+    ret.push(q);
+  });
+  return ret;
+}
+
 // y = f(x)
 Parabola.prototype.f = function(x) {
   return f(x, this.h, this.k, this.p);
@@ -260,6 +291,46 @@ Parabola.prototype.f_ = function(y) {
 var paraPointsBuffer = null;
 var numParaPoints = 20;
 var paraPoints = new Array(numParaPoints);
+
+Parabola.prototype.renderImpl = function(program, x0, x1, color=vec4(0,0,1,1)) {
+  program.use();
+
+  // Construct line segments
+  var inc = (x1-x0) / numParaPoints;
+  for (var i = 0; i < numParaPoints-1; ++i) {
+    var x = x0 + i * inc;
+    var y = this.f(x);
+    paraPoints[i] = vec4(x, y, 0, 1);
+  }
+  var y = this.f(x1);
+  paraPoints[numParaPoints-1] = vec4(x1, y, 0, 1);
+
+  if (paraPointsBuffer == null) {
+    paraPointsBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, paraPointsBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(paraPoints), gl.STATIC_DRAW);
+  }
+  gl.bindBuffer(gl.ARRAY_BUFFER, paraPointsBuffer);
+  gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(paraPoints));
+
+  pushMatrix();
+  if (this.theta != 0) {
+    mvMatrix = mult(mvMatrix, translate(this.focus.x, this.focus.y, 0));
+    mvMatrix = mult(mvMatrix, this.nRz);
+    mvMatrix = mult(mvMatrix, translate(-this.h, -2*this.k, 0));
+  }
+  gl.uniformMatrix4fv(program.mvMatrixLoc, false, flatten(mvMatrix));
+  popMatrix();
+
+  gl.uniformMatrix4fv(program.pMatrixLoc, false, flatten(pMatrix));
+  gl.uniform4fv(program.colorLoc, flatten(color));
+
+  gl.enableVertexAttribArray(program.vertexLoc);
+  gl.bindBuffer(gl.ARRAY_BUFFER, paraPointsBuffer);
+  gl.vertexAttribPointer(program.vertexLoc, 4, gl.FLOAT, false, 0, 0);
+
+  gl.drawArrays(gl.LINE_STRIP, 0, paraPoints.length);
+}
 
 Parabola.prototype.render = function(program, x0, x1, color=vec4(0,0,1,1)) {
   program.use();
@@ -286,43 +357,17 @@ Parabola.prototype.render = function(program, x0, x1, color=vec4(0,0,1,1)) {
     }
   }
 
-  // Construct line segments
-  var inc = (x1-x0) / numParaPoints;
-  for (var i = 0; i < numParaPoints-1; ++i) {
-    var x = x0 + i * inc;
-    var y = this.f(x);
-    paraPoints[i] = vec4(x, y, 0, 1);
-  }
-  var y = this.f(x1);
-  paraPoints[numParaPoints-1] = vec4(x1, y, 0, 1);
+  this.renderImpl(program, x0, x1, color);
+}
 
-  if (paraPointsBuffer == null) {
-    paraPointsBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, paraPointsBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(paraPoints), gl.STATIC_DRAW);
-  }
-  gl.bindBuffer(gl.ARRAY_BUFFER, paraPointsBuffer);
-  gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(paraPoints));
+Parabola.prototype.renderGeneral = function(
+  program, p1, p2, color=vec4(0,0,1,1)) {
 
-  // gl.uniformMatrix4fv(program.mvMatrixLoc, false, flatten(mvMatrix));
-  pushMatrix();
-  if (this.theta != 0) {
-    mvMatrix = mult(mvMatrix, translate(this.focus.x, this.focus.y, 0));
-    mvMatrix = mult(mvMatrix, rotateZ(degrees(this.theta)));
-    mvMatrix = mult(mvMatrix, translate(-this.h, -2*this.k, 0));
-  }
-  gl.uniformMatrix4fv(program.mvMatrixLoc, false, flatten(mvMatrix));
-  popMatrix();
+  program.use();
 
-  gl.uniformMatrix4fv(program.pMatrixLoc, false, flatten(pMatrix));
-  gl.uniform4fv(program.colorLoc, flatten(color));
+  var x0 = this.transformPoint(p1).x;
+  var x1 = 2;
 
-  gl.enableVertexAttribArray(program.vertexLoc);
-  gl.bindBuffer(gl.ARRAY_BUFFER, paraPointsBuffer);
-  gl.vertexAttribPointer(program.vertexLoc, 4, gl.FLOAT, false, 0, 0);
-
-  gl.drawArrays(gl.LINE_STRIP, 0, paraPoints.length);
-
-  // gl.deleteBuffer(paraPointsBuffer);
+  this.renderImpl(program, x0, x1, color);
 }
 

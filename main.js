@@ -158,7 +158,7 @@ function init() {
   points = [
     // vec3(-0.4, 0.8, 0),
     // vec3(-0.4, 0.0, 0),
-    vec3(-0.4, 0.3, 0),
+    vec3(-0.4, 0.8, 0),
     vec3(-0.4, -0.4, 0),
     vec3(0.4, 0.4, 0),
   ];
@@ -322,16 +322,25 @@ var render = function() {
       var theta_ =
         getSegmentsBisector([vec3(-1, sweepline, 0), vec3(1, sweepline, 0)], s);
       [theta_, theta_+Math.PI/2].forEach(function(theta) {
-        line.render_ray(program, p.x, p.y, theta);
+        // line.render_ray(program, p.x, p.y, theta);
         var pp = createParabola(points[0], sweepline);
         var v = vec3(Math.cos(theta), Math.sin(theta), 0);
-        // var pint = pp.intersectSegment([p, add(p,v)]);
-        var pint = pp.intersectRay(p, v);
-        pint.forEach(function(pi) {
+        var pints = pp.intersectRay(p, v);
+        pints.forEach(function(pi) {
+          line.render_segment(program, p, pi);
           circle.render(program, pi, 0.01, true);
         });
       });
     }
+  });
+
+  var bline = getPointsBisector(points[0], points[2]);
+  // line.render_line(program, bline[0], bline[1]);
+  var gp = createGeneralParabola(points[2], segments[0]);
+  var pints = gp.intersectLine(bline[0], subtract(bline[1], bline[0]));
+  gp.renderGeneral(program, pints[0], 1, blue);
+  pints.forEach(function(p) {
+    circle.render(program, p, 0.01, true, red);
   });
   // /Temporary stuff
 
