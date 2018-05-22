@@ -155,41 +155,41 @@ function init() {
 
   program = new LineProgram();
 
-  points = [
-    // vec3(-0.4, 0.8, 0),
-    // vec3(-0.4, 0.0, 0),
-    vec3(-0.4, 0.8, 0),
-    vec3(-0.4, -0.4, 0),
-    vec3(0.4, 0.4, 0),
-  ];
-
-  segments = [
-    makeSegment(points[0], points[1])
-  ];
-
   // points = [
-  //   vec3(-0.30, -0.1, 0),
-  //   vec3(-0.41, -0.9, 0),
-  //   vec3(-0.26, 0.73, 0),
-  //   vec3(0.62, 0.37, 0),
-  //   vec3(-0.12,0.13, 0),
-  //   vec3(0.73,-0.13, 0),
-  //   vec3(-0.65, -0.15, 0),
-  //   vec3(0.16, -0.79, 0),
-  //   vec3(-0.90, -0.92, 0),
+  //   // vec3(-0.4, 0.8, 0),
+  //   // vec3(-0.4, 0.0, 0),
+  //   vec3(-0.4, 0.8, 0),
+  //   vec3(-0.4, -0.4, 0),
+  //   vec3(0.4, 0.4, 0),
   // ];
 
+  // segments = [
+  //   makeSegment(points[0], points[1])
+  // ];
+
+  points = [
+    vec3(-0.30, -0.1, 0),
+    vec3(-0.41, -0.9, 0),
+    vec3(-0.26, 0.73, 0),
+    vec3(0.62, 0.37, 0),
+    vec3(-0.12,0.13, 0),
+    vec3(0.73,-0.13, 0),
+    vec3(-0.65, -0.15, 0),
+    vec3(0.16, -0.79, 0),
+    vec3(-0.90, -0.92, 0),
+  ];
+
   // Math.seedrandom('3');
-  // var numRandom = 10;
+  // var numRandom = 100;
   // for (var i = 0; i < numRandom; ++i) {
   // 	var p = vec3(Math.random()*2-1, Math.random()*2-1, 0);
   // 	// console.log(p);
   // 	points.push(p);
   // }
 
-  // segments = [
-  //   makeSegment(points[0], points[1])
-  // ];
+  segments = [
+    // makeSegment(points[0], points[1])
+  ];
 
   // Give all points and segments a unique ID
   var id = 1;
@@ -247,7 +247,7 @@ function init() {
 function fortune() {
   nodeId = 1;
   dcel = new DCEL();
-  var beachline = new Beachline();
+  var beachline = new Beachline(dcel);
   var pointsCopy = points.slice();
   var segmentsCopy = segments.slice();
   var events = new TinyQueue(pointsCopy.concat(segmentsCopy), function(a, b) {
@@ -306,42 +306,44 @@ var render = function() {
   sweepLine.render(program, sweepline, vec4(0,0,0,1));
 
   // Temporary stuff
-  var line = new Line();
-  segments.forEach(function(s) {
-    var p1 = s[0];
-    var p2 = s[1];
-    // Render the line
-    line.render(program, p1.x, p1.y, p2.x, p2.y);
-    // If the sweepline intersects the segment...
-    if (sweepline < Math.max(p1.y, p2.y) &&
-        sweepline > Math.min(p1.y, p2.y)) {
-      // p is the intersection between the sweepline and the segment
-      var p = intersectLines(
-        p1, p2, vec3(-100, sweepline, 0), vec3(100, sweepline, 0));
-      // circle.render(program, p, 0.01, true, red);
-      var theta_ =
-        getSegmentsBisector([vec3(-1, sweepline, 0), vec3(1, sweepline, 0)], s);
-      [theta_, theta_+Math.PI/2].forEach(function(theta) {
-        // line.render_ray(program, p.x, p.y, theta);
-        var pp = createParabola(points[0], sweepline);
-        var v = vec3(Math.cos(theta), Math.sin(theta), 0);
-        var pints = pp.intersectRay(p, v);
-        pints.forEach(function(pi) {
-          line.render_segment(program, p, pi);
-          circle.render(program, pi, 0.01, true);
+  if (false) {
+    var line = new Line();
+    segments.forEach(function(s) {
+      var p1 = s[0];
+      var p2 = s[1];
+      // Render the line
+      line.render(program, p1.x, p1.y, p2.x, p2.y);
+      // If the sweepline intersects the segment...
+      if (sweepline < Math.max(p1.y, p2.y) &&
+          sweepline > Math.min(p1.y, p2.y)) {
+        // p is the intersection between the sweepline and the segment
+        var p = intersectLines(
+          p1, p2, vec3(-100, sweepline, 0), vec3(100, sweepline, 0));
+        // circle.render(program, p, 0.01, true, red);
+        var theta_ =
+          getSegmentsBisector([vec3(-1, sweepline, 0), vec3(1, sweepline, 0)], s);
+        [theta_, theta_+Math.PI/2].forEach(function(theta) {
+          // line.render_ray(program, p.x, p.y, theta);
+          var pp = createParabola(points[0], sweepline);
+          var v = vec3(Math.cos(theta), Math.sin(theta), 0);
+          var pints = pp.intersectRay(p, v);
+          pints.forEach(function(pi) {
+            line.render_segment(program, p, pi);
+            circle.render(program, pi, 0.01, true);
+          });
         });
-      });
-    }
-  });
+      }
+    });
 
-  var bline = getPointsBisector(points[0], points[2]);
-  // line.render_line(program, bline[0], bline[1]);
-  var gp = createGeneralParabola(points[2], segments[0]);
-  var pints = gp.intersectLine(bline[0], subtract(bline[1], bline[0]));
-  gp.renderGeneral(program, pints[0], 1, blue);
-  pints.forEach(function(p) {
-    circle.render(program, p, 0.01, true, red);
-  });
+    var bline = getPointsBisector(points[0], points[2]);
+    // line.render_line(program, bline[0], bline[1]);
+    var gp = createGeneralParabola(points[2], segments[0]);
+    var pints = gp.intersectLine(bline[0], subtract(bline[1], bline[0]));
+    gp.renderGeneral(program, pints[0], 1, blue);
+    pints.forEach(function(p) {
+      circle.render(program, p, 0.01, true, red);
+    });
+  }
   // /Temporary stuff
 
   var renderEvents = false;

@@ -1,20 +1,3 @@
-// Circle = function() {
-// 	this.points = []
-// 	this.points.push(vec4(0, 0, 0, 1));
-// 	for (var t = 0; t < 360; t+=1) {
-// 		var x = Math.cos(radians(t));
-// 		var y = Math.sin(radians(t));
-// 		this.points.push(vec4(x, y, 0, 1));
-// 	}
-// 	this.points.push(this.points[1]);
-
-//   this.pointsBuffer = gl.createBuffer();
-//   gl.bindBuffer(gl.ARRAY_BUFFER, this.pointsBuffer);
-//   gl.bufferData(gl.ARRAY_BUFFER, flatten(this.points), gl.STATIC_DRAW);
-
-// 	this.color = vec4(0, 0, 1, 1);
-// }
-
 function renderDcel(program, dcel, color) {
   program.use();
 

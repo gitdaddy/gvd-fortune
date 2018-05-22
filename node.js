@@ -70,17 +70,19 @@ ArcNode.prototype.nextArc = function() {
 
 //------------------------------------------------------------
 // EdgeNode
-// left and right are the left and right children.
+// left and right are the left and right children nodes.
+// left is always an ArcNode. Right may be an ArcNode or
+// EdgeNode.
 //------------------------------------------------------------
-var EdgeNode = function(left_, right, vertex) {
+var EdgeNode = function(left, right, vertex, dcel) {
   this.isArc = false;
   this.isEdge = true;
-  this.left = left_;
+  this.left = left;
   this.right = right;
 
-  this.updateEdge(vertex);
+  this.updateEdge(vertex, dcel);
 
-  left_.parent = this;
+  left.parent = this;
   right.parent = this;
 
   this.toDot = function() {
@@ -96,7 +98,7 @@ Object.defineProperty(EdgeNode.prototype, "id", {
   },
 });
 
-EdgeNode.prototype.updateEdge = function(vertex) {
+EdgeNode.prototype.updateEdge = function(vertex, dcel) {
   this.dcelEdge = dcel.makeEdge();
   this.dcelEdge.origin.point = vertex;
   this.dcelEdge.a = this.prevArc().site.id;

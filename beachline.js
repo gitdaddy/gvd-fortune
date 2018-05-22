@@ -28,15 +28,24 @@ Object.defineProperty(CloseEvent.prototype, "y", {
 const LEFT_CHILD = 0;
 const RIGHT_CHILD = 1;
 
-var Beachline = function() {
+var Beachline = function(dcel) {
   this.root = null;
+  this.dcel = dcel;
 }
 
 //------------------------------------------------------------
 // Utility function
 // toSplit is an arc node. node is also an arc node.
+//
+//  |        | toSplit
+//   \      /
+//    |    ||
+//     \__/ |
+//          |
+//          | node
+//          *
 //------------------------------------------------------------
-function splitArcNode(toSplit, node) {
+function splitArcNode(toSplit, node, dcel) {
   if (toSplit.closeEvent) {
     toSplit.closeEvent.live = false;
   }
@@ -45,7 +54,7 @@ function splitArcNode(toSplit, node) {
   var vertex = vec3(x, y, 0);
   var left = toSplit;
   var right = new ArcNode(toSplit.site);
-  return new EdgeNode(left, new EdgeNode(node, right, vertex), vertex);
+  return new EdgeNode(left, new EdgeNode(node, right, vertex, dcel), vertex, dcel);
 }
 
 //------------------------------------------------------------
@@ -76,6 +85,7 @@ function createCloseEvent(arcNode) {
 //------------------------------------------------------------
 Beachline.prototype.add = function(site) {
   var arcNode = new ArcNode(site);
+  // SEGMENT
   if (isSegment(site)) {
     // console.log("Segment " + site);
     return [];
@@ -83,7 +93,7 @@ Beachline.prototype.add = function(site) {
   if (this.root == null) {
     this.root = arcNode;
   } else if (this.root.isArc) {
-    this.root = splitArcNode(this.root, arcNode);
+    this.root = splitArcNode(this.root, arcNode, this.dcel);
   } else {
     // Do a binary search to find the arc node that the new
     // site intersects with
@@ -99,7 +109,7 @@ Beachline.prototype.add = function(site) {
       child = parent.getChild(side);
     }
     // Child is an arc node. Split it.
-    var newNode = splitArcNode(child, arcNode);
+    var newNode = splitArcNode(child, arcNode, this.dcel);
     parent.setChild(newNode, side);
   }
 
@@ -138,7 +148,7 @@ Beachline.prototype.remove = function(arcNode, point) {
   grandparent.setChild(sibling, parentSide);
   sibling.parent = grandparent;
 
-  newEdge.updateEdge(point);
+  newEdge.updateEdge(point, this.dcel);
 
   // Cancel the close event for this arc and adjoining arcs.
   // Add new close events for adjoining arcs.
@@ -173,10 +183,15 @@ Beachline.prototype.renderImpl = function(
     createParabola(node.site, directrix).render(program, leftx, rightx, color);
   } else {
     var color = vec4(0.0, 0.7, 0.7);
-    if (renderEvents) {
-      circle.render(program, node.avertex, 0.01, false, color);
-    }
+    var v = node.dcelEdge.origin.point;
     var p = node.intersection(directrix);
+    if (renderEvents) {
+      circle.render(program, v, 0.01, false, color);
+    }
+
+    var line = new Line();
+    line.render(program, v.x, v.y, p.x, p.y, vec4(1, 0, 0, 1));
+
     this.renderImpl(program, directrix, node.left, leftx, p.x);
     this.renderImpl(program, directrix, node.right, p.x, rightx);
   }
