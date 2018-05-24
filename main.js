@@ -155,29 +155,29 @@ function init() {
 
   program = new LineProgram();
 
-  // points = [
-  //   // vec3(-0.4, 0.8, 0),
-  //   // vec3(-0.4, 0.0, 0),
-  //   vec3(-0.4, 0.8, 0),
-  //   vec3(-0.4, -0.4, 0),
-  //   vec3(0.4, 0.4, 0),
-  // ];
-
-  // segments = [
-  //   makeSegment(points[0], points[1])
-  // ];
-
   points = [
-    vec3(-0.30, -0.1, 0),
-    vec3(-0.41, -0.9, 0),
-    vec3(-0.26, 0.73, 0),
-    vec3(0.62, 0.37, 0),
-    vec3(-0.12,0.13, 0),
-    vec3(0.73,-0.13, 0),
-    vec3(-0.65, -0.15, 0),
-    vec3(0.16, -0.79, 0),
-    vec3(-0.90, -0.92, 0),
+    // vec3(-0.4, 0.8, 0),
+    // vec3(-0.4, 0.0, 0),
+    vec3(-0.4, 0.8, 0),
+    vec3(-0.4, -0.4, 0),
+    vec3(0.4, 0.4, 0),
   ];
+
+  segments = [
+    makeSegment(points[0], points[1])
+  ];
+
+  // points = [
+  //   vec3(-0.30, -0.1, 0),
+  //   vec3(-0.41, -0.9, 0),
+  //   vec3(-0.26, 0.73, 0),
+  //   vec3(0.62, 0.37, 0),
+  //   vec3(-0.12,0.13, 0),
+  //   vec3(0.73,-0.13, 0),
+  //   vec3(-0.65, -0.15, 0),
+  //   vec3(0.16, -0.79, 0),
+  //   vec3(-0.90, -0.92, 0),
+  // ];
 
   // Math.seedrandom('3');
   // var numRandom = 100;
@@ -187,9 +187,9 @@ function init() {
   // 	points.push(p);
   // }
 
-  segments = [
-    // makeSegment(points[0], points[1])
-  ];
+  // segments = [
+  //   // makeSegment(points[0], points[1])
+  // ];
 
   // Give all points and segments a unique ID
   var id = 1;
@@ -306,7 +306,7 @@ var render = function() {
   sweepLine.render(program, sweepline, vec4(0,0,0,1));
 
   // Temporary stuff
-  if (false) {
+  if (true) {
     var line = new Line();
     segments.forEach(function(s) {
       var p1 = s[0];
