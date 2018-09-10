@@ -84,6 +84,13 @@ function makeSegment(p1, p2) {
       return this[0].y;
     }
   });
+  Object.defineProperty(s, "x", {
+    configurable: true,
+    enumerable: true,
+    get: function() {
+      return this[0].x;
+    }
+  });
   return s;
 }
 

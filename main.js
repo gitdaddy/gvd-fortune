@@ -179,6 +179,10 @@ function init() {
   //   vec3(-0.90, -0.92, 0),
   // ];
 
+  // segments = [
+  //   // makeSegment(points[0], points[1])
+  // ];
+
   // Math.seedrandom('3');
   // var numRandom = 100;
   // for (var i = 0; i < numRandom; ++i) {
@@ -186,10 +190,6 @@ function init() {
   // 	// console.log(p);
   // 	points.push(p);
   // }
-
-  // segments = [
-  //   // makeSegment(points[0], points[1])
-  // ];
 
   // Give all points and segments a unique ID
   var id = 1;
@@ -316,22 +316,12 @@ var render = function() {
       // If the sweepline intersects the segment...
       if (sweepline < Math.max(p1.y, p2.y) &&
           sweepline > Math.min(p1.y, p2.y)) {
-        // p is the intersection between the sweepline and the segment
-        var p = intersectLines(
-          p1, p2, vec3(-100, sweepline, 0), vec3(100, sweepline, 0));
-        // circle.render(program, p, 0.01, true, red);
-        var theta_ =
-          getSegmentsBisector([vec3(-1, sweepline, 0), vec3(1, sweepline, 0)], s);
-        [theta_, theta_+Math.PI/2].forEach(function(theta) {
-          // line.render_ray(program, p.x, p.y, theta);
-          var pp = createParabola(points[0], sweepline);
-          var v = vec3(Math.cos(theta), Math.sin(theta), 0);
-          var pints = pp.intersectRay(p, v);
-          pints.forEach(function(pi) {
-            line.render_segment(program, p, pi);
-            circle.render(program, pi, 0.01, true);
-          });
-        });
+        var v = new V(s, sweepline);
+        // v.thetas.forEach(function(theta) {
+        //   var para = createParabola(points[0], sweepline);
+        //   var pints = para.intersectRay(v.p, v.vectors[1]);
+        //   v.render(program, -1, pints[0].x);
+        // });
       }
     });
 
@@ -346,9 +336,9 @@ var render = function() {
   }
   // /Temporary stuff
 
-  var renderEvents = false;
+  var renderEvents = true;
 
-  beachline.render(program, sweepline);
+  beachline.render(program, sweepline, renderEvents);
 
   var c = vec4(0.0, 0.7, 0.7);
   if (renderEvents) {

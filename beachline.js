@@ -50,11 +50,18 @@ function splitArcNode(toSplit, node, dcel) {
     toSplit.closeEvent.live = false;
   }
   var x = node.site.x;
-  var y = createParabola(toSplit.site, node.site.y).f(x);
+  var y;
+  if (toSplit.isParabola) {
+    y = createParabola(toSplit.site, node.site.y).f(x);
+  } else {
+    y = new V(toSplit.site, node.site.y).f(x);
+  }
+  // var y = createParabola(toSplit.site, node.site.y).f(x);
   var vertex = vec3(x, y, 0);
   var left = toSplit;
   var right = new ArcNode(toSplit.site);
-  return new EdgeNode(left, new EdgeNode(node, right, vertex, dcel), vertex, dcel);
+  return new EdgeNode(left, new EdgeNode(node, right, vertex, dcel),
+                      vertex, dcel);
 }
 
 //------------------------------------------------------------
@@ -65,14 +72,44 @@ function createCloseEvent(arcNode) {
 
   var left = arcNode.prevArc();
   var right = arcNode.nextArc();
-  if (left != null && right != null) {// &&
-    var equi = equidistant(left.site, arcNode.site, right.site);
-    var u = subtract(left.site, arcNode.site);
-    var v = subtract(left.site, right.site);
-    var cr = cross(u, v);
-    if (cross(u, v)[2] < 0) {
-      var r = length(subtract(arcNode.site, equi));
-      return new CloseEvent(equi.y-r, arcNode, equi);
+  if (left != null && right != null) {
+    if (isSegment(left.site)) {
+      // bline is the bisector between the start point of the segment and the right site
+      var bline = getPointsBisector(left.site[0], right.site);
+      var gp = createGeneralParabola(right.site, left.site);
+      var pints = gp.intersectLine(bline[0], subtract(bline[1], bline[0]));
+      if (pints.length == 0) {
+        throw "Intersections from bisector and generalized parabola unexpectedly empty";
+      }
+      var intersection = pints[0];
+      // Get the intersection between the bisector and the segment
+      var segBisectorTheta = 
+        getSegmentsBisector([vec3(0, 0, 0), vec3(1, 0, 0)], left.site);
+      // console.log(intersection);
+      var sbline = [intersection, add(intersection, vec4(Math.cos(segBisectorTheta),
+                                                         Math.sin(segBisectorTheta)))];
+      var eventPoint = intersectLines(left.site[0], left.site[1], sbline[0], sbline[1]);
+      // TODO watch out if intersection we want is the second intersection
+      // console.log("New close event: " + left.site);
+      // console.log("New close event: " + bline);
+      // console.log("New close event: " + subtract(bline[1], bline[0]));
+      // console.log("New close event: " + eventPoint);
+      return new CloseEvent(eventPoint.y, arcNode, intersection);
+    } else if (isSegment(right.site)) {
+      // TODO segment on right!
+    } else if (isSegment(arcNode.site)) {
+      // return new CloseEvent(arcNode.site[1].y, arcNode, intersection);
+    } else {
+      var equi = equidistant(left.closePoint,
+                             arcNode.closePoint,
+                             right.closePoint);
+      var u = subtract(left.closePoint, arcNode.closePoint);
+      var v = subtract(left.closePoint, right.closePoint);
+      var cr = cross(u, v);
+      if (cross(u, v)[2] < 0) {
+        var r = length(subtract(arcNode.closePoint, equi));
+        return new CloseEvent(equi.y-r, arcNode, equi);
+      }
     }
   }
   return null;
@@ -85,11 +122,10 @@ function createCloseEvent(arcNode) {
 //------------------------------------------------------------
 Beachline.prototype.add = function(site) {
   var arcNode = new ArcNode(site);
-  // SEGMENT
-  if (isSegment(site)) {
-    // console.log("Segment " + site);
-    return [];
-  }
+  // // SEGMENT
+  // if (isSegment(site)) {
+  //   return [];
+  // }
   if (this.root == null) {
     this.root = arcNode;
   } else if (this.root.isArc) {
@@ -177,13 +213,23 @@ Beachline.prototype.remove = function(arcNode, point) {
 //------------------------------------------------------------
 
 Beachline.prototype.renderImpl = function(
-  program, directrix, node, leftx, rightx, renderEvents) {
+  program, directrix, node, leftx, rightx, renderEvents=false) {
   if (node.isArc) {
     color = siteColor(node.id);
-    createParabola(node.site, directrix).render(program, leftx, rightx, color);
+    if (node.isParabola) {
+      // console.log("para leftx = " + leftx + " rightx = " + rightx);
+      createParabola(node.site, directrix).render(
+        program, leftx, rightx, color);
+    } else {
+      // console.log("v leftx = " + leftx + " rightx = " + rightx);
+      var v = new V(node.site, directrix);
+      v.render(program, leftx, rightx, color);
+    }
   } else {
     var color = vec4(0.0, 0.7, 0.7);
+    // The point where this edge node was born
     var v = node.dcelEdge.origin.point;
+    // The intersection between the edge node's defining arc nodes
     var p = node.intersection(directrix);
     if (renderEvents) {
       circle.render(program, v, 0.01, false, color);
@@ -191,7 +237,7 @@ Beachline.prototype.renderImpl = function(
 
     var line = new Line();
     line.render(program, v.x, v.y, p.x, p.y, vec4(1, 0, 0, 1));
-
+    // console.log("leftx = " + leftx + " p.x = " + p.x + " rightx = " + rightx);
     this.renderImpl(program, directrix, node.left, leftx, p.x);
     this.renderImpl(program, directrix, node.right, p.x, rightx);
   }

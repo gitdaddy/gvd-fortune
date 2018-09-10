@@ -88,44 +88,6 @@ function ppIntersect(h1, k1, p1, h2, k2, p2) {
   return ret;
 }
 
-//   \             /
-//    \     *     /
-//     \  left   /
-//      \       /           /
-//       --__--x    *      /
-//              \ right   /
-//               \       /
-//                --__--
-//
-// ------------------------------------- directrix
-//
-//
-//   \             /
-//    \     *     /
-//     \  left   /
-//      \       /
-//      x--__--
-//      |  *  |
-//      |right|
-//       \___/ 
-// ------------------------------------- directrix
-//
-//
-//   \             /
-//    \     *     /
-//     \  right  /
-//      \       /
-//       --__-x
-//      |  *  |
-//      |left |
-//       \___/ 
-// ------------------------------------- directrix
-function siteSiteDirectrixIntersection(left, right, directrix) {
-  var pleft = createParabola(left, directrix);
-  var pright = createParabola(right, directrix);
-  return pleft.intersect(pright)[0];
-}
-
 //------------------------------------------------------------
 // Parabola class
 //------------------------------------------------------------
@@ -178,7 +140,10 @@ function createGeneralParabola(focus, directrix) {
 }
 
 Parabola.prototype.intersect = function(para) {
-  return ppIntersect(this.h, this.k, this.p, para.h, para.k, para.p);
+  if (para instanceof Parabola) {
+    return ppIntersect(this.h, this.k, this.p, para.h, para.k, para.p);
+  }
+  return para.intersect(this);
 }
 
 Parabola.prototype.transformPoint = function(p) {
@@ -344,16 +309,18 @@ Parabola.prototype.render = function(program, x0, x1, color=vec4(0,0,1,1)) {
     var xvalues = this.f_(1);
     if (xvalues.length > 0) {
       x0 = xvalues.reduce(function(a, b) {
-        return Math.min(a, b);
+        return Math.max(x0, Math.min(a, b));
       });
+      // console.log("changing x0 to " + x0);
     }
   }
   if (this.f(x1) > 1) {
     var xvalues = this.f_(1);
     if (xvalues.length > 0) {
       x1 = xvalues.reduce(function(a, b) {
-        return Math.max(a, b);
+        return Math.min(x1, Math.max(a, b));
       });
+      // console.log("changing x1 to " + x1);
     }
   }
 

@@ -8,6 +8,15 @@ var ArcNode = function(site) {
   this.site = site;
   this.isArc = true;
   this.isEdge = false;
+  this.isParabola = !isSegment(site);
+  this.isV = isSegment(site);
+  if (this.isParabola) {
+    this.openPoint = site;
+    this.closePoint = site;
+  } else {
+    this.openPoint = site[0];
+    this.closePoint = site[1];
+  }
 }
 
 Object.defineProperty(ArcNode.prototype, "id", {
@@ -139,8 +148,8 @@ EdgeNode.prototype.setChild = function(node, side) {
 
 EdgeNode.prototype.createBeachlineSegment = function(site, directrix) {
   if (isSegment(site)) {
-    // TODO create a v segment
-    return createParabola(site[0], directrix);
+    // console.log("Creating V " + site);
+    return new V(site, directrix);
   }
   return createParabola(site, directrix);
 }
@@ -152,7 +161,30 @@ EdgeNode.prototype.intersection = function(directrix) {
   var pleft = this.createBeachlineSegment(this.prevArc().site, directrix);
   var pright = this.createBeachlineSegment(this.nextArc().site, directrix);
   var intersections = pleft.intersect(pright);
+  if (isSegment(this.prevArc().site) && !isSegment(this.nextArc().site)) {
+    console.log(this.nextArc().site);
+    console.log(intersections);
+  }
   if (intersections.length == 1) return intersections[0];
-  if (pleft.focus.y > pright.focus.y) return intersections[0];
-  return intersections[1];
+  if (!isSegment(this.prevArc().site) && !isSegment(this.nextArc().site)) {
+    // Parabola-parabola intersection
+    if (pleft.focus.y > pright.focus.y) return intersections[0];
+    return intersections[1];
+  } else if (isSegment(this.prevArc().site) && !isSegment(this.nextArc().site)) {
+    // V-parabola intersection
+    if (pleft.focus.y > pright.focus.y) return intersections[0];
+    return intersections[1];
+  } else if (!isSegment(this.prevArc().site) && isSegment(this.nextArc().site)) {
+    // Parabola-V intersection
+    if (pleft.focus.y > pright.focus.y) return intersections[0];
+    return intersections[1];
+  } else if (isSegment(this.prevArc().site) && isSegment(this.nextArc().site)) {
+    // V-V intersection
+    if (pleft.focus.y > pright.focus.y) return intersections[0];
+    return intersections[1];
+  } else {
+    throw "Should reach here";
+    // TODO this may need to be changed
+    return intersections[0];
+  }
 };
