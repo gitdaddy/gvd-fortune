@@ -257,9 +257,24 @@ var paraPointsBuffer = null;
 var numParaPoints = 20;
 var paraPoints = new Array(numParaPoints);
 
+function abc() {
+  return 130;
+}
+
 Parabola.prototype.renderImpl =
-  function(program, x0, x1, color=vec4(0,0,1,1), highlight=false) {
+      function(program, x0, x1, color=vec4(0,0,1,1), highlight=false) {
   program.use();
+
+  // d3 experiments
+  // let ax0 = x2win(x0);
+  // let ay0 = y2win(this.f(x0));
+  // let ax1 = x2win(x1);
+  // let ay1 = y2win(this.f(x1));
+  // d3.select("#gvd")
+  //   .append("path")
+  //   .attr("d", `M ${ax0} ${ay0} A 30 50 0 0 1 ${ax1} ${ay1}`)
+  //   .attr("class", "beachline")
+  // ;
 
   // Construct line segments
   var inc = (x1-x0) / numParaPoints;

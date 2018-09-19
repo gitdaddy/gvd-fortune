@@ -133,7 +133,24 @@ function mouseclick(e) {
   }
 }
 
+let gvdw = 500;
+let gvdh = 500;
+
+function x2win(x) {
+  let xmin = -1;
+  let xmax = 1;
+  return (x-xmin)/(xmax-xmin) * gvdw;
+}
+
+function y2win(y) {
+  let ymin = -1;
+  let ymax = 1;
+  return (1-(y-ymin)/(ymax-ymin)) * gvdh;
+}
+
 function init() {
+  console.log(document.getElementById("gvd"));//.getBBox());
+
   if (localStorage.sweepline) {
     sweepline = parseFloat(localStorage.sweepline);
   }
@@ -202,6 +219,48 @@ function init() {
     s.id = id++;
   });
 
+  // d3 experimentation
+  // // Render the sites using d3
+  d3.select("#gvd")
+    .selectAll("circle")
+    .data(points)
+    .enter()
+    .append("circle")
+    // .attr("cx", p => x2win(p.x))
+    // .attr("cy", p => y2win(p.y))
+    .attr("cx", p => p.x)
+    .attr("cy", p => p.y)
+    .attr("r", 8/gvdw)
+    .attr("class", "site")
+    .attr("vector-effect", "non-scaling-stroke")
+    .append("title").html("Hello world!")
+  ;
+  
+  d3.select("#gvd")
+    // .selectAll("line")
+    .selectAll("#segment")
+    .data(segments)
+    .enter()
+    .append("line")
+    // .attr("x1", s => x2win(s[0].x))
+    // .attr("y1", s => y2win(s[0].y))
+    // .attr("x2", s => x2win(s[1].x))
+    // .attr("y2", s => y2win(s[1].y))
+    .attr("x1", s => s[0].x)
+    .attr("y1", s => s[0].y)
+    .attr("x2", s => s[1].x)
+    .attr("y2", s => s[1].y)
+    .attr("class", "site segment")
+    .attr("vector-effect", "non-scaling-stroke")
+  ;
+  
+  // d3.select("#gvd")
+  //   .append("path")
+  //   .attr("d", "M 90 90 A 30 50 0 0 1 10 10")
+  //   .attr("class", "beachline")
+  //   .attr('stroke', 'blue')
+  // ;
+  
   //------------------------------
   // Check for identical y values.
   //------------------------------
@@ -347,6 +406,14 @@ function renderGVD(beachline = null) {
     });
   }
 
+  console.log(d3.select("#sweepline"));
+  d3.select("#sweepline")
+    .attr("x1", -1)
+    .attr("y1", sweepline)
+    .attr("x2", 1)
+    .attr("y2", sweepline)
+  ;
+  console.log(d3.select("#sweepline"));
 }
 
 var render = function() {
