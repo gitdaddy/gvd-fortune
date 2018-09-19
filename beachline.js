@@ -214,16 +214,21 @@ Beachline.prototype.remove = function(arcNode, point) {
 
 Beachline.prototype.renderImpl = function(
   program, directrix, node, leftx, rightx, renderEvents=false) {
+
+  let highlight = false;
+  if (selectedNode) {
+    highlight = selectedNode.id == node.id;
+  }
+
   if (node.isArc) {
     color = siteColor(node.id);
     if (node.isParabola) {
-      // console.log("para leftx = " + leftx + " rightx = " + rightx);
       createParabola(node.site, directrix).render(
-        program, leftx, rightx, color);
+        program, leftx, rightx, color, highlight);
     } else {
       // console.log("v leftx = " + leftx + " rightx = " + rightx);
       var v = new V(node.site, directrix);
-      v.render(program, leftx, rightx, color);
+      v.render(program, leftx, rightx, color, highlight);
     }
   } else {
     var color = vec4(0.0, 0.7, 0.7);
@@ -231,6 +236,8 @@ Beachline.prototype.renderImpl = function(
     var v = node.dcelEdge.origin.point;
     // The intersection between the edge node's defining arc nodes
     var p = node.intersection(directrix);
+    console.log(`beachline intersection:
+                ${node.prevArc().site.id}-${node.nextArc().site.id}: ${p}`);
     if (renderEvents) {
       circle.render(program, v, 0.01, false, color);
     }

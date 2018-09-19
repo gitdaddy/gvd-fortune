@@ -257,7 +257,8 @@ var paraPointsBuffer = null;
 var numParaPoints = 20;
 var paraPoints = new Array(numParaPoints);
 
-Parabola.prototype.renderImpl = function(program, x0, x1, color=vec4(0,0,1,1)) {
+Parabola.prototype.renderImpl =
+  function(program, x0, x1, color=vec4(0,0,1,1), highlight=false) {
   program.use();
 
   // Construct line segments
@@ -285,7 +286,6 @@ Parabola.prototype.renderImpl = function(program, x0, x1, color=vec4(0,0,1,1)) {
     mvMatrix = mult(mvMatrix, translate(-this.h, -2*this.k, 0));
   }
   gl.uniformMatrix4fv(program.mvMatrixLoc, false, flatten(mvMatrix));
-  popMatrix();
 
   gl.uniformMatrix4fv(program.pMatrixLoc, false, flatten(pMatrix));
   gl.uniform4fv(program.colorLoc, flatten(color));
@@ -295,9 +295,35 @@ Parabola.prototype.renderImpl = function(program, x0, x1, color=vec4(0,0,1,1)) {
   gl.vertexAttribPointer(program.vertexLoc, 4, gl.FLOAT, false, 0, 0);
 
   gl.drawArrays(gl.LINE_STRIP, 0, paraPoints.length);
+
+  // highlight
+  if (highlight) {
+    let d = 0.005;
+    mvMatrix = mult(mvMatrix, translate(d, 0, 0));
+    gl.uniformMatrix4fv(program.mvMatrixLoc, false, flatten(mvMatrix));
+    gl.drawArrays(gl.LINE_STRIP, 0, paraPoints.length);
+
+    mvMatrix = mult(mvMatrix, translate(-d*2, 0, 0));
+    gl.uniformMatrix4fv(program.mvMatrixLoc, false, flatten(mvMatrix));
+    gl.drawArrays(gl.LINE_STRIP, 0, paraPoints.length);
+
+    mvMatrix = mult(mvMatrix, translate(d, d, 0));
+    gl.uniformMatrix4fv(program.mvMatrixLoc, false, flatten(mvMatrix));
+    gl.drawArrays(gl.LINE_STRIP, 0, paraPoints.length);
+
+    mvMatrix = mult(mvMatrix, translate(d, -d*2, 0));
+    gl.uniformMatrix4fv(program.mvMatrixLoc, false, flatten(mvMatrix));
+    gl.drawArrays(gl.LINE_STRIP, 0, paraPoints.length);
+
+  }
+  popMatrix();
+
+  if (highlight) {
+    this.render(program, -1, 1, color, false);
+  }
 }
 
-Parabola.prototype.render = function(program, x0, x1, color=vec4(0,0,1,1)) {
+Parabola.prototype.render = function(program, x0, x1, color=vec4(0,0,1,1), highlight = false) {
   program.use();
 
   if (x0 > 1 || x1 < -1) return;
@@ -324,17 +350,17 @@ Parabola.prototype.render = function(program, x0, x1, color=vec4(0,0,1,1)) {
     }
   }
 
-  this.renderImpl(program, x0, x1, color);
+  this.renderImpl(program, x0, x1, color, highlight);
 }
 
 Parabola.prototype.renderGeneral = function(
-  program, p1, p2, color=vec4(0,0,1,1)) {
+  program, p1, p2, color=vec4(0,0,1,1), highlight = false) {
 
   program.use();
 
   var x0 = this.transformPoint(p1).x;
   var x1 = 2;
 
-  this.renderImpl(program, x0, x1, color);
+  this.renderImpl(program, x0, x1, color, highlight);
 }
 

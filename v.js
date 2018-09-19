@@ -205,7 +205,8 @@ V.prototype.f_ = function(y) {
 //   1. p < x0 < x1
 //   2. x0 < p < x1
 //   3. x0 < x1 < p
-V.prototype.render = function(program, x0, x1, color=vec4(0,0,1,1)) {
+V.prototype.render = function(program, x0, x1, color=vec4(0,0,1,1),
+                             highlight=false) {
   program.use();
 
   var line = new Line();
@@ -221,10 +222,11 @@ V.prototype.render = function(program, x0, x1, color=vec4(0,0,1,1)) {
   var y1 = this.f(x1)
   if (x0 < this.p.x && this.p.x < x1) {
     // case 2
-    line.render_segment(program, this.p, vec3(x0, y0, 0), color);
-    line.render_segment(program, this.p, vec3(x1, y1, 0), color);
+    line.render_segment(program, this.p, vec3(x0, y0, 0), color, highlight);
+    line.render_segment(program, this.p, vec3(x1, y1, 0), color, highlight);
   } else {
     // cases 1 and 3
-    line.render_segment(program, vec3(x0, y0, 0), vec3(x1, y1, 0), color);
+    line.render_segment(program, vec3(x0, y0, 0), vec3(x1, y1, 0), color,
+                       highlight);
   }
 }

@@ -23,6 +23,8 @@ var vverts = [];
 var everts = [];
 var dcel;
 
+let selectedNode;
+
 //------------------------------------------------------------
 // Change this function to enable multi-colored arc cells
 //------------------------------------------------------------
@@ -284,12 +286,10 @@ function fortune() {
   return beachline;
 }
 
-var render = function() {
-  var t0 = performance.now();
-  var beachline = fortune();
-  var t1 = performance.now();
-  // console.log("Call to fortune took " + (t1 - t0) + " milliseconds.")
-
+function renderGVD(beachline = null) {
+  if (!beachline) {
+    beachline = fortune();
+  }
   gl.clear(gl.COLOR_BUFFER_BIT);
 
   var eye = vec3(0, 0, 5);
@@ -347,11 +347,24 @@ var render = function() {
     });
   }
 
-  renderDcel(program, dcel, vec4(1, 0, 0, 1));
+}
 
+var render = function() {
+  var t0 = performance.now();
+  var beachline = fortune();
+  var t1 = performance.now();
+  // console.log("Call to fortune took " + (t1 - t0) + " milliseconds.")
+
+  renderGVD(beachline);
+
+  renderDcel(program, dcel, vec4(1, 0, 0, 1));
   showTree(beachline.root);
 
   runTests();
 
+}
+
+function setDebug(msg) {
+  document.getElementById("debug").innerHTML = msg;
 }
 

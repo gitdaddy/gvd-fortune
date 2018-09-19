@@ -19,6 +19,12 @@ var ArcNode = function(site) {
   }
 }
 
+ArcNode.prototype.toString = function() {
+  return `Type: arc - ${this.isParabola?"parabola":"v"}<br>` +
+    `Site: (${this.site.toString()})`
+  ;
+}
+
 Object.defineProperty(ArcNode.prototype, "id", {
   configurable: true,
   enumerable: true,
@@ -99,6 +105,10 @@ var EdgeNode = function(left, right, vertex, dcel) {
   };
 }
 
+EdgeNode.prototype.toString = function() {
+  return `Type: edge<br>`;
+}
+
 Object.defineProperty(EdgeNode.prototype, "id", {
   configurable: true,
   enumerable: true,
@@ -161,10 +171,10 @@ EdgeNode.prototype.intersection = function(directrix) {
   var pleft = this.createBeachlineSegment(this.prevArc().site, directrix);
   var pright = this.createBeachlineSegment(this.nextArc().site, directrix);
   var intersections = pleft.intersect(pright);
-  if (isSegment(this.prevArc().site) && !isSegment(this.nextArc().site)) {
-    console.log(this.nextArc().site);
-    console.log(intersections);
-  }
+  // if (isSegment(this.prevArc().site) && !isSegment(this.nextArc().site)) {
+  //   console.log(this.nextArc().site);
+  //   console.log(intersections);
+  // }
   if (intersections.length == 1) return intersections[0];
   if (!isSegment(this.prevArc().site) && !isSegment(this.nextArc().site)) {
     // Parabola-parabola intersection
