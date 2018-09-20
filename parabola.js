@@ -261,20 +261,42 @@ function abc() {
   return 130;
 }
 
-Parabola.prototype.renderImpl =
-      function(program, x0, x1, color=vec4(0,0,1,1), highlight=false) {
-  program.use();
-
+Parabola.prototype.renderImpl = function(program, x0, x1, color=vec4(0,0,1,1), highlight=false) {
   // d3 experiments
-  // let ax0 = x2win(x0);
-  // let ay0 = y2win(this.f(x0));
-  // let ax1 = x2win(x1);
-  // let ay1 = y2win(this.f(x1));
-  // d3.select("#gvd")
-  //   .append("path")
-  //   .attr("d", `M ${ax0} ${ay0} A 30 50 0 0 1 ${ax1} ${ay1}`)
-  //   .attr("class", "beachline")
-  // ;
+  // let ax0 = x0;
+  // let ay0 = this.f(x0);
+  // let ax1 = x1;
+  // let ay1 = this.f(x1);
+
+  // let ax0 = -0.5;
+  // let ax1 = 0.5;
+  // let ay0 = 0.5;
+  // let ay1 = 0.5;
+  // let ax2 = 0;
+  // let ay2 = 0;
+
+  // let ax0 = this.focus.x-1;
+  // let ax1 = this.focus.x+1;
+  // let ay0 = this.f(ax0);
+  // let ay1 = this.f(ax1);
+  let ay0 = this.focus.y;
+  let ay1 = this.focus.y;
+  let ax0 = this.f_(ay0)[0];
+  let ax1 = this.f_(ay1)[1];
+  let ax2 = this.focus.x;
+  let ay2 = this.k-this.p;
+  console.log(ax0);
+  let path = `M ${ax0} ${ay0} Q ${ax2} ${ay2} ${ax1} ${ay1}`;
+  console.log(path);
+  d3.select("#gvd")
+    .append("path")
+    // .attr("d", `M ${ax0} ${ay0} A 30 50 0 0 1 ${ax1} ${ay1}`)
+    .attr("d", path)
+    .attr("class", "beachline")
+    .attr("vector-effect", "non-scaling-stroke")
+  ;
+
+  program.use();
 
   // Construct line segments
   var inc = (x1-x0) / numParaPoints;

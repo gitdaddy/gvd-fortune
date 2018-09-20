@@ -236,8 +236,8 @@ Beachline.prototype.renderImpl = function(
     var v = node.dcelEdge.origin.point;
     // The intersection between the edge node's defining arc nodes
     var p = node.intersection(directrix);
-    console.log(`beachline intersection:
-                ${node.prevArc().site.id}-${node.nextArc().site.id}: ${p}`);
+    // console.log(`beachline intersection:
+    //             ${node.prevArc().site.id}-${node.nextArc().site.id}: ${p}`);
     if (renderEvents) {
       circle.render(program, v, 0.01, false, color);
     }

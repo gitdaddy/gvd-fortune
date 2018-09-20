@@ -1,17 +1,21 @@
-svg#gvd {
+svg#gvdsvg {
     background: #eeeeee;
 }
 
 circle.site {
-    fill: red;
+    /*fill: red;*/
 }
 
 line.site {
-    stroke: red;
+    /*stroke: red;*/
 }
 
 line#sweepline {
     stroke: black;
+}
+
+.dcel {
+    stroke: red;
 }
 
 path.beachline {
