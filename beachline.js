@@ -330,6 +330,7 @@ Beachline.prototype.render = function(program, directrix, renderEvents) {
   // Render the parabolas
   //------------------------------
   {
+    // console.log("yyy " + parabolas[0].drawPoints[0].y);
     let line = d3.line()
       .x(function (d) {return d.x;})
       .y(function (d) {return d.y;})

@@ -13,44 +13,44 @@ function checkEqual(a, b) {
 function runTests() {
   {
     var p = createGeneralParabola(vec3(0,1,0), [vec3(0,0,0), vec3(1,0,0)])
-    checkEqual(p.h, 0);
-    checkEqual(p.k, 0.5);
-    checkEqual(p.p, 0.5);
+    checkEqual(p.parabola.h, 0);
+    checkEqual(p.parabola.k, 0.5);
+    checkEqual(p.parabola.p, 0.5);
     checkEqual(p.theta, 0);
   }
   {
     var p = createGeneralParabola(vec3(0,1,0), [vec3(1,0,0), vec3(0,0,0)])
-    checkEqual(p.h, 0);
-    checkEqual(p.k, 0.5);
-    checkEqual(p.p, 0.5);
+    checkEqual(p.parabola.h, 0);
+    checkEqual(p.parabola.k, 0.5);
+    checkEqual(p.parabola.p, 0.5);
     checkEqual(p.theta, 0);
   }
   {
     var p = createGeneralParabola(vec3(0,-1,0), [vec3(1,0,0), vec3(0,0,0)])
-    checkEqual(p.h, 0);
-    checkEqual(p.k, 0.5);
-    checkEqual(p.p, 0.5);
+    checkEqual(p.parabola.h, 0);
+    checkEqual(p.parabola.k, 0.5);
+    checkEqual(p.parabola.p, 0.5);
     checkEqual(p.theta, Math.PI);
   }
   {
     var p = createGeneralParabola(vec3(0,-1,0), [vec3(0,0,0), vec3(1,0,0)])
-    checkEqual(p.h, 0);
-    checkEqual(p.k, 0.5);
-    checkEqual(p.p, 0.5);
+    checkEqual(p.parabola.h, 0);
+    checkEqual(p.parabola.k, 0.5);
+    checkEqual(p.parabola.p, 0.5);
     checkEqual(p.theta, -Math.PI);
   }
   {
     var p = createGeneralParabola(vec3(1,1,0), [vec3(0,0,0), vec3(1,0,0)])
-    checkEqual(p.h, 1);
-    checkEqual(p.k, 0.5);
-    checkEqual(p.p, 0.5);
+    checkEqual(p.parabola.h, 1);
+    checkEqual(p.parabola.k, 0.5);
+    checkEqual(p.parabola.p, 0.5);
     checkEqual(p.theta, 0);
   }
   {
     var p = createGeneralParabola(vec3(1,1,0), [vec3(0,1,0), vec3(1,0,0)])
-    checkEqual(p.h, 1);
-    checkEqual(p.k, Math.sqrt(2)/4);
-    checkEqual(p.p, Math.sqrt(2)/4);
+    checkEqual(p.parabola.h, 1);
+    checkEqual(p.parabola.k, Math.sqrt(2)/4);
+    checkEqual(p.parabola.p, Math.sqrt(2)/4);
     checkEqual(p.theta, -Math.PI/4);
   }
 
@@ -64,7 +64,7 @@ function runTests() {
   //   var b = vec3(1/2, 0, 0);
   //   var s = [a, b];
   //   var p = createGeneralParabola(f, s);
-  //   circle.render(program, p.focus, 0.01, true, red);
+  //   circle.render(program, p.parabola.focus, 0.01, true, red);
   //   p.render(program, -1, 1, red);
   //   line.render(program, a.x, a.y, b.x, b.y, red);
   // }

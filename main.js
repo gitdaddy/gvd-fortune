@@ -195,11 +195,17 @@ function init() {
   // ];
 
   points = [
-    // vec3(-0.4, 0.8, 0),
-    // vec3(-0.4, 0.0, 0),
-    vec3(-0.4, 0.8, 0),
+    // segment test points
     vec3(-0.4, -0.4, 0),
-    vec3(0.4, 0.4, 0),
+    vec3(-0.4, -0.8, 0),
+    vec3(0.4, -0.5, 0),
+    // remaining points
+    vec3(-0.30, -0.1, 0),
+    vec3(-0.41, 0.9, 0),
+    vec3(-0.26, 0.73, 0),
+    vec3(0.62, 0.37, 0),
+    vec3(-0.12,0.13, 0),
+    vec3(0.73,-0.13, 0),
   ];
 
   segments = [
@@ -400,16 +406,18 @@ function renderGVD(beachline = null) {
       }
     });
     var bline = getPointsBisector(points[0], points[2]);
+    var bline2 = getPointsBisector(points[1], points[2]);
     // line.render_line(program, bline[0], bline[1]);
     var gp = createGeneralParabola(points[2], segments[0]);
     var pints = gp.intersectLine(bline[0], subtract(bline[1], bline[0]));
-    gp.renderGeneral(program, pints[0], 1, blue);
+    var pints2 = gp.intersectLine(bline2[0], subtract(bline2[1], bline2[0]));
+    gp.render(program, pints[0], 1, blue);
     pints.forEach(function(p) {
       circle.render(program, p, 0.01, true, red);
     });
 
     {
-      gp.prepDraw(-1, -10, 0.3);
+      gp.prepDraw(-1, pints[0], pints2[0]);
       let parabolas = [gp];
       let line = d3.line()
         .x(function (d) {return d.x;})
