@@ -181,30 +181,30 @@ function init() {
 
   program = new LineProgram();
 
-  points = [
-    // vec3(-0.4, 0.8, 0),
-    // vec3(-0.4, 0.0, 0),
-    vec3(-0.4, 0.8, 0),
-    // vec3(-0.4, -0.4, 0),
-    vec3(0.4, 0.4, 0),
-    vec3(0.7, 0.6, 0),
-    vec3(-0.2, 0.0, 0),
-  ];
-
-  segments = [
-  ];
-
   // points = [
   //   // vec3(-0.4, 0.8, 0),
   //   // vec3(-0.4, 0.0, 0),
   //   vec3(-0.4, 0.8, 0),
-  //   vec3(-0.4, -0.4, 0),
+  //   // vec3(-0.4, -0.4, 0),
   //   vec3(0.4, 0.4, 0),
+  //   vec3(0.7, 0.6, 0),
+  //   vec3(-0.2, 0.0, 0),
   // ];
 
   // segments = [
-  //   makeSegment(points[0], points[1])
   // ];
+
+  points = [
+    // vec3(-0.4, 0.8, 0),
+    // vec3(-0.4, 0.0, 0),
+    vec3(-0.4, 0.8, 0),
+    vec3(-0.4, -0.4, 0),
+    vec3(0.4, 0.4, 0),
+  ];
+
+  segments = [
+    makeSegment(points[0], points[1])
+  ];
 
   // points = [
   //   vec3(-0.30, -0.1, 0),
@@ -246,8 +246,6 @@ function init() {
     .data(points)
     .enter()
     .append("circle")
-    // .attr("cx", p => x2win(p.x))
-    // .attr("cy", p => y2win(p.y))
     .attr("cx", p => p.x)
     .attr("cy", p => p.y)
     .attr("r", 8/gvdw)
@@ -263,10 +261,6 @@ function init() {
     .data(segments)
     .enter()
     .append("line")
-    // .attr("x1", s => x2win(s[0].x))
-    // .attr("y1", s => y2win(s[0].y))
-    // .attr("x2", s => x2win(s[1].x))
-    // .attr("y2", s => y2win(s[1].y))
     .attr("x1", s => s[0].x)
     .attr("y1", s => s[0].y)
     .attr("x2", s => s[1].x)
@@ -413,6 +407,38 @@ function renderGVD(beachline = null) {
     pints.forEach(function(p) {
       circle.render(program, p, 0.01, true, red);
     });
+
+    {
+      gp.prepDraw(-1, -10, 0.3);
+      let parabolas = [gp];
+      let line = d3.line()
+        .x(function (d) {return d.x;})
+        .y(function (d) {return d.y;})
+        .curve(d3.curveLinear)
+      ;
+      let selection = d3.select("#gvd").selectAll(".gvd-surface-parabola")
+        .data(parabolas);
+      // exit
+      selection.exit().remove();
+      // enter
+      selection.enter()
+        .append("path")
+        .attr("d", p => line(p.drawPoints))
+        .style("fill","none")
+        .attr("class", "gvd-surface-parabola")
+        .attr("vector-effect", "non-scaling-stroke")
+        .attr("transform", p => p.transform)
+      ;
+      // update
+      selection.attr("d", p => line(p.drawPoints))
+        .attr("transform", p => p.transform)
+      ;
+    }
+  //   gp
+  //   d3.select('#gvd').append("
+  //     .selectAll('.gvd-surface')
+  //     .data(edges)
+  //   ;
   }
   // /Temporary stuff
 

@@ -90,8 +90,6 @@ function showTree(treeData) {
     .on("click", function(d) { console.log("click"); })
   ;
 
-  
-
   // adds the circle to the arcNode
   node.append("circle")
     .attr("r", function(d) { return 10;/*d.data.value;*/ })

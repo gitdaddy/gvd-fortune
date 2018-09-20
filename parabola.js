@@ -503,5 +503,14 @@ Parabola.prototype.setDrawPoints = function() {
   }
   points.push({x:this.x1, y:this.f(this.x1)});
   this.drawPoints = points;
+
+  if (this.theta && this.theta != 0) {
+    console.log(this.nRz);
+    this.transform =
+      `translate(${this.focus.x},${this.focus.y}) ` +
+      `rotate(${(this.theta)*180/Math.PI}) ` +
+      `translate(${-this.h},${-2*this.k})`;
+  }
+
 }
 

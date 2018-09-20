@@ -347,7 +347,8 @@ Beachline.prototype.render = function(program, directrix, renderEvents) {
       .style("stroke", p => arcColorSvg(p.id))
       .attr("class", "beach-parabola")
       .attr("vector-effect", "non-scaling-stroke")
-      .attr("id", p => `treenode${p.id}`);
+      .attr("id", p => `treenode${p.id}`)
+      .attr("transform", p => p.transform)
     ;
     // update
     selection.attr("d", p => line(p.drawPoints))
