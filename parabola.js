@@ -261,64 +261,33 @@ function abc() {
   return 130;
 }
 
-Parabola.prototype.renderImpl = function(program, x0, x1, id, color=vec4(0,0,1,1), highlight=false) {
-  // d3 experiments
-  // let ax0 = x0;
-  // let ay0 = this.f(x0);
-  // let ax1 = x1;
-  // let ay1 = this.f(x1);
-
-  // let ax0 = -0.5;
-  // let ax1 = 0.5;
-  // let ay0 = 0.5;
-  // let ay1 = 0.5;
-  // let ax2 = 0;
-  // let ay2 = 0;
-
-  // let ax0 = this.focus.x-1;
-  // let ax1 = this.focus.x+1;
-  // let ay0 = this.f(ax0);
-  // let ay1 = this.f(ax1);
-  // let ay0 = this.focus.y;
-  // let ay1 = this.focus.y;
-
-  // let ay0 = 1;
-  // let ay1 = 1;
-  // let ax0 = this.f_(ay0)[0];
-  // let ax1 = this.f_(ay1)[1];
-  // let ax2 = this.focus.x;
-  // let ay2 = this.k-this.p;
-  // console.log(ax0);
-  // let path = `M ${ax0} ${ay0} Q ${ax2} ${ay2} ${ax1} ${ay1}`;
-  // console.log(path);
-  // d3.select("#gvd")
-  //   .append("path")
-  //   // .attr("d", `M ${ax0} ${ay0} A 30 50 0 0 1 ${ax1} ${ay1}`)
-  //   .attr("d", path)
-  //   .attr("class", "beachline")
-  //   .attr("vector-effect", "non-scaling-stroke")
-  // ;
-
+Parabola.prototype.renderSvg = function(id, highlight=false) {
   let line = d3.line()
     .x(function (d) {return d.x;})
     .y(function (d) {return d.y;})
     // .curve(d3.curveLinear)
     .curve(d3.curveCardinal)
   ;
-  let thisPara = this;
-  let data = d3.range(-1, 1.1, 0.1).map(function (d) {
-    return {x:d, y:thisPara.f(d)};
-  });
+  // let data = [];
+  // let xinc = 0.1;
+  // for (var x = x0; x < x1; x += xinc) {
+  //   data.push({x:x, y:this.f(x)});
+  // }
+  // data.push({x:x1, y:this.f(x1)});
   let pa = d3.select("#gvd")
+  // let pa = d3.selectAll(".beach-parabola")
     .append("path")
-    .datum(data)
+    // .datum(data)
+    .datum(this.drawPoints)
     .attr("d", line)
     .style("fill","none")
     .style("stroke", siteColorSvg(id))
+    .attr("class", "beach-parabola")
     .attr("vector-effect", "non-scaling-stroke")
   ;
-  console.log(pa);
+}
 
+Parabola.prototype.renderImpl = function(program, x0, x1, id, color=vec4(0,0,1,1), highlight=false) {
   program.use();
 
   // Construct line segments
@@ -384,6 +353,11 @@ Parabola.prototype.renderImpl = function(program, x0, x1, id, color=vec4(0,0,1,1
 }
 
 Parabola.prototype.render = function(program, x0, x1, id, color=vec4(0,0,1,1), highlight = false) {
+  // // SVG
+  // this.setDrawBounds(x0, x1);
+  // this.setDrawPoints();
+  // this.id = id;
+
   program.use();
 
   if (x0 > 1 || x1 < -1) return;
@@ -411,6 +385,9 @@ Parabola.prototype.render = function(program, x0, x1, id, color=vec4(0,0,1,1), h
   }
 
   this.renderImpl(program, x0, x1, id, color, highlight);
+
+  // SVG
+  // this.renderSvg(id);
 }
 
 Parabola.prototype.renderGeneral = function(
@@ -422,5 +399,109 @@ Parabola.prototype.renderGeneral = function(
   var x1 = 2;
 
   this.renderImpl(program, x0, x1, id, color, highlight);
+}
+
+// Prepares this parabola for drawing
+Parabola.prototype.prepDraw = function(id, x0, x1) {
+  this.id = id;
+  this.setDrawBounds(x0, x1);
+  this.setDrawPoints();
+}
+
+// Set the minx and maxx for drawing the parabola optimally.
+// Starting x0 and x1 values are given, which represent the
+// parabola's intersection with its left and right neighbors,
+// respectively. These values are updated to cut off the
+// parabola if it goes above 1 in y. x0 and x1 will be properties
+// of the parabola.
+//
+// Initial:
+//
+//  x0
+//   \
+//    \
+//    _\____________________________
+//   |  \                           |
+//   |   \                          | x1
+//   |    \                        /|
+//   |     \_                    _/ |
+//   |       \__              __/   |
+//   |          \___      ___/      |
+//   |              \____/          |
+//   |                              |
+//   |                              |
+//   |______________________________|
+//
+// Update to:
+//
+//  
+//   
+//    x0
+//    ______________________________
+//   |  \                           |
+//   |   \                          | x1
+//   |    \                        /|
+//   |     \_                    _/ |
+//   |       \__              __/   |
+//   |          \___      ___/      |
+//   |              \____/          |
+//   |                              |
+//   |                              |
+//   |______________________________|
+Parabola.prototype.setDrawBounds = function(x0, x1) {
+  if (x0 > 1 || x1 < -1) {
+    this.x0 = -1;
+    this.x1 = -1;
+  } else {
+    // Optimize the boundaries for a smooth draw
+    x0 = Math.max(x0, -1);
+    x1 = Math.min(x1, 1);
+    if (this.f(x0) > 1) {
+      var xvalues = this.f_(1);
+      if (xvalues.length > 0) {
+        x0 = xvalues.reduce(function(a, b) {
+          return Math.max(x0, Math.min(a, b));
+        });
+      }
+    }
+    if (this.f(x1) > 1) {
+      var xvalues = this.f_(1);
+      if (xvalues.length > 0) {
+        x1 = xvalues.reduce(function(a, b) {
+          return Math.min(x1, Math.max(a, b));
+        });
+      }
+    }
+    this.x0 = x0;
+    this.x1 = x1;
+  }
+}
+
+// Prepares the parabola for drawing by setting the points
+// a linear curve can be interpolated against. After this
+// function is called, this.drawPoints will be an array
+// containing the points shown by *:
+//
+//    x0
+//    ______________________________
+//   |  *                           |
+//   |   \                          * x1
+//   |    \                        /|
+//   |     *_                    _* |
+//   |       \__              __/   |
+//   |          *___      ___*      |
+//   |              *___*          |
+//   |                              |
+//   |                              |
+//   |______________________________|
+Parabola.prototype.setDrawPoints = function() {
+  let points = [];
+  // Hard-coded delta x
+  let xinc = 0.01;
+  for (var x = this.x0; x < this.x1; x += xinc) {
+    points.push({x:x, y:this.f(x)});
+  }
+  points.push({x:this.x1, y:this.f(this.x1)});
+  this.drawPoints = points;
 }
 

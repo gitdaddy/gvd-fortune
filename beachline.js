@@ -223,8 +223,11 @@ Beachline.prototype.renderImpl = function(
   if (node.isArc) {
     color = siteColor(node.id);
     if (node.isParabola) {
-      createParabola(node.site, directrix).render(
+      let para = createParabola(node.site, directrix);
+      para.prepDraw(node.id, leftx, rightx);
+      para.render(
         program, leftx, rightx, node.id, color, highlight);
+      // parabolas.push(para);
     } else {
       // console.log("v leftx = " + leftx + " rightx = " + rightx);
       var v = new V(node.site, directrix);
@@ -242,15 +245,181 @@ Beachline.prototype.renderImpl = function(
       circle.render(program, v, 0.01, false, color);
     }
 
-    var line = new Line();
-    line.render(program, v.x, v.y, p.x, p.y, vec4(1, 0, 0, 1));
+    if (!Number.isNaN(v.x) && !Number.isNaN(v.y) &&
+        !Number.isNaN(p.x) && !Number.isNaN(p.y)) {
+      var line = new Line();
+      line.render(program, v.x, v.y, p.x, p.y, vec4(1, 0, 0, 1));
+      // console.log('a ' + v + " " + p);
+    }
+
     // console.log("leftx = " + leftx + " p.x = " + p.x + " rightx = " + rightx);
     this.renderImpl(program, directrix, node.left, leftx, p.x);
     this.renderImpl(program, directrix, node.right, p.x, rightx);
   }
 }
 
+Beachline.prototype.prepDraw = function(
+  directrix, node, leftx, rightx, parabolas, vs, lines, events) {
+
+  let highlight = false;
+  if (selectedNode) {
+    highlight = selectedNode.id == node.id;
+  }
+
+  if (node.isArc) {
+    if (node.isParabola) {
+      let para = createParabola(node.site, directrix);
+      para.prepDraw(node.id, leftx, rightx);
+      parabolas.push(para);
+    } else {
+      var v = new V(node.site, directrix);
+      v.prepDraw(node.id, leftx, rightx);
+      // v.render(program, leftx, rightx, color, highlight);
+      vs.push(v);
+    }
+  } else {
+    var color = vec4(0.0, 0.7, 0.7);
+    // The point where this edge node was born
+    var v = node.dcelEdge.origin.point;
+    // The intersection between the edge node's defining arc nodes
+    var p = node.intersection(directrix);
+
+    if (!Number.isNaN(v.x) && !Number.isNaN(v.y)) {
+      events.push(v);
+    }
+
+    if (!Number.isNaN(v.x) && !Number.isNaN(v.y) &&
+        !Number.isNaN(p.x) && !Number.isNaN(p.y)) {
+      lines.push({x0:v.x, y0:v.y, x1:p.x, y1:p.y});
+      // console.log('b ' + v + " " + p);
+    }
+    
+    this.prepDraw(directrix, node.left, leftx, p.x, parabolas, vs, lines, events);
+    this.prepDraw(directrix, node.right, p.x, rightx, parabolas, vs, lines, events);
+  }
+}
+
 Beachline.prototype.render = function(program, directrix, renderEvents) {
-  if (this.root == null) return;
+  if (this.root == null) {
+    d3.select("#gvd").selectAll(".beach-parabola").remove();
+    return;
+  }
+  
+  let parabolas = [];
+  let vs = [];
+  // These lines are GVD lines going to infinity that may or may not
+  // eventually be subsumed into the DCEL.
+  let lines = [];
+  let events = [];
+  this.prepDraw(directrix, this.root, -1, 1, parabolas, vs, lines, events);
+
   this.renderImpl(program, directrix, this.root, -1, 1, renderEvents);
+
+  //------------------------------
+  // Render the events
+  //------------------------------
+  {
+    let selection = d3.select("#gvd").selectAll(".event")
+      .data(events);
+    // exit
+    selection.exit().remove();
+    // enter
+    selection.enter()
+      .append("circle")
+      .attr('cx', d => d.x)
+      .attr('cy', d => d.y)
+      .attr('r', 6/gvdw)
+      .attr('class', "event")
+      .attr("vector-effect", "non-scaling-stroke")
+    ;
+    // update
+    selection
+      .attr('cx', d => d.x)
+      .attr('cy', d => d.y)
+    ;
+  }
+  
+  //------------------------------
+  // Render the parabolas
+  //------------------------------
+  {
+    let line = d3.line()
+      .x(function (d) {return d.x;})
+      .y(function (d) {return d.y;})
+      .curve(d3.curveLinear)
+    ;
+    let selection = d3.select("#gvd").selectAll(".beach-parabola")
+      .data(parabolas);
+    // exit
+    selection.exit().remove();
+    // enter
+    selection.enter()
+      .append("path")
+      .attr("d", p => line(p.drawPoints))
+      .style("fill","none")
+      .style("stroke", p => siteColorSvg(p.id))
+      .attr("class", "beach-parabola")
+      .attr("vector-effect", "non-scaling-stroke")
+    ;
+    // update
+    selection.attr("d", p => line(p.drawPoints))
+      .style("stroke", p => siteColorSvg(p.id))
+    ;
+  }
+  
+  //------------------------------
+  // Render the Vs
+  //------------------------------
+  {
+    let line = d3.line()
+      .x(function (d) {return d.x;})
+      .y(function (d) {return d.y;})
+      .curve(d3.curveLinear)
+    ;
+    let selection = d3.select("#gvd").selectAll(".beach-v")
+      .data(vs);
+    // exit
+    selection.exit().remove();
+    // enter
+    selection.enter()
+      .append("path")
+      .attr("d", p => line(p.drawPoints))
+      .style("fill","none")
+      .style("stroke", p => siteColorSvg(p.id))
+      .attr("class", "beach-parabola")
+      .attr("vector-effect", "non-scaling-stroke")
+    ;
+    // update
+    selection.attr("d", p => line(p.drawPoints))
+      .style("stroke", p => siteColorSvg(p.id))
+    ;
+  }
+  
+  //------------------------------
+  // Render the infinite lines
+  //------------------------------
+  {
+    let selection = d3.select("#gvd").selectAll(".gvd-surface-infinite")
+      .data(lines);
+    // exit
+    selection.exit().remove();
+    // enter
+    selection.enter()
+      .append("line")
+      .attr('x1', d => d.x0)
+      .attr('y1', d => d.y0)
+      .attr('x2', d => d.x1)
+      .attr('y2', d => d.y1)
+      .attr('class', "gvd-surface-infinite")
+      .attr("vector-effect", "non-scaling-stroke")
+    ;
+    // update
+    selection
+      .attr('x1', d => d.x0)
+      .attr('y1', d => d.y0)
+      .attr('x2', d => d.x1)
+      .attr('y2', d => d.y1)
+    ;
+  }  
+
 }

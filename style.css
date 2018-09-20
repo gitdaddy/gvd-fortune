@@ -14,8 +14,21 @@ line#sweepline {
     stroke: black;
 }
 
-.dcel {
+/*.gvd-surface, .gvd-surface-infinite {
     stroke: red;
+}*/
+
+/* for debugging */
+.gvd-surface {
+    stroke: red;
+}
+.gvd-surface-infinite {
+    stroke: blue;
+}
+
+.event {
+    stroke: cyan;
+    fill: None;
 }
 
 path.beachline {

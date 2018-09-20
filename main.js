@@ -38,7 +38,8 @@ function siteColor(id) {
 }
 
 function siteColorSvg(id) {
-  return d3.schemeCategory20[id%20];
+  // return d3.schemeCategory20[id%20];
+  return d3.schemeCategory10[id%10];
 }
 
 var events = new TinyQueue([], function(a, b) {
@@ -153,8 +154,6 @@ function y2win(y) {
 }
 
 function init() {
-  console.log(document.getElementById("gvd"));//.getBBox());
-
   if (localStorage.sweepline) {
     sweepline = parseFloat(localStorage.sweepline);
   }
@@ -178,24 +177,26 @@ function init() {
 
   program = new LineProgram();
 
-  points = [
-    // vec3(-0.4, 0.8, 0),
-    // vec3(-0.4, 0.0, 0),
-    vec3(-0.4, 0.8, 0),
-    // vec3(-0.4, -0.4, 0),
-    vec3(0.4, 0.4, 0),
-  ];
-
   // points = [
   //   // vec3(-0.4, 0.8, 0),
   //   // vec3(-0.4, 0.0, 0),
   //   vec3(-0.4, 0.8, 0),
-  //   vec3(-0.4, -0.4, 0),
+  //   // vec3(-0.4, -0.4, 0),
   //   vec3(0.4, 0.4, 0),
+  //   vec3(0.7, 0.6, 0),
+  //   vec3(-0.2, 0.0, 0),
   // ];
 
+  points = [
+    // vec3(-0.4, 0.8, 0),
+    // vec3(-0.4, 0.0, 0),
+    vec3(-0.4, 0.8, 0),
+    vec3(-0.4, -0.4, 0),
+    vec3(0.4, 0.4, 0),
+  ];
+
   segments = [
-    // makeSegment(points[0], points[1])
+    makeSegment(points[0], points[1])
   ];
 
   // points = [
@@ -244,8 +245,8 @@ function init() {
     .attr("cy", p => p.y)
     .attr("r", 8/gvdw)
     .attr("class", "site point-site")
-    .attr("fill", (d,i) => siteColorSvg(i))
-    .append("title").html("Hello world!")
+    .attr("fill", (d,i) => siteColorSvg(d.id))
+    .append("title").html(d => d.id)
   ;
   
   d3.select("#gvd")
@@ -377,37 +378,35 @@ function renderGVD(beachline = null) {
 
   sweepLine.render(program, sweepline, vec4(0,0,0,1));
 
-  // // Temporary stuff
-  // if (true) {
-  //   var line = new Line();
-  //   segments.forEach(function(s) {
-  //     var p1 = s[0];
-  //     var p2 = s[1];
-  //     // Render the line
-  //     line.render(program, p1.x, p1.y, p2.x, p2.y);
-  //     // If the sweepline intersects the segment...
-  //     if (sweepline < Math.max(p1.y, p2.y) &&
-  //         sweepline > Math.min(p1.y, p2.y)) {
-  //       var v = new V(s, sweepline);
-  //       // v.thetas.forEach(function(theta) {
-  //       //   var para = createParabola(points[0], sweepline);
-  //       //   var pints = para.intersectRay(v.p, v.vectors[1]);
-  //       //   v.render(program, -1, pints[0].x);
-  //       // });
-  //     }
-  //   });
-
-
-  //   var bline = getPointsBisector(points[0], points[2]);
-  //   // line.render_line(program, bline[0], bline[1]);
-  //   var gp = createGeneralParabola(points[2], segments[0]);
-  //   var pints = gp.intersectLine(bline[0], subtract(bline[1], bline[0]));
-  //   gp.renderGeneral(program, pints[0], 1, blue);
-  //   pints.forEach(function(p) {
-  //     circle.render(program, p, 0.01, true, red);
-  //   });
-  // }
-  // // /Temporary stuff
+  // Temporary stuff
+  if (true) {
+    var line = new Line();
+    segments.forEach(function(s) {
+      var p1 = s[0];
+      var p2 = s[1];
+      // Render the line
+      line.render(program, p1.x, p1.y, p2.x, p2.y);
+      // If the sweepline intersects the segment...
+      if (sweepline < Math.max(p1.y, p2.y) &&
+          sweepline > Math.min(p1.y, p2.y)) {
+        var v = new V(s, sweepline);
+        // v.thetas.forEach(function(theta) {
+        //   var para = createParabola(points[0], sweepline);
+        //   var pints = para.intersectRay(v.p, v.vectors[1]);
+        //   v.render(program, -1, pints[0].x);
+        // });
+      }
+    });
+    var bline = getPointsBisector(points[0], points[2]);
+    // line.render_line(program, bline[0], bline[1]);
+    var gp = createGeneralParabola(points[2], segments[0]);
+    var pints = gp.intersectLine(bline[0], subtract(bline[1], bline[0]));
+    gp.renderGeneral(program, pints[0], 1, blue);
+    pints.forEach(function(p) {
+      circle.render(program, p, 0.01, true, red);
+    });
+  }
+  // /Temporary stuff
 
   var renderEvents = true;
 
@@ -457,7 +456,7 @@ var render = function() {
     result = iter.next();
   }
   let d3edges = d3.select('#gvd')
-    .selectAll('.dcel')
+    .selectAll('.gvd-surface')
     .data(edges)
   ;
   d3edges.exit().remove();
@@ -467,7 +466,7 @@ var render = function() {
     .attr('y1', e => e.origin.point[1])
     .attr('x2', e => e.dest.point[0])
     .attr('y2', e => e.dest.point[1])
-    .attr('class', "dcel")
+    .attr('class', "gvd-surface")
     .attr("vector-effect", "non-scaling-stroke")
   ;
   d3edges

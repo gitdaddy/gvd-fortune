@@ -230,3 +230,25 @@ V.prototype.render = function(program, x0, x1, color=vec4(0,0,1,1),
                        highlight);
   }
 }
+
+// Prepares this v for drawing
+V.prototype.prepDraw = function(id, x0, x1) {
+  this.id = id;
+  this.drawPoints = [];
+
+  if (x0 > x1) throw "x0 > x1 in V render";
+  
+  var y0 = this.f(x0)
+  var y1 = this.f(x1)
+  if (x0 < this.p.x && this.p.x < x1) {
+    // case 2
+    this.drawPoints.push({x:x0, y:y0});
+    this.drawPoints.push({x:this.p.x, y:this.p.y});
+    this.drawPoints.push({x:x1, y:y1});
+  } else {
+    // cases 1 and 3
+    this.drawPoints.push({x:x0, y:y0});
+    this.drawPoints.push({x:x1, y:y1});
+  }
+}
+
