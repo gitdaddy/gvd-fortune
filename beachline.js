@@ -216,9 +216,6 @@ Beachline.prototype.renderImpl = function(
   program, directrix, node, leftx, rightx, renderEvents=false) {
 
   let highlight = false;
-  if (selectedNode) {
-    highlight = selectedNode.id == node.id;
-  }
 
   if (node.isArc) {
     color = siteColor(node.id);
@@ -262,9 +259,6 @@ Beachline.prototype.prepDraw = function(
   directrix, node, leftx, rightx, arcElements, lines, events) {
 
   let highlight = false;
-  if (selectedNode) {
-    highlight = selectedNode.id == node.id;
-  }
 
   if (node.isArc) {
     arcElements.push(node.createDrawElement(leftx, rightx, directrix));
@@ -281,7 +275,7 @@ Beachline.prototype.prepDraw = function(
 
     if (!Number.isNaN(v.x) && !Number.isNaN(v.y) &&
         !Number.isNaN(p.x) && !Number.isNaN(p.y)) {
-      lines.push({x0:v.x, y0:v.y, x1:p.x, y1:p.y});
+      lines.push({x0:v.x, y0:v.y, x1:p.x, y1:p.y, id:node.id});
       // console.log('b ' + v + " " + p);
     }
     
@@ -305,16 +299,6 @@ Beachline.prototype.render = function(program, directrix, renderEvents) {
 
   this.renderImpl(program, directrix, this.root, -1, 1, renderEvents);
 
-  // for (let i = 0; i < arcElements.length; ++i) {
-  //   console.log(arcElements[i].type);
-  // }
-
-  // let aaa = d3.select("#gvd").selectAll(".event")
-  //   .data(events).enter().filter(d => d.type == "parabola");
-  // console.log(aaa);
-  // aaa = d3.select("#gvd").selectAll(".event")
-  //   .data(events).enter().filter(d => d.type == "v");
-  // console.log(aaa);
   let parabolas = arcElements.filter(d => d.type == "parabola");
   let vs = arcElements.filter(d => d.type == "v");
 
@@ -360,13 +344,15 @@ Beachline.prototype.render = function(program, directrix, renderEvents) {
       .append("path")
       .attr("d", p => line(p.drawPoints))
       .style("fill","none")
-      .style("stroke", p => siteColorSvg(p.id))
+      .style("stroke", p => arcColorSvg(p.id))
       .attr("class", "beach-parabola")
       .attr("vector-effect", "non-scaling-stroke")
+      .attr("id", p => `treenode${p.id}`);
     ;
     // update
     selection.attr("d", p => line(p.drawPoints))
-      .style("stroke", p => siteColorSvg(p.id))
+      .style("stroke", p => arcColorSvg(p.id))
+      .attr("id", p => `treenode${p.id}`);
     ;
   }
   
@@ -388,21 +374,23 @@ Beachline.prototype.render = function(program, directrix, renderEvents) {
       .append("path")
       .attr("d", p => line(p.drawPoints))
       .style("fill","none")
-      .style("stroke", p => siteColorSvg(p.id))
+      .style("stroke", p => arcColorSvg(p.id))
       .attr("class", "beach-parabola")
       .attr("vector-effect", "non-scaling-stroke")
+      .attr("id", p => `treenode${p.id}`)
     ;
     // update
     selection.attr("d", p => line(p.drawPoints))
-      .style("stroke", p => siteColorSvg(p.id))
+      .style("stroke", p => arcColorSvg(p.id))
+      .attr("id", p => `treenode${p.id}`)
     ;
   }
   
   //------------------------------
-  // Render the infinite lines
+  // Render the active surface
   //------------------------------
   {
-    let selection = d3.select("#gvd").selectAll(".gvd-surface-infinite")
+    let selection = d3.select("#gvd").selectAll(".gvd-surface-active")
       .data(lines);
     // exit
     selection.exit().remove();
@@ -413,8 +401,9 @@ Beachline.prototype.render = function(program, directrix, renderEvents) {
       .attr('y1', d => d.y0)
       .attr('x2', d => d.x1)
       .attr('y2', d => d.y1)
-      .attr('class', "gvd-surface-infinite")
+      .attr('class', "gvd-surface-active")
       .attr("vector-effect", "non-scaling-stroke")
+      .attr("id", p => `treenode${p.id}`)
     ;
     // update
     selection
@@ -422,6 +411,7 @@ Beachline.prototype.render = function(program, directrix, renderEvents) {
       .attr('y1', d => d.y0)
       .attr('x2', d => d.x1)
       .attr('y2', d => d.y1)
+      .attr("id", p => `treenode${p.id}`)
     ;
   }  
 

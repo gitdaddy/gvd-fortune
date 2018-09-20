@@ -23,8 +23,6 @@ var vverts = [];
 var everts = [];
 var dcel;
 
-let selectedNode;
-
 //------------------------------------------------------------
 // Change this function to enable multi-colored arc cells
 //------------------------------------------------------------
@@ -38,6 +36,12 @@ function siteColor(id) {
 }
 
 function siteColorSvg(id) {
+  // // return d3.schemeCategory20[id%20];
+  // return d3.schemeCategory10[id%10];
+  return 'black';
+}
+
+function arcColorSvg(id) {
   // return d3.schemeCategory20[id%20];
   return d3.schemeCategory10[id%10];
 }
@@ -177,27 +181,30 @@ function init() {
 
   program = new LineProgram();
 
-  // points = [
-  //   // vec3(-0.4, 0.8, 0),
-  //   // vec3(-0.4, 0.0, 0),
-  //   vec3(-0.4, 0.8, 0),
-  //   // vec3(-0.4, -0.4, 0),
-  //   vec3(0.4, 0.4, 0),
-  //   vec3(0.7, 0.6, 0),
-  //   vec3(-0.2, 0.0, 0),
-  // ];
-
   points = [
     // vec3(-0.4, 0.8, 0),
     // vec3(-0.4, 0.0, 0),
     vec3(-0.4, 0.8, 0),
-    vec3(-0.4, -0.4, 0),
+    // vec3(-0.4, -0.4, 0),
     vec3(0.4, 0.4, 0),
+    vec3(0.7, 0.6, 0),
+    vec3(-0.2, 0.0, 0),
   ];
 
   segments = [
-    makeSegment(points[0], points[1])
   ];
+
+  // points = [
+  //   // vec3(-0.4, 0.8, 0),
+  //   // vec3(-0.4, 0.0, 0),
+  //   vec3(-0.4, 0.8, 0),
+  //   vec3(-0.4, -0.4, 0),
+  //   vec3(0.4, 0.4, 0),
+  // ];
+
+  // segments = [
+  //   makeSegment(points[0], points[1])
+  // ];
 
   // points = [
   //   vec3(-0.30, -0.1, 0),
@@ -246,6 +253,7 @@ function init() {
     .attr("r", 8/gvdw)
     .attr("class", "site point-site")
     .attr("fill", (d,i) => siteColorSvg(d.id))
+    .attr("id", d => `site${d.id}`)
     .append("title").html(d => d.id)
   ;
   
@@ -264,7 +272,7 @@ function init() {
     .attr("x2", s => s[1].x)
     .attr("y2", s => s[1].y)
     .attr("class", "site segment-site")
-    .attr("stroke", (d,i) => siteColorSvg(i+8))
+    .attr("stroke", (d,i) => siteColorSvg(i+1))
     .attr("vector-effect", "non-scaling-stroke")
   ;
   
@@ -379,7 +387,7 @@ function renderGVD(beachline = null) {
   sweepLine.render(program, sweepline, vec4(0,0,0,1));
 
   // Temporary stuff
-  if (true) {
+  if (segments.length > 0) {
     var line = new Line();
     segments.forEach(function(s) {
       var p1 = s[0];

@@ -14,16 +14,17 @@ line#sweepline {
     stroke: black;
 }
 
-/*.gvd-surface, .gvd-surface-infinite {
+/*.gvd-surface, .gvd-surface-active {
     stroke: red;
 }*/
 
 /* for debugging */
 .gvd-surface {
-    stroke: red;
+    stroke: black;
 }
-.gvd-surface-infinite {
-    stroke: blue;
+.gvd-surface-active {
+    stroke: black;
+    stroke-dasharray: 3,3;
 }
 
 .event {

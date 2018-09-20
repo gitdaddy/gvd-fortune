@@ -17,6 +17,7 @@ var ArcNode = function(site) {
     this.openPoint = site[0];
     this.closePoint = site[1];
   }
+  this.id = nodeId++;
 }
 
 ArcNode.prototype.toString = function() {
@@ -41,13 +42,13 @@ ArcNode.prototype.createDrawElement = function(leftx, rightx, directrix) {
   return element;
 }
 
-Object.defineProperty(ArcNode.prototype, "id", {
-  configurable: true,
-  enumerable: true,
-  get: function() {
-    return this.site.id;
-  },
-});
+// Object.defineProperty(ArcNode.prototype, "id", {
+//   configurable: true,
+//   enumerable: true,
+//   get: function() {
+//     return this.site.id;
+//   },
+// });
 
 //------------------------------------------------------------
 // prevEdge
@@ -129,15 +130,18 @@ Object.defineProperty(EdgeNode.prototype, "id", {
   configurable: true,
   enumerable: true,
   get: function() {
-    return this.prevArc().site.id + "-" + this.nextArc().site.id;
+    // return this.prevArc().site.id + "-" + this.nextArc().site.id;
+    return this.prevArc().id + "-" + this.nextArc().id;
   },
 });
 
 EdgeNode.prototype.updateEdge = function(vertex, dcel) {
   this.dcelEdge = dcel.makeEdge();
   this.dcelEdge.origin.point = vertex;
-  this.dcelEdge.a = this.prevArc().site.id;
-  this.dcelEdge.b = this.nextArc().site.id;
+  // this.dcelEdge.a = this.prevArc().site.id;
+  // this.dcelEdge.b = this.nextArc().site.id;
+  this.dcelEdge.a = this.prevArc().id;
+  this.dcelEdge.b = this.nextArc().id;
 }
 
 EdgeNode.prototype.prevArc = function() {

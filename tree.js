@@ -1,11 +1,13 @@
 function nodeColor(node) {
   if (node.isEdge) {
-    return "red";
+    return "black";
   }
   // arc node
-  var c = siteColor(node.id);
-  var color = d3.rgb(c[0]*255, c[1]*255, c[2]*255);
-  return color;
+  // var c = siteColor(node.id);
+  var c = arcColorSvg(node.id);
+  return c;
+  // var color = d3.rgb(c[0]*255, c[1]*255, c[2]*255);
+  // return color;
 }
 
 function getInfo(d) {
@@ -86,29 +88,6 @@ function showTree(treeData) {
     .attr("transform", function(d) { 
       return "translate(" + d.x + "," + d.y + ")"; })
     .on("click", function(d) { console.log("click"); })
-    // .on("mouseover", function(d) {
-    //   let g = d3.select(this); // The node
-    //   // The class is used to remove the additional text later
-    //   let info = g.append('text')
-    //     .classed('info', true)
-    //     .attr('x', 10)
-    //     .attr('y', -20)
-    //     .text(getInfo(d)/*'More info'*/);
-    // })
-    // .on("mouseout", function() {
-    //   // console.log("out");
-    //   // selectedNode = null;
-    //   // render();
-    //   // Remove the info text on mouse out.
-    //   d3.select(this).select('text.info').remove()
-    // })
-    // // .on("mouseleave", function() {
-    // //   console.log("leave");
-    // //   selectedNode = null;
-    // //   render();
-    // //   // Remove the info text on mouse out.
-    // //   d3.select(this).select('text.info').remove()
-    // // })
   ;
 
   
@@ -119,14 +98,14 @@ function showTree(treeData) {
     .style("stroke", function(d) { return nodeColor(d.data); })
     .style("fill", function(d) { return nodeColor(d.data); })
     .on("mouseover", function(d, i) {
-      selectedNode = d.data;
-      renderGVD();
-      setDebug(d.data.toString());
+      d3.select(`#treenode${d.data.id}`).style("stroke-width", 5);
+      if (d.data.isArc)
+        d3.select(`#site${d.data.site.id}`).attr("r", 20/gvdw);
     })
     .on("mouseout", function(d, i) {
-      selectedNode = null;
-      renderGVD();
-      setDebug("");
+      d3.select(`#treenode${d.data.id}`).style("stroke-width", null);
+      if (d.data.isArc)
+        d3.select(`#site${d.data.site.id}`).attr("r", 8/gvdw);
     })
 ;
   
