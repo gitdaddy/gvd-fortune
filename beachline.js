@@ -224,7 +224,7 @@ Beachline.prototype.renderImpl = function(
     color = siteColor(node.id);
     if (node.isParabola) {
       createParabola(node.site, directrix).render(
-        program, leftx, rightx, color, highlight);
+        program, leftx, rightx, node.id, color, highlight);
     } else {
       // console.log("v leftx = " + leftx + " rightx = " + rightx);
       var v = new V(node.site, directrix);

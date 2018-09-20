@@ -261,7 +261,7 @@ function abc() {
   return 130;
 }
 
-Parabola.prototype.renderImpl = function(program, x0, x1, color=vec4(0,0,1,1), highlight=false) {
+Parabola.prototype.renderImpl = function(program, x0, x1, id, color=vec4(0,0,1,1), highlight=false) {
   // d3 experiments
   // let ax0 = x0;
   // let ay0 = this.f(x0);
@@ -279,22 +279,45 @@ Parabola.prototype.renderImpl = function(program, x0, x1, color=vec4(0,0,1,1), h
   // let ax1 = this.focus.x+1;
   // let ay0 = this.f(ax0);
   // let ay1 = this.f(ax1);
-  let ay0 = this.focus.y;
-  let ay1 = this.focus.y;
-  let ax0 = this.f_(ay0)[0];
-  let ax1 = this.f_(ay1)[1];
-  let ax2 = this.focus.x;
-  let ay2 = this.k-this.p;
-  console.log(ax0);
-  let path = `M ${ax0} ${ay0} Q ${ax2} ${ay2} ${ax1} ${ay1}`;
-  console.log(path);
-  d3.select("#gvd")
+  // let ay0 = this.focus.y;
+  // let ay1 = this.focus.y;
+
+  // let ay0 = 1;
+  // let ay1 = 1;
+  // let ax0 = this.f_(ay0)[0];
+  // let ax1 = this.f_(ay1)[1];
+  // let ax2 = this.focus.x;
+  // let ay2 = this.k-this.p;
+  // console.log(ax0);
+  // let path = `M ${ax0} ${ay0} Q ${ax2} ${ay2} ${ax1} ${ay1}`;
+  // console.log(path);
+  // d3.select("#gvd")
+  //   .append("path")
+  //   // .attr("d", `M ${ax0} ${ay0} A 30 50 0 0 1 ${ax1} ${ay1}`)
+  //   .attr("d", path)
+  //   .attr("class", "beachline")
+  //   .attr("vector-effect", "non-scaling-stroke")
+  // ;
+
+  let line = d3.line()
+    .x(function (d) {return d.x;})
+    .y(function (d) {return d.y;})
+    // .curve(d3.curveLinear)
+    .curve(d3.curveCardinal)
+  ;
+  let thisPara = this;
+  let data = d3.range(-1, 1.1, 0.1).map(function (d) {
+    return {x:d, y:thisPara.f(d)};
+  });
+  let pa = d3.select("#gvd")
     .append("path")
-    // .attr("d", `M ${ax0} ${ay0} A 30 50 0 0 1 ${ax1} ${ay1}`)
-    .attr("d", path)
-    .attr("class", "beachline")
+    .datum(data)
+    .attr("d", line)
+    .style("fill","none")
+    .style("stroke", siteColorSvg(id))
     .attr("vector-effect", "non-scaling-stroke")
   ;
+  console.log(pa);
 
   program.use();
 
@@ -356,11 +379,11 @@ Parabola.prototype.renderImpl = function(program, x0, x1, color=vec4(0,0,1,1), h
   popMatrix();
 
   if (highlight) {
-    this.render(program, -1, 1, color, false);
+    this.render(program, -1, 1, id, color, false);
   }
 }
 
-Parabola.prototype.render = function(program, x0, x1, color=vec4(0,0,1,1), highlight = false) {
+Parabola.prototype.render = function(program, x0, x1, id, color=vec4(0,0,1,1), highlight = false) {
   program.use();
 
   if (x0 > 1 || x1 < -1) return;
@@ -387,17 +410,17 @@ Parabola.prototype.render = function(program, x0, x1, color=vec4(0,0,1,1), highl
     }
   }
 
-  this.renderImpl(program, x0, x1, color, highlight);
+  this.renderImpl(program, x0, x1, id, color, highlight);
 }
 
 Parabola.prototype.renderGeneral = function(
-  program, p1, p2, color=vec4(0,0,1,1), highlight = false) {
+  program, p1, p2, id, color=vec4(0,0,1,1), highlight = false) {
 
   program.use();
 
   var x0 = this.transformPoint(p1).x;
   var x1 = 2;
 
-  this.renderImpl(program, x0, x1, color, highlight);
+  this.renderImpl(program, x0, x1, id, color, highlight);
 }
 
