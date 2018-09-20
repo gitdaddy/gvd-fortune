@@ -259,7 +259,7 @@ Beachline.prototype.renderImpl = function(
 }
 
 Beachline.prototype.prepDraw = function(
-  directrix, node, leftx, rightx, parabolas, vs, lines, events) {
+  directrix, node, leftx, rightx, arcElements, lines, events) {
 
   let highlight = false;
   if (selectedNode) {
@@ -267,16 +267,7 @@ Beachline.prototype.prepDraw = function(
   }
 
   if (node.isArc) {
-    if (node.isParabola) {
-      let para = createParabola(node.site, directrix);
-      para.prepDraw(node.id, leftx, rightx);
-      parabolas.push(para);
-    } else {
-      var v = new V(node.site, directrix);
-      v.prepDraw(node.id, leftx, rightx);
-      // v.render(program, leftx, rightx, color, highlight);
-      vs.push(v);
-    }
+    arcElements.push(node.createDrawElement(leftx, rightx, directrix));
   } else {
     var color = vec4(0.0, 0.7, 0.7);
     // The point where this edge node was born
@@ -294,8 +285,8 @@ Beachline.prototype.prepDraw = function(
       // console.log('b ' + v + " " + p);
     }
     
-    this.prepDraw(directrix, node.left, leftx, p.x, parabolas, vs, lines, events);
-    this.prepDraw(directrix, node.right, p.x, rightx, parabolas, vs, lines, events);
+    this.prepDraw(directrix, node.left, leftx, p.x, arcElements, lines, events);
+    this.prepDraw(directrix, node.right, p.x, rightx, arcElements, lines, events);
   }
 }
 
@@ -305,15 +296,27 @@ Beachline.prototype.render = function(program, directrix, renderEvents) {
     return;
   }
   
-  let parabolas = [];
-  let vs = [];
+  let arcElements = [];
   // These lines are GVD lines going to infinity that may or may not
   // eventually be subsumed into the DCEL.
   let lines = [];
   let events = [];
-  this.prepDraw(directrix, this.root, -1, 1, parabolas, vs, lines, events);
+  this.prepDraw(directrix, this.root, -1, 1, arcElements, lines, events);
 
   this.renderImpl(program, directrix, this.root, -1, 1, renderEvents);
+
+  // for (let i = 0; i < arcElements.length; ++i) {
+  //   console.log(arcElements[i].type);
+  // }
+
+  // let aaa = d3.select("#gvd").selectAll(".event")
+  //   .data(events).enter().filter(d => d.type == "parabola");
+  // console.log(aaa);
+  // aaa = d3.select("#gvd").selectAll(".event")
+  //   .data(events).enter().filter(d => d.type == "v");
+  // console.log(aaa);
+  let parabolas = arcElements.filter(d => d.type == "parabola");
+  let vs = arcElements.filter(d => d.type == "v");
 
   //------------------------------
   // Render the events

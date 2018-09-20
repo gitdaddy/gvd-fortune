@@ -25,6 +25,22 @@ ArcNode.prototype.toString = function() {
   ;
 }
 
+ArcNode.prototype.createDrawElement = function(leftx, rightx, directrix) {
+  let element = null;
+  if (this.isParabola) {
+    let para = createParabola(this.site, directrix);
+    para.prepDraw(this.id, leftx, rightx);
+    element = para;
+    element.type = "parabola";
+  } else if (this.isV) {
+    var v = new V(this.site, directrix);
+    v.prepDraw(this.id, leftx, rightx);
+    element = v;
+    element.type = "v";
+  }
+  return element;
+}
+
 Object.defineProperty(ArcNode.prototype, "id", {
   configurable: true,
   enumerable: true,
