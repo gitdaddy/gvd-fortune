@@ -1,82 +1,3 @@
-// //------------------------------------------------------------
-// // line/parabola intersections
-// // The line is given by a ray q(t) = q + tv.
-// // Returns t values.
-// //------------------------------------------------------------
-// function lvIntersect(h, k, p, q, v) {
-//   // v = p1 --> p2
-//   // var q = p1;
-//   // var v = subtract(p2, q);
-//   var a = v.x*v.x/(4*p);
-//   var b = 2*v.x*(q.x-h)/(4*p) - v.y;
-//   var c = (q.x*q.x-2*q.x*h+h*h)/(4*p) + k - q.y;
-//   var tvals = quadratic(a, b, c);
-//   // console.log("a = " + a);
-//   // console.log("b = " + b);
-//   // console.log("c = " + c);
-//   // console.log("tvals = " + tvals);
-//   return tvals;
-//   // var ret = [];
-//   // tvals.forEach(function(t) {
-//   //   if (t >= 0) {
-//   //     ret.push(add(p1, mult(v,t)));
-//   //   }
-//   // });
-//   // return ret;
-// }
-
-// // Returns intersections ordered by x value
-// // h - x offset
-// // k - y offset
-// // p - scale factor (distance from parabola to sweepline)
-// function ppIntersect(h1, k1, p1, h2, k2, p2) {
-//   // Check for degenerate parabolas
-//   const EPSILON = 0.00000001;
-//   if (Math.abs(p1) < EPSILON) {
-//     if (Math.abs(p2) < EPSILON) {
-//       // Both parabolas have no width
-//       return [];
-//     }
-//     var x = h1;
-//     var y = f(x, h2, k2, p2);
-//     return [ vec2(x, y), vec2(x, y) ];
-//   } else if (Math.abs(p2) < EPSILON) {
-//     var x = h2;
-//     var y = f(x, h1, k1, p1);
-//     return [ vec2(x, y), vec2(x, y) ];
-//   }
-
-//   var a = 0.25*(1/p1 - 1/p2);
-//   var b = 0.5*(h2/p2 - h1/p1);
-//   var c = 0.25*(h1*h1/p1 - h2*h2/p2) + k1 - k2;
-//   var disc = b*b - 4*a*c;
-//   var xintersections = [];
-//   if (a == 0) {
-//     // One solution -- no quadratic term
-//     xintersections.push(-c/b);
-//   } else if (disc < 0) {
-//     // No real solutions
-//   } else {
-//     // One or two solutions.
-//     var x1 = (-b + Math.sqrt(disc))/(2*a);
-//     var x2 = (-b - Math.sqrt(disc))/(2*a);
-//     if (x1 < x2) {
-//       xintersections.push(x1);
-//       xintersections.push(x2);
-//     } else {
-//       xintersections.push(x2);
-//       xintersections.push(x1);
-//     }
-//   }
-//   // return xintersections;
-//   var ret = [];
-//   xintersections.forEach(function(x) {
-//     var y = f(x, h1, k1, p1);//(x-h1)*(x-h1)/(4*p1) + k1;
-//     ret.push(vec2(x, y));
-//   });
-//   return ret;
-// }
-
 //------------------------------------------------------------
 // V class
 //
@@ -201,37 +122,11 @@ V.prototype.f_ = function(y) {
   return ret;
 }
 
+// Prepares this v for drawing
 // There are three cases:
 //   1. p < x0 < x1
 //   2. x0 < p < x1
 //   3. x0 < x1 < p
-V.prototype.render = function(program, x0, x1, color=vec4(0,0,1,1),
-                             highlight=false) {
-  program.use();
-
-  var line = new Line();
-
-  // left
-  var v0 = this.vectors[0];
-  // right
-  var v1 = this.vectors[1];
-
-  if (x0 > x1) throw "x0 > x1 in V render";
-  
-  var y0 = this.f(x0)
-  var y1 = this.f(x1)
-  if (x0 < this.p.x && this.p.x < x1) {
-    // case 2
-    line.render_segment(program, this.p, vec3(x0, y0, 0), color, highlight);
-    line.render_segment(program, this.p, vec3(x1, y1, 0), color, highlight);
-  } else {
-    // cases 1 and 3
-    line.render_segment(program, vec3(x0, y0, 0), vec3(x1, y1, 0), color,
-                       highlight);
-  }
-}
-
-// Prepares this v for drawing
 V.prototype.prepDraw = function(id, x0, x1) {
   this.id = id;
   this.drawPoints = [];
