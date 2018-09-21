@@ -11,7 +11,9 @@ var CloseEvent = function(y, arcNode, leftNode, rightNode, equi) {
   this.arcNode.closeEvent = this;
   this.isCloseEvent = true;
   this.live = true;
-  this.r = length(subtract(equi,this.arcNode.site));
+  if (this.arcNode.isArc) {
+    this.r = length(subtract(vec2(equi),vec2(this.arcNode.site)));
+  }
 };
 
 Object.defineProperty(CloseEvent.prototype, "y", {
@@ -58,8 +60,8 @@ function splitArcNode(toSplit, node, dcel) {
     y = createParabola(toSplit.site, node.site.y).f(x);
   } else {
     y = new V(toSplit.site, node.site.y).f(x);
+    // console.log(`splitting ${toSplit} y=${y}`);
   }
-  // var y = createParabola(toSplit.site, node.site.y).f(x);
   var vertex = vec3(x, y, 0);
   var left = toSplit;
   var right = new ArcNode(toSplit.site);

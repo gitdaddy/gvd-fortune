@@ -157,10 +157,16 @@ function init() {
 
   document.getElementById("sweeplineLabel").innerHTML = sweepline.toFixed(3);
 
+  // let points1 = [
+  //   // segment test points
+  //   vec3(-0.4, 0.8, 0),
+  //   vec3(-0.4, 0.1, 0),
+  //   vec3(0.4,  0.5, 0),
+  // ];
   let points1 = [
     // segment test points
-    vec3(-0.4, 0.8, 0),
-    vec3(-0.4, 0.0, 0),
+    vec3(0, 0.8, 0),
+    vec3(0, 0.3, 0),
     vec3(0.4,  0.5, 0),
   ];
   let segments1 = [
@@ -206,8 +212,8 @@ function init() {
   }
   let segments4 = [];
 
-  points = points3;
-  segments = segments3;
+  points = points1;
+  segments = segments1;
 
   // Give all points and segments a unique ID
   var id = 1;

@@ -175,22 +175,38 @@ EdgeNode.prototype.createBeachlineSegment = function(site, directrix) {
 // Finds the intersection between the left and right arcs.
 EdgeNode.prototype.intersection = function(directrix) {
   // This is inefficient. We should be storing sites in edge nodes.
-  let pleft = this.createBeachlineSegment(this.prevArc().site, directrix);
-  let pright = this.createBeachlineSegment(this.nextArc().site, directrix);
+  let leftArcNode = this.prevArc();
+  let rightArcNode = this.nextArc();
+  let pleft = this.createBeachlineSegment(leftArcNode.site, directrix);
+  let pright = this.createBeachlineSegment(rightArcNode.site, directrix);
   let intersections = pleft.intersect(pright);
   this.intersections = intersections;
 
   // Find the center arc
+  let arcNodes = [leftArcNode, rightArcNode];
+  let arcs = [pleft, pright];
   let pcenterx = (intersections[0].x + intersections[1].x)/2;
   let prevy = pleft.f(pcenterx);
   let nexty = pright.f(pcenterx);
+  let lower;
   if (prevy < nexty) {
-    // prev arc is the center arc
-    this.selectedIntersection = intersections[1];
+    lower = 0;
   } else {
-    // next arc is the center arc
-    this.selectedIntersection = intersections[0];
+    lower = 1;
   }
+  if (arcNodes[lower].isV &&
+      directrix < arcNodes[lower].site[1].y &&
+     arcNodes[lower].site[1] == arcNodes[1-lower].site) {
+    console.log(intersections);
+    console.log(arcNodes[lower].site);
+    console.log(arcNodes[1-lower].site);
+    lower = 1-lower;
+  }
+  // If the prev arc is lower, take the right intersection.
+  // In this case, the previous arc is the center.
+  // Otherwise, take the left intersection.
+  // In this case, the next arc is the center.
+  this.selectedIntersection = intersections[1-lower];
   return this.selectedIntersection;
 
   // let ret = intersections[0];
