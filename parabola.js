@@ -22,18 +22,7 @@ function lpIntersect(h, k, p, q, v) {
   var b = 2*v.x*(q.x-h)/(4*p) - v.y;
   var c = (q.x*q.x-2*q.x*h+h*h)/(4*p) + k - q.y;
   var tvals = quadratic(a, b, c);
-  // console.log("a = " + a);
-  // console.log("b = " + b);
-  // console.log("c = " + c);
-  // console.log("tvals = " + tvals);
   return tvals;
-  // var ret = [];
-  // tvals.forEach(function(t) {
-  //   if (t >= 0) {
-  //     ret.push(add(p1, mult(v,t)));
-  //   }
-  // });
-  // return ret;
 }
 
 // Returns intersections ordered by x value
@@ -97,17 +86,12 @@ function ppIntersect(h1, k1, p1, h2, k2, p2) {
 // p - scale factor
 // directrix is at k-p
 // focus is at k+p
-// start drawing from x0 and stop at x1
 // y = (x-h)^2/(4p) + k
 Parabola = function(focus, h, k, p) {//, theta, offset) {
   this.focus = focus;
   this.h = h;
   this.k = k;
   this.p = p;
-  // this.theta = theta;
-  // this.offset = offset;
-  // this.Rz = rotateZ(degrees(-this.theta));
-  // this.nRz = rotateZ(degrees(this.theta));
 }
 
 // The directrix is assumed to be horizontal and is given as a y-value.
@@ -118,80 +102,12 @@ function createParabola(focus, directrix) {
   return new Parabola(focus, h, k, p, 0, 0);
 }
 
-// // The directrix is a general line given as an array of two points
-// // on the line.
-// function createGeneralParabola(focus, directrix) {
-//   var a = directrix[0];
-//   var b = directrix[1];
-//   // Make sure a and b are ordered such that the focus is located
-//   // on the left of b-a.
-//   var v = normalize(subtract(b, a));
-//   var vxf = cross(v, subtract(focus,a));
-//   if (vxf.z < 0) {
-//     v = negate(v);
-//     [a, b] = [b, a];
-//     vxf.z = -vxf.z;
-//   }
-//   var k = length(vxf) / 2.0;
-//   var p = k;
-//   var h = focus.x;
-//   var theta = Math.atan2(v.y, v.x);
-//   return new Parabola(focus, h, k, p, theta, 0);
-// }
-
 Parabola.prototype.intersect = function(para) {
   if (para instanceof Parabola) {
     return ppIntersect(this.h, this.k, this.p, para.h, para.k, para.p);
   }
   return para.intersect(this);
 }
-
-// Parabola.prototype.transformPoint = function(p) {
-//   if (this.theta == 0) return p;
-
-//   // Don't remove this code. It explains what we're doing below.
-//   // var M = translate(this.h, 2*this.k, 0);
-//   // M = mult(M, rotateZ(degrees(-this.theta)));
-//   // M = mult(M, translate(-this.focus.x, -this.focus.y, 0));
-//   // p = mult(M, vec4(p));
-
-//   // translate, rotate, translate manually for performance.
-//   // console.log("p="+p);
-//   // var pp = vec4(p);
-//   // console.log("pp="+pp);
-//   // console.log("pp1="+p);
-//   p = vec4(p);
-//   // console.log("pp2="+p);
-//   p.x += -this.focus.x;
-//   p.y += -this.focus.y;
-//   // console.log("p="+p);
-//   p = mult(this.Rz, p);
-//   p.x += this.h;
-//   p.y += 2*this.k;
-//   return p;
-// }
-
-// Parabola.prototype.transformVector = function(v) {
-//   if (this.theta == 0) return v;
-
-//   v = mult(this.Rz, vec4(v));
-//   // Not sure why w is getting set to 1.
-//   v.w = 0;
-//   return v;
-// }
-
-// Parabola.prototype.untransformPoint = function(p) {
-//   if (this.theta == 0) return p;
-
-//   // translate, rotate, translate manually for performance
-//   p = vec4(p);
-//   p.x += -this.h;
-//   p.y += -2*this.k;
-//   p = mult(this.nRz, p);
-//   p.x += this.focus.x;
-//   p.y += this.focus.y;
-//   return p;
-// }
 
 // Intersect the positive portion of the ray.
 // If there are two intersections, the intersections will
@@ -213,30 +129,6 @@ Parabola.prototype.intersectRay = function(p, v) {
   });
   return ret;
 }
-
-// // Intersect all intersections of a line and parabola.
-// // If there are two intersections, the intersections will
-// // be returned in order of t value.
-// // The line is given in parametric form p(t) = p + tv
-// Parabola.prototype.intersectLine = function(p, v) {
-//   p = this.transformPoint(p);
-//   v = this.transformVector(v);
-
-//   var tvals = lpIntersect(this.h, this.k, this.p, p, v);
-//   // Sort tvals in increasing order
-//   if (tvals.length == 2 && tvals[1] < tvals[0]) {
-//     tvals = [tvals[1], tvals[0]];
-//   }
-
-//   pthis = this;
-//   var ret = [];
-//   tvals.forEach(function(t) {
-//     var q = add(p, mult(v,t));
-//     q = pthis.untransformPoint(q);
-//     ret.push(q);
-//   });
-//   return ret;
-// }
 
 // y = f(x)
 Parabola.prototype.f = function(x) {
@@ -260,19 +152,10 @@ Parabola.prototype.renderSvg = function(id, highlight=false) {
   let line = d3.line()
     .x(function (d) {return d.x;})
     .y(function (d) {return d.y;})
-    // .curve(d3.curveLinear)
     .curve(d3.curveCardinal)
   ;
-  // let data = [];
-  // let xinc = 0.1;
-  // for (var x = x0; x < x1; x += xinc) {
-  //   data.push({x:x, y:this.f(x)});
-  // }
-  // data.push({x:x1, y:this.f(x1)});
   let pa = d3.select("#gvd")
-  // let pa = d3.selectAll(".beach-parabola")
     .append("path")
-    // .datum(data)
     .datum(this.drawPoints)
     .attr("d", line)
     .style("fill","none")
@@ -281,96 +164,6 @@ Parabola.prototype.renderSvg = function(id, highlight=false) {
     .attr("vector-effect", "non-scaling-stroke")
   ;
 }
-
-Parabola.prototype.renderImpl = function(program, x0, x1, id, color=vec4(0,0,1,1), highlight=false) {
-  program.use();
-
-  // Construct line segments
-  var inc = (x1-x0) / numParaPoints;
-  for (var i = 0; i < numParaPoints-1; ++i) {
-    var x = x0 + i * inc;
-    var y = this.f(x);
-    paraPoints[i] = vec4(x, y, 0, 1);
-  }
-  var y = this.f(x1);
-  paraPoints[numParaPoints-1] = vec4(x1, y, 0, 1);
-
-  if (paraPointsBuffer == null) {
-    paraPointsBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, paraPointsBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(paraPoints), gl.STATIC_DRAW);
-  }
-  gl.bindBuffer(gl.ARRAY_BUFFER, paraPointsBuffer);
-  gl.bufferSubData(gl.ARRAY_BUFFER, 0, flatten(paraPoints));
-
-  pushMatrix();
-  // if (this.theta != 0) {
-  //   mvMatrix = mult(mvMatrix, translate(this.focus.x, this.focus.y, 0));
-  //   mvMatrix = mult(mvMatrix, this.nRz);
-  //   mvMatrix = mult(mvMatrix, translate(-this.h, -2*this.k, 0));
-  // }
-  gl.uniformMatrix4fv(program.mvMatrixLoc, false, flatten(mvMatrix));
-
-  gl.uniformMatrix4fv(program.pMatrixLoc, false, flatten(pMatrix));
-  gl.uniform4fv(program.colorLoc, flatten(color));
-
-  gl.enableVertexAttribArray(program.vertexLoc);
-  gl.bindBuffer(gl.ARRAY_BUFFER, paraPointsBuffer);
-  gl.vertexAttribPointer(program.vertexLoc, 4, gl.FLOAT, false, 0, 0);
-
-  gl.drawArrays(gl.LINE_STRIP, 0, paraPoints.length);
-
-  popMatrix();
-}
-
-Parabola.prototype.render = function(program, x0, x1, id, color=vec4(0,0,1,1), highlight = false) {
-  // // SVG
-  // this.setDrawBounds(x0, x1);
-  // this.setDrawPoints();
-  // this.id = id;
-
-  program.use();
-
-  if (x0 > 1 || x1 < -1) return;
-
-  // Optimize the boundaries for a smooth draw
-  x0 = Math.max(x0, -1);
-  x1 = Math.min(x1, 1);
-  if (this.f(x0) > 1) {
-    var xvalues = this.f_(1);
-    if (xvalues.length > 0) {
-      x0 = xvalues.reduce(function(a, b) {
-        return Math.max(x0, Math.min(a, b));
-      });
-      // console.log("changing x0 to " + x0);
-    }
-  }
-  if (this.f(x1) > 1) {
-    var xvalues = this.f_(1);
-    if (xvalues.length > 0) {
-      x1 = xvalues.reduce(function(a, b) {
-        return Math.min(x1, Math.max(a, b));
-      });
-      // console.log("changing x1 to " + x1);
-    }
-  }
-
-  this.renderImpl(program, x0, x1, id, color, highlight);
-
-  // SVG
-  // this.renderSvg(id);
-}
-
-// Parabola.prototype.renderGeneral = function(
-//   program, p1, p2, id, color=vec4(0,0,1,1), highlight = false) {
-
-//   program.use();
-
-//   var x0 = this.transformPoint(p1).x;
-//   var x1 = 2;
-
-//   this.renderImpl(program, x0, x1, id, color, highlight);
-// }
 
 // Prepares this parabola for drawing
 Parabola.prototype.prepDraw = function(id, x0, x1) {
@@ -485,7 +278,6 @@ Parabola.prototype.setDrawPoints = function() {
       `rotate(${(this.theta)*180/Math.PI}) ` +
       `translate(${-this.h},${-2*this.k})`;
   }
-
 }
 
 //------------------------------------------------------------
@@ -531,23 +323,9 @@ GeneralParabola.prototype.transformPoint = function(p) {
   // p = mult(M, vec4(p));
 
   // translate, rotate, translate manually for performance.
-  // console.log("p="+p);
-  // var pp = vec4(p);
-  // console.log("pp="+pp);
-  // console.log("pp1="+p);
   p = vec4(p);
-  // console.log("pp2="+p);
-
-  // p.x += -this.focus.x;
-  // p.y += -this.focus.y;
-  // // console.log("p="+p);
-  // p = mult(this.Rz, p);
-  // p.x += this.h;
-  // p.y += 2*this.k;
-
   p.x += -this.parabola.focus.x;
   p.y += -this.parabola.focus.y;
-  // console.log("p="+p);
   p = mult(this.Rz, p);
   p.x += this.parabola.h;
   p.y += 2*this.parabola.k;
@@ -644,23 +422,5 @@ GeneralParabola.prototype.setDrawPoints = function() {
     p = this.untransformPoint(p);
     this.drawPoints.push(p);
   }
-}
-
-GeneralParabola.prototype.render = function(
-  program, p1, p2, id, color=vec4(0,0,1,1), highlight = false) {
-
-  program.use();
-
-  var x0 = this.transformPoint(p1).x;
-  var x1 = 2;
-
-  pushMatrix();
-  if (this.theta != 0) {
-    mvMatrix = mult(mvMatrix, translate(this.parabola.focus.x, this.parabola.focus.y, 0));
-    mvMatrix = mult(mvMatrix, this.nRz);
-    mvMatrix = mult(mvMatrix, translate(-this.parabola.h, -2*this.parabola.k, 0));
-  }
-  this.parabola.render(program, x0, x1, id, color, highlight);
-  popMatrix();
 }
 

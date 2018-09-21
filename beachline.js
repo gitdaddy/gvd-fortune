@@ -212,49 +212,6 @@ Beachline.prototype.remove = function(arcNode, point) {
 // render
 //------------------------------------------------------------
 
-Beachline.prototype.renderImpl = function(
-  program, directrix, node, leftx, rightx, renderEvents=false) {
-
-  let highlight = false;
-
-  if (node.isArc) {
-    color = siteColor(node.id);
-    if (node.isParabola) {
-      let para = createParabola(node.site, directrix);
-      para.prepDraw(node.id, leftx, rightx);
-      para.render(
-        program, leftx, rightx, node.id, color, highlight);
-      // parabolas.push(para);
-    } else {
-      // console.log("v leftx = " + leftx + " rightx = " + rightx);
-      var v = new V(node.site, directrix);
-      v.render(program, leftx, rightx, color, highlight);
-    }
-  } else {
-    var color = vec4(0.0, 0.7, 0.7);
-    // The point where this edge node was born
-    var v = node.dcelEdge.origin.point;
-    // The intersection between the edge node's defining arc nodes
-    var p = node.intersection(directrix);
-    // console.log(`beachline intersection:
-    //             ${node.prevArc().site.id}-${node.nextArc().site.id}: ${p}`);
-    if (renderEvents) {
-      circle.render(program, v, 0.01, false, color);
-    }
-
-    if (!Number.isNaN(v.x) && !Number.isNaN(v.y) &&
-        !Number.isNaN(p.x) && !Number.isNaN(p.y)) {
-      var line = new Line();
-      line.render(program, v.x, v.y, p.x, p.y, vec4(1, 0, 0, 1));
-      // console.log('a ' + v + " " + p);
-    }
-
-    // console.log("leftx = " + leftx + " p.x = " + p.x + " rightx = " + rightx);
-    this.renderImpl(program, directrix, node.left, leftx, p.x);
-    this.renderImpl(program, directrix, node.right, p.x, rightx);
-  }
-}
-
 Beachline.prototype.prepDraw = function(
   directrix, node, leftx, rightx, arcElements, lines, events) {
 
@@ -276,7 +233,6 @@ Beachline.prototype.prepDraw = function(
     if (!Number.isNaN(v.x) && !Number.isNaN(v.y) &&
         !Number.isNaN(p.x) && !Number.isNaN(p.y)) {
       lines.push({x0:v.x, y0:v.y, x1:p.x, y1:p.y, id:node.id});
-      // console.log('b ' + v + " " + p);
     }
     
     this.prepDraw(directrix, node.left, leftx, p.x, arcElements, lines, events);
@@ -296,8 +252,6 @@ Beachline.prototype.render = function(program, directrix, renderEvents) {
   let lines = [];
   let events = [];
   this.prepDraw(directrix, this.root, -1, 1, arcElements, lines, events);
-
-  // this.renderImpl(program, directrix, this.root, -1, 1, renderEvents);
 
   let parabolas = arcElements.filter(d => d.type == "parabola");
   let vs = arcElements.filter(d => d.type == "v");
@@ -330,7 +284,6 @@ Beachline.prototype.render = function(program, directrix, renderEvents) {
   // Render the parabolas
   //------------------------------
   {
-    // console.log("yyy " + parabolas[0].drawPoints[0].y);
     let line = d3.line()
       .x(function (d) {return d.x;})
       .y(function (d) {return d.y;})
