@@ -74,6 +74,7 @@ function vecn(v) {
     }
   });
 
+  v.type = 'vec';
   return v;
 }
 

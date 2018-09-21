@@ -23,6 +23,8 @@ var vverts = [];
 var closeEventPoints = [];
 var dcel;
 
+let showEvents = false;
+
 function siteColorSvg(id) {
   // return 'black';
   return d3.schemeCategory10[id%10];
@@ -100,6 +102,10 @@ function keydown(event) {
   } else if (key == "d") {
     // Print the sweepline value
     console.log("sweepline = " + sweepline);
+  } else if (key == 'e') {
+    showEvents = !showEvents;
+    d3.selectAll(".close-event")
+      .attr('visibility', showEvents ? null : 'hidden');
   }
   if (changed) {
     // Prevent scroll
@@ -167,8 +173,8 @@ function init() {
   let points1 = [
     // segment test points
     vec3(0, 0.8, 0),
-    vec3(0, 0.3, 0),
-    vec3(0.4,  0.7, 0),
+    vec3(0, -0.1, 0),
+    vec3(0.4,  0.6, 0),
   ];
   let segments1 = [
     makeSegment(points1[0], points1[1])
@@ -176,16 +182,19 @@ function init() {
 
   let points2 = [
     // segment test points
-    vec3(-0.4, -0.4, 0),
-    vec3(-0.4, -0.8, 0),
-    vec3(0.4, -0.5, 0),
+    vec3(-0.2, -0.2, 0),
+    vec3(-0.2, -0.6, 0),
+    vec3(0.2, -0.3, 0),
     // remaining points
-    vec3(-0.30, -0.1, 0),
+    vec3(-0.30, 0.1, 0),
     vec3(-0.41, 0.9, 0),
     vec3(-0.26, 0.73, 0),
-    vec3(0.62, 0.37, 0),
+    vec3(-0.5, 0.3, 0),
     vec3(-0.12,0.13, 0),
-    vec3(0.73,-0.13, 0),
+    vec3(0.73,0.15, 0),
+    vec3(0.42,0.5, 0),
+    vec3(0.49,0.71, 0),
+    vec3(0.66,0.66, 0),
   ];
   let segments2 = [
     makeSegment(points2[0], points2[1])
@@ -213,8 +222,8 @@ function init() {
   }
   let segments4 = [];
 
-  points = points1;
-  segments = segments1;
+  points = points2;
+  segments = segments2;
 
   // Give all points and segments a unique ID
   var id = 1;
@@ -323,11 +332,13 @@ var render = function() {
 
   // Temporary stuff
   if (segments.length > 0) {
-    var bline = getPointsBisector(points[0], points[2]);
-    var bline2 = getPointsBisector(points[1], points[2]);
+    var bline = bisectPoints(points[0], points[2]);
+    var bline2 = bisectPoints(points[1], points[2]);
     var gp = createGeneralParabola(points[2], segments[0]);
-    var pints = gp.intersectLine(bline[0], subtract(bline[1], bline[0]));
-    var pints2 = gp.intersectLine(bline2[0], subtract(bline2[1], bline2[0]));
+    // var pints = gp.intersectLine(bline[0], subtract(bline[1], bline[0]));
+    // var pints2 = gp.intersectLine(bline2[0], subtract(bline2[1], bline2[0]));
+    var pints = gp.intersectLine(bline);
+    var pints2 = gp.intersectLine(bline2);
 
     // Draw the temp general parabola
     {
@@ -359,17 +370,15 @@ var render = function() {
   }
   // /Temporary stuff
 
-  var renderEvents = true;
-
-  drawBeachline(beachline, sweepline, renderEvents);
+  drawBeachline(beachline, sweepline, showEvents);
 
   // var c = vec4(0.0, 0.7, 0.7);
-  if (renderEvents) {
+  // if (showEvents) {
     drawCloseEvents(closeEventPoints);
     // closeEventPoints.forEach(function(p) {
     //   // circle.render(program, vec3(p.x, p.y, 0), 0.01, false, c);
     // });
-  }
+  // }
 
   drawSweepline(sweepline);
   drawSurface(dcel);

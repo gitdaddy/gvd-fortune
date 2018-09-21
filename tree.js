@@ -154,9 +154,9 @@ function showTree(treeData) {
     .style("text-anchor", function(d) { return "end"; })
     .text(function(d) {
       var star = "";
-      if (d.data.closeEvent && d.data.closeEvent.live) {
-        star = "*";
-      }
+      // if (d.data.closeEvent && d.data.closeEvent.live) {
+      //   star = "*";
+      // }
       if (d.data.id) {
         return d.data.id + star;
       }

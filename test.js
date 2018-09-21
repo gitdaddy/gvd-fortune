@@ -54,6 +54,16 @@ function runTests() {
     checkEqual(p.theta, -Math.PI/4);
   }
 
+  {
+    // let b = getBisector(vec2(0,0), vec2(2,2));
+    // console.log(b);
+    // var p = createGeneralParabola(vec3(1,1,0), [vec3(0,1,0), vec3(1,0,0)])
+    // checkEqual(p.parabola.h, 1);
+    // checkEqual(p.parabola.k, Math.sqrt(2)/4);
+    // checkEqual(p.parabola.p, Math.sqrt(2)/4);
+    // checkEqual(p.theta, -Math.PI/4);
+  }
+
   //------------------------------------------------------------
   // Rendering tests
   //------------------------------------------------------------

@@ -1,3 +1,67 @@
+Line = function(p1, p2) {
+  this.p1 = p1;
+  this.p2 = p2;
+
+  // An arbitrary point on the line
+  this.p = p1;
+  // The direction of the line, normalized
+  this.v = normalize(subtract(p2, p1));
+}
+
+// If the point is in the shadow of the line segment then
+// this represents a general parabola. Otherwise it is a
+// ray/parabola combination.
+PointSegmentBisector = function(p, s) {
+  let v = subtract(s[1], s[0]);
+  let v_unit = normalize(v);
+  let w = subtract(p, s[0]);
+  let d = dot(w, v_unit);
+  if (d < length(v)) {
+    // In the shadow, so fully parabolic
+    this.para = createGeneralParabola(p, s);
+  }
+}
+
+function bisectPointSegment(p, s) {
+  return new PointSegmentBisector(p, s);
+}
+
+// a and b must be either line segments or points.
+function bisect(a, b) {
+  let bisector;
+  if (a.type == 'vec' && b.type == 'vec') {
+    // Returns a line
+    bisector = bisectPoints(a, b);
+  } else if (a.type == 'vec') {
+    // Returns PointSegmentBisector
+    bisector = bisectPointSegment(a, b);
+  } else if (b.type == 'vec') {
+    bisector = bisectPointSegment(b, a);
+  } else {
+    bisector = bisectSegments(a, b);
+  }
+  return bisector;
+}
+
+// a and b must be either lines or parabolas
+function intersect(a, b) {
+  // Assume they're both lines for now
+  return intersectLines(a.p1, a.p2, b.p1, b.p2);
+  // let bisector;
+  // if (a.type == 'vec' && b.type == 'vec') {
+  //   // Returns a line
+  //   bisector = bisectPoints(a, b);
+  // } else if (a.type == 'vec') {
+  //   // Returns PointSegmentBisector
+  //   bisector = bisectPointSegment(a, b);
+  // } else if (b.type == 'vec') {
+  //   bisector = bisectPointSegment(b, a);
+  // } else {
+  //   bisector = bisectSegments(a, b);
+  // }
+  // return bisector;
+}
+
 // s is an array of length 2
 function getAngle(s) {
   var p1 = s[0]; // lower point
@@ -24,14 +88,15 @@ function getSegmentsBisector(s, t) {
 
 // Return the line bisecting two points. Returns two points [q1,q2] defining
 // the line. The vector v=q2-q1 will be oriented in the negative y direction.
-function getPointsBisector(p1, p2) {
+function bisectPoints(p1, p2) {
   var v = subtract(p2, p1);
   var q = add(p1, mult(v, 0.5));
   [v.x, v.y] = [-v.y, v.x];
   if (v.y > 0) {
     v = negate(v);
   }
-  return [q, add(q, v)];
+  return new Line(q, add(q, v));
+  // return [q, add(q, v)];
 }
 
 // ax^2 + bx + c = 0
@@ -91,6 +156,9 @@ function makeSegment(p1, p2) {
       return this[0].x;
     }
   });
+  s.a = s[0];
+  s.b = s[1];
+  s.type = 'segment';
   return s;
 }
 
@@ -98,12 +166,38 @@ function isSegment(s) {
   return (Array.isArray(s) && s.length == 2 && Array.isArray(s[0]));
 }
 
-// Returns the point equidistant from points c1, c2, and c3
+// Returns the point equidistant from points/segments c1, c2, and c3.
 function equidistant(c1, c2, c3) {
+  // put the objects in order of segment -> point
+  // let objects = [c1, c2, c3];
+  // objects.sort((a,b) => (isSegment(b) && ~isSegment(a)) ? -1 : 0);
+
+  let b12 = bisect(c1, c2);
+  let b23 = bisect(c2, c3);
+  return intersect(b12, b23);
+  
   // // TODO handle segment case
   // if (isSegment(c1)) c1 = c1[0];
   // if (isSegment(c2)) c2 = c2[0];
   // if (isSegment(c3)) c3 = c3[0];
+  return equidistant_ppp(c1, c2, c3);
+}
+
+// Three points.
+function equidistant_ppp(c1, c2, c3) {
+  //                   p0       u
+  //       c1 *         *<--------------* c2
+  //                    |\
+  //                    | \
+  //                  v |  \
+  //                    |    \ p0p3
+  //                    |     \
+  //                    v      \
+  //                             \
+  //                              v
+  //                              * c3
+  //
+
   var u = mult(0.5, subtract(c1, c2));
   var p0 = add(c2, u);
   var v = normalize(vec3(-u[1], u[0], 0));

@@ -78,12 +78,14 @@ function createCloseEvent(arcNode) {
   var left = arcNode.prevArc();
   var right = arcNode.nextArc();
   if (left != null && right != null) {
-    if (isSegment(left.site) && !isSegment(right.site)) {
+    if (isSegment(left.site) && left.site[0] == arcNode.site) {
       // bline is the bisector between the start point of the
       // segment and the right site
-      var bline = getPointsBisector(left.site[0], right.site);
-      var gp = createGeneralParabola(right.site, left.site);
-      var pints = gp.intersectLine(bline[0], subtract(bline[1], bline[0]));
+      // var bline = getPointsBisector(left.site[0], right.site);
+      var bline = bisect(left.site[0], right.site);
+      // var gp = createGeneralParabola(right.site, left.site);
+      var gp = bisect(right.site, left.site);
+      var pints = gp.para.intersectLine(bline);//[0], subtract(bline[1], bline[0]));
       if (pints.length == 0) {
         throw "Intersections from bisector and generalized parabola " +
           "unexpectedly empty";

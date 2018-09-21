@@ -386,7 +386,10 @@ GeneralParabola.prototype.intersectRay = function(p, v) {
 // If there are two intersections, the intersections will
 // be returned in order of t value.
 // The line is given in parametric form p(t) = p + tv
-GeneralParabola.prototype.intersectLine = function(p, v) {
+// GeneralParabola.prototype.intersectLine = function(p, v) {
+GeneralParabola.prototype.intersectLine = function(line) {
+  p = line.p;
+  v = line.v;
   p = this.transformPoint(p);
   v = this.transformVector(v);
 

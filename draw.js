@@ -27,6 +27,20 @@ function hideDebugCircumcircle() {
 
 function drawSites(points, segments) {
   d3.select("#gvd")
+    .selectAll("#segment")
+    .data(segments)
+    .enter()
+    .append("line")
+    .attr("x1", s => s[0].x)
+    .attr("y1", s => s[0].y)
+    .attr("x2", s => s[1].x)
+    .attr("y2", s => s[1].y)
+    .attr("class", "site segment-site")
+    .attr("stroke", (d,i) => siteColorSvg(d.id))
+    .attr("vector-effect", "non-scaling-stroke")
+  ;
+
+  d3.select("#gvd")
     .selectAll(".point-site")
     .data(points)
     .enter()
@@ -40,19 +54,6 @@ function drawSites(points, segments) {
     .append("title").html(d => d.id)
   ;
   
-  d3.select("#gvd")
-    .selectAll("#segment")
-    .data(segments)
-    .enter()
-    .append("line")
-    .attr("x1", s => s[0].x)
-    .attr("y1", s => s[0].y)
-    .attr("x2", s => s[1].x)
-    .attr("y2", s => s[1].y)
-    .attr("class", "site segment-site")
-    .attr("stroke", (d,i) => siteColorSvg(i+1))
-    .attr("vector-effect", "non-scaling-stroke")
-  ;
 }
 
 function drawSweepline(sweepline) {
@@ -109,6 +110,7 @@ function drawCloseEvents(eventPoints) {
   let update = function(s) {
       s.attr('cx', d => d.point.x)
       .attr('cy', d => d.point.y)
+      .attr('visibility', showEvents ? null : 'hidden');
     ;
   };
 
