@@ -24,7 +24,8 @@ var closeEventPoints = [];
 var dcel;
 
 function siteColorSvg(id) {
-  return 'black';
+  // return 'black';
+  return d3.schemeCategory10[id%10];
 }
 
 function arcColorSvg(id) {
@@ -133,7 +134,7 @@ let gvdw = 500;
 let gvdh = 500;
 
 let SITE_RADIUS = 8/gvdw;
-let SITE_RADIUS_HIGHLIGHT = 14/gvdw;
+let SITE_RADIUS_HIGHLIGHT = 11/gvdw;
 
 function x2win(x) {
   let xmin = -1;
@@ -167,7 +168,7 @@ function init() {
     // segment test points
     vec3(0, 0.8, 0),
     vec3(0, 0.3, 0),
-    vec3(0.4,  0.5, 0),
+    vec3(0.4,  0.7, 0),
   ];
   let segments1 = [
     makeSegment(points1[0], points1[1])
@@ -286,9 +287,9 @@ function fortune() {
     var e = events.pop();
     if (e.isCloseEvent) {
       if (e.live) {
-	e.arcNode.prevEdge().dcelEdge.dest.point = e.equi;
-	e.arcNode.nextEdge().dcelEdge.dest.point = e.equi;
-	var newEvents = beachline.remove(e.arcNode, e.equi);
+	e.arcNode.prevEdge().dcelEdge.dest.point = e.point;
+	e.arcNode.nextEdge().dcelEdge.dest.point = e.point;
+	var newEvents = beachline.remove(e.arcNode, e.point);
         newEvents.forEach(function(ev) {
           if (ev.y < e.y - 0.000001) {
 	    events.push(ev);
@@ -297,7 +298,7 @@ function fortune() {
             }
           }
         });
-	// closeEventPoints.push(e.equi);
+	// closeEventPoints.push(e.point);
       }
     } else {
       // Site event

@@ -4,7 +4,8 @@ function nodeColor(node) {
   }
   // arc node
   // var c = siteColor(node.id);
-  var c = arcColorSvg(node.id);
+  // var c = arcColorSvg(node.id);
+  var c = siteColorSvg(node.site.id);
   return c;
   // var color = d3.rgb(c[0]*255, c[1]*255, c[2]*255);
   // return color;
@@ -34,7 +35,7 @@ function highlight(d) {
 
     // Debug
     let arc = node;
-    if (arc.attr('leftx')) {
+    if (!arc.empty() && arc.attr('leftx')) {
       let x0 = (+arc.attr('leftx')).toFixed(1);
       let x1 = (+arc.attr('rightx')).toFixed(1);
       setDebug(`x0=${x0} x1=${x1}`);

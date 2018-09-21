@@ -1,10 +1,10 @@
 //------------------------------------------------------------
 // CloseEvent
 //------------------------------------------------------------
-var CloseEvent = function(y, arcNode, leftNode, rightNode, equi) {
+var CloseEvent = function(y, arcNode, leftNode, rightNode, point) {
   this.yval = y;
   // Point that is equidistant from the three points
-  this.equi = equi;
+  this.point = point;
   this.arcNode = arcNode;
   this.leftNode = leftNode;
   this.rightNode = rightNode;
@@ -12,7 +12,7 @@ var CloseEvent = function(y, arcNode, leftNode, rightNode, equi) {
   this.isCloseEvent = true;
   this.live = true;
   if (this.arcNode.isArc) {
-    this.r = length(subtract(vec2(equi),vec2(this.arcNode.site)));
+    this.r = length(subtract(vec2(point),vec2(this.arcNode.site)));
   }
 };
 
@@ -78,7 +78,7 @@ function createCloseEvent(arcNode) {
   var left = arcNode.prevArc();
   var right = arcNode.nextArc();
   if (left != null && right != null) {
-    if (isSegment(left.site)) {
+    if (isSegment(left.site) && !isSegment(right.site)) {
       // bline is the bisector between the start point of the
       // segment and the right site
       var bline = getPointsBisector(left.site[0], right.site);
@@ -87,6 +87,12 @@ function createCloseEvent(arcNode) {
       if (pints.length == 0) {
         throw "Intersections from bisector and generalized parabola " +
           "unexpectedly empty";
+      }
+      if (pints.length > 1) {
+        console.log(pints);
+        console.log(arcNode.id);
+        throw "Unexpectedly more than one intersection from bisector " +
+          "and general parabola";
       }
       // intersection is the "equi" point -- equidistant from the three
       // sites.

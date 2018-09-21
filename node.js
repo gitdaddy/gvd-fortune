@@ -30,12 +30,13 @@ ArcNode.prototype.createDrawElement = function(leftx, rightx, directrix) {
   let element = null;
   if (this.isParabola) {
     let para = createParabola(this.site, directrix);
-    para.prepDraw(this.id, leftx, rightx);
+    // para.prepDraw(this.id, leftx, rightx);
+    para.prepDraw(this.id, this.site.id, leftx, rightx);
     element = para;
     element.type = "parabola";
   } else if (this.isV) {
     var v = new V(this.site, directrix);
-    v.prepDraw(this.id, leftx, rightx);
+    v.prepDraw(this.id, this.site.id, leftx, rightx);
     element = v;
     element.type = "v";
   }
@@ -194,6 +195,26 @@ EdgeNode.prototype.intersection = function(directrix) {
   } else {
     lower = 1;
   }
+
+  // Handle the case where the V arc for the segment (+)
+  // needs to be "above" the parabola for the lower 
+  // end of the segment (*). The (=) is for the parabola
+  // for the upper end of the segment.
+  //
+  //                   =
+  //                   +
+  //   =               +               =
+  //   =               +               =
+  //    =              +              =
+  //      +            +            +
+  //        +          +          +
+  //          +        +        +
+  //            +      *      +
+  //              **       **
+  //                  *** 
+  //                    
+  //     _____________________________
+  //
   if (arcNodes[lower].isV &&
       directrix < arcNodes[lower].site[1].y &&
      arcNodes[lower].site[1] == arcNodes[1-lower].site) {
@@ -208,41 +229,4 @@ EdgeNode.prototype.intersection = function(directrix) {
   // In this case, the next arc is the center.
   this.selectedIntersection = intersections[1-lower];
   return this.selectedIntersection;
-
-  // let ret = intersections[0];
-  // if (ret.x <= curx)
-  //   ret = intersections[1];
-  // console.log(`curx = ${curx}`);
-  // console.log(intersections);
-  // this.selectedIntersection = ret;
-  // return ret;
-
-  // let ret;
-  // if (intersections.length == 1) 
-  //   // return intersections[0];
-  //   ret = intersections[0];
-  // if (!isSegment(this.prevArc().site) && !isSegment(this.nextArc().site)) {
-  //   // Parabola-parabola intersection
-  //   if (pleft.focus.y > pright.focus.y)
-  //     ret = intersections[0];
-  //   else
-  //     ret = intersections[1];
-  // } else if (isSegment(this.prevArc().site) && !isSegment(this.nextArc().site)) {
-  //   // V-parabola intersection
-  //   ret = intersections[0];
-  // } else if (!isSegment(this.prevArc().site) && isSegment(this.nextArc().site)) {
-  //   // Parabola-V intersection
-  //   ret = intersections[1];
-  // } else if (isSegment(this.prevArc().site) && isSegment(this.nextArc().site)) {
-  //   // V-V intersection
-  //   if (pleft.focus.y > pright.focus.y) return intersections[0];
-  //   ret = intersections[1];
-  // } else {
-  //   throw "Should reach here";
-  //   // TODO this may need to be changed
-  //   // return intersections[0];
-  //   ret = intersections[0];
-  // }
-  // this.selectedIntersection = ret;
-  // return ret;
 };

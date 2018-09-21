@@ -107,8 +107,8 @@ function drawSurface(dcel) {
 function drawCloseEvents(eventPoints) {
   eventPoints = eventPoints.filter(d => d.live);
   let update = function(s) {
-      s.attr('cx', d => d.equi.x)
-      .attr('cy', d => d.equi.y)
+      s.attr('cx', d => d.point.x)
+      .attr('cy', d => d.point.y)
     ;
   };
 
@@ -122,7 +122,7 @@ function drawCloseEvents(eventPoints) {
     
     // Highlight the sites
     // d3.select(`#site${arcNode.site.id}`).attr("r", SITE_RADIUS_HIGHLIGHT);
-    showDebugCircumcircle(event.equi.x, event.equi.y, event.r);
+    showDebugCircumcircle(event.point.x, event.point.y, event.r);
   };
 
   let unhighlight = function(event) {
@@ -212,8 +212,9 @@ function drawBeachline(beachline, directrix, renderEvents) {
     let update = function(s) {
         s
         .attr("d", p => line(p.drawPoints))
-        .style("stroke", p => arcColorSvg(p.id))
-        .attr("id", p => `treenode${p.id}`)
+        // .style("stroke", p => arcColorSvg(p.id))
+        .style("stroke", p => siteColorSvg(p.siteid))
+        .attr("id", p => `treenode${p.nodeid}`)
         .attr("leftx", p => p.drawPoints[0].x)
         .attr("rightx", p => p.drawPoints[p.drawPoints.length-1].x)
         .attr("transform", p => p.transform)
@@ -246,8 +247,9 @@ function drawBeachline(beachline, directrix, renderEvents) {
       .data(vs);
     let update = function(s) {
       s.attr("d", p => line(p.drawPoints))
-        .style("stroke", p => arcColorSvg(p.id))
-        .attr("id", p => `treenode${p.id}`)
+        // .style("stroke", p => arcColorSvg(p.id))
+        .style("stroke", p => siteColorSvg(p.siteid))
+        .attr("id", p => `treenode${p.nodeid}`)
         .attr("leftx", p => p.drawPoints[0].x)
         .attr("rightx", p => p.drawPoints[p.drawPoints.length-1].x)
     ;

@@ -167,8 +167,9 @@ Parabola.prototype.renderSvg = function(id, highlight=false) {
 }
 
 // Prepares this parabola for drawing
-Parabola.prototype.prepDraw = function(id, x0, x1) {
-  this.id = id;
+Parabola.prototype.prepDraw = function(nodeid, siteid, x0, x1) {
+  this.nodeid = nodeid;
+  this.siteid = siteid;
   this.setDrawBounds(x0, x1);
   this.setDrawPoints();
 }
