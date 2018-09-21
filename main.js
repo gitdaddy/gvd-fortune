@@ -20,7 +20,7 @@ var pMatrix;
 var points = [];
 var segments = [];
 var vverts = [];
-var everts = [];
+var closeEventPoints = [];
 var dcel;
 
 function siteColorSvg(id) {
@@ -132,6 +132,9 @@ function mouseclick(e) {
 let gvdw = 500;
 let gvdh = 500;
 
+let SITE_RADIUS = 8/gvdw;
+let SITE_RADIUS_HIGHLIGHT = 14/gvdw;
+
 function x2win(x) {
   let xmin = -1;
   let xmax = 1;
@@ -154,67 +157,57 @@ function init() {
 
   document.getElementById("sweeplineLabel").innerHTML = sweepline.toFixed(3);
 
-  // points = [
-  //   // vec3(-0.4, 0.8, 0),
-  //   // vec3(-0.4, 0.0, 0),
-  //   vec3(-0.4, 0.8, 0),
-  //   // vec3(-0.4, -0.4, 0),
-  //   vec3(0.4, 0.4, 0),
-  //   vec3(0.7, 0.6, 0),
-  //   vec3(-0.2, 0.0, 0),
-  // ];
-
-  // segments = [
-  // ];
-
-  points = [
+  let points1 = [
     // segment test points
     vec3(-0.4, 0.8, 0),
     vec3(-0.4, 0.0, 0),
     vec3(0.4,  0.5, 0),
   ];
-
-  // points = [
-  //   // segment test points
-  //   vec3(-0.4, -0.4, 0),
-  //   vec3(-0.4, -0.8, 0),
-  //   vec3(0.4, -0.5, 0),
-  //   // remaining points
-  //   vec3(-0.30, -0.1, 0),
-  //   vec3(-0.41, 0.9, 0),
-  //   vec3(-0.26, 0.73, 0),
-  //   vec3(0.62, 0.37, 0),
-  //   vec3(-0.12,0.13, 0),
-  //   vec3(0.73,-0.13, 0),
-  // ];
-
-  segments = [
-    makeSegment(points[0], points[1])
+  let segments1 = [
+    makeSegment(points1[0], points1[1])
   ];
 
-  // points = [
-  //   vec3(-0.30, -0.1, 0),
-  //   vec3(-0.41, -0.9, 0),
-  //   vec3(-0.26, 0.73, 0),
-  //   vec3(0.62, 0.37, 0),
-  //   vec3(-0.12,0.13, 0),
-  //   vec3(0.73,-0.13, 0),
-  //   vec3(-0.65, -0.15, 0),
-  //   vec3(0.16, -0.79, 0),
-  //   vec3(-0.90, -0.92, 0),
-  // ];
+  let points2 = [
+    // segment test points
+    vec3(-0.4, -0.4, 0),
+    vec3(-0.4, -0.8, 0),
+    vec3(0.4, -0.5, 0),
+    // remaining points
+    vec3(-0.30, -0.1, 0),
+    vec3(-0.41, 0.9, 0),
+    vec3(-0.26, 0.73, 0),
+    vec3(0.62, 0.37, 0),
+    vec3(-0.12,0.13, 0),
+    vec3(0.73,-0.13, 0),
+  ];
+  let segments2 = [
+    makeSegment(points2[0], points2[1])
+  ];
 
-  // segments = [
-  //   // makeSegment(points[0], points[1])
-  // ];
+  let points3 = [
+    vec3(-0.26, 0.73, 0),
+    vec3(0.62, 0.37, 0),
+    vec3(-0.12,0.13, 0),
+    vec3(-0.30, -0.1, 0),
+    vec3(0.73,-0.13, 0),
+    vec3(-0.65, -0.15, 0),
+    // vec3(0.16, -0.79, 0),
+    vec3(-0.41, -0.9, 0),
+    vec3(-0.90, -0.92, 0),
+  ];
+  let segments3 = [];
 
-  // Math.seedrandom('3');
-  // var numRandom = 100;
-  // for (var i = 0; i < numRandom; ++i) {
-  // 	var p = vec3(Math.random()*2-1, Math.random()*2-1, 0);
-  // 	// console.log(p);
-  // 	points.push(p);
-  // }
+  Math.seedrandom('3');
+  let numRandom = 100;
+  let points4 = [];
+  for (var i = 0; i < numRandom; ++i) {
+  	var p = vec3(Math.random()*2-1, Math.random()*2-1, 0);
+  	points4.push(p);
+  }
+  let segments4 = [];
+
+  points = points3;
+  segments = segments3;
 
   // Give all points and segments a unique ID
   var id = 1;
@@ -225,36 +218,9 @@ function init() {
     s.id = id++;
   });
 
-  // d3 experimentation
-  // // Render the sites using d3
-  d3.select("#gvd")
-    .selectAll(".point-site")
-    .data(points)
-    .enter()
-    .append("circle")
-    .attr("cx", p => p.x)
-    .attr("cy", p => p.y)
-    .attr("r", 8/gvdw)
-    .attr("class", "site point-site")
-    .attr("fill", (d,i) => siteColorSvg(d.id))
-    .attr("id", d => `site${d.id}`)
-    .append("title").html(d => d.id)
-  ;
-  
-  d3.select("#gvd")
-    .selectAll("#segment")
-    .data(segments)
-    .enter()
-    .append("line")
-    .attr("x1", s => s[0].x)
-    .attr("y1", s => s[0].y)
-    .attr("x2", s => s[1].x)
-    .attr("y2", s => s[1].y)
-    .attr("class", "site segment-site")
-    .attr("stroke", (d,i) => siteColorSvg(i+1))
-    .attr("vector-effect", "non-scaling-stroke")
-  ;
-  
+  initDebugCircumcircle();
+  drawSites(points, segments);
+
   //------------------------------
   // Check for identical y values.
   //------------------------------
@@ -287,6 +253,7 @@ function init() {
     }
   }
 
+  // Add points as events
   points.forEach(function(p) {
     events.push(p);
   });
@@ -306,12 +273,9 @@ function fortune() {
   var pointsCopy = points.slice();
   var segmentsCopy = segments.slice();
   var events = new TinyQueue(pointsCopy.concat(segmentsCopy), function(a, b) {
-    // if (a.y == b.y) {
-    //   throw "Equal events!";
-    // }
     return a.y > b.y ? -1 : a.y < b.y ? 1 : 0;
   });
-  everts = [];
+  closeEventPoints = [];
   while (events.length > 0 && events.peek().y > sweepline) {
     var e = events.pop();
     if (e.isCloseEvent) {
@@ -322,9 +286,12 @@ function fortune() {
         newEvents.forEach(function(ev) {
           if (ev.y < e.y - 0.000001) {
 	    events.push(ev);
+            if (ev.isCloseEvent) {
+	      closeEventPoints.push(ev);
+            }
           }
         });
-	everts.push(e.equi);
+	// closeEventPoints.push(e.equi);
       }
     } else {
       // Site event
@@ -332,6 +299,9 @@ function fortune() {
       newEvents.forEach(function(ev) {
         if (ev.y < e.y - 0.000001) {
 	  events.push(ev);
+          if (ev.isCloseEvent) {
+	    closeEventPoints.push(ev);
+          }
         }
       });
     }
@@ -386,11 +356,12 @@ var render = function() {
 
   drawBeachline(beachline, sweepline, renderEvents);
 
-  var c = vec4(0.0, 0.7, 0.7);
+  // var c = vec4(0.0, 0.7, 0.7);
   if (renderEvents) {
-    everts.forEach(function(p) {
-      // circle.render(program, vec3(p.x, p.y, 0), 0.01, false, c);
-    });
+    drawCloseEvents(closeEventPoints);
+    // closeEventPoints.forEach(function(p) {
+    //   // circle.render(program, vec3(p.x, p.y, 0), 0.01, false, c);
+    // });
   }
 
   drawSweepline(sweepline);

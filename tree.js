@@ -30,7 +30,7 @@ function highlight(d) {
 
   if (d.data.isArc) {
     // Highlight the site
-    d3.select(`#site${d.data.site.id}`).attr("r", 20/gvdw);
+    d3.select(`#site${d.data.site.id}`).attr("r", SITE_RADIUS_HIGHLIGHT);
 
     // Debug
     let arc = node;
@@ -127,7 +127,7 @@ function showTree(treeData) {
     //   node.style("stroke-width", 5);
     //   // Highlight the site
     //   if (d.data.isArc) {
-    //     d3.select(`#site${d.data.site.id}`).attr("r", 20/gvdw);
+    //     d3.select(`#site${d.data.site.id}`).attr("r", SITE_RADIUS_HIGHLIGHT);
     //     // Debug
     //     let arc = node;
     //     if (arc.attr('leftx')) {
@@ -142,7 +142,7 @@ function showTree(treeData) {
       d3.select(`#treenode${d.data.id}`).style("stroke-width", null);
       setDebug('');
       if (d.data.isArc)
-        d3.select(`#site${d.data.site.id}`).attr("r", 8/gvdw);
+        d3.select(`#site${d.data.site.id}`).attr("r", SITE_RADIUS);
     })
 ;
   

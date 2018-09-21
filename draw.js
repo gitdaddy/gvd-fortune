@@ -1,3 +1,60 @@
+function initDebugCircumcircle() {
+  // Draw the close event highlight circle
+  d3.select("#gvd").append("circle")
+    .attr("cx", 0)
+    .attr("cy", 0)
+    .attr("r", 0)
+    .attr("id", "debug-circumcircle")
+    .attr("stroke-width", 1)
+    .attr("vector-effect", "non-scaling-stroke")
+  ;
+}
+
+function showDebugCircumcircle(cx, cy, r) {
+  d3.select("#debug-circumcircle")
+    .attr("cx", cx)
+    .attr("cy", cy)
+    .attr("r", r)
+    .attr("opacity", 1)
+  ;
+}
+
+function hideDebugCircumcircle() {
+  d3.select("#debug-circumcircle")
+    .attr("opacity", 0)
+  ;
+}
+
+function drawSites(points, segments) {
+  d3.select("#gvd")
+    .selectAll(".point-site")
+    .data(points)
+    .enter()
+    .append("circle")
+    .attr("cx", p => p.x)
+    .attr("cy", p => p.y)
+    .attr("r", SITE_RADIUS)
+    .attr("class", "site point-site")
+    .attr("fill", (d,i) => siteColorSvg(d.id))
+    .attr("id", d => `site${d.id}`)
+    .append("title").html(d => d.id)
+  ;
+  
+  d3.select("#gvd")
+    .selectAll("#segment")
+    .data(segments)
+    .enter()
+    .append("line")
+    .attr("x1", s => s[0].x)
+    .attr("y1", s => s[0].y)
+    .attr("x2", s => s[1].x)
+    .attr("y2", s => s[1].y)
+    .attr("class", "site segment-site")
+    .attr("stroke", (d,i) => siteColorSvg(i+1))
+    .attr("vector-effect", "non-scaling-stroke")
+  ;
+}
+
 function drawSweepline(sweepline) {
   d3.select("#sweepline")
     .attr("x1", -1)
@@ -47,6 +104,59 @@ function drawSurface(dcel) {
   update(d3edges);
 }
 
+function drawCloseEvents(eventPoints) {
+  eventPoints = eventPoints.filter(d => d.live);
+  let update = function(s) {
+      s.attr('cx', d => d.equi.x)
+      .attr('cy', d => d.equi.y)
+    ;
+  };
+
+  let highlight = function(event) {
+    console.log(event);
+    let arcNode = event.arcNode;
+
+    // Highlight the arc
+    let arcElement = d3.select(`#treenode${arcNode.id}`);
+    arcElement.style("stroke-width", 5);
+    
+    // Highlight the sites
+    // d3.select(`#site${arcNode.site.id}`).attr("r", SITE_RADIUS_HIGHLIGHT);
+    showDebugCircumcircle(event.equi.x, event.equi.y, event.r);
+  };
+
+  let unhighlight = function(event) {
+    // console.log(event);
+    console.log('unhighlight');
+    let arcNode = event.arcNode;
+
+    // Unhighlight the arc
+    let arcElement = d3.select(`#treenode${arcNode.id}`);
+    arcElement.style("stroke-width", null);
+    
+    // Unhighlight the sites
+    // d3.select(`#site${arcNode.site.id}`).attr("r", SITE_RADIUS);
+    hideDebugCircumcircle();
+  };
+
+  let selection = d3.select("#gvd").selectAll(".close-event")
+    .data(eventPoints);
+  // exit
+  selection.exit().remove();
+  // enter
+  let enter = selection.enter()
+    .append("circle")
+    .attr('r', SITE_RADIUS)
+    .attr('class', "close-event")
+    .attr("vector-effect", "non-scaling-stroke")
+    .on('mouseover', highlight)
+    .on('mouseout', unhighlight)
+  ;
+  update(enter);
+  // update
+  update(selection);
+}
+
 function drawBeachline(beachline, directrix, renderEvents) {
   if (beachline.root == null) {
     d3.select("#gvd").selectAll(".beach-parabola").remove();
@@ -64,29 +174,29 @@ function drawBeachline(beachline, directrix, renderEvents) {
   let parabolas = arcElements.filter(d => d.type == "parabola");
   let vs = arcElements.filter(d => d.type == "v");
 
-  //------------------------------
-  // Render the events
-  //------------------------------
-  if (renderEvents) {
-    let selection = d3.select("#gvd").selectAll(".event")
-      .data(events);
-    // exit
-    selection.exit().remove();
-    // enter
-    selection.enter()
-      .append("circle")
-      .attr('cx', d => d.x)
-      .attr('cy', d => d.y)
-      .attr('r', 6/gvdw)
-      .attr('class', "event")
-      .attr("vector-effect", "non-scaling-stroke")
-    ;
-    // update
-    selection
-      .attr('cx', d => d.x)
-      .attr('cy', d => d.y)
-    ;
-  }
+  // //------------------------------
+  // // Render the events
+  // //------------------------------
+  // if (renderEvents) {
+  //   let selection = d3.select("#gvd").selectAll(".event")
+  //     .data(events);
+  //   // exit
+  //   selection.exit().remove();
+  //   // enter
+  //   selection.enter()
+  //     .append("circle")
+  //     .attr('cx', d => d.x)
+  //     .attr('cy', d => d.y)
+  //     .attr('r', 6/gvdw)
+  //     .attr('class', "event")
+  //     .attr("vector-effect", "non-scaling-stroke")
+  //   ;
+  //   // update
+  //   selection
+  //     .attr('cx', d => d.x)
+  //     .attr('cy', d => d.y)
+  //   ;
+  // }
   
   //------------------------------
   // Render the parabolas

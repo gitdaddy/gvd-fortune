@@ -1,14 +1,17 @@
 //------------------------------------------------------------
 // CloseEvent
 //------------------------------------------------------------
-var CloseEvent = function(y, arcNode, equi) {
+var CloseEvent = function(y, arcNode, leftNode, rightNode, equi) {
   this.yval = y;
   // Point that is equidistant from the three points
   this.equi = equi;
   this.arcNode = arcNode;
+  this.leftNode = leftNode;
+  this.rightNode = rightNode;
   this.arcNode.closeEvent = this;
   this.isCloseEvent = true;
   this.live = true;
+  this.r = length(subtract(equi,this.arcNode.site));
 };
 
 Object.defineProperty(CloseEvent.prototype, "y", {
@@ -74,27 +77,29 @@ function createCloseEvent(arcNode) {
   var right = arcNode.nextArc();
   if (left != null && right != null) {
     if (isSegment(left.site)) {
-      // bline is the bisector between the start point of the segment and the right site
+      // bline is the bisector between the start point of the
+      // segment and the right site
       var bline = getPointsBisector(left.site[0], right.site);
       var gp = createGeneralParabola(right.site, left.site);
       var pints = gp.intersectLine(bline[0], subtract(bline[1], bline[0]));
       if (pints.length == 0) {
-        throw "Intersections from bisector and generalized parabola unexpectedly empty";
+        throw "Intersections from bisector and generalized parabola " +
+          "unexpectedly empty";
       }
+      // intersection is the "equi" point -- equidistant from the three
+      // sites.
       var intersection = pints[0];
       // Get the intersection between the bisector and the segment
       var segBisectorTheta = 
         getSegmentsBisector([vec3(0, 0, 0), vec3(1, 0, 0)], left.site);
       // console.log(intersection);
-      var sbline = [intersection, add(intersection, vec4(Math.cos(segBisectorTheta),
-                                                         Math.sin(segBisectorTheta)))];
-      var eventPoint = intersectLines(left.site[0], left.site[1], sbline[0], sbline[1]);
+      var sbline = [
+        intersection, add(intersection, vec4(Math.cos(segBisectorTheta),
+                                             Math.sin(segBisectorTheta)))];
+      var eventPoint = intersectLines(
+        left.site[0], left.site[1], sbline[0], sbline[1]);
       // TODO watch out if intersection we want is the second intersection
-      // console.log("New close event: " + left.site);
-      // console.log("New close event: " + bline);
-      // console.log("New close event: " + subtract(bline[1], bline[0]));
-      // console.log("New close event: " + eventPoint);
-      return new CloseEvent(eventPoint.y, arcNode, intersection);
+      return new CloseEvent(eventPoint.y, arcNode, left, right, intersection);
     } else if (isSegment(right.site)) {
       // TODO segment on right!
     } else if (isSegment(arcNode.site)) {
@@ -108,7 +113,7 @@ function createCloseEvent(arcNode) {
       var cr = cross(u, v);
       if (cross(u, v)[2] < 0) {
         var r = length(subtract(arcNode.closePoint, equi));
-        return new CloseEvent(equi.y-r, arcNode, equi);
+        return new CloseEvent(equi.y-r, arcNode, left, right, equi);
       }
     }
   }

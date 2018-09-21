@@ -40,6 +40,17 @@ line#sweepline {
     fill: None;
 }
 
+.close-event {
+    stroke: cyan;
+    fill: cyan;
+    /*fill: None;*/
+}
+
+#debug-circumcircle {
+    stroke: black;
+    fill: None;
+}
+
 path.beachline {
     stroke: blue;
     fill: none;
