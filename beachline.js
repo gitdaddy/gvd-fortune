@@ -227,7 +227,11 @@ Beachline.prototype.prepDraw = function(
     // The intersection between the edge node's defining arc nodes
     var p = node.intersection(directrix);
 
-    if (p.x < leftx) throw `intersection is less than leftx: ${p.x} < ${leftx}. id = ${node.id}`;
+    if (p.x < leftx) {
+      let msg = `intersection is less than leftx: ${p.x} < ${leftx}.` +
+        `id = ${node.id}`;
+      console.error(msg);
+    }
 
     if (!Number.isNaN(v.x) && !Number.isNaN(v.y)) {
       events.push(v);
