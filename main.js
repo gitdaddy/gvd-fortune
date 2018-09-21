@@ -23,21 +23,7 @@ var vverts = [];
 var everts = [];
 var dcel;
 
-//------------------------------------------------------------
-// Change this function to enable multi-colored arc cells
-//------------------------------------------------------------
-function siteColor(id) {
-  // return vec4(0, 0, 1, 1);
-  Math.seedrandom(id);
-  var r = Math.random();
-  var g = Math.random();
-  var b = Math.random();
-  return vec4(r, g, b, 1.0);
-}
-
 function siteColorSvg(id) {
-  // // return d3.schemeCategory20[id%20];
-  // return d3.schemeCategory10[id%10];
   return 'black';
 }
 
@@ -166,21 +152,7 @@ function init() {
   document.onkeydown = keydown;
   document.onclick = mouseclick;
 
-  // canvas = document.getElementById( "gl-canvas" );
-
-  // gl = WebGLUtils.setupWebGL( canvas );
-  // if ( !gl ) { alert( "WebGL isn't available" ); }
-
   document.getElementById("sweeplineLabel").innerHTML = sweepline.toFixed(3);
-
-  // gl.viewport( 0, 0, canvas.width, canvas.height );
-  // // gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
-  // gl.clearColor( 0.95, 0.95, 0.95, 1.0 );
-
-  // circle = new Circle();
-  // sweepLine = new SweepLine();
-
-  // program = new LineProgram();
 
   // points = [
   //   // vec3(-0.4, 0.8, 0),
@@ -197,17 +169,24 @@ function init() {
 
   points = [
     // segment test points
-    vec3(-0.4, -0.4, 0),
-    vec3(-0.4, -0.8, 0),
-    vec3(0.4, -0.5, 0),
-    // remaining points
-    vec3(-0.30, -0.1, 0),
-    vec3(-0.41, 0.9, 0),
-    vec3(-0.26, 0.73, 0),
-    vec3(0.62, 0.37, 0),
-    vec3(-0.12,0.13, 0),
-    vec3(0.73,-0.13, 0),
+    vec3(-0.4, 0.8, 0),
+    vec3(-0.4, 0.0, 0),
+    vec3(0.4,  0.5, 0),
   ];
+
+  // points = [
+  //   // segment test points
+  //   vec3(-0.4, -0.4, 0),
+  //   vec3(-0.4, -0.8, 0),
+  //   vec3(0.4, -0.5, 0),
+  //   // remaining points
+  //   vec3(-0.30, -0.1, 0),
+  //   vec3(-0.41, 0.9, 0),
+  //   vec3(-0.26, 0.73, 0),
+  //   vec3(0.62, 0.37, 0),
+  //   vec3(-0.12,0.13, 0),
+  //   vec3(0.73,-0.13, 0),
+  // ];
 
   segments = [
     makeSegment(points[0], points[1])
@@ -263,7 +242,6 @@ function init() {
   ;
   
   d3.select("#gvd")
-    // .selectAll("line")
     .selectAll("#segment")
     .data(segments)
     .enter()
@@ -276,13 +254,6 @@ function init() {
     .attr("stroke", (d,i) => siteColorSvg(i+1))
     .attr("vector-effect", "non-scaling-stroke")
   ;
-  
-  // d3.select("#gvd")
-  //   .append("path")
-  //   .attr("d", "M 90 90 A 30 50 0 0 1 10 10")
-  //   .attr("class", "beachline")
-  //   .attr('stroke', 'blue')
-  // ;
   
   //------------------------------
   // Check for identical y values.
@@ -372,51 +343,16 @@ function renderGVD(beachline = null) {
   if (!beachline) {
     beachline = fortune();
   }
-  // gl.clear(gl.COLOR_BUFFER_BIT);
-
-  // var eye = vec3(0, 0, 5);
-  // var at = vec3(0, 0, 0);
-  // var up = vec3(0, 1, 0);
-  // mvMatrix = lookAt(eye, at, up);
-  // pMatrix = ortho(-1, 1, -1, 1, 4, 6);
-
-  // points.forEach(function(p) {
-  //   var c = siteColor(p.id);
-  //   circle.render(program, vec3(p[0], p[1], 0), 0.01, true, c);
-  // });
-
-  // sweepLine.render(program, sweepline, vec4(0,0,0,1));
 
   // Temporary stuff
   if (segments.length > 0) {
-    // var line = new Line();
-    // segments.forEach(function(s) {
-    //   var p1 = s[0];
-    //   var p2 = s[1];
-    //   // Render the line
-    //   line.render(program, p1.x, p1.y, p2.x, p2.y);
-    //   // If the sweepline intersects the segment...
-    //   if (sweepline < Math.max(p1.y, p2.y) &&
-    //       sweepline > Math.min(p1.y, p2.y)) {
-    //     var v = new V(s, sweepline);
-    //     // v.thetas.forEach(function(theta) {
-    //     //   var para = createParabola(points[0], sweepline);
-    //     //   var pints = para.intersectRay(v.p, v.vectors[1]);
-    //     //   v.render(program, -1, pints[0].x);
-    //     // });
-    //   }
-    // });
     var bline = getPointsBisector(points[0], points[2]);
     var bline2 = getPointsBisector(points[1], points[2]);
-    // line.render_line(program, bline[0], bline[1]);
     var gp = createGeneralParabola(points[2], segments[0]);
     var pints = gp.intersectLine(bline[0], subtract(bline[1], bline[0]));
     var pints2 = gp.intersectLine(bline2[0], subtract(bline2[1], bline2[0]));
-    // gp.render(program, pints[0], 1, blue);
-    // pints.forEach(function(p) {
-    //   circle.render(program, p, 0.01, true, red);
-    // });
 
+    // Draw the temp general parabola
     {
       gp.prepDraw(-1, pints[0], pints2[0]);
       let parabolas = [gp];
@@ -443,11 +379,6 @@ function renderGVD(beachline = null) {
         .attr("transform", p => p.transform)
       ;
     }
-  //   gp
-  //   d3.select('#gvd').append("
-  //     .selectAll('.gvd-surface')
-  //     .data(edges)
-  //   ;
   }
   // /Temporary stuff
 
@@ -462,6 +393,7 @@ function renderGVD(beachline = null) {
     });
   }
 
+  // Draw sweepline
   d3.select("#sweepline")
     .attr("x1", -1)
     .attr("y1", sweepline)
@@ -475,7 +407,6 @@ var render = function() {
   var t0 = performance.now();
   var beachline = fortune();
   var t1 = performance.now();
-  // console.log("Call to fortune took " + (t1 - t0) + " milliseconds.")
 
   renderGVD(beachline);
 
@@ -519,12 +450,9 @@ var render = function() {
     .attr('y2', e => e.dest.point[1])
   ;
 
-
-
   showTree(beachline.root);
 
   runTests();
-
 }
 
 function setDebug(msg) {
