@@ -106,14 +106,13 @@ function showTree(treeData) {
         if (arc.attr('leftx')) {
           let x0 = (+arc.attr('leftx')).toFixed(1);
           let x1 = (+arc.attr('rightx')).toFixed(1);
-          document.getElementById('debug').innerHTML =
-            `x0=${x0} x1=${x1}`;
+          setDebug(`x0=${x0} x1=${x1}`);
         }
       }
     })
     .on("mouseout", function(d, i) {
       d3.select(`#treenode${d.data.id}`).style("stroke-width", null);
-      document.getElementById('debug').innerHTML = '';
+      setDebug('');
       if (d.data.isArc)
         d3.select(`#site${d.data.site.id}`).attr("r", 8/gvdw);
     })

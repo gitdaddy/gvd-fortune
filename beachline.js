@@ -220,7 +220,6 @@ Beachline.prototype.prepDraw = function(
   if (node.isArc) {
     arcElements.push(node.createDrawElement(leftx, rightx, directrix));
   } else {
-    var color = vec4(0.0, 0.7, 0.7);
     // The point where this edge node was born
     var v = node.dcelEdge.origin.point;
     // The intersection between the edge node's defining arc nodes
@@ -259,7 +258,7 @@ Beachline.prototype.render = function(program, directrix, renderEvents) {
   //------------------------------
   // Render the events
   //------------------------------
-  {
+  if (renderEvents) {
     let selection = d3.select("#gvd").selectAll(".event")
       .data(events);
     // exit

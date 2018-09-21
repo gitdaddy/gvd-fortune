@@ -410,9 +410,7 @@ var render = function() {
 
   renderGVD(beachline);
 
-  // renderDcel(program, dcel, vec4(1, 0, 0, 1));
-
-  // Render DCEL with D3
+  // Render surface with D3
   let iter = dcel.edges;
   let result = iter.next();
   let count = 0;
@@ -429,6 +427,14 @@ var render = function() {
     }
     result = iter.next();
   }
+  let update = function(s) {
+    s
+      .attr('x1', e => e.origin.point[0])
+      .attr('y1', e => e.origin.point[1])
+      .attr('x2', e => e.dest.point[0])
+      .attr('y2', e => e.dest.point[1])
+    ;
+  };
   let d3edges = d3.select('#gvd')
     .selectAll('.gvd-surface')
     .data(edges)
@@ -436,19 +442,10 @@ var render = function() {
   d3edges.exit().remove();
   d3edges.enter()
     .append('line')
-    .attr('x1', e => e.origin.point[0])
-    .attr('y1', e => e.origin.point[1])
-    .attr('x2', e => e.dest.point[0])
-    .attr('y2', e => e.dest.point[1])
     .attr('class', "gvd-surface")
     .attr("vector-effect", "non-scaling-stroke")
   ;
-  d3edges
-    .attr('x1', e => e.origin.point[0])
-    .attr('y1', e => e.origin.point[1])
-    .attr('x2', e => e.dest.point[0])
-    .attr('y2', e => e.dest.point[1])
-  ;
+  update(d3edges);
 
   showTree(beachline.root);
 
