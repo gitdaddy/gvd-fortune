@@ -339,10 +339,10 @@ function fortune() {
   return beachline;
 }
 
-function renderGVD(beachline = null) {
-  if (!beachline) {
-    beachline = fortune();
-  }
+var render = function() {
+  var t0 = performance.now();
+  var beachline = fortune();
+  var t1 = performance.now();
 
   // Temporary stuff
   if (segments.length > 0) {
@@ -384,7 +384,7 @@ function renderGVD(beachline = null) {
 
   var renderEvents = true;
 
-  beachline.render(program, sweepline, renderEvents);
+  drawBeachline(beachline, sweepline, renderEvents);
 
   var c = vec4(0.0, 0.7, 0.7);
   if (renderEvents) {
@@ -393,59 +393,8 @@ function renderGVD(beachline = null) {
     });
   }
 
-  // Draw sweepline
-  d3.select("#sweepline")
-    .attr("x1", -1)
-    .attr("y1", sweepline)
-    .attr("x2", 1)
-    .attr("y2", sweepline)
-  ;
-
-}
-
-var render = function() {
-  var t0 = performance.now();
-  var beachline = fortune();
-  var t1 = performance.now();
-
-  renderGVD(beachline);
-
-  // Render surface with D3
-  let iter = dcel.edges;
-  let result = iter.next();
-  let count = 0;
-  let edges = [];
-  while (!result.done) {
-    var edge = result.value;
-    if (edge.origin.point && edge.dest.point) {
-      var op = edge.origin.point;
-      var dp = edge.dest.point;
-      if (op[0] == op[0] && op[1] == op[1] &&
-          dp[0] == dp[0] && dp[1] == dp[1]) {
-        edges.push(edge);
-      }
-    }
-    result = iter.next();
-  }
-  let update = function(s) {
-    s
-      .attr('x1', e => e.origin.point[0])
-      .attr('y1', e => e.origin.point[1])
-      .attr('x2', e => e.dest.point[0])
-      .attr('y2', e => e.dest.point[1])
-    ;
-  };
-  let d3edges = d3.select('#gvd')
-    .selectAll('.gvd-surface')
-    .data(edges)
-  ;
-  d3edges.exit().remove();
-  d3edges.enter()
-    .append('line')
-    .attr('class', "gvd-surface")
-    .attr("vector-effect", "non-scaling-stroke")
-  ;
-  update(d3edges);
+  drawSweepline(sweepline);
+  drawSurface(dcel);
 
   showTree(beachline.root);
 

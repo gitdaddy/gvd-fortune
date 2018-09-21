@@ -23,10 +23,36 @@ function getInfo(d) {
   return '';
 }
 
-// function updateSelected(node) {
-  // selectedNode = node;
-  // render();
-// }
+function highlight(d) {
+  // Highlight the arc
+  let node = d3.select(`#treenode${d.data.id}`);
+  node.style("stroke-width", 5);
+
+  if (d.data.isArc) {
+    // Highlight the site
+    d3.select(`#site${d.data.site.id}`).attr("r", 20/gvdw);
+
+    // Debug
+    let arc = node;
+    if (arc.attr('leftx')) {
+      let x0 = (+arc.attr('leftx')).toFixed(1);
+      let x1 = (+arc.attr('rightx')).toFixed(1);
+      setDebug(`x0=${x0} x1=${x1}`);
+    }
+  } else {
+    let edge = d.data;
+    // console.log(edge);
+    let msg = 'intersections: ';
+    edge.intersections.forEach(function(i) {
+      msg = msg + ` (${i.x.toFixed(1)}, ${i.y.toFixed(1)})`;
+    });
+    msg = msg + '<br>selected intersection: ';
+    let i = edge.selectedIntersection;
+    msg = msg + ` (${i.x.toFixed(1)}, ${i.y.toFixed(1)})`;
+    setDebug(msg);
+  }
+}
+
 
 function showTree(treeData) {
   if (treeData == null) return;
@@ -95,21 +121,23 @@ function showTree(treeData) {
     .attr("r", function(d) { return 10;/*d.data.value;*/ })
     .style("stroke", function(d) { return nodeColor(d.data); })
     .style("fill", function(d) { return nodeColor(d.data); })
-    .on("mouseover", function(d, i) {
-      // Highlight the arc
-      let arc = d3.select(`#treenode${d.data.id}`);
-      arc.style("stroke-width", 5);
-      // Highlight the site
-      if (d.data.isArc) {
-        d3.select(`#site${d.data.site.id}`).attr("r", 20/gvdw);
-        // Debug
-        if (arc.attr('leftx')) {
-          let x0 = (+arc.attr('leftx')).toFixed(1);
-          let x1 = (+arc.attr('rightx')).toFixed(1);
-          setDebug(`x0=${x0} x1=${x1}`);
-        }
-      }
-    })
+    // .on("mouseover", function(d) {
+    //   // Highlight the arc
+    //   let node = d3.select(`#treenode${d.data.id}`);
+    //   node.style("stroke-width", 5);
+    //   // Highlight the site
+    //   if (d.data.isArc) {
+    //     d3.select(`#site${d.data.site.id}`).attr("r", 20/gvdw);
+    //     // Debug
+    //     let arc = node;
+    //     if (arc.attr('leftx')) {
+    //       let x0 = (+arc.attr('leftx')).toFixed(1);
+    //       let x1 = (+arc.attr('rightx')).toFixed(1);
+    //       setDebug(`x0=${x0} x1=${x1}`);
+    //     }
+    //   }
+    // })
+    .on('mouseover', highlight)
     .on("mouseout", function(d, i) {
       d3.select(`#treenode${d.data.id}`).style("stroke-width", null);
       setDebug('');

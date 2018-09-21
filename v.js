@@ -31,6 +31,7 @@ V = function(line, sweepline) {
     vectors.push(vec3(Math.cos(theta), Math.sin(theta), 0));
   });
   this.vectors = vectors;
+  this.miny = sweepline;
 }
 
 // Intersect the V with a parabola.
@@ -131,7 +132,11 @@ V.prototype.prepDraw = function(id, x0, x1) {
   this.id = id;
   this.drawPoints = [];
 
-  if (x0 > x1) throw "x0 > x1 in V render";
+  if (x0 > x1) {
+    throw `x0 > x1 in V render: ${x0}, ${x1}`;
+    // this.drawPoints = [vec2(0,0), vec2(0,0)];
+    // return;
+  }
   
   var y0 = this.f(x0)
   var y1 = this.f(x1)

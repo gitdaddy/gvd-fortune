@@ -92,6 +92,7 @@ Parabola = function(focus, h, k, p) {//, theta, offset) {
   this.h = h;
   this.k = k;
   this.p = p;
+  this.miny = k;
 }
 
 // The directrix is assumed to be horizontal and is given as a y-value.

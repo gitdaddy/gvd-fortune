@@ -172,31 +172,61 @@ EdgeNode.prototype.createBeachlineSegment = function(site, directrix) {
   return createParabola(site, directrix);
 }
 
+// Finds the intersection between the left and right arcs.
 EdgeNode.prototype.intersection = function(directrix) {
   // This is inefficient. We should be storing sites in edge nodes.
-  var pleft = this.createBeachlineSegment(this.prevArc().site, directrix);
-  var pright = this.createBeachlineSegment(this.nextArc().site, directrix);
-  var intersections = pleft.intersect(pright);
-  if (intersections.length == 1) return intersections[0];
-  if (!isSegment(this.prevArc().site) && !isSegment(this.nextArc().site)) {
-    // Parabola-parabola intersection
-    if (pleft.focus.y > pright.focus.y) return intersections[0];
-    return intersections[1];
-  } else if (isSegment(this.prevArc().site) && !isSegment(this.nextArc().site)) {
-    // V-parabola intersection
-    if (pleft.focus.y > pright.focus.y) return intersections[0];
-    return intersections[1];
-  } else if (!isSegment(this.prevArc().site) && isSegment(this.nextArc().site)) {
-    // Parabola-V intersection
-    if (pleft.focus.y > pright.focus.y) return intersections[0];
-    return intersections[1];
-  } else if (isSegment(this.prevArc().site) && isSegment(this.nextArc().site)) {
-    // V-V intersection
-    if (pleft.focus.y > pright.focus.y) return intersections[0];
-    return intersections[1];
+  let pleft = this.createBeachlineSegment(this.prevArc().site, directrix);
+  let pright = this.createBeachlineSegment(this.nextArc().site, directrix);
+  let intersections = pleft.intersect(pright);
+  this.intersections = intersections;
+
+  // Find the center arc
+  let pcenterx = (intersections[0].x + intersections[1].x)/2;
+  let prevy = pleft.f(pcenterx);
+  let nexty = pright.f(pcenterx);
+  if (prevy < nexty) {
+    // prev arc is the center arc
+    this.selectedIntersection = intersections[1];
   } else {
-    throw "Should reach here";
-    // TODO this may need to be changed
-    return intersections[0];
+    // next arc is the center arc
+    this.selectedIntersection = intersections[0];
   }
+  return this.selectedIntersection;
+
+  // let ret = intersections[0];
+  // if (ret.x <= curx)
+  //   ret = intersections[1];
+  // console.log(`curx = ${curx}`);
+  // console.log(intersections);
+  // this.selectedIntersection = ret;
+  // return ret;
+
+  // let ret;
+  // if (intersections.length == 1) 
+  //   // return intersections[0];
+  //   ret = intersections[0];
+  // if (!isSegment(this.prevArc().site) && !isSegment(this.nextArc().site)) {
+  //   // Parabola-parabola intersection
+  //   if (pleft.focus.y > pright.focus.y)
+  //     ret = intersections[0];
+  //   else
+  //     ret = intersections[1];
+  // } else if (isSegment(this.prevArc().site) && !isSegment(this.nextArc().site)) {
+  //   // V-parabola intersection
+  //   ret = intersections[0];
+  // } else if (!isSegment(this.prevArc().site) && isSegment(this.nextArc().site)) {
+  //   // Parabola-V intersection
+  //   ret = intersections[1];
+  // } else if (isSegment(this.prevArc().site) && isSegment(this.nextArc().site)) {
+  //   // V-V intersection
+  //   if (pleft.focus.y > pright.focus.y) return intersections[0];
+  //   ret = intersections[1];
+  // } else {
+  //   throw "Should reach here";
+  //   // TODO this may need to be changed
+  //   // return intersections[0];
+  //   ret = intersections[0];
+  // }
+  // this.selectedIntersection = ret;
+  // return ret;
 };
