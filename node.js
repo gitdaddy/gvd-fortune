@@ -42,14 +42,6 @@ ArcNode.prototype.createDrawElement = function(leftx, rightx, directrix) {
   return element;
 }
 
-// Object.defineProperty(ArcNode.prototype, "id", {
-//   configurable: true,
-//   enumerable: true,
-//   get: function() {
-//     return this.site.id;
-//   },
-// });
-
 //------------------------------------------------------------
 // prevEdge
 // Returns the previous in-order edge arcNode. Find the first
@@ -130,7 +122,6 @@ Object.defineProperty(EdgeNode.prototype, "id", {
   configurable: true,
   enumerable: true,
   get: function() {
-    // return this.prevArc().site.id + "-" + this.nextArc().site.id;
     return this.prevArc().id + "-" + this.nextArc().id;
   },
 });
@@ -138,8 +129,6 @@ Object.defineProperty(EdgeNode.prototype, "id", {
 EdgeNode.prototype.updateEdge = function(vertex, dcel) {
   this.dcelEdge = dcel.makeEdge();
   this.dcelEdge.origin.point = vertex;
-  // this.dcelEdge.a = this.prevArc().site.id;
-  // this.dcelEdge.b = this.nextArc().site.id;
   this.dcelEdge.a = this.prevArc().id;
   this.dcelEdge.b = this.nextArc().id;
 }
@@ -178,7 +167,6 @@ EdgeNode.prototype.setChild = function(node, side) {
 
 EdgeNode.prototype.createBeachlineSegment = function(site, directrix) {
   if (isSegment(site)) {
-    // console.log("Creating V " + site);
     return new V(site, directrix);
   }
   return createParabola(site, directrix);
@@ -186,15 +174,9 @@ EdgeNode.prototype.createBeachlineSegment = function(site, directrix) {
 
 EdgeNode.prototype.intersection = function(directrix) {
   // This is inefficient. We should be storing sites in edge nodes.
-  // var pleft = createParabola(this.prevArc().site, directrix);
-  // var pright = createParabola(this.nextArc().site, directrix);
   var pleft = this.createBeachlineSegment(this.prevArc().site, directrix);
   var pright = this.createBeachlineSegment(this.nextArc().site, directrix);
   var intersections = pleft.intersect(pright);
-  // if (isSegment(this.prevArc().site) && !isSegment(this.nextArc().site)) {
-  //   console.log(this.nextArc().site);
-  //   console.log(intersections);
-  // }
   if (intersections.length == 1) return intersections[0];
   if (!isSegment(this.prevArc().site) && !isSegment(this.nextArc().site)) {
     // Parabola-parabola intersection
