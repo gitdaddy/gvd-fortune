@@ -297,7 +297,7 @@ Beachline.prototype.render = function(program, directrix, renderEvents) {
   let events = [];
   this.prepDraw(directrix, this.root, -1, 1, arcElements, lines, events);
 
-  this.renderImpl(program, directrix, this.root, -1, 1, renderEvents);
+  // this.renderImpl(program, directrix, this.root, -1, 1, renderEvents);
 
   let parabolas = arcElements.filter(d => d.type == "parabola");
   let vs = arcElements.filter(d => d.type == "v");
