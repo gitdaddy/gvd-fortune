@@ -96,12 +96,24 @@ function showTree(treeData) {
     .style("stroke", function(d) { return nodeColor(d.data); })
     .style("fill", function(d) { return nodeColor(d.data); })
     .on("mouseover", function(d, i) {
-      d3.select(`#treenode${d.data.id}`).style("stroke-width", 5);
-      if (d.data.isArc)
+      // Highlight the arc
+      let arc = d3.select(`#treenode${d.data.id}`);
+      arc.style("stroke-width", 5);
+      // Highlight the site
+      if (d.data.isArc) {
         d3.select(`#site${d.data.site.id}`).attr("r", 20/gvdw);
+        // Debug
+        if (arc.attr('leftx')) {
+          let x0 = (+arc.attr('leftx')).toFixed(1);
+          let x1 = (+arc.attr('rightx')).toFixed(1);
+          document.getElementById('debug').innerHTML =
+            `x0=${x0} x1=${x1}`;
+        }
+      }
     })
     .on("mouseout", function(d, i) {
       d3.select(`#treenode${d.data.id}`).style("stroke-width", null);
+      document.getElementById('debug').innerHTML = '';
       if (d.data.isArc)
         d3.select(`#site${d.data.site.id}`).attr("r", 8/gvdw);
     })
