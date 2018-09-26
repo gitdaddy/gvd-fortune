@@ -26,34 +26,56 @@ function hideDebugCircumcircle() {
 }
 
 function drawSites(points, segments) {
-  d3.select("#gvd")
-    .selectAll("#segment")
-    .data(segments)
-    .enter()
-    .append("line")
-    .attr("x1", s => s[0].x)
-    .attr("y1", s => s[0].y)
-    .attr("x2", s => s[1].x)
-    .attr("y2", s => s[1].y)
-    .attr("class", "site segment-site")
-    .attr("stroke", (d,i) => siteColorSvg(d.id))
-    .attr("vector-effect", "non-scaling-stroke")
-  ;
+  {
+    let update = function(sel) {
+      sel
+        .attr("x1", s => s[0].x)
+        .attr("y1", s => s[0].y)
+        .attr("x2", s => s[1].x)
+        .attr("y2", s => s[1].y)
+        .attr("stroke", (d,i) => siteColorSvg(d.id))
+      ;
+    };
 
-  d3.select("#gvd")
-    .selectAll(".point-site")
-    .data(points)
-    .enter()
-    .append("circle")
-    .attr("cx", p => p.x)
-    .attr("cy", p => p.y)
-    .attr("r", SITE_RADIUS)
-    .attr("class", "site point-site")
-    .attr("fill", (d,i) => siteColorSvg(d.id))
-    .attr("id", d => `site${d.id}`)
-    .append("title").html(d => d.id)
-  ;
-  
+    let sel = d3.select("#gvd")
+      .selectAll(".segment-site")
+      .data(segments);
+
+    sel.exit().remove();
+    let enter = sel
+      .enter()
+      .append("line")
+      .attr("class", "site segment-site")
+      .attr("vector-effect", "non-scaling-stroke")
+    ;
+    update(enter);
+    update(sel);
+  }
+
+  {
+    let update = function(sel) {
+      sel
+        .attr("cx", p => p.x)
+        .attr("cy", p => p.y)
+        .attr("fill", (d,i) => siteColorSvg(d.id))
+        .attr("id", d => `site${d.id}`)
+        .append("title").html(d => d.id)
+      ;
+    };
+
+    let sel = d3.select("#gvd")
+      .selectAll(".point-site")
+      .data(points);
+
+    sel.exit().remove();
+    let enter = sel.enter()
+      .append("circle")
+      .attr("r", SITE_RADIUS)
+      .attr("class", "site point-site")
+    ;
+    update(enter);
+    update(sel);
+  }
 }
 
 function drawSweepline(sweepline) {

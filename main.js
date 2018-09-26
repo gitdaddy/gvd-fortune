@@ -10,6 +10,8 @@ var sweepline = 0.1;
 // var canvas;
 // var gl;
 
+let datasets;
+
 var circle;
 var sweepLine;
 var program;
@@ -154,27 +156,11 @@ function y2win(y) {
   return (1-(y-ymin)/(ymax-ymin)) * gvdh;
 }
 
-function init() {
-  if (localStorage.sweepline) {
-    sweepline = parseFloat(localStorage.sweepline);
-  }
-
-  document.onkeydown = keydown;
-  document.onclick = mouseclick;
-
-  document.getElementById("sweeplineLabel").innerHTML = sweepline.toFixed(3);
-
-  // let points1 = [
-  //   // segment test points
-  //   vec3(-0.4, 0.8, 0),
-  //   vec3(-0.4, 0.1, 0),
-  //   vec3(0.4,  0.5, 0),
-  // ];
+function createDatasets() {
   let points1 = [
-    // segment test points
-    vec3(0, 0.8, 0),
-    vec3(0, -0.1, 0),
-    vec3(0.4,  0.6, 0),
+    vec3(-0.4, 0.8, 0),
+    vec3(-0.4, -0.4, 0),
+    vec3(0.4,  0.5, 0),
   ];
   let segments1 = [
     makeSegment(points1[0], points1[1])
@@ -200,18 +186,26 @@ function init() {
     makeSegment(points2[0], points2[1])
   ];
 
-  let points3 = [
+  let points5 = [
     vec3(-0.26, 0.73, 0),
     vec3(0.62, 0.37, 0),
     vec3(-0.12,0.13, 0),
     vec3(-0.30, -0.1, 0),
     vec3(0.73,-0.13, 0),
     vec3(-0.65, -0.15, 0),
-    // vec3(0.16, -0.79, 0),
-    vec3(-0.41, -0.9, 0),
-    vec3(-0.90, -0.92, 0),
   ];
+  let segments5 = [];
+
+  let points3 = [];
   let segments3 = [];
+  {
+    Math.seedrandom('5');
+    let numRandom = 30;
+    for (var i = 0; i < numRandom; ++i) {
+      var p = vec3(Math.random()*2-1, Math.random()*2-1, 0);
+      points3.push(p);
+    }
+  }
 
   Math.seedrandom('3');
   let numRandom = 100;
@@ -222,9 +216,44 @@ function init() {
   }
   let segments4 = [];
 
-  points = points2;
-  segments = segments2;
+  datasets = {
+    'dataset1' : { points:points1, segments:segments1 },
+    'dataset2' : { points:points2, segments:segments2 },
+    'dataset3' : { points:points3, segments:segments3 },
+    'dataset4' : { points:points4, segments:segments4 },
+    'dataset5' : { points:points5, segments:segments5 },
+  };
+}
 
+function init() {
+  if (localStorage.sweepline) {
+    sweepline = parseFloat(localStorage.sweepline);
+  }
+
+  document.onkeydown = keydown;
+  document.onclick = mouseclick;
+
+  document.getElementById("sweeplineLabel").innerHTML = sweepline.toFixed(3);
+
+  createDatasets();
+  for (let key in datasets) {
+    var option = document.createElement("option");
+    option.text = key;
+    document.getElementById("dataset").add(option);  
+  }
+
+  if (localStorage.dataset) {
+    document.getElementById("dataset").value = localStorage.dataset;
+  }
+  datasetChange(document.getElementById("dataset").value);
+}
+
+function datasetChange(value) {
+  console.log(value);
+  localStorage.dataset = value;
+
+  points = datasets[value].points;
+  segments = datasets[value].segments;
   // Give all points and segments a unique ID
   var id = 1;
   points.forEach(function(p) {
@@ -268,6 +297,8 @@ function init() {
       console.log("WARNING: sites with identical x values of " + xvalues[i]);
     }
   }
+
+  events = [];
 
   // Add points as events
   points.forEach(function(p) {
@@ -367,6 +398,8 @@ var render = function() {
         .attr("transform", p => p.transform)
       ;
     }
+  } else {
+    let selection = d3.select("#gvd").selectAll(".gvd-surface-parabola").remove();
   }
   // /Temporary stuff
 

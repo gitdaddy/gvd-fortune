@@ -1,3 +1,6 @@
+//------------------------------------------------------------
+// Line class
+//------------------------------------------------------------
 Line = function(p1, p2) {
   this.p1 = p1;
   this.p2 = p2;
@@ -8,9 +11,13 @@ Line = function(p1, p2) {
   this.v = normalize(subtract(p2, p1));
 }
 
+//------------------------------------------------------------
+// PointSegmentBisector class
+//
 // If the point is in the shadow of the line segment then
 // this represents a general parabola. Otherwise it is a
 // ray/parabola combination.
+//------------------------------------------------------------
 PointSegmentBisector = function(p, s) {
   let v = subtract(s[1], s[0]);
   let v_unit = normalize(v);
@@ -19,14 +26,36 @@ PointSegmentBisector = function(p, s) {
   if (d < length(v)) {
     // In the shadow, so fully parabolic
     this.para = createGeneralParabola(p, s);
+  } else {
+    throw "PointSegmentBisector not implemented"
   }
 }
 
+PointSegmentBisector.prototype.intersectLine = function(line) {
+  return this.para.intersectLine(line);
+}
+
+//------------------------------------------------------------
+// bisectPointSegment
+// Returns the bisector of a point and a segment. The returned
+// value will be a PointSegmentBisector.
+//------------------------------------------------------------
 function bisectPointSegment(p, s) {
   return new PointSegmentBisector(p, s);
 }
 
-// a and b must be either line segments or points.
+//------------------------------------------------------------
+//------------------------------------------------------------
+// General functions
+//------------------------------------------------------------
+//------------------------------------------------------------
+
+//------------------------------------------------------------
+// bisect
+//
+// Returns a bisector of a and b. a and b must be either line
+// segments or points.
+//------------------------------------------------------------
 function bisect(a, b) {
   let bisector;
   if (a.type == 'vec' && b.type == 'vec') {
@@ -43,10 +72,25 @@ function bisect(a, b) {
   return bisector;
 }
 
-// a and b must be either lines or parabolas
+//------------------------------------------------------------
+// intersect
+//
+// Returns the intersecting point between objects a and b.
+// a and b must be either lines or parabolas.
+//------------------------------------------------------------
 function intersect(a, b) {
+  let intersection = null;
   // Assume they're both lines for now
-  return intersectLines(a.p1, a.p2, b.p1, b.p2);
+  if (a instanceof Line && b instanceof Line) {
+    intersection = intersectLines(a.p1, a.p2, b.p1, b.p2);
+  } else if (a instanceof Line) {
+    // b is a general parabola
+    intersection = b.intersectLine(a);
+  } else if (b instanceof Line) {
+    // a is a general parabola
+    intersection = a.intersectLine(b);
+  }
+  return intersection;
   // let bisector;
   // if (a.type == 'vec' && b.type == 'vec') {
   //   // Returns a line
