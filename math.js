@@ -1,4 +1,43 @@
 //------------------------------------------------------------
+//------------------------------------------------------------
+// Classes and auxiliary functions
+//------------------------------------------------------------
+//------------------------------------------------------------
+
+//------------------------------------------------------------
+// Segment "class"
+//------------------------------------------------------------
+function makeSegment(p1, p2) {
+  var s = [p1, p2];
+  // Always store vertex with greatest y value first.
+  if (p1.y < p2.y) {
+    s = [p2, p1];
+  }
+  Object.defineProperty(s, "y", {
+    configurable: true,
+    enumerable: true,
+    get: function() {
+      return this[0].y;
+    }
+  });
+  Object.defineProperty(s, "x", {
+    configurable: true,
+    enumerable: true,
+    get: function() {
+      return this[0].x;
+    }
+  });
+  s.a = s[0];
+  s.b = s[1];
+  s.type = 'segment';
+  return s;
+}
+
+function isSegment(s) {
+  return (Array.isArray(s) && s.length == 2 && Array.isArray(s[0]));
+}
+
+//------------------------------------------------------------
 // Line class
 //------------------------------------------------------------
 Line = function(p1, p2) {
@@ -19,6 +58,7 @@ Line = function(p1, p2) {
 // ray/parabola combination.
 //------------------------------------------------------------
 PointSegmentBisector = function(p, s) {
+  p = vec3(p);
   let v = subtract(s[1], s[0]);
   let v_unit = normalize(v);
   let w = subtract(p, s[0]);
@@ -36,17 +76,156 @@ PointSegmentBisector.prototype.intersectLine = function(line) {
 }
 
 //------------------------------------------------------------
+//------------------------------------------------------------
+// Math functions
+//------------------------------------------------------------
+//------------------------------------------------------------
+
+//------------------------------------------------------------
+// Returns the distance between objects a and b.
+//------------------------------------------------------------
+function dist(a, b) {
+  // Only supports points for now
+  return length(subtract(vec2(a), vec2(b)));
+}
+
+//------------------------------------------------------------
+// quadratic
+//
+// ax^2 + bx + c = 0
+//------------------------------------------------------------
+function quadratic(a, b, c) {
+  if (a == 0) return [];
+  // var disc = Math.sqrt(b*b-4*a*c);
+  var disc = b*b-4*a*c;
+  if (disc < -0.0000001) {
+    return [];
+  }
+  if (Math.abs(disc) < 0.0000001) {
+    return [(-b)/(2*a)];
+  }
+  var sdisc = Math.sqrt(disc);
+  return [(-b+sdisc)/(2*a), (-b-sdisc)/(2*a)];
+}
+
+//------------------------------------------------------------
+// getAngle
+// s is an array of length 2
+//------------------------------------------------------------
+function getAngle(s) {
+  var p1 = s[0]; // lower point
+  var p2 = s[1]; // upper point
+  if (p1[1] == p2[1]) return 0;
+  if (p1[1] > p2[1]) {
+    // swap
+    [p1, p2] = [p2, p1]
+  }
+  return Math.atan2(p2[1]-p1[1], p2[0]-p1[0]);
+}
+
+//------------------------------------------------------------
+//------------------------------------------------------------
+// Specific intersect functions
+//------------------------------------------------------------
+//------------------------------------------------------------
+
+//             * p4
+//           _/
+// p1 *----_/---------* p2
+//       _/
+//      /
+//  p3 *
+function intersectLines(p1, p2, p3, p4) {
+  var x1 = p1.x;
+  var x2 = p2.x;
+  var x3 = p3.x;
+  var x4 = p4.x;
+  var y1 = p1.y;
+  var y2 = p2.y;
+  var y3 = p3.y;
+  var y4 = p4.y;
+  var denom = (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
+  if (Math.abs(denom) < 0.000001) return null;
+  var x = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4))/denom;
+  var y = ((x1*y2-y1*x2)*(y3-y4) - (y1-y2)*(x3*y4-y3*x4))/denom;
+  return vec3(x, y, 0);
+}
+
+//------------------------------------------------------------
+//------------------------------------------------------------
+// Specific bisect functions
+//------------------------------------------------------------
+//------------------------------------------------------------
+
+//------------------------------------------------------------
 // bisectPointSegment
 // Returns the bisector of a point and a segment. The returned
 // value will be a PointSegmentBisector.
 //------------------------------------------------------------
 function bisectPointSegment(p, s) {
+  p = vec2(p);
+  s0 = vec2(s[0]);
+  s1 = vec2(s[1]);
+  if ((p[0] == s0[0] && p[1] == s0[1]) ||
+      (p[0] == s1[0] && p[1] == s1[1])) {
+    // special case: point is a segment endpoint
+    let v0 = subtract(s1, s0);
+    let v = vec2(v0[1], -v0[0]);
+    return new Line(p, add(p, v));
+  }
+  if (dot(subtract(p, s0), normalize(subtract(s0, s1))) ==
+      length(subtract(p, s0))) {
+    // special case: line and point are collinear
+    let v0 = subtract(s1, s0);
+    let v = vec2(v0[1], -v0[0]);
+    if (length(subtract(p, s0)) < length(subtract(p, s1))) {
+      // if p is closer to s0...
+      return bisect(p, s0);
+    } else {
+      // if p is closer to s1...
+      return bisect(p, s1);
+    }
+  }
+
   return new PointSegmentBisector(p, s);
 }
 
 //------------------------------------------------------------
+// getSegmentsBisector
+//
+// Return the angle of the bisecting line of two segments.
+// The bisector is between the angle s to the angle t.
+// s,t are arrays of length 2
 //------------------------------------------------------------
-// General functions
+function getSegmentsBisector(s, t) {
+  var stheta = getAngle(s);
+  var ttheta = getAngle(t);
+  if (ttheta < stheta) {
+    ttheta += 2.0 * Math.PI;
+  }
+  return (stheta + ttheta) / 2.0;
+}
+
+//------------------------------------------------------------
+// bisectPoints
+//
+// Return the line bisecting two points. Returns two points [q1,q2] defining
+// the line. The vector v=q2-q1 will be oriented in the negative y direction.
+//------------------------------------------------------------
+function bisectPoints(p1, p2) {
+  var v = subtract(p2, p1);
+  var q = add(p1, mult(v, 0.5));
+  [v.x, v.y] = [-v.y, v.x];
+  if (v.y > 0) {
+    v = negate(v);
+  }
+  return new Line(q, add(q, v));
+  // return [q, add(q, v)];
+}
+
+//------------------------------------------------------------
+//------------------------------------------------------------
+// General bisect/intersect functions
 //------------------------------------------------------------
 //------------------------------------------------------------
 
@@ -80,137 +259,24 @@ function bisect(a, b) {
 //------------------------------------------------------------
 function intersect(a, b) {
   let intersection = null;
-  // Assume they're both lines for now
   if (a instanceof Line && b instanceof Line) {
+    // two lines
     intersection = intersectLines(a.p1, a.p2, b.p1, b.p2);
   } else if (a instanceof Line) {
-    // b is a general parabola
+    // line and general parabola
     intersection = b.intersectLine(a);
   } else if (b instanceof Line) {
-    // a is a general parabola
+    // general parabola and line
     intersection = a.intersectLine(b);
   }
   return intersection;
-  // let bisector;
-  // if (a.type == 'vec' && b.type == 'vec') {
-  //   // Returns a line
-  //   bisector = bisectPoints(a, b);
-  // } else if (a.type == 'vec') {
-  //   // Returns PointSegmentBisector
-  //   bisector = bisectPointSegment(a, b);
-  // } else if (b.type == 'vec') {
-  //   bisector = bisectPointSegment(b, a);
-  // } else {
-  //   bisector = bisectSegments(a, b);
-  // }
-  // return bisector;
 }
 
-// s is an array of length 2
-function getAngle(s) {
-  var p1 = s[0]; // lower point
-  var p2 = s[1]; // upper point
-  if (p1[1] == p2[1]) return 0;
-  if (p1[1] > p2[1]) {
-    // swap
-    [p1, p2] = [p2, p1]
-  }
-  return Math.atan2(p2[1]-p1[1], p2[0]-p1[0]);
-}
-
-// Return the angle of the bisecting line of two segments.
-// The bisector is between the angle s to the angle t.
-// s,t are arrays of length 2
-function getSegmentsBisector(s, t) {
-  var stheta = getAngle(s);
-  var ttheta = getAngle(t);
-  if (ttheta < stheta) {
-    ttheta += 2.0 * Math.PI;
-  }
-  return (stheta + ttheta) / 2.0;
-}
-
-// Return the line bisecting two points. Returns two points [q1,q2] defining
-// the line. The vector v=q2-q1 will be oriented in the negative y direction.
-function bisectPoints(p1, p2) {
-  var v = subtract(p2, p1);
-  var q = add(p1, mult(v, 0.5));
-  [v.x, v.y] = [-v.y, v.x];
-  if (v.y > 0) {
-    v = negate(v);
-  }
-  return new Line(q, add(q, v));
-  // return [q, add(q, v)];
-}
-
-// ax^2 + bx + c = 0
-function quadratic(a, b, c) {
-  if (a == 0) return [];
-  // var disc = Math.sqrt(b*b-4*a*c);
-  var disc = b*b-4*a*c;
-  if (disc < -0.0000001) {
-    return [];
-  }
-  if (Math.abs(disc) < 0.0000001) {
-    return [(-b)/(2*a)];
-  }
-  var sdisc = Math.sqrt(disc);
-  return [(-b+sdisc)/(2*a), (-b-sdisc)/(2*a)];
-}
-
-//             * p4
-//           _/
-// p1 *----_/---------* p2
-//       _/
-//      /
-//  p3 *
-function intersectLines(p1, p2, p3, p4) {
-  var x1 = p1.x;
-  var x2 = p2.x;
-  var x3 = p3.x;
-  var x4 = p4.x;
-  var y1 = p1.y;
-  var y2 = p2.y;
-  var y3 = p3.y;
-  var y4 = p4.y;
-  var denom = (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
-  if (Math.abs(denom) < 0.000001) return null;
-  var x = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4))/denom;
-  var y = ((x1*y2-y1*x2)*(y3-y4) - (y1-y2)*(x3*y4-y3*x4))/denom;
-  return vec3(x, y, 0);
-}
-
-function makeSegment(p1, p2) {
-  var s = [p1, p2];
-  // Always store vertex with greatest y value first.
-  if (p1.y < p2.y) {
-    s = [p2, p1];
-  }
-  Object.defineProperty(s, "y", {
-    configurable: true,
-    enumerable: true,
-    get: function() {
-      return this[0].y;
-    }
-  });
-  Object.defineProperty(s, "x", {
-    configurable: true,
-    enumerable: true,
-    get: function() {
-      return this[0].x;
-    }
-  });
-  s.a = s[0];
-  s.b = s[1];
-  s.type = 'segment';
-  return s;
-}
-
-function isSegment(s) {
-  return (Array.isArray(s) && s.length == 2 && Array.isArray(s[0]));
-}
-
+//------------------------------------------------------------
+// equidistant
+//
 // Returns the point equidistant from points/segments c1, c2, and c3.
+//------------------------------------------------------------
 function equidistant(c1, c2, c3) {
   // put the objects in order of segment -> point
   // let objects = [c1, c2, c3];
@@ -218,7 +284,8 @@ function equidistant(c1, c2, c3) {
 
   let b12 = bisect(c1, c2);
   let b23 = bisect(c2, c3);
-  return intersect(b12, b23);
+  let ret = intersect(b12, b23);
+  return ret;
   
   // // TODO handle segment case
   // if (isSegment(c1)) c1 = c1[0];
@@ -227,7 +294,11 @@ function equidistant(c1, c2, c3) {
   return equidistant_ppp(c1, c2, c3);
 }
 
-// Three points.
+//------------------------------------------------------------
+// equidistant_ppp
+//
+// Three points. Currently not used.
+//------------------------------------------------------------
 function equidistant_ppp(c1, c2, c3) {
   //                   p0       u
   //       c1 *         *<--------------* c2
@@ -250,3 +321,4 @@ function equidistant_ppp(c1, c2, c3) {
   var t = (-dot(p0p3, p0p3) + a) / (2 * dot(p0p3, v));
   return vec3(add(p0, mult(t, v)));
 }
+
