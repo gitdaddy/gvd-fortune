@@ -254,10 +254,12 @@ function datasetChange(value) {
 
   points = datasets[value].points;
   segments = datasets[value].segments;
-  // Give all points and segments a unique ID
+  // Give all points and segments a unique ID and label
   var id = 1;
+  var numSiteLabels = 2;
   points.forEach(function(p) {
     p.id = id++;
+    p.label = p.id % numSiteLabels; // Testing GVD with connected sites
   });
   segments.forEach(function(s) {
     s.id = id++;

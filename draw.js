@@ -57,7 +57,7 @@ function drawSites(points, segments) {
       sel
         .attr("cx", p => p.x)
         .attr("cy", p => p.y)
-        .attr("fill", (d,i) => siteColorSvg(d.id))
+        .attr("fill", (d,i) => siteColorSvg(d.label))
         .attr("id", d => `site${d.id}`)
         .append("title").html(d => d.id)
       ;
