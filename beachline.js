@@ -112,7 +112,7 @@ function createCloseEvent(arcNode) {
       var intersection = pints[0];
       // console.log("intersection = " + intersection);
       // Get the intersection between the bisector and the segment
-      var segBisectorTheta = 
+      var segBisectorTheta =
         getSegmentsBisector([vec3(0, 0, 0), vec3(1, 0, 0)], left.site);
       // console.log(intersection);
       var sbline = [
@@ -197,7 +197,7 @@ Beachline.prototype.add = function(site) {
   if (e != null) {
     closeEvents.push(e);
   }
-  
+
   return closeEvents;
 }
 
@@ -206,7 +206,7 @@ Beachline.prototype.add = function(site) {
 //------------------------------------------------------------
 Beachline.prototype.remove = function(arcNode, point) {
   if (!arcNode.isArc) throw "Unexpected edge in remove";
-  
+
   var parent = arcNode.parent;
   var grandparent = parent.parent;
   var side = (parent.left == arcNode) ? LEFT_CHILD : RIGHT_CHILD;
@@ -279,7 +279,7 @@ Beachline.prototype.prepDraw = function(
         !Number.isNaN(p.x) && !Number.isNaN(p.y)) {
       lines.push({x0:v.x, y0:v.y, x1:p.x, y1:p.y, id:node.id});
     }
-    
+
     this.prepDraw(directrix, node.left, leftx, p.x, arcElements, lines, events);
     if (p.x < rightx) {
       // We can ignore anything outside our original bounds.

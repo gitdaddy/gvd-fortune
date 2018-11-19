@@ -239,7 +239,7 @@ function init() {
   for (let key in datasets) {
     var option = document.createElement("option");
     option.text = key;
-    document.getElementById("dataset").add(option);  
+    document.getElementById("dataset").add(option);
   }
 
   if (localStorage.dataset) {
@@ -263,6 +263,7 @@ function datasetChange(value) {
   });
   segments.forEach(function(s) {
     s.id = id++;
+    s.label = s.id % numSiteLabels; // Testing GVD with connected sites
   });
 
   initDebugCircumcircle();
