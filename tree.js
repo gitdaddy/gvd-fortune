@@ -5,7 +5,7 @@ function nodeColor(node) {
   // arc node
   // var c = siteColor(node.id);
   // var c = arcColorSvg(node.id);
-  var c = siteColorSvg(node.site.id);
+  var c = siteColorSvg(node.site.label);
   return c;
   // var color = d3.rgb(c[0]*255, c[1]*255, c[2]*255);
   // return color;
@@ -109,10 +109,10 @@ function showTree(treeData) {
   var node = g.selectAll(".arcNode")
     .data(nodes.descendants())
     .enter().append("g")
-    .attr("class", function(d) { 
+    .attr("class", function(d) {
       return "arcNode" +
         (d.children ? " arcNode--internal" : " arcNode--leaf"); })
-    .attr("transform", function(d) { 
+    .attr("transform", function(d) {
       return "translate(" + d.x + "," + d.y + ")"; })
     .on("click", function(d) { console.log("click"); })
   ;
@@ -146,7 +146,7 @@ function showTree(treeData) {
         d3.select(`#site${d.data.site.id}`).attr("r", SITE_RADIUS);
     })
 ;
-  
+
   // adds the text to the arcNode
   node.append("text")
     .attr("dy", ".35em")

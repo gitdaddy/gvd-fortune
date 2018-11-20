@@ -30,13 +30,13 @@ ArcNode.prototype.createDrawElement = function(leftx, rightx, directrix) {
   let element = null;
   if (this.isParabola) {
     let para = createParabola(this.site, directrix);
-    // para.prepDraw(this.id, leftx, rightx);
-    para.prepDraw(this.id, this.site.id, leftx, rightx);
+    // para.prepDraw(this.id, label, leftx, rightx);
+    para.prepDraw(this.id, this.site.label, leftx, rightx);
     element = para;
     element.type = "parabola";
   } else if (this.isV) {
     var v = new V(this.site, directrix);
-    v.prepDraw(this.id, this.site.id, leftx, rightx);
+    v.prepDraw(this.id, this.site.label, leftx, rightx);
     element = v;
     element.type = "v";
   }
@@ -81,7 +81,7 @@ ArcNode.prototype.nextEdge = function() {
 
 //------------------------------------------------------------
 // nextArc
-// Returns the next in-order arc arcNode. 
+// Returns the next in-order arc arcNode.
 //------------------------------------------------------------
 ArcNode.prototype.nextArc = function() {
   var node = this.nextEdge();
@@ -132,6 +132,7 @@ EdgeNode.prototype.updateEdge = function(vertex, dcel) {
   this.dcelEdge.origin.point = vertex;
   this.dcelEdge.a = this.prevArc().id;
   this.dcelEdge.b = this.nextArc().id;
+  this.dcelEdge.splitSite = this.prevArc().site.label !== this.nextArc().site.label;
 }
 
 EdgeNode.prototype.prevArc = function() {
@@ -197,7 +198,7 @@ EdgeNode.prototype.intersection = function(directrix) {
   }
 
   // Handle the case where the V arc for the segment (+)
-  // needs to be "above" the parabola for the lower 
+  // needs to be "above" the parabola for the lower
   // end of the segment (*). The (=) is for the parabola
   // for the upper end of the segment.
   //
@@ -211,8 +212,8 @@ EdgeNode.prototype.intersection = function(directrix) {
   //          +        +        +
   //            +      *      +
   //              **       **
-  //                  *** 
-  //                    
+  //                  ***
+  //
   //     _____________________________
   //
   if (arcNodes[lower].isV &&

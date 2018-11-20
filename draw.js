@@ -57,7 +57,7 @@ function drawSites(points, segments) {
       sel
         .attr("cx", p => p.x)
         .attr("cy", p => p.y)
-        .attr("fill", (d,i) => siteColorSvg(d.id))
+        .attr("fill", (d,i) => siteColorSvg(d.label))
         .attr("id", d => `site${d.id}`)
         .append("title").html(d => d.id)
       ;
@@ -84,11 +84,15 @@ function drawSweepline(sweepline) {
     .attr("y1", sweepline)
     .attr("x2", 1)
     .attr("y2", sweepline)
-  ;
-}
+    ;
+  }
 
-function drawSurface(dcel) {
-  // Render surface with D3
+  function getSurfaceWidth(bold) {
+    return bold ? 5 : 1;
+  }
+
+  function drawSurface(dcel) {
+    // Render surface with D3
   let iter = dcel.edges;
   let result = iter.next();
   let count = 0;
@@ -96,12 +100,15 @@ function drawSurface(dcel) {
   while (!result.done) {
     var edge = result.value;
     if (edge.origin.point && edge.dest.point) {
-      var op = edge.origin.point;
-      var dp = edge.dest.point;
-      if (op[0] == op[0] && op[1] == op[1] &&
-          dp[0] == dp[0] && dp[1] == dp[1]) {
-        edges.push(edge);
-      }
+      edges.push(edge);
+
+      // var op = edge.origin.point;
+      // var dp = edge.dest.point;
+      // do we need this check?
+      // if (op[0] == op[0] && op[1] == op[1] &&
+      //     dp[0] == dp[0] && dp[1] == dp[1]) {
+      //   edges.push(edge);
+      // }
     }
     result = iter.next();
   }
@@ -111,6 +118,7 @@ function drawSurface(dcel) {
       .attr('y1', e => e.origin.point[1])
       .attr('x2', e => e.dest.point[0])
       .attr('y2', e => e.dest.point[1])
+      s.style("stroke-width", e => getSurfaceWidth(e.splitSite))
     ;
   };
   let d3edges = d3.select('#gvd')
@@ -143,7 +151,7 @@ function drawCloseEvents(eventPoints) {
     // Highlight the arc
     let arcElement = d3.select(`#treenode${arcNode.id}`);
     arcElement.style("stroke-width", 5);
-    
+
     // Highlight the sites
     // d3.select(`#site${arcNode.site.id}`).attr("r", SITE_RADIUS_HIGHLIGHT);
     showDebugCircumcircle(event.point.x, event.point.y, event.r);
@@ -157,7 +165,7 @@ function drawCloseEvents(eventPoints) {
     // Unhighlight the arc
     let arcElement = d3.select(`#treenode${arcNode.id}`);
     arcElement.style("stroke-width", null);
-    
+
     // Unhighlight the sites
     // d3.select(`#site${arcNode.site.id}`).attr("r", SITE_RADIUS);
     hideDebugCircumcircle();
@@ -186,7 +194,7 @@ function drawBeachline(beachline, directrix, renderEvents) {
     d3.select("#gvd").selectAll(".beach-parabola").remove();
     return;
   }
-  
+
   let arcElements = [];
   // These lines are GVD lines going to infinity that may or may not
   // eventually be subsumed into the DCEL.
@@ -221,7 +229,7 @@ function drawBeachline(beachline, directrix, renderEvents) {
   //     .attr('cy', d => d.y)
   //   ;
   // }
-  
+
   //------------------------------
   // Render the parabolas
   //------------------------------
@@ -236,8 +244,7 @@ function drawBeachline(beachline, directrix, renderEvents) {
     let update = function(s) {
         s
         .attr("d", p => line(p.drawPoints))
-        // .style("stroke", p => arcColorSvg(p.id))
-        .style("stroke", p => siteColorSvg(p.siteid))
+        .style("stroke", p => siteColorSvg(p.label))
         .attr("id", p => `treenode${p.nodeid}`)
         .attr("leftx", p => p.drawPoints[0].x)
         .attr("rightx", p => p.drawPoints[p.drawPoints.length-1].x)
@@ -257,7 +264,7 @@ function drawBeachline(beachline, directrix, renderEvents) {
     // update
     update(selection);
   }
-  
+
   //------------------------------
   // Render the Vs
   //------------------------------
@@ -271,8 +278,7 @@ function drawBeachline(beachline, directrix, renderEvents) {
       .data(vs);
     let update = function(s) {
       s.attr("d", p => line(p.drawPoints))
-        // .style("stroke", p => arcColorSvg(p.id))
-        .style("stroke", p => siteColorSvg(p.siteid))
+        .style("stroke", p => siteColorSvg(p.label))
         .attr("id", p => `treenode${p.nodeid}`)
         .attr("leftx", p => p.drawPoints[0].x)
         .attr("rightx", p => p.drawPoints[p.drawPoints.length-1].x)
@@ -291,7 +297,7 @@ function drawBeachline(beachline, directrix, renderEvents) {
     // update
     update(selection);
   }
-  
+
   //------------------------------
   // Render the active surface
   //------------------------------
@@ -317,6 +323,6 @@ function drawBeachline(beachline, directrix, renderEvents) {
     update(enter);
     // update
     update(selection);
-  }  
+  }
 
 }
