@@ -11,6 +11,7 @@ var sweepline = 0.1;
 // var gl;
 
 let datasets;
+var numLabels = 2;
 
 var circle;
 var sweepLine;
@@ -242,10 +243,23 @@ function init() {
     document.getElementById("dataset").add(option);
   }
 
+  for (var i = 2; i < 10; i++) {
+    var option = document.createElement("option");
+    option.text = i;
+    document.getElementById("numLabels").add(option);
+  }
+
   if (localStorage.dataset) {
     document.getElementById("dataset").value = localStorage.dataset;
   }
   datasetChange(document.getElementById("dataset").value);
+}
+
+function numLabelsChange(value)
+{
+  var intVal = parseInt(value);
+  numLabels = intVal;
+  datasetChange(localStorage.dataset);
 }
 
 function datasetChange(value) {
@@ -256,14 +270,13 @@ function datasetChange(value) {
   segments = datasets[value].segments;
   // Give all points and segments a unique ID and label
   var id = 1;
-  var numSiteLabels = 2;
   points.forEach(function(p) {
     p.id = id++;
-    p.label = p.id % numSiteLabels; // Testing GVD with connected sites
+    p.label = p.id % numLabels;
   });
   segments.forEach(function(s) {
     s.id = id++;
-    s.label = s.id % numSiteLabels; // Testing GVD with connected sites
+    s.label = s.id % numLabels;
   });
 
   initDebugCircumcircle();
