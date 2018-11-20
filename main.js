@@ -105,6 +105,9 @@ function keydown(event) {
   } else if (key == "d") {
     // Print the sweepline value
     console.log("sweepline = " + sweepline);
+  } else if (key == "i") {
+    isoEdgeWidth = isoEdgeWidth==0 ? 1 : 0;
+    changed = true;
   } else if (key == 'e') {
     showEvents = !showEvents;
     d3.selectAll(".close-event")

@@ -1,3 +1,6 @@
+let isoEdgeWidth = 1;
+let nonisoEdgeWidth = 5;
+
 function initDebugCircumcircle() {
   // Draw the close event highlight circle
   d3.select("#gvd").append("circle")
@@ -88,7 +91,10 @@ function drawSweepline(sweepline) {
   }
 
   function getSurfaceWidth(bold) {
-    return bold ? 5 : 1;
+    // return bold ? 5 : 1;
+    // return bold ? 5 : 0;
+    return bold ? nonisoEdgeWidth : isoEdgeWidth;
+    // return bold ? 5 : isoEdgeWidth;
   }
 
   function drawSurface(dcel) {
@@ -118,7 +124,7 @@ function drawSweepline(sweepline) {
       .attr('y1', e => e.origin.point[1])
       .attr('x2', e => e.dest.point[0])
       .attr('y2', e => e.dest.point[1])
-      s.style("stroke-width", e => getSurfaceWidth(e.splitSite))
+      .style("stroke-width", e => getSurfaceWidth(e.splitSite))
     ;
   };
   let d3edges = d3.select('#gvd')
