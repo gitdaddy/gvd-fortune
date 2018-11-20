@@ -81,63 +81,17 @@ function createCloseEvent(arcNode) {
   var left = arcNode.prevArc();
   var right = arcNode.nextArc();
   if (left != null && right != null) {
-    if (isSegment(left.site) && left.site[0] == arcNode.site) {
+    if (isSegment(left.site) || isSegment(right.site)) {
       let equi = equidistant(left.site, arcNode.site, right.site);
-      let r = dist(equi, right.site);
+      let r = dist(equi, arcNode.site);
       return new CloseEvent(equi.y-r, arcNode, left, right, equi);
-
-      // bline is the bisector between the start point of the
-      // segment and the right site
-      // var bline = getPointsBisector(left.site[0], right.site);
-      // var bline = bisect(left.site[0], right.site);
-      var bline = bisect(arcNode.site, right.site);
-      // var gp = createGeneralParabola(right.site, left.site);
-      var gp = bisect(right.site, left.site);
-      // console.log("xxx");
-      // console.log(gp.para.parabola);
-      // var pints = gp.para.intersectLine(bline);//[0], subtract(bline[1], bline[0]));
-      var pints = intersect(bline, gp);
-      if (pints.length == 0) {
-        throw "Intersections from bisector and generalized parabola " +
-          "unexpectedly empty";
-      }
-      if (pints.length > 1) {
-        console.log(pints);
-        console.log(arcNode.id);
-        throw "Unexpectedly more than one intersection from bisector " +
-          "and general parabola";
-      }
-      // intersection is the "equi" point -- equidistant from the three
-      // sites.
-      var intersection = pints[0];
-      // console.log("intersection = " + intersection);
-      // Get the intersection between the bisector and the segment
-      var segBisectorTheta = 
-        getSegmentsBisector([vec3(0, 0, 0), vec3(1, 0, 0)], left.site);
-      // console.log(intersection);
-      var sbline = [
-        intersection, add(intersection, vec4(Math.cos(segBisectorTheta),
-                                             Math.sin(segBisectorTheta)))];
-      var eventPoint = intersectLines(
-        left.site[0], left.site[1], sbline[0], sbline[1]);
-      // TODO watch out if intersection we want is the second intersection
-      return new CloseEvent(eventPoint.y, arcNode, left, right, intersection);
-    } else if (isSegment(left.site)) {
-      // TODO segment on left!
-    } else if (isSegment(right.site)) {
-      // TODO segment on right!
     } else if (isSegment(arcNode.site)) {
       // return new CloseEvent(arcNode.site[1].y, arcNode, intersection);
     } else {
       // All three are points
-      // var equi = equidistant(left.closePoint,
-      //                        arcNode.closePoint,
-      //                        right.closePoint);
       var equi = equidistant(left.site,
                              arcNode.site,
                              right.site);
-      // var u = subtract(left.closePoint, arcNode.closePoint);
-      // var v = subtract(left.closePoint, right.closePoint);
       var u = subtract(left.site, arcNode.site);
       var v = subtract(left.site, right.site);
       var cr = cross(u, v);
