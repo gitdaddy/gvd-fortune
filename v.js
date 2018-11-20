@@ -128,9 +128,9 @@ V.prototype.f_ = function(y) {
 //   1. p < x0 < x1
 //   2. x0 < p < x1
 //   3. x0 < x1 < p
-V.prototype.prepDraw = function(nodeid, siteid, x0, x1) {
+V.prototype.prepDraw = function(nodeid, label, x0, x1) {
   this.nodeid = nodeid;
-  this.siteid = siteid;
+  this.label = label;
   this.drawPoints = [];
 
   if (x0 > x1) {
@@ -138,7 +138,7 @@ V.prototype.prepDraw = function(nodeid, siteid, x0, x1) {
     // this.drawPoints = [vec2(0,0), vec2(0,0)];
     // return;
   }
-  
+
   var y0 = this.f(x0)
   var y1 = this.f(x1)
   if (x0 < this.p.x && this.p.x < x1) {

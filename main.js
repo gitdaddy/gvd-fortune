@@ -11,6 +11,7 @@ var sweepline = 0.1;
 // var gl;
 
 let datasets;
+var numLabels = 2;
 
 var circle;
 var sweepLine;
@@ -241,7 +242,13 @@ function init() {
   for (let key in datasets) {
     var option = document.createElement("option");
     option.text = key;
-    document.getElementById("dataset").add(option);  
+    document.getElementById("dataset").add(option);
+  }
+
+  for (var i = 2; i < 10; i++) {
+    var option = document.createElement("option");
+    option.text = i;
+    document.getElementById("numLabels").add(option);
   }
 
   if (localStorage.dataset) {
@@ -250,19 +257,28 @@ function init() {
   datasetChange(document.getElementById("dataset").value);
 }
 
+function numLabelsChange(value)
+{
+  var intVal = parseInt(value);
+  numLabels = intVal;
+  datasetChange(localStorage.dataset);
+}
+
 function datasetChange(value) {
   console.log(value);
   localStorage.dataset = value;
 
   points = datasets[value].points;
   segments = datasets[value].segments;
-  // Give all points and segments a unique ID
+  // Give all points and segments a unique ID and label
   var id = 1;
   points.forEach(function(p) {
     p.id = id++;
+    p.label = p.id % numLabels;
   });
   segments.forEach(function(s) {
     s.id = id++;
+    s.label = s.id % numLabels;
   });
 
   initDebugCircumcircle();

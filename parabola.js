@@ -167,10 +167,9 @@ Parabola.prototype.renderSvg = function(id, highlight=false) {
 }
 
 // Prepares this parabola for drawing
-Parabola.prototype.prepDraw = function(nodeid, siteid, x0, x1) {
-  console.log(x0 + " " + x1);
+Parabola.prototype.prepDraw = function(nodeid, label, x0, x1) {
   this.nodeid = nodeid;
-  this.siteid = siteid;
+  this.label = label;
   this.setDrawBounds(x0, x1);
   this.setDrawPoints();
 }
@@ -201,8 +200,8 @@ Parabola.prototype.prepDraw = function(nodeid, siteid, x0, x1) {
 //
 // Update to:
 //
-//  
-//   
+//
+//
 //    x0
 //    ______________________________
 //   |  \                           |
