@@ -91,10 +91,7 @@ function drawSweepline(sweepline) {
   }
 
   function getSurfaceWidth(bold) {
-    // return bold ? 5 : 1;
-    // return bold ? 5 : 0;
     return bold ? nonisoEdgeWidth : isoEdgeWidth;
-    // return bold ? 5 : isoEdgeWidth;
   }
 
   function drawSurface(dcel) {
@@ -107,14 +104,6 @@ function drawSweepline(sweepline) {
     var edge = result.value;
     if (edge.origin.point && edge.dest.point) {
       edges.push(edge);
-
-      // var op = edge.origin.point;
-      // var dp = edge.dest.point;
-      // do we need this check?
-      // if (op[0] == op[0] && op[1] == op[1] &&
-      //     dp[0] == dp[0] && dp[1] == dp[1]) {
-      //   edges.push(edge);
-      // }
     }
     result = iter.next();
   }
@@ -304,6 +293,11 @@ function drawBeachline(beachline, directrix, renderEvents) {
     update(selection);
   }
 
+  function activeLineWidth(connectedToGVD)
+  {
+    return connectedToGVD ? 1 : 0;
+  }
+
   //------------------------------
   // Render the active surface
   //------------------------------
@@ -317,6 +311,7 @@ function drawBeachline(beachline, directrix, renderEvents) {
         .attr('x2', d => d.x1)
         .attr('y2', d => d.y1)
         .attr("id", p => `treenode${p.id}`)
+        .style("stroke-width", p => activeLineWidth(p.connectedToGVD))
     };
     // exit
     selection.exit().remove();
