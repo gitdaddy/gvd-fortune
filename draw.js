@@ -102,7 +102,9 @@ function drawSweepline(sweepline) {
   let edges = [];
   while (!result.done) {
     var edge = result.value;
-    if (edge.origin.point && edge.dest.point) {
+    nanInOrigin = _.find(edge.origin.point, function (value) { return _.isNaN(value); });
+    nanInDest = _.find(edge.dest.point, function (value) { return _.isNaN(value); });
+    if (edge.origin.point && edge.dest.point && !_.isNaN(nanInOrigin) && !_.isNaN(nanInDest)) {
       edges.push(edge);
     }
     result = iter.next();

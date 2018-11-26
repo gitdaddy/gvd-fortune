@@ -65,7 +65,7 @@ function keydown(event) {
   var x = event.keyCode;
   var key = event.key;
   var changed = false;
-  var inc = 0.01;
+  var inc = 0.005;
   if (x == 40 || key == "j" || key == "J") {
     // Down arrow
     if (event.shiftKey) {
@@ -279,9 +279,15 @@ function datasetChange(value) {
     p.id = id++;
     p.label = p.id % numLabels;
   });
+
   segments.forEach(function(s) {
     s.id = id++;
     s.label = s.id % numLabels;
+    // label all connected sites with the same label
+    _.forEach(points, function (point) {
+      // x:s.a.x, y:s.a.y
+      // set site labels for a and b
+    });
   });
 
   initDebugCircumcircle();
