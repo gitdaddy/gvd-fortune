@@ -286,12 +286,13 @@ Parabola.prototype.setDrawPoints = function() {
 // GeneralParabola class
 //------------------------------------------------------------
 
-GeneralParabola = function(focus, h, k, p, theta, offset) {
+GeneralParabola = function(focus, h, k, p, theta, offset, splitSite = false) {
   this.parabola = new Parabola(focus, h, k, p);
   this.theta = theta;
   this.offset = offset;
   this.Rz = rotateZ(degrees(-this.theta));
   this.nRz = rotateZ(degrees(this.theta));
+  this.splitSite = splitSite;
 }
 
 // The directrix is a general line given as an array of two points
@@ -312,7 +313,8 @@ function createGeneralParabola(focus, directrix) {
   var p = k;
   var h = focus.x;
   var theta = Math.atan2(v.y, v.x);
-  return new GeneralParabola(focus, h, k, p, theta, 0);
+  splitSite = _.get(focus, "label") != _.get(directrix, "label");
+  return new GeneralParabola(focus, h, k, p, theta, 0, splitSite);
 }
 
 GeneralParabola.prototype.transformPoint = function(p) {

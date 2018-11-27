@@ -132,6 +132,27 @@ function drawSweepline(sweepline) {
   update(d3edges);
 }
 
+function drawGeneralSurface(parabolas, line) {
+  let selection = d3.select("#gvd").selectAll(".gvd-surface-parabola")
+    .data(parabolas);
+  // exit
+  selection.exit().remove();
+  // enter
+  selection.enter()
+    .append("path")
+    .attr("d", p => line(p.drawPoints))
+    .style("fill","none")
+    .attr("class", "gvd-surface-parabola")
+    .attr("vector-effect", "non-scaling-stroke")
+    .attr("transform", p => p.transform)
+  ;
+  // update
+  selection.attr("d", p => line(p.drawPoints))
+    .attr("transform", p => p.transform)
+    .style("stroke-width", p => getSurfaceWidth(p.splitSite))
+  ;
+}
+
 function drawCloseEvents(eventPoints) {
   eventPoints = eventPoints.filter(d => d.live);
   let update = function(s) {

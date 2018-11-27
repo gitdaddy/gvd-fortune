@@ -165,7 +165,7 @@ function createDatasets() {
     vec3(-0.4, 0.8, 0),
     vec3(-0.4, -0.4, 0),
     // vec3(0.4,  0.5, 0),
-    // vec3(0.08,  0.45, 0),
+    vec3(0.08,  0.45, 0),
     vec3(-0.88,  0.4, 0),
   ];
   let segments1 = [
@@ -392,6 +392,7 @@ var render = function() {
 
   // Temporary stuff
   if (segments.length > 0) {
+    // TODO compute general parabola for all bisecting/focus sites
     var bline = bisectPoints(points[0], points[2]);
     var bline2 = bisectPoints(points[1], points[2]);
     var gp = createGeneralParabola(points[2], segments[0]);
@@ -403,32 +404,15 @@ var render = function() {
     // Draw the temp general parabola
     {
       gp.prepDraw(-1, pints[0], pints2[0]);
-      let parabolas = [gp];
       let line = d3.line()
         .x(function (d) {return d.x;})
         .y(function (d) {return d.y;})
         .curve(d3.curveLinear)
       ;
-      let selection = d3.select("#gvd").selectAll(".gvd-surface-parabola")
-        .data(parabolas);
-      // exit
-      selection.exit().remove();
-      // enter
-      selection.enter()
-        .append("path")
-        .attr("d", p => line(p.drawPoints))
-        .style("fill","none")
-        .attr("class", "gvd-surface-parabola")
-        .attr("vector-effect", "non-scaling-stroke")
-        .attr("transform", p => p.transform)
-      ;
-      // update
-      selection.attr("d", p => line(p.drawPoints))
-        .attr("transform", p => p.transform)
-      ;
+      drawGeneralSurface([gp], line);
     }
   } else {
-    let selection = d3.select("#gvd").selectAll(".gvd-surface-parabola").remove();
+    d3.select("#gvd").selectAll(".gvd-surface-parabola").remove();
   }
   // /Temporary stuff
 
