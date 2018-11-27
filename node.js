@@ -224,7 +224,7 @@ EdgeNode.prototype.intersection = function(directrix) {
   //
   //     _____________________________
   //
-  if (arcNodes[lower].isV &&
+  if (arcNodes[lower].isV) &&
       directrix < arcNodes[lower].site[1].y &&
      arcNodes[lower].site[1] == arcNodes[1-lower].site) {
     console.log(intersections);

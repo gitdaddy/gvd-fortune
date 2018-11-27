@@ -284,9 +284,11 @@ function datasetChange(value) {
     s.id = id++;
     s.label = s.id % numLabels;
     // label all connected sites with the same label
-    _.forEach(points, function (point) {
-      // x:s.a.x, y:s.a.y
-      // set site labels for a and b
+    points.forEach(function (p) {
+      if ((p.x == s.a.x && p.y == s.a.y) ||
+          (p.x == s.b.x && p.y == s.b.y)) {
+        p.label = s.label;
+      }
     });
   });
 
