@@ -30,42 +30,26 @@ function hideDebugCircumcircle() {
 
 function drawSites(points, segments) {
   {
-    let update = function(sel) {
-      sel
-        .attr("x1", s => s[0].x)
-        .attr("y1", s => s[0].y)
-        .attr("x2", s => s[1].x)
-        .attr("y2", s => s[1].y)
-        .attr("stroke", (d,i) => siteColorSvg(d.id))
-      ;
-    };
-
     let sel = d3.select("#gvd")
       .selectAll(".segment-site")
       .data(segments);
 
     sel.exit().remove();
-    let enter = sel
+    sel
       .enter()
       .append("line")
       .attr("class", "site segment-site")
       .attr("vector-effect", "non-scaling-stroke")
+      .merge(sel)
+      .attr("x1", s => s[0].x)
+      .attr("y1", s => s[0].y)
+      .attr("x2", s => s[1].x)
+      .attr("y2", s => s[1].y)
+      .attr("stroke", (d,i) => siteColorSvg(d.id))
     ;
-    update(enter);
-    update(sel);
   }
 
   {
-    let update = function(sel) {
-      sel
-        .attr("cx", p => p.x)
-        .attr("cy", p => p.y)
-        .attr("fill", (d,i) => siteColorSvg(d.label))
-        .attr("id", d => `site${d.id}`)
-        .append("title").html(d => d.id)
-      ;
-    };
-
     let sel = d3.select("#gvd")
       .selectAll(".point-site")
       .data(points);
@@ -75,9 +59,13 @@ function drawSites(points, segments) {
       .append("circle")
       .attr("r", SITE_RADIUS)
       .attr("class", "site point-site")
+      .merge(sel)
+      .attr("cx", p => p.x)
+      .attr("cy", p => p.y)
+      .attr("fill", (d,i) => siteColorSvg(d.label))
+      .attr("id", d => `site${d.id}`)
+      .append("title").html(d => d.id)
     ;
-    update(enter);
-    update(sel);
   }
 }
 
@@ -109,15 +97,6 @@ function drawSweepline(sweepline) {
     }
     result = iter.next();
   }
-  let update = function(s) {
-    s
-      .attr('x1', e => e.origin.point[0])
-      .attr('y1', e => e.origin.point[1])
-      .attr('x2', e => e.dest.point[0])
-      .attr('y2', e => e.dest.point[1])
-      .style("stroke-width", e => getSurfaceWidth(e.splitSite))
-    ;
-  };
   let d3edges = d3.select('#gvd')
     .selectAll('.gvd-surface')
     .data(edges)
@@ -127,9 +106,15 @@ function drawSweepline(sweepline) {
     .append('line')
     .attr('class', "gvd-surface")
     .attr("vector-effect", "non-scaling-stroke")
+    .merge(d3edges)
+    .attr('x1', e => e.origin.point[0])
+    .attr('y1', e => e.origin.point[1])
+    .attr('x2', e => e.dest.point[0])
+    .attr('y2', e => e.dest.point[1])
+    .style("stroke-width", e => getSurfaceWidth(e.splitSite))
   ;
-  update(enter);
-  update(d3edges);
+  // update(enter);
+  // update(d3edges);
 }
 
 function drawGeneralSurface(parabolas, line) {
