@@ -113,8 +113,6 @@ function drawSweepline(sweepline) {
     .attr('y2', e => e.dest.point[1])
     .style("stroke-width", e => getSurfaceWidth(e.splitSite))
   ;
-  // update(enter);
-  // update(d3edges);
 }
 
 function drawGeneralSurface(parabolas, line) {
@@ -129,10 +127,7 @@ function drawGeneralSurface(parabolas, line) {
     .style("fill","none")
     .attr("class", "gvd-surface-parabola")
     .attr("vector-effect", "non-scaling-stroke")
-    .attr("transform", p => p.transform)
-  ;
-  // update
-  selection.attr("d", p => line(p.drawPoints))
+    .merge(selection)
     .attr("transform", p => p.transform)
     .style("stroke-width", p => getSurfaceWidth(p.splitSite))
   ;
@@ -140,12 +135,6 @@ function drawGeneralSurface(parabolas, line) {
 
 function drawCloseEvents(eventPoints) {
   eventPoints = eventPoints.filter(d => d.live);
-  let update = function(s) {
-      s.attr('cx', d => d.point.x)
-      .attr('cy', d => d.point.y)
-      .attr('visibility', showEvents ? null : 'hidden');
-    ;
-  };
 
   let highlight = function(event) {
     console.log(event);
@@ -186,10 +175,11 @@ function drawCloseEvents(eventPoints) {
     .attr("vector-effect", "non-scaling-stroke")
     .on('mouseover', highlight)
     .on('mouseout', unhighlight)
+    .merge(selection)
+    .attr('cx', d => d.point.x)
+    .attr('cy', d => d.point.y)
+    .attr('visibility', showEvents ? null : 'hidden')
   ;
-  update(enter);
-  // update
-  update(selection);
 }
 
 function drawBeachline(beachline, directrix, renderEvents) {
@@ -244,16 +234,6 @@ function drawBeachline(beachline, directrix, renderEvents) {
     ;
     let selection = d3.select("#gvd").selectAll(".beach-parabola")
       .data(parabolas);
-    let update = function(s) {
-        s
-        .attr("d", p => line(p.drawPoints))
-        .style("stroke", p => siteColorSvg(p.label))
-        .attr("id", p => `treenode${p.nodeid}`)
-        .attr("leftx", p => p.drawPoints[0].x)
-        .attr("rightx", p => p.drawPoints[p.drawPoints.length-1].x)
-        .attr("transform", p => p.transform)
-      ;
-    };
     // exit
     selection.exit().remove();
     // enter
@@ -262,10 +242,14 @@ function drawBeachline(beachline, directrix, renderEvents) {
       .style("fill","none")
       .attr("class", "beach-parabola")
       .attr("vector-effect", "non-scaling-stroke")
+      .merge(selection)
+      .attr("d", p => line(p.drawPoints))
+      .style("stroke", p => siteColorSvg(p.label))
+      .attr("id", p => `treenode${p.nodeid}`)
+      .attr("leftx", p => p.drawPoints[0].x)
+      .attr("rightx", p => p.drawPoints[p.drawPoints.length-1].x)
+      .attr("transform", p => p.transform)
     ;
-    update(enter);
-    // update
-    update(selection);
   }
 
   //------------------------------
@@ -279,14 +263,7 @@ function drawBeachline(beachline, directrix, renderEvents) {
     ;
     let selection = d3.select("#gvd").selectAll(".beach-v")
       .data(vs);
-    let update = function(s) {
-      s.attr("d", p => line(p.drawPoints))
-        .style("stroke", p => siteColorSvg(p.label))
-        .attr("id", p => `treenode${p.nodeid}`)
-        .attr("leftx", p => p.drawPoints[0].x)
-        .attr("rightx", p => p.drawPoints[p.drawPoints.length-1].x)
-    ;
-    };
+
     // exit
     selection.exit().remove();
     // enter
@@ -295,15 +272,18 @@ function drawBeachline(beachline, directrix, renderEvents) {
       .style("fill","none")
       .attr("class", "beach-parabola")
       .attr("vector-effect", "non-scaling-stroke")
+      .merge(selection)
+      .attr("d", p => line(p.drawPoints))
+      .style("stroke", p => siteColorSvg(p.label))
+      .attr("id", p => `treenode${p.nodeid}`)
+      .attr("leftx", p => p.drawPoints[0].x)
+      .attr("rightx", p => p.drawPoints[p.drawPoints.length-1].x)
     ;
-    update(enter);
-    // update
-    update(selection);
   }
 
-  function activeLineWidth(connectedToGVD)
+  function activeLineWidth(point)
   {
-    return connectedToGVD ? 1 : 0;
+    return point.connectedToGVD && !point.connectedToV ? 1 : 0;
   }
 
   //------------------------------
@@ -312,15 +292,6 @@ function drawBeachline(beachline, directrix, renderEvents) {
   {
     let selection = d3.select("#gvd").selectAll(".gvd-surface-active")
       .data(lines);
-    let update = function(s) {
-      s
-        .attr('x1', d => d.x0)
-        .attr('y1', d => d.y0)
-        .attr('x2', d => d.x1)
-        .attr('y2', d => d.y1)
-        .attr("id", p => `treenode${p.id}`)
-        .style("stroke-width", p => activeLineWidth(p.connectedToGVD))
-    };
     // exit
     selection.exit().remove();
     // enter
@@ -328,10 +299,13 @@ function drawBeachline(beachline, directrix, renderEvents) {
       .append("line")
       .attr('class', "gvd-surface-active")
       .attr("vector-effect", "non-scaling-stroke")
+      .merge(selection)
+      .attr('x1', d => d.x0)
+      .attr('y1', d => d.y0)
+      .attr('x2', d => d.x1)
+      .attr('y2', d => d.y1)
+      .attr("id", p => `treenode${p.id}`)
+      .style("stroke-width", p => activeLineWidth(p))
     ;
-    update(enter);
-    // update
-    update(selection);
   }
-
 }

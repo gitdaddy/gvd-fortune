@@ -135,6 +135,14 @@ Object.defineProperty(EdgeNode.prototype, "connectedToGVD", {
   },
 });
 
+Object.defineProperty(EdgeNode.prototype, "connectedToV", {
+  configurable: true,
+  enumerable: true,
+  get: function() {
+    return this.prevArc().site.type == "segment" || this.nextArc().site.type == "segment";
+  },
+});
+
 EdgeNode.prototype.updateEdge = function(vertex, dcel) {
   this.dcelEdge = dcel.makeEdge();
   this.dcelEdge.origin.point = vertex;

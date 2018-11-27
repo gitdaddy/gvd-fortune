@@ -162,11 +162,11 @@ function y2win(y) {
 
 function createDatasets() {
   let points1 = [
-    vec3(-0.4, 0.8, 0),
-    vec3(-0.4, -0.4, 0),
+    vec3(0.0, 0.8, 0),
+    vec3(0.0, -0.4, 0),
     // vec3(0.4,  0.5, 0),
-    vec3(0.08,  0.45, 0),
-    vec3(-0.88,  0.4, 0),
+    // vec3(0.08,  0.45, 0),
+    vec3(-0.38,  0.4, 0),
   ];
   let segments1 = [
     makeSegment(points1[0], points1[1])
@@ -390,31 +390,49 @@ var render = function() {
   var beachline = fortune();
   var t1 = performance.now();
 
-  // Temporary stuff
+  // TODO perhaps find a better place for this
+  // Render segments to points and other segments
   if (segments.length > 0) {
-    // TODO compute general parabola for all bisecting/focus sites
-    var bline = bisectPoints(points[0], points[2]);
-    var bline2 = bisectPoints(points[1], points[2]);
-    var gp = createGeneralParabola(points[2], segments[0]);
-    // var pints = gp.intersectLine(bline[0], subtract(bline[1], bline[0]));
-    // var pints2 = gp.intersectLine(bline2[0], subtract(bline2[1], bline2[0]));
-    var pints = gp.intersectLine(bline);
-    var pints2 = gp.intersectLine(bline2);
+    _.forEach(segments, function (s) {
+      _.forEach(points, function (p) {
+        // only examine points in the field of the segment
+        if (p.y > Math.min(s[0].y, s[1].y)
+            && p.id != s[0].id
+            && p.id != s[1].id) {
+          var gp = createGeneralParabola(p, s);
 
-    // Draw the temp general parabola
-    {
-      gp.prepDraw(-1, pints[0], pints2[0]);
-      let line = d3.line()
-        .x(function (d) {return d.x;})
-        .y(function (d) {return d.y;})
-        .curve(d3.curveLinear)
-      ;
-      drawGeneralSurface([gp], line);
-    }
+          var bline = bisectPoints(s[1], p);
+          var bline2 = bisectPoints(s[0], p);
+
+          // only works with 1 site?
+          var bUpper, bLower;
+          if (bline.p.y > bline2.p.y) {
+            bUpper = bline;
+            bLower = bline2;
+          } else {
+            bUpper = bline2;
+            bLower = bline;
+          }
+          var pints = gp.intersectLine(bLower);
+          var pints2 = gp.intersectLine(bUpper);
+
+          // var pints = gp.intersectLine(bline);
+          // var pints2 = gp.intersectLine(bline);
+          {
+            gp.prepDraw(100, pints[0], pints2[0]);
+            let line = d3.line()
+              .x(function (d) {return d.x;})
+              .y(function (d) {return d.y;})
+              .curve(d3.curveLinear)
+            ;
+            drawGeneralSurface([gp], line);
+          }
+        }
+      });
+    });
   } else {
     d3.select("#gvd").selectAll(".gvd-surface-parabola").remove();
   }
-  // /Temporary stuff
 
   drawBeachline(beachline, sweepline, showEvents);
 

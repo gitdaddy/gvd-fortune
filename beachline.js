@@ -231,7 +231,8 @@ Beachline.prototype.prepDraw = function(
 
     if (!Number.isNaN(v.x) && !Number.isNaN(v.y) &&
         !Number.isNaN(p.x) && !Number.isNaN(p.y)) {
-      lines.push({x0:v.x, y0:v.y, x1:p.x, y1:p.y, id:node.id, connectedToGVD:node.connectedToGVD});
+      lines.push({x0:v.x, y0:v.y, x1:p.x, y1:p.y, id:node.id,
+        connectedToGVD:node.connectedToGVD, connectedToV:node.connectedToV});
     }
 
     this.prepDraw(directrix, node.left, leftx, p.x, arcElements, lines, events);
