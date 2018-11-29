@@ -202,7 +202,10 @@ EdgeNode.prototype.intersection = function(directrix) {
 
   // Find the center arc
   let arcNodes = [leftArcNode, rightArcNode];
-  let arcs = [pleft, pright];
+  // let arcs = [pleft, pright];
+  if (_.isEmpty(intersections)) {
+    return NaN; // TODO figure out why this is when the sweepline is below the right left points
+  }
   let pcenterx = (intersections[0].x + intersections[1].x)/2;
   let prevy = pleft.f(pcenterx);
   let nexty = pright.f(pcenterx);

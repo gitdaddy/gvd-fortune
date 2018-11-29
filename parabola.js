@@ -416,6 +416,12 @@ GeneralParabola.prototype.prepDraw = function(id, p1, p2) {
   this.id = id;
   var x0 = this.transformPoint(p1).x;
   var x1 = this.transformPoint(p2).x;
+  if (x0 > x1)
+  {
+    var temp = x1;
+    x1 = x0;
+    x0 = temp;
+  }
   this.parabola.setDrawBounds(x0, x1);
   this.setDrawPoints();
 }
