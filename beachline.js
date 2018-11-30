@@ -132,9 +132,15 @@ Beachline.prototype.add = function(site) {
     var child = parent.getChild(side);
     while (child.isEdge) {
       parent = child;
-      x = parent.intersection(directrix).x;
-      side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
-      child = parent.getChild(side);
+
+      // var intersection = parent.intersection(directrix);
+      // side = LEFT_CHILD;
+      // if (!_.isUndefined(intersection))
+      //   side = (site.x < intersection.x) ? LEFT_CHILD : RIGHT_CHILD;
+
+        x = parent.intersection(directrix).x;
+        side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
+        child = parent.getChild(side);
     }
     // Child is an arc node. Split it.
     var newNode = splitArcNode(child, arcNode, this.dcel);

@@ -197,15 +197,17 @@ EdgeNode.prototype.intersection = function(directrix) {
   let rightArcNode = this.nextArc();
   let pleft = this.createBeachlineSegment(leftArcNode.site, directrix);
   let pright = this.createBeachlineSegment(rightArcNode.site, directrix);
+  // TODO add dynamic arch switching from V to para
   let intersections = pleft.intersect(pright);
   this.intersections = intersections;
+
+  if (_.isUndefined(intersections[0]) || _.isUndefined(intersections[1])) {
+    return NaN;
+  }
 
   // Find the center arc
   let arcNodes = [leftArcNode, rightArcNode];
   // let arcs = [pleft, pright];
-  if (_.isEmpty(intersections)) {
-    return NaN; // TODO figure out why this is when the sweepline is below the right left points
-  }
   let pcenterx = (intersections[0].x + intersections[1].x)/2;
   let prevy = pleft.f(pcenterx);
   let nexty = pright.f(pcenterx);

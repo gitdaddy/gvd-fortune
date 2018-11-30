@@ -162,12 +162,14 @@ function y2win(y) {
 
 function createDatasets() {
   let points1 = [
-    vec3(0.0, 0.81, 0),
-    vec3(0.0, -0.41, 0),
+    vec3(0.2, 0.81, 0),
+    vec3(-0.3, -0.41, 0),
     // vec3(0.4,  0.5, 0),
     // vec3(0.08,  0.45, 0),
-    vec3(-0.38,  0.41, 0),
-    vec3(0.38,  0.41, 0),
+    // vec3(-0.38,  0.41, 0),
+    // vec3(0.38,  0.41, 0), // arcs on V
+    // vec3(0.48,  0.41, 0), // arcs between V and top segment - works like expected arc nodes never have to change
+    vec3(0.58,  0.41, 0), // only with top segment
   ];
   let segments1 = [
     makeSegment(points1[0], points1[1])
