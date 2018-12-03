@@ -1,14 +1,6 @@
 "use strict";
 
-var blue = vec4(0,0,1,1);
-var red = vec4(1,0,0,1);
-
 var sweepline = 0.1;
-// var sweepline = -0.79;
-// var sweepline = -0.36;
-
-// var canvas;
-// var gl;
 
 let datasets;
 var numLabels = 2;
@@ -126,22 +118,6 @@ function keydown(event) {
   }
 }
 
-function mouseclick(e) {
-  // TODO: replace getting the rect from gl canvas to d3.
-  // if (e.shiftKey) {
-  //   // var rect = canvas.getBoundingClientRect();
-  //   var x = event.clientX - rect.left;
-  //   var y = event.clientY - rect.top;
-  //   x = (x / rect.width) * 2.0 - 1.0;
-  //   y = (1.0 - y / rect.height) * 2.0 - 1.0;
-
-  //   console.log("Adding point " + vec3(x, y, 0));
-  //   points.push(vec3(x, y, 0));
-  //   sortPoints();
-  //   render();
-  // }
-}
-
 let gvdw = 500;
 let gvdh = 500;
 
@@ -154,84 +130,22 @@ function x2win(x) {
   return (x-xmin)/(xmax-xmin) * gvdw;
 }
 
+function win2x(xWin) {
+  var half = gvdw / 2;
+  var dist = xWin - half;
+  return dist / half;
+}
+
 function y2win(y) {
   let ymin = -1;
   let ymax = 1;
   return (1-(y-ymin)/(ymax-ymin)) * gvdh;
 }
 
-function createDatasets() {
-  let points1 = [
-    vec3(0.2, 0.81, 0),
-    vec3(-0.3, -0.41, 0),
-    // vec3(0.4,  0.5, 0),
-    // vec3(0.08,  0.45, 0),
-    // vec3(-0.38,  0.41, 0),
-    // vec3(0.38,  0.41, 0), // arcs on V
-    // vec3(0.48,  0.41, 0), // arcs between V and top segment - works like expected arc nodes never have to change
-    vec3(0.58,  0.41, 0), // only with top segment
-  ];
-  let segments1 = [
-    makeSegment(points1[0], points1[1])
-  ];
-
-  let points2 = [
-    // segment test points
-    vec3(-0.2, -0.2, 0),
-    vec3(-0.2, -0.6, 0),
-    vec3(0.2, -0.3, 0),
-    // remaining points
-    vec3(-0.30, 0.1, 0),
-    vec3(-0.41, 0.9, 0),
-    vec3(-0.26, 0.73, 0),
-    vec3(-0.5, 0.3, 0),
-    vec3(-0.12,0.13, 0),
-    vec3(0.73,0.15, 0),
-    vec3(0.42,0.5, 0),
-    vec3(0.49,0.71, 0),
-    vec3(0.66,0.66, 0),
-  ];
-  let segments2 = [
-    makeSegment(points2[0], points2[1])
-  ];
-
-  let points5 = [
-    vec3(-0.26, 0.73, 0),
-    vec3(0.62, 0.37, 0),
-    vec3(-0.12,0.13, 0),
-    vec3(-0.30, -0.1, 0),
-    vec3(0.73,-0.13, 0),
-    vec3(-0.65, -0.15, 0),
-  ];
-  let segments5 = [];
-
-  let points3 = [];
-  let segments3 = [];
-  {
-    Math.seedrandom('5');
-    let numRandom = 30;
-    for (var i = 0; i < numRandom; ++i) {
-      var p = vec3(Math.random()*2-1, Math.random()*2-1, 0);
-      points3.push(p);
-    }
-  }
-
-  Math.seedrandom('3');
-  let numRandom = 100;
-  let points4 = [];
-  for (var i = 0; i < numRandom; ++i) {
-  	var p = vec3(Math.random()*2-1, Math.random()*2-1, 0);
-  	points4.push(p);
-  }
-  let segments4 = [];
-
-  datasets = {
-    'dataset1' : { points:points1, segments:segments1 },
-    'dataset2' : { points:points2, segments:segments2 },
-    'dataset3' : { points:points3, segments:segments3 },
-    'dataset4' : { points:points4, segments:segments4 },
-    'dataset5' : { points:points5, segments:segments5 },
-  };
+function win2y(yWin) {
+  var half = gvdh / 2;
+  var dist = half - yWin;
+  return dist / half;
 }
 
 function init() {
@@ -240,8 +154,7 @@ function init() {
   }
 
   document.onkeydown = keydown;
-  document.onclick = mouseclick;
-
+  document.getElementById("gvdsvg").onclick = mouseclick;
   document.getElementById("sweeplineLabel").innerHTML = sweepline.toFixed(3);
 
   createDatasets();
@@ -273,6 +186,9 @@ function numLabelsChange(value)
 function datasetChange(value) {
   console.log(value);
   localStorage.dataset = value;
+
+  // Clear the general parabolas
+  drawGeneralSurface([]);
 
   points = datasets[value].points;
   segments = datasets[value].segments;
@@ -424,15 +340,7 @@ var render = function() {
   }
 
   drawBeachline(beachline, sweepline, showEvents);
-
-  // var c = vec4(0.0, 0.7, 0.7);
-  // if (showEvents) {
-    drawCloseEvents(closeEventPoints);
-    // closeEventPoints.forEach(function(p) {
-    //   // circle.render(program, vec3(p.x, p.y, 0), 0.01, false, c);
-    // });
-  // }
-
+  drawCloseEvents(closeEventPoints);
   drawSweepline(sweepline);
   drawSurface(dcel);
 
@@ -441,7 +349,13 @@ var render = function() {
   runTests();
 }
 
+/// Code For Debugging the GVD
+
+function mouseclick(e) {
+  document.getElementById("mouseX").innerHTML = win2x(e.offsetX);
+  document.getElementById("mouseY").innerHTML = win2y(e.offsetY);
+}
+
 function setDebug(msg) {
   document.getElementById("debug").innerHTML = msg;
 }
-
