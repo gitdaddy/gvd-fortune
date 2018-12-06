@@ -30,13 +30,12 @@ ArcNode.prototype.createDrawElement = function(leftx, rightx, directrix) {
   let element = null;
   if (this.isParabola) {
     let para = createParabola(this.site, directrix);
-    // para.prepDraw(this.id, label, leftx, rightx);
     para.prepDraw(this.id, this.site.label, leftx, rightx);
     element = para;
     element.type = "parabola";
   } else if (this.isV) {
     var v = new V(this.site, directrix);
-    v.prepDraw(this.id, this.site.label, leftx, rightx);
+    v.prepDraw(this.id, this.site.label, leftx, rightx); // TODO find out way leftx is off
     element = v;
     element.type = "v";
   }
@@ -197,7 +196,6 @@ EdgeNode.prototype.intersection = function(directrix) {
   let rightArcNode = this.nextArc();
   let pleft = this.createBeachlineSegment(leftArcNode.site, directrix);
   let pright = this.createBeachlineSegment(rightArcNode.site, directrix);
-  // TODO add dynamic arch switching from V to para
   let intersections = pleft.intersect(pright);
   this.intersections = intersections;
 

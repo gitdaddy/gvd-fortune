@@ -193,8 +193,7 @@ function drawBeachline(beachline, directrix, renderEvents) {
   // eventually be subsumed into the DCEL.
   let lines = [];
   let events = [];
-  // beachline.prepDraw(directrix, beachline.root, -1, 1, arcElements, lines, events);
-  beachline.prepDraw(directrix, beachline.root, -100000, 1, arcElements, lines, events);
+  beachline.prepDraw(directrix, beachline.root, -1, 1, arcElements, lines, events);
 
   let parabolas = arcElements.filter(d => d.type == "parabola");
   let vs = arcElements.filter(d => d.type == "v");

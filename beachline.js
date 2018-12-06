@@ -241,6 +241,7 @@ Beachline.prototype.prepDraw = function(
         connectedToGVD:node.connectedToGVD, connectedToV:node.connectedToV});
     }
 
+    // check V left
     this.prepDraw(directrix, node.left, leftx, p.x, arcElements, lines, events);
     if (p.x < rightx) {
       // We can ignore anything outside our original bounds.
