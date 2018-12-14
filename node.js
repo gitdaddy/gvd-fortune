@@ -35,7 +35,7 @@ ArcNode.prototype.createDrawElement = function(leftx, rightx, directrix) {
     element.type = "parabola";
   } else if (this.isV) {
     var v = new V(this.site, directrix);
-    v.prepDraw(this.id, this.site.label, leftx, rightx); // TODO find out way leftx is off
+    v.prepDraw(this.id, this.site.label, leftx, rightx);
     element = v;
     element.type = "v";
   }
@@ -210,7 +210,7 @@ EdgeNode.prototype.intersection = function(directrix) {
   let prevy = pleft.f(pcenterx);
   let nexty = pright.f(pcenterx);
   let lower;
-  if (prevy < nexty) {
+  if (prevy < nexty && !rightArcNode.isV) { // TEST IF THIS IS CORRECT
     lower = 0;
   } else {
     lower = 1;

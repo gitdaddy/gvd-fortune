@@ -103,11 +103,11 @@ function createParabola(focus, directrix) {
   return new Parabola(focus, h, k, p, 0, 0);
 }
 
-Parabola.prototype.intersect = function(para) {
-  if (para instanceof Parabola) {
-    return ppIntersect(this.h, this.k, this.p, para.h, para.k, para.p);
+Parabola.prototype.intersect = function(object) {
+  if (object instanceof Parabola) {
+    return ppIntersect(this.h, this.k, this.p, object.h, object.k, object.p);
   }
-  return para.intersect(this);
+  return object.intersect(this);
 }
 
 // Intersect the positive portion of the ray.
@@ -388,7 +388,6 @@ GeneralParabola.prototype.intersectRay = function(p, v) {
 // If there are two intersections, the intersections will
 // be returned in order of t value.
 // The line is given in parametric form p(t) = p + tv
-// GeneralParabola.prototype.intersectLine = function(p, v) {
 GeneralParabola.prototype.intersectLine = function(line) {
   p = line.p;
   v = line.v;
@@ -409,6 +408,14 @@ GeneralParabola.prototype.intersectLine = function(line) {
     ret.push(q);
   });
   return ret;
+}
+
+// Intersect all intersections of a general parabola and a general parabola.
+// If there are two intersections, the intersections will
+// be returned in order of t value.
+// The line is given in parametric form p(t) = p + tv
+GeneralParabola.prototype.intersectPara = function(genPara) {
+  return (this.parabola.intersect(genPara.parabola));
 }
 
 // Prepares this parabola for drawing

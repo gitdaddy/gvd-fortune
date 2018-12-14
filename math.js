@@ -163,21 +163,21 @@ function intersectLines(p1, p2, p3, p4) {
 // value will be a PointSegmentBisector.
 //------------------------------------------------------------
 function bisectPointSegment(p, s) {
-  p = vec2(p);
-  s0 = vec2(s[0]);
-  s1 = vec2(s[1]);
+  p = vec3(p);
+  s0 = vec3(s[0]);
+  s1 = vec3(s[1]);
   if ((p[0] == s0[0] && p[1] == s0[1]) ||
       (p[0] == s1[0] && p[1] == s1[1])) {
     // special case: point is a segment endpoint
     let v0 = subtract(s1, s0);
-    let v = vec2(v0[1], -v0[0]);
+    let v = vec3(v0[1], -v0[0]);
     return new Line(p, add(p, v));
   }
   if (dot(subtract(p, s0), normalize(subtract(s0, s1))) ==
       length(subtract(p, s0))) {
     // special case: line and point are collinear
     let v0 = subtract(s1, s0);
-    let v = vec2(v0[1], -v0[0]);
+    let v = vec3(v0[1], -v0[0]);
     if (length(subtract(p, s0)) < length(subtract(p, s1))) {
       // if p is closer to s0...
       return bisect(p, s0);
@@ -264,10 +264,16 @@ function intersect(a, b) {
     intersection = intersectLines(a.p1, a.p2, b.p1, b.p2);
   } else if (a instanceof Line) {
     // line and general parabola
-    intersection = b.intersectLine(a);
+    // Handle for parametric intersections - get the first - check that this is correct
+    intersection = b.intersectLine(a)[0];
   } else if (b instanceof Line) {
     // general parabola and line
-    intersection = a.intersectLine(b);
+    // Handle for parametric intersections - get the first - check that this is correct
+    intersection = a.intersectLine(b)[0];
+  } else {
+    // parabola and parabola
+    // TODO
+    throw "Parabola and parabola intersection not implemented"
   }
   return intersection;
 }
@@ -278,47 +284,11 @@ function intersect(a, b) {
 // Returns the point equidistant from points/segments c1, c2, and c3.
 //------------------------------------------------------------
 function equidistant(c1, c2, c3) {
-  // put the objects in order of segment -> point
-  // let objects = [c1, c2, c3];
-  // objects.sort((a,b) => (isSegment(b) && ~isSegment(a)) ? -1 : 0);
 
+  // TODO verify this works for Multiple segment
+  // Bisecting types can be either lines or parabolas
   let b12 = bisect(c1, c2);
   let b23 = bisect(c2, c3);
   let ret = intersect(b12, b23);
   return ret;
-  
-  // // TODO handle segment case
-  // if (isSegment(c1)) c1 = c1[0];
-  // if (isSegment(c2)) c2 = c2[0];
-  // if (isSegment(c3)) c3 = c3[0];
-  return equidistant_ppp(c1, c2, c3);
 }
-
-//------------------------------------------------------------
-// equidistant_ppp
-//
-// Three points. Currently not used.
-//------------------------------------------------------------
-function equidistant_ppp(c1, c2, c3) {
-  //                   p0       u
-  //       c1 *         *<--------------* c2
-  //                    |\
-  //                    | \
-  //                  v |  \
-  //                    |    \ p0p3
-  //                    |     \
-  //                    v      \
-  //                             \
-  //                              v
-  //                              * c3
-  //
-
-  var u = mult(0.5, subtract(c1, c2));
-  var p0 = add(c2, u);
-  var v = normalize(vec3(-u[1], u[0], 0));
-  var a = dot(u, u);
-  var p0p3 = subtract(p0, c3);
-  var t = (-dot(p0p3, p0p3) + a) / (2 * dot(p0p3, v));
-  return vec3(add(p0, mult(t, v)));
-}
-

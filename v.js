@@ -75,7 +75,7 @@ V.prototype.intersectRay = function(p, v) {
   // return ret;
 }
 
-// Intersect all intersections of a line and parabola.
+// Intersect all intersections of a line and V.
 // If there are two intersections, the intersections will
 // be returned in order of t value.
 // The line is given in parametric form p(t) = p + tv
