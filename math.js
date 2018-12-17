@@ -67,7 +67,7 @@ PointSegmentBisector = function(p, s) {
     // In the shadow, so fully parabolic
     this.para = createGeneralParabola(p, s);
   } else {
-    throw "PointSegmentBisector not implemented"
+    throw "PointSegmentBisector not implemented";
   }
 }
 
@@ -82,11 +82,34 @@ PointSegmentBisector.prototype.intersectLine = function(line) {
 //------------------------------------------------------------
 
 //------------------------------------------------------------
-// Returns the distance between objects a and b.
+// Returns the distance between objects 1 and 2.
 //------------------------------------------------------------
-function dist(a, b) {
-  // Only supports points for now
-  return length(subtract(vec2(a), vec2(b)));
+function dist(obj1, obj2) {
+  // Cover 3 cases
+  // 1. Point to Point
+  // 2. Point to Segment
+    // for point(x0,y0) and line ax + by + c = 0
+    // d = abs(a*x0 + b*y0 + c)/ sqrt(a^2 + b^2)
+  // 3. Segment to Segment
+
+  if (obj1.type == "vec" && obj2.type == "vec") {
+    return length(subtract(vec2(a), vec2(b)));
+  } else if (obj1.type == "vec" && obj2.type == "segment") {
+    // get the equation of the line from the segment ax + by + c = 0
+    // (y1 - y2)x + (x2 - x1)y + (x1y2 - x2y1) = 0
+    var a = obj2[0].y - obj2[1].y;
+    var b = obj2[1].x - obj2[0].x;
+    var c = obj2[0].x * obj2[1].y - obj2[1].x * obj2[0].y;
+    return Math.abs(a * obj1.x + b * obj1.y + c)/Math.sqrt(a*a + b*b);
+  } else if (obj1.type == "segment" && obj2.type == "vec") {
+    // same as the above condition
+    var a = obj1[0].y - obj1[1].y;
+    var b = obj1[1].x - obj1[0].x;
+    var c = obj1[0].x * obj1[1].y - obj1[1].x * obj1[0].y;
+    return Math.abs(a * obj2.x + b * obj2.y + c)/Math.sqrt(a*a + b*b);
+  } else { // Segment to Segment
+    throw "Segment to Segment distance is not implemented yet";
+  }
 }
 
 //------------------------------------------------------------
@@ -285,7 +308,7 @@ function intersect(a, b) {
 //------------------------------------------------------------
 function equidistant(c1, c2, c3) {
 
-  // TODO verify this works for Multiple segment
+  // TODO verify this works for Multiple segments
   // Bisecting types can be either lines or parabolas
   let b12 = bisect(c1, c2);
   let b23 = bisect(c2, c3);

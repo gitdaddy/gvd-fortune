@@ -209,12 +209,22 @@ EdgeNode.prototype.intersection = function(directrix) {
   let pcenterx = (intersections[0].x + intersections[1].x)/2;
   let prevy = pleft.f(pcenterx);
   let nexty = pright.f(pcenterx);
-  let lower;
-  if (prevy < nexty && !rightArcNode.isV) { // TEST IF THIS IS CORRECT
+  let lower = 1;
+  if (prevy < nexty) {
     lower = 0;
-  } else {
-    lower = 1;
   }
+
+  // Handle case where V arcs on the left or right of a parabola
+  // the V will always intersect first with the lowest intersection
+  // if (leftArcNode.isV && rightArcNode.isParabola)
+  // {
+  //   lower = 0; // TODO check
+  // }
+
+  // if (leftArcNode.isParabola && rightArcNode.isV)
+  // {
+  //   lower = 1;
+  // }
 
   // Handle the case where the V arc for the segment (+)
   // needs to be "above" the parabola for the lower

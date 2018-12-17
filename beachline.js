@@ -86,7 +86,14 @@ function createCloseEvent(arcNode) {
       let r = dist(equi, arcNode.site);
       return new CloseEvent(equi.y-r, arcNode, left, right, equi);
     } else if (isSegment(arcNode.site)) {
-      // return new CloseEvent(arcNode.site[1].y, arcNode, intersection);
+      // equi point
+      let equi = equidistant(left.site, right.site, arcNode.site);
+      if (equi == null) return null;
+
+      // radius between point and segment
+      // TODO test
+      let r = dist(equi, arcNode.site);
+      return new CloseEvent(equi.y - r, arcNode, left, right, equi);
     } else {
       // All three are points
       var equi = equidistant(left.site,
