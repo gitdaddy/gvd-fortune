@@ -83,31 +83,33 @@ function createCloseEvent(arcNode) {
   if (left != null && right != null) {
     if (isSegment(left.site) || isSegment(right.site)) {
       let equi = equidistant(left.site, arcNode.site, right.site);
-      let r = dist(equi, arcNode.site);
-      return new CloseEvent(equi.y-r, arcNode, left, right, equi);
+      if (equi) {
+        let r = dist(equi, arcNode.site);
+        return new CloseEvent(equi.y-r, arcNode, left, right, equi);
+      }
     } else if (isSegment(arcNode.site)) {
       // equi point
       let equi = equidistant(left.site, right.site, arcNode.site);
       if (equi == null) return null;
 
       // get x0 and x1 for the arc node
-      var node = getNodeBounds(arcNode.id);
-      if (node.x0 == null || node.x1 == null) return null;
-      // TODO
-      // if arc node is between equi.x and left or right
-      // if (arcNode.site.x < left.site.x && arcNode.site.x < equi.x) {
-      //   return null;
-      // }
-      // if (arcNode.site.x > left.site.x && arcNode.site.x > equi.x) {
-      //   return null;
-      // }
+      var nodeBoundsArc = getNodeBounds(arcNode.id);
+      var nodeBoundsLeft = getNodeBounds(left.id);
+      var nodeBoundsRight = getNodeBounds(right.id);
+      if (nodeBoundsArc.x0 == null || nodeBoundsArc.x1 == null) return null;
+      if (nodeBoundsLeft.x0 == null || nodeBoundsLeft.x1 == null) return null;
+      if (nodeBoundsRight.x0 == null || nodeBoundsRight.x1 == null) return null;
+      var centerArcX = (nodeBoundsArc.x0 + nodeBoundsArc.x1)/2;
+      var centerLeftX = (nodeBoundsLeft.x0 + nodeBoundsLeft.x1)/2;
+      var centerRightX = (nodeBoundsRight.x0 + nodeBoundsRight.x1)/2;
 
-      // Check if the arch node  is between the left or right size
-      // if (left.site.x < node.x0 && node.x1 < equi.x) {
-      //   // radius between point and segment
-      //   let r = dist(equi, arcNode.site);
-      //   return new CloseEvent(equi.y - r, arcNode, left, right, equi);
-      // }
+      // if the equidistant point lies between the arc nodes
+      if (centerArcX > equi.x && equi.x > centerLeftX
+        || centerArcX < equi.x && equi.x < centerRightX) {
+        // radius between point and segment
+        let r = dist(equi, arcNode.site);
+        return new CloseEvent(equi.y - r, arcNode, left, right, equi);
+      }
     } else {
       // All three are points
       var equi = equidistant(left.site,
@@ -243,7 +245,7 @@ Beachline.prototype.prepDraw = function(
     // The point where this edge node was born
     var v = node.dcelEdge.origin.point;
     // The intersection between the edge node's defining arc nodes
-    var p = node.intersection(directrix);
+    var p = node.intersection(directrix, leftx, rightx);
 
     if (p.x < leftx) {
       let msg = `intersection is less than leftx: ${p.x} < ${leftx}.` +

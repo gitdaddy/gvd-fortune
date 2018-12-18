@@ -309,36 +309,6 @@ var render = function() {
   var beachline = fortune();
   var t1 = performance.now();
 
-  // TODO perhaps find a better place for this
-  // Render segments to points and other segments
-  if (segments.length > 0) {
-    _.forEach(segments, function (s) {
-      var parabolas = [];
-      _.forEach(points, function (p) {
-        // only examine points in the field of the segment
-        if (p.y > Math.min(s[0].y, s[1].y)
-            && p.id != s[0].id
-            && p.id != s[1].id) {
-          var gp = createGeneralParabola(p, s);
-          parabolas.push(gp);
-          var pints = gp.intersectLine(bisectPoints(s[0], p));
-          var pints2 = gp.intersectLine(bisectPoints(s[1], p));
-          {
-            gp.prepDraw(-1, pints[0], pints2[0]);
-            let line = d3.line()
-              .x(function (d) {return d.x;})
-              .y(function (d) {return d.y;})
-              .curve(d3.curveLinear)
-            ;
-            drawGeneralSurface(parabolas, line);
-          }
-        }
-      });
-    });
-  } else {
-    d3.select("#gvd").selectAll(".gvd-surface-parabola").remove();
-  }
-
   drawBeachline(beachline, sweepline, showEvents);
   drawCloseEvents(closeEventPoints);
   drawSweepline(sweepline);

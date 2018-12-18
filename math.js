@@ -308,7 +308,8 @@ function intersect(a, b) {
 //------------------------------------------------------------
 function equidistant(c1, c2, c3) {
 
-  // TODO verify this works for Multiple segments
+  // TODO FIX for when c1 and c2 share the same segment
+  // point but are different types
   // Bisecting types can be either lines or parabolas
   let b12 = bisect(c1, c2);
   let b23 = bisect(c2, c3);

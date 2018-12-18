@@ -6,11 +6,11 @@ function createDatasets() {
     vec3(0.0, -0.61, 0),
     // p1 -- V -- p2
     // Right side tests
-    // vec3(0.12,  0.01, 0), // arcs on V and ignores p2 - FIX
+    vec3(0.12,  0.01, 0), // arcs on V and ignores p2 - FIX
     // vec3(0.29,  -0.11, 0), // arc between V and V? - FIX
     // vec3(0.38,  0.0, 0), // only with top segment
     // // Left side tests
-    vec3(-0.12,  0.01, 0), // arcs on V and ignores p2 - FIX
+    // vec3(-0.12,  0.01, 0), // arcs on V and ignores p2 - FIX
 
     // vec3(-0.28,  -0.31, 0), // arcs on V - breachline not draw
     // vec3(-0.34, -0.1, 0), // only with p1 and V but continues to arc left with V
