@@ -90,10 +90,24 @@ function createCloseEvent(arcNode) {
       let equi = equidistant(left.site, right.site, arcNode.site);
       if (equi == null) return null;
 
-      // radius between point and segment
-      // TODO test
-      let r = dist(equi, arcNode.site);
-      return new CloseEvent(equi.y - r, arcNode, left, right, equi);
+      // get x0 and x1 for the arc node
+      var node = getNodeBounds(arcNode.id);
+      if (node.x0 == null || node.x1 == null) return null;
+      // TODO
+      // if arc node is between equi.x and left or right
+      // if (arcNode.site.x < left.site.x && arcNode.site.x < equi.x) {
+      //   return null;
+      // }
+      // if (arcNode.site.x > left.site.x && arcNode.site.x > equi.x) {
+      //   return null;
+      // }
+
+      // Check if the arch node  is between the left or right size
+      // if (left.site.x < node.x0 && node.x1 < equi.x) {
+      //   // radius between point and segment
+      //   let r = dist(equi, arcNode.site);
+      //   return new CloseEvent(equi.y - r, arcNode, left, right, equi);
+      // }
     } else {
       // All three are points
       var equi = equidistant(left.site,
@@ -101,7 +115,6 @@ function createCloseEvent(arcNode) {
                              right.site);
       var u = subtract(left.site, arcNode.site);
       var v = subtract(left.site, right.site);
-      var cr = cross(u, v);
       // Check if there should be a close event added. In some
       // cases there shouldn't be.
       if (cross(u, v)[2] < 0) {
