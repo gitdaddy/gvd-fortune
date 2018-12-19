@@ -301,6 +301,13 @@ function fortune() {
       });
     }
   }
+
+  let ev = '<br>';
+  while (events.length > 0) {
+    var e = events.pop();
+    ev += e.y + '<br>';
+  }
+  document.getElementById("events").innerHTML = ev;
   return beachline;
 }
 
