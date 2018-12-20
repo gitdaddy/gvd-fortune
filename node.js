@@ -142,6 +142,13 @@ Object.defineProperty(EdgeNode.prototype, "connectedToV", {
   },
 });
 
+Object.defineProperty(EdgeNode.prototype, "flipped", {
+  configurable: true,
+  get: function() {
+    return this.prevArc().site.flipped || this.nextArc().site.flipped;
+  },
+});
+
 EdgeNode.prototype.updateEdge = function(vertex, dcel) {
   this.dcelEdge = dcel.makeEdge();
   this.dcelEdge.origin.point = vertex;
@@ -203,6 +210,7 @@ EdgeNode.prototype.intersection = function(directrix) {
     return NaN;
   }
 
+  var result;
   let pcenterx = (intersections[0].x + intersections[1].x)/2;
   let prevy = pleft.f(pcenterx);
   let nexty = pright.f(pcenterx);
@@ -210,6 +218,7 @@ EdgeNode.prototype.intersection = function(directrix) {
   if (prevy < nexty) {
       lower = 0;
   }
+  result = intersections[1-lower];
 
   // Handle the case where the V arc for the segment (+)
   // needs to be "above" the parabola for the lower
@@ -230,41 +239,8 @@ EdgeNode.prototype.intersection = function(directrix) {
   //
   //     _____________________________
   //
-  let arcNodes = [leftArcNode, rightArcNode];
-  if (arcNodes[lower].isV &&
-    directrix < arcNodes[lower].site[1].y &&
-    arcNodes[lower].site[1] == arcNodes[1-lower].site) {
-    // console.log(intersections);
-    // console.log(arcNodes[lower].site);
-    // console.log(arcNodes[1-lower].site);
-    lower = 1-lower;
-    this.selectedIntersection = intersections[1-lower];
-    return this.selectedIntersection;
-  }
-
-  if (arcNodes[lower].isV &&
-    directrix < arcNodes[lower].site[0].y &&
-    arcNodes[lower].site[0] == arcNodes[1-lower].site) {
-    // console.log(intersections);
-    // console.log(arcNodes[lower].site);
-    // console.log(arcNodes[1-lower].site);
-    this.selectedIntersection = intersections[1-lower];
-    return this.selectedIntersection;
-  }
-
-  // Parabola to Parabola
-  // V to Parabola
-  // Parabola to V
-  // V to V
-  var result;
-  if (leftArcNode.isParabola && rightArcNode.isParabola) {
-    result = intersections[1-lower];
-  }  else if (leftArcNode.isParabola && rightArcNode.isV) {
-    result = intersectionPV(intersections, rightArcNode, lower);
-  } else if (leftArcNode.isV && rightArcNode.isParabola) {
-    result = intersectionPV(intersections, leftArcNode, lower);
-  } else {
-    result = intersectionVV(intersections);
+  if (this.flipped) {
+    result = intersections[lower];
   }
 
   this.selectedIntersection = result;
@@ -275,8 +251,7 @@ function intersectionPV(intersections, vNode, lower) {
   // Cover the case where part of the V is split
   // by a parabola
   var nodeBounds = getNodeBounds(vNode.id);
-  if (nodeBounds.x0 == null || nodeBounds.x1 == null
-    || nodeBounds.x0 == nodeBounds.x1) {
+  if (nodeBounds.x0 == null || nodeBounds.x1 == null) {
     return intersections[1-lower]; // default
   }
 
@@ -284,6 +259,8 @@ function intersectionPV(intersections, vNode, lower) {
   // return the intersection that centerX is closest to
   var s0 = Math.abs(centerX - intersections[0].x);
   var s1 = Math.abs(centerX - intersections[1].x);
+  // This is incorrect
+  if (s0 == s1) return intersections[1-lower];
   if (s0 < s1) {
     return intersections[0];
   } else {

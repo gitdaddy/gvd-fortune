@@ -42,6 +42,8 @@ V.prototype.intersect = function(para) {
     this.vectors.forEach(function(v) {
       ret = ret.concat(para.intersectRay(p, v));
     });
+    // sort by xvalues if x0 < x1 [x0, x1]
+    ret = _.sortBy(ret, [function(i) { return i.x; }])
     return ret;
   }
   throw "V-V intersection not implemented";

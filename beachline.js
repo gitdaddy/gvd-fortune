@@ -88,28 +88,28 @@ function createCloseEvent(arcNode) {
         return new CloseEvent(equi.y-r, arcNode, left, right, equi);
       }
     } else if (isSegment(arcNode.site)) {
-      // equi point
-      let equi = equidistant(left.site, right.site, arcNode.site);
-      if (equi == null) return null;
+      // equi point FIX
+      // let equi = equidistant(left.site, right.site, arcNode.site);
+      // if (equi == null) return null;
 
-      // get x0 and x1 for the arc node
-      var nodeBoundsArc = getNodeBounds(arcNode.id);
-      var nodeBoundsLeft = getNodeBounds(left.id);
-      var nodeBoundsRight = getNodeBounds(right.id);
-      if (nodeBoundsArc.x0 == null || nodeBoundsArc.x1 == null) return null;
-      if (nodeBoundsLeft.x0 == null || nodeBoundsLeft.x1 == null) return null;
-      if (nodeBoundsRight.x0 == null || nodeBoundsRight.x1 == null) return null;
-      var centerArcX = (nodeBoundsArc.x0 + nodeBoundsArc.x1)/2;
-      var centerLeftX = (nodeBoundsLeft.x0 + nodeBoundsLeft.x1)/2;
-      var centerRightX = (nodeBoundsRight.x0 + nodeBoundsRight.x1)/2;
+      // // get x0 and x1 for the arc node
+      // var nodeBoundsArc = getNodeBounds(arcNode.id);
+      // var nodeBoundsLeft = getNodeBounds(left.id);
+      // var nodeBoundsRight = getNodeBounds(right.id);
+      // if (nodeBoundsArc.x0 == null || nodeBoundsArc.x1 == null) return null;
+      // if (nodeBoundsLeft.x0 == null || nodeBoundsLeft.x1 == null) return null;
+      // if (nodeBoundsRight.x0 == null || nodeBoundsRight.x1 == null) return null;
+      // var centerArcX = (nodeBoundsArc.x0 + nodeBoundsArc.x1)/2;
+      // var centerLeftX = (nodeBoundsLeft.x0 + nodeBoundsLeft.x1)/2;
+      // var centerRightX = (nodeBoundsRight.x0 + nodeBoundsRight.x1)/2;
 
-      // if the equidistant point lies between the arc nodes
-      if (centerArcX > equi.x && equi.x > centerLeftX
-        || centerArcX < equi.x && equi.x < centerRightX) {
-        // radius between point and segment
-        let r = dist(equi, arcNode.site);
-        return new CloseEvent(equi.y - r, arcNode, left, right, equi);
-      }
+      // // if the equidistant point lies between the arc nodes
+      // if (centerArcX > equi.x && equi.x > centerLeftX
+      //   || centerArcX < equi.x && equi.x < centerRightX) {
+      //   // radius between point and segment
+      //   let r = dist(equi, arcNode.site);
+      //   return new CloseEvent(equi.y - r, arcNode, left, right, equi);
+      // }
     } else {
       // All three are points
       var equi = equidistant(left.site,
@@ -136,10 +136,7 @@ function createCloseEvent(arcNode) {
 //------------------------------------------------------------
 Beachline.prototype.add = function(site) {
   var arcNode = new ArcNode(site);
-  // // SEGMENT
-  // if (isSegment(site)) {
-  //   return [];
-  // }
+
   if (this.root == null) {
     this.root = arcNode;
   } else if (this.root.isArc) {
@@ -154,15 +151,9 @@ Beachline.prototype.add = function(site) {
     var child = parent.getChild(side);
     while (child.isEdge) {
       parent = child;
-
-      // var intersection = parent.intersection(directrix);
-      // side = LEFT_CHILD;
-      // if (!_.isUndefined(intersection))
-      //   side = (site.x < intersection.x) ? LEFT_CHILD : RIGHT_CHILD;
-
-        x = parent.intersection(directrix).x;
-        side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
-        child = parent.getChild(side);
+      x = parent.intersection(directrix).x;
+      side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
+      child = parent.getChild(side);
     }
     // Child is an arc node. Split it.
     var newNode = splitArcNode(child, arcNode, this.dcel);
@@ -245,7 +236,7 @@ Beachline.prototype.prepDraw = function(
     // The point where this edge node was born
     var v = node.dcelEdge.origin.point;
     // The intersection between the edge node's defining arc nodes
-    var p = node.intersection(directrix, leftx, rightx);
+    var p = node.intersection(directrix);
 
     if (p.x < leftx) {
       let msg = `intersection is less than leftx: ${p.x} < ${leftx}.` +

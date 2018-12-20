@@ -208,6 +208,8 @@ function datasetChange(value) {
           (p.x == s.b.x && p.y == s.b.y)) {
         p.label = s.label;
       }
+      // if point is on the lowest y point of the segment it is flipped
+      p.flipped = (p.x == s.b.x && p.y == s.b.y);
     });
   });
 
