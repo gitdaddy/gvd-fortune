@@ -274,12 +274,13 @@ function fortune() {
   });
   closeEventPoints = [];
   while (events.length > 0 && events.peek().y > sweepline) {
+    var directrix = sweepline;
     var e = events.pop();
     if (e.isCloseEvent) {
       if (e.live) {
 	e.arcNode.prevEdge().dcelEdge.dest.point = e.point;
 	e.arcNode.nextEdge().dcelEdge.dest.point = e.point;
-	var newEvents = beachline.remove(e.arcNode, e.point);
+	var newEvents = beachline.remove(e.arcNode, e.point, sweepLine);
         newEvents.forEach(function(ev) {
           if (ev.y < e.y - 0.000001) {
 	    events.push(ev);
@@ -292,7 +293,7 @@ function fortune() {
       }
     } else {
       // Site event
-      var newEvents = beachline.add(e);
+      var newEvents = beachline.add(e, directrix);
       newEvents.forEach(function(ev) {
         if (ev.y < e.y - 0.000001) {
 	  events.push(ev);

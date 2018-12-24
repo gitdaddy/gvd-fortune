@@ -17,6 +17,9 @@ var ArcNode = function(site) {
     this.openPoint = site[0];
     this.closePoint = site[1];
   }
+  // define arc boundaries
+  this.x0 = undefined;
+  this.x1 = undefined;
   this.id = nodeId++;
 }
 
@@ -246,29 +249,3 @@ EdgeNode.prototype.intersection = function(directrix) {
   this.selectedIntersection = result;
   return this.selectedIntersection;
 };
-
-function intersectionPV(intersections, vNode, lower) {
-  // Cover the case where part of the V is split
-  // by a parabola
-  var nodeBounds = getNodeBounds(vNode.id);
-  if (nodeBounds.x0 == null || nodeBounds.x1 == null) {
-    return intersections[1-lower]; // default
-  }
-
-  var centerX = (nodeBounds.x0 + nodeBounds.x1)/2;
-  // return the intersection that centerX is closest to
-  var s0 = Math.abs(centerX - intersections[0].x);
-  var s1 = Math.abs(centerX - intersections[1].x);
-  // This is incorrect
-  if (s0 == s1) return intersections[1-lower];
-  if (s0 < s1) {
-    return intersections[0];
-  } else {
-    return intersections[1];
-  }
-}
-
-function intersectionVV(intersections) {
-  throw "V to V intersections are not yet defined";
-}
-

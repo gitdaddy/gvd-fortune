@@ -182,6 +182,10 @@ function drawCloseEvents(eventPoints) {
   ;
 }
 
+function activeLineWidth(point) {
+  return point.connectedToGVD && !point.connectedToV ? 1 : 0;
+}
+
 function drawBeachline(beachline, directrix, renderEvents) {
   if (beachline.root == null) {
     d3.select("#gvd").selectAll(".beach-parabola").remove();
@@ -278,11 +282,6 @@ function drawBeachline(beachline, directrix, renderEvents) {
       .attr("leftx", p => p.drawPoints[0].x)
       .attr("rightx", p => p.drawPoints[p.drawPoints.length-1].x)
     ;
-  }
-
-  function activeLineWidth(point)
-  {
-    return point.connectedToGVD && !point.connectedToV ? 1 : 0;
   }
 
   //------------------------------

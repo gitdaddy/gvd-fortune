@@ -54,19 +54,6 @@ function highlight(d) {
   }
 }
 
-function getNodeBounds(id) {
-  var node = d3.select(`#treenode${id}`);
-  var x0 = null;
-  var x1 = null;
-  if (!node.empty() && node.attr('leftx')) {
-    x0 = (+node.attr('leftx'));
-    x1 = (+node.attr('rightx'));
-  }
-  return {
-    x0: x0,
-    x1: x1
-  }
-}
 
 function showTree(treeData) {
   if (treeData == null) return;
