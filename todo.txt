@@ -1,0 +1,2 @@
+1. Compute both close events on the gvd for the general parabola
+2. Set live or non-live for close events on the GVD general parabola

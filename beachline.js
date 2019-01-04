@@ -160,7 +160,7 @@ function createCloseEvent(arcNode) {
 //
 // Site is a vec3
 //------------------------------------------------------------
-Beachline.prototype.add = function(site, directrix) {
+Beachline.prototype.add = function(site) {
   var arcNode = new ArcNode(site);
 
   if (this.root == null) {
@@ -185,9 +185,10 @@ Beachline.prototype.add = function(site, directrix) {
     // Child is an arc node. Split it.
     var newNode = splitArcNode(child, arcNode, this.dcel);
     parent.setChild(newNode, side);
+    // TEST - assumes the sweepline is moving down in a negative direction
+    updateArcBounds(this.root, -1, 1, site.y - 0.0001);
   }
 
-  updateArcBounds(this.root, -1, 1, directrix);
   // Create close events
   var closeEvents = [];
   var e = createCloseEvent(arcNode.prevArc());
@@ -205,7 +206,7 @@ Beachline.prototype.add = function(site, directrix) {
 //------------------------------------------------------------
 // remove
 //------------------------------------------------------------
-Beachline.prototype.remove = function(arcNode, point, directrix) {
+Beachline.prototype.remove = function(arcNode, point) {
   if (!arcNode.isArc) throw "Unexpected edge in remove";
 
   var parent = arcNode.parent;
@@ -224,7 +225,7 @@ Beachline.prototype.remove = function(arcNode, point, directrix) {
   sibling.parent = grandparent;
 
   newEdge.updateEdge(point, this.dcel);
-  updateArcBounds(this.root, -1, 1, directrix); 
+  // updateArcBounds(this.root, -1, 1, directrix); // NEED THIS HERE?
   // Cancel the close event for this arc and adjoining arcs.
   // Add new close events for adjoining arcs.
   var closeEvents = [];
