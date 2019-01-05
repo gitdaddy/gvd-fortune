@@ -253,9 +253,9 @@ Beachline.prototype.remove = function(arcNode, point) {
 //------------------------------------------------------------
 
 // Sets points on arc elements ready for drawing using whatever
-// method. Also gets events and active surface lines.
+// method. Also gets events and active surface lines and parabolas.
 Beachline.prototype.prepDraw = function(
-  directrix, node, leftx, rightx, arcElements, lines, events) {
+  directrix, node, leftx, rightx, arcElements, lines, generalSurfaces, events) {
 
   let highlight = false;
 
@@ -279,15 +279,33 @@ Beachline.prototype.prepDraw = function(
 
     if (!Number.isNaN(v.x) && !Number.isNaN(v.y) &&
         !Number.isNaN(p.x) && !Number.isNaN(p.y)) {
-      lines.push({x0:v.x, y0:v.y, x1:p.x, y1:p.y, id:node.id,
-        connectedToGVD:node.connectedToGVD, connectedToV:node.connectedToV});
+      if (node.isGeneralSurface) {
+        var point;
+        var segment;
+        var next = node.nextArc();
+        var prev = node.prevArc();
+        if (prev.isV && next.isParabola) {
+          segment = prev.site;
+          point = next.site;
+        } else if (prev.isParabola && next.isV) {
+          point = prev.site;
+          segment = next.site;
+        } else {
+          throw "Error edge node marked as general surface but is not between a V and parabola";
+        }
+        var gp = createGeneralParabola(point, segment);
+        gp.prepDraw(-1, vec3(v.x, v.y, 0.0), vec3(p.x, p.y, 0.0));
+        generalSurfaces.push(gp);
+      } else {
+        lines.push({x0:v.x, y0:v.y, x1:p.x, y1:p.y, id:node.id, connectedToGVD:node.connectedToGVD});
+      }
     }
 
     // check V left
-    this.prepDraw(directrix, node.left, leftx, p.x, arcElements, lines, events);
+    this.prepDraw(directrix, node.left, leftx, p.x, arcElements, lines, generalSurfaces, events);
     if (p.x < rightx) {
       // We can ignore anything outside our original bounds.
-      this.prepDraw(directrix, node.right, p.x, rightx, arcElements, lines, events);
+      this.prepDraw(directrix, node.right, p.x, rightx, arcElements, lines, generalSurfaces, events);
     }
   }
 }

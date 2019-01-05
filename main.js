@@ -187,9 +187,6 @@ function datasetChange(value) {
   console.log(value);
   localStorage.dataset = value;
 
-  // Clear the general parabolas
-  drawGeneralSurface([]);
-
   points = datasets[value].points;
   segments = datasets[value].segments;
   // Give all points and segments a unique ID and label

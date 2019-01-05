@@ -18,21 +18,23 @@ line#sweepline {
     stroke: black;
 }
 
-/*.gvd-surface, .gvd-surface-active {
-    stroke: red;
-}*/
-
 /* for debugging */
 .gvd-surface {
     stroke: black;
 }
+
+.gvd-surface-parabola {
+    stroke: black;
+}
+
 .gvd-surface-active {
     stroke: black;
     stroke-dasharray: 3,3;
 }
 
-.gvd-surface-parabola {
+.gvd-surface-active-parabola {
     stroke: black;
+    stroke-dasharray: 3,3;
 }
 
 .event {

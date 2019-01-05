@@ -54,7 +54,6 @@ function highlight(d) {
   }
 }
 
-
 function showTree(treeData) {
   if (treeData == null) return;
 

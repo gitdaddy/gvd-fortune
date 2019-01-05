@@ -137,11 +137,13 @@ Object.defineProperty(EdgeNode.prototype, "connectedToGVD", {
   },
 });
 
-Object.defineProperty(EdgeNode.prototype, "connectedToV", {
+Object.defineProperty(EdgeNode.prototype, "isGeneralSurface", {
   configurable: true,
   enumerable: true,
   get: function() {
-    return this.prevArc().site.type == "segment" || this.nextArc().site.type == "segment";
+    var left = this.prevArc();
+    var right = this.nextArc();
+    return left.isParabola && right.isV || left.isV && right.isParabola;
   },
 });
 

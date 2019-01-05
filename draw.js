@@ -76,13 +76,13 @@ function drawSweepline(sweepline) {
     .attr("x2", 1)
     .attr("y2", sweepline)
     ;
-  }
+}
 
-  function getSurfaceWidth(bold) {
-    return bold ? nonisoEdgeWidth : isoEdgeWidth;
-  }
+function getSurfaceWidth(bold) {
+  return bold ? nonisoEdgeWidth : isoEdgeWidth;
+}
 
-  function drawSurface(dcel) {
+function drawSurface(dcel) {
     // Render surface with D3
   let iter = dcel.edges;
   let result = iter.next();
@@ -97,6 +97,7 @@ function drawSweepline(sweepline) {
     }
     result = iter.next();
   }
+  // TODO draw general surface
   let d3edges = d3.select('#gvd')
     .selectAll('.gvd-surface')
     .data(edges)
@@ -115,23 +116,6 @@ function drawSweepline(sweepline) {
   ;
 }
 
-function drawGeneralSurface(parabolas, line) {
-  let selection = d3.select("#gvd").selectAll(".gvd-surface-parabola")
-    .data(parabolas);
-  // exit
-  selection.exit().remove();
-  // enter
-  selection.enter()
-    .append("path")
-    .attr("d", p => line(p.drawPoints))
-    .style("fill","none")
-    .attr("class", "gvd-surface-parabola")
-    .attr("vector-effect", "non-scaling-stroke")
-    .merge(selection)
-    .attr("transform", p => p.transform)
-    .style("stroke-width", p => getSurfaceWidth(p.splitSite))
-  ;
-}
 
 function drawCloseEvents(eventPoints) {
   eventPoints = eventPoints.filter(d => d.live);
@@ -183,10 +167,10 @@ function drawCloseEvents(eventPoints) {
 }
 
 function activeLineWidth(point) {
-  return point.connectedToGVD && !point.connectedToV ? 1 : 0;
+  return point.connectedToGVD ? 1 : 0;
 }
 
-function drawBeachline(beachline, directrix, renderEvents) {
+function drawBeachline(beachline, directrix) {
   if (beachline.root == null) {
     d3.select("#gvd").selectAll(".beach-parabola").remove();
     return;
@@ -196,35 +180,12 @@ function drawBeachline(beachline, directrix, renderEvents) {
   // These lines are GVD lines going to infinity that may or may not
   // eventually be subsumed into the DCEL.
   let lines = [];
+  var generalSurfaces = [];
   let events = [];
-  beachline.prepDraw(directrix, beachline.root, -1, 1, arcElements, lines, events);
+  beachline.prepDraw(directrix, beachline.root, -1, 1, arcElements, lines, generalSurfaces, events);
 
   let parabolas = arcElements.filter(d => d.type == "parabola");
   let vs = arcElements.filter(d => d.type == "v");
-
-  // //------------------------------
-  // // Render the events
-  // //------------------------------
-  // if (renderEvents) {
-  //   let selection = d3.select("#gvd").selectAll(".event")
-  //     .data(events);
-  //   // exit
-  //   selection.exit().remove();
-  //   // enter
-  //   selection.enter()
-  //     .append("circle")
-  //     .attr('cx', d => d.x)
-  //     .attr('cy', d => d.y)
-  //     .attr('r', 6/gvdw)
-  //     .attr('class', "event")
-  //     .attr("vector-effect", "non-scaling-stroke")
-  //   ;
-  //   // update
-  //   selection
-  //     .attr('cx', d => d.x)
-  //     .attr('cy', d => d.y)
-  //   ;
-  // }
 
   //------------------------------
   // Render the parabolas
@@ -240,7 +201,7 @@ function drawBeachline(beachline, directrix, renderEvents) {
     // exit
     selection.exit().remove();
     // enter
-    let enter = selection.enter()
+    selection.enter()
       .append("path")
       .style("fill","none")
       .attr("class", "beach-parabola")
@@ -270,7 +231,7 @@ function drawBeachline(beachline, directrix, renderEvents) {
     // exit
     selection.exit().remove();
     // enter
-    let enter = selection.enter()
+    selection.enter()
       .append("path")
       .style("fill","none")
       .attr("class", "beach-parabola")
@@ -288,16 +249,37 @@ function drawBeachline(beachline, directrix, renderEvents) {
   // Render the active surface
   //------------------------------
   {
-    let selection = d3.select("#gvd").selectAll(".gvd-surface-active")
-      .data(lines);
+    let line = d3.line()
+    .x(function (d) {return d.x;})
+    .y(function (d) {return d.y;})
+    .curve(d3.curveLinear)
+    ;
+    let selection = d3.select("#gvd").selectAll(".gvd-surface-active-parabola")
+    .data(generalSurfaces);
     // exit
     selection.exit().remove();
     // enter
-    let enter = selection.enter()
+    selection.enter()
+      .append("path")
+      .style("fill","none")
+      .attr("class", "gvd-surface-active-parabola")
+      .attr("vector-effect", "non-scaling-stroke")
+      .merge(selection)
+      .attr("d", p => line(p.drawPoints))
+      .attr("id", p => p.id)
+      .attr("transform", p => p.transform)
+    ;
+    
+    let lineSelection = d3.select("#gvd").selectAll(".gvd-surface-active")
+      .data(lines);
+    // exit
+    lineSelection.exit().remove();
+    // enter
+    let enter = lineSelection.enter()
       .append("line")
       .attr('class', "gvd-surface-active")
       .attr("vector-effect", "non-scaling-stroke")
-      .merge(selection)
+      .merge(lineSelection)
       .attr('x1', d => d.x0)
       .attr('y1', d => d.y0)
       .attr('x2', d => d.x1)
