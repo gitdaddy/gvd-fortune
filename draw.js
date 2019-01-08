@@ -86,36 +86,74 @@ function drawSurface(dcel) {
     // Render surface with D3
   let iter = dcel.edges;
   let result = iter.next();
-  let count = 0;
   let edges = [];
+  let generalEdges = [];
   while (!result.done) {
     var edge = result.value;
     nanInOrigin = _.find(edge.origin.point, function (value) { return _.isNaN(value); });
     nanInDest = _.find(edge.dest.point, function (value) { return _.isNaN(value); });
     if (edge.origin.point && edge.dest.point && !_.isNaN(nanInOrigin) && !_.isNaN(nanInDest)) {
-      edges.push(edge);
+      if (edge.generalEdge) {
+        var point;
+        var segment;
+        if (edge.siteA.type == "segment" && edge.siteB.type == "vec") {
+          segment = edge.siteA;
+          point = edge.siteB;
+        } else if (edge.siteA.type == "vec" && edge.siteB.type == "segment") {
+          point = edge.siteA;
+          segment = edge.siteB;
+        } else {
+          throw "Error edge node marked as general surface but is not between a V and parabola";
+        }
+        var gp = createGeneralParabola(point, segment);
+        gp.prepDraw(-1, vec3(edge.origin.point.x, edge.origin.point.y, 0.0), vec3(edge.dest.point.x, edge.dest.point.y, 0.0));
+        generalEdges.push(gp);
+      } else {
+        edges.push(edge);
+      }
     }
     result = iter.next();
   }
-  // TODO draw general surface
+  
+  let line = d3.line()
+  .x(function (d) {return d.x;})
+  .y(function (d) {return d.y;})
+  .curve(d3.curveLinear)
+  ;
+  let d3generalEdges = d3.select('#gvd')
+    .selectAll('.gvd-surface-parabola')
+    .data(generalEdges)
+  ;
+  d3generalEdges.exit().remove();
+  d3generalEdges.enter()
+    .append("path")
+    .style("fill","none")
+    .attr("class", "gvd-surface-parabola")
+    .attr("vector-effect", "non-scaling-stroke")
+    .merge(d3generalEdges)
+    .style("stroke-width", e => getSurfaceWidth(e.splitSite))
+    .attr("d", p => line(p.drawPoints))
+    .attr("id", p => p.id)
+    .attr("transform", p => p.transform)
+  ;
+  
   let d3edges = d3.select('#gvd')
     .selectAll('.gvd-surface')
     .data(edges)
   ;
   d3edges.exit().remove();
-  let enter = d3edges.enter()
+  d3edges.enter()
     .append('line')
     .attr('class', "gvd-surface")
     .attr("vector-effect", "non-scaling-stroke")
     .merge(d3edges)
-    .attr('x1', e => e.origin.point[0])
-    .attr('y1', e => e.origin.point[1])
-    .attr('x2', e => e.dest.point[0])
-    .attr('y2', e => e.dest.point[1])
+    .attr('x1', e => e.origin.point.x)
+    .attr('y1', e => e.origin.point.y)
+    .attr('x2', e => e.dest.point.x)
+    .attr('y2', e => e.dest.point.y)
     .style("stroke-width", e => getSurfaceWidth(e.splitSite))
   ;
 }
-
 
 function drawCloseEvents(eventPoints) {
   eventPoints = eventPoints.filter(d => d.live);

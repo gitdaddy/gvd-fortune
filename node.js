@@ -157,9 +157,14 @@ Object.defineProperty(EdgeNode.prototype, "flipped", {
 EdgeNode.prototype.updateEdge = function(vertex, dcel) {
   this.dcelEdge = dcel.makeEdge();
   this.dcelEdge.origin.point = vertex;
-  this.dcelEdge.a = this.prevArc().id;
-  this.dcelEdge.b = this.nextArc().id;
-  this.dcelEdge.splitSite = this.prevArc().site.label !== this.nextArc().site.label;
+  var next = this.nextArc();
+  var prev = this.prevArc();
+  this.dcelEdge.a = prev.id;
+  this.dcelEdge.siteA = prev.site;
+  this.dcelEdge.b = next.id;
+  this.dcelEdge.siteB = next.site;
+  this.dcelEdge.splitSite = prev.site.label !== next.site.label;
+  this.dcelEdge.generalEdge = prev.isParabola && next.isV || prev.isV && next.isParabola
 }
 
 EdgeNode.prototype.prevArc = function() {
