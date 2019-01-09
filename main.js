@@ -267,6 +267,12 @@ function fortune() {
   var pointsCopy = points.slice();
   var segmentsCopy = segments.slice();
   var events = new TinyQueue(pointsCopy.concat(segmentsCopy), function(a, b) {
+    // // TODO
+    // // Ensure segments are placed in the middle of their outer points
+    // if (a.type == "segment") {
+    //   var minY = Math.min(a[0].y, a[1].y);
+    //   return b.y <= minY ? 0 : 1;
+    // }
     return a.y > b.y ? -1 : a.y < b.y ? 1 : 0;
   });
   closeEventPoints = [];

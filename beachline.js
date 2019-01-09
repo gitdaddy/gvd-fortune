@@ -35,7 +35,7 @@ function updateArcBounds(node, leftx, rightx, directrix) {
     node.x0 = leftx;
     node.x1 = rightx;
     return;
-  } 
+  }
   // else node is an edge node
 
   // The intersection between the edge node's defining arc nodes
@@ -88,6 +88,14 @@ function splitArcNode(toSplit, node, dcel) {
   var y;
   if (toSplit.isParabola) {
     y = createParabola(toSplit.site, node.site.y).f(x);
+
+    // // Case where the lowest intersection point is above the segment
+    // if (node.site.type == "segment") {
+    //   if (toSplit.site.y > node.site.y) {
+    //     // the segment node should not arc with the site
+    //     throw "error invalid split between V and parabola";
+    //   }
+    // }
   } else {
     y = new V(toSplit.site, node.site.y).f(x);
     // console.log(`splitting ${toSplit} y=${y}`);
@@ -166,7 +174,10 @@ Beachline.prototype.add = function(site) {
     arcNode.x1 = 1;
     this.root = arcNode;
   } else if (this.root.isArc) {
-    this.root = splitArcNode(this.root, arcNode, this.dcel);
+    var newRoot = splitArcNode(this.root, arcNode, this.dcel);
+    if (!_.isUndefined(newRoot)) {
+      this.root = newRoot;
+    }
   } else {
     // Do a binary search to find the arc node that the new
     // site intersects with
@@ -182,9 +193,11 @@ Beachline.prototype.add = function(site) {
     }
     // Child is an arc node. Split it.
     var newNode = splitArcNode(child, arcNode, this.dcel);
-    parent.setChild(newNode, side);
-    // TEST - assumes the sweepline is moving down in a negative direction
-    updateArcBounds(this.root, -1, 1, site.y - 0.0001);
+    if (!_.isUndefined(newNode)) {
+      parent.setChild(newNode, side);
+      // TEST - assumes the sweepline is moving down in a negative direction
+      updateArcBounds(this.root, -1, 1, site.y - 0.0001);
+    }
   }
 
   // Create close events
@@ -254,9 +267,6 @@ Beachline.prototype.remove = function(arcNode, point) {
 // method. Also gets events and active surface lines and parabolas.
 Beachline.prototype.prepDraw = function(
   directrix, node, leftx, rightx, arcElements, lines, generalSurfaces, events) {
-
-  let highlight = false;
-
   if (node.isArc) {
     arcElements.push(node.createDrawElement(leftx, rightx, directrix));
   } else {

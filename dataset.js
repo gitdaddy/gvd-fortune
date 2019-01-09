@@ -29,7 +29,7 @@ function createDatasets() {
     vec3(0.2, -0.3, 0),
     // remaining points
     vec3(-0.30, 0.1, 0),
-    vec3(-0.26, 0.73, 0),
+    // vec3(-0.26, 0.73, 0),
     vec3(-0.5, 0.3, 0),
     vec3(-0.12,0.13, 0),
     vec3(0.73,0.15, 0),
