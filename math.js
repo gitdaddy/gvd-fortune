@@ -93,7 +93,7 @@ function dist(obj1, obj2) {
   // 3. Segment to Segment
 
   if (obj1.type == "vec" && obj2.type == "vec") {
-    return length(subtract(vec2(a), vec2(b)));
+    return length(subtract(vec2(obj1), vec2(obj2)));
   } else if (obj1.type == "vec" && obj2.type == "segment") {
     // get the equation of the line from the segment ax + by + c = 0
     // (y1 - y2)x + (x2 - x1)y + (x1y2 - x2y1) = 0

@@ -249,7 +249,8 @@ EdgeNode.prototype.intersection = function(directrix) {
   //
   //     _____________________________
   //
-  if (this.flipped) {
+  // if the point is flipped and is connected to the V
+  if (this.flipped && this.isGeneralSurface) {
     result = intersections[lower];
   }
 

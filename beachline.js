@@ -110,10 +110,8 @@ function createCloseEvent(arcNode) {
   if (left != null && right != null) {
     if (isSegment(left.site) || isSegment(right.site)) {
       let equi = equidistant(left.site, arcNode.site, right.site);
-      if (equi) {
-        let r = dist(equi, arcNode.site);
-        return new CloseEvent(equi.y-r, arcNode, left, right, equi);
-      }
+      let r = dist(equi, arcNode.site);
+      return new CloseEvent(equi.y-r, arcNode, left, right, equi);
     } else if (isSegment(arcNode.site)) {
       let equi = equidistant(left.site, right.site, arcNode.site);
       if (equi == null) return null;
