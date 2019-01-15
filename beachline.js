@@ -88,17 +88,8 @@ function splitArcNode(toSplit, node, dcel) {
   var y;
   if (toSplit.isParabola) {
     y = createParabola(toSplit.site, node.site.y).f(x);
-
-    // // Case where the lowest intersection point is above the segment
-    // if (node.site.type == "segment") {
-    //   if (toSplit.site.y > node.site.y) {
-    //     // the segment node should not arc with the site
-    //     throw "error invalid split between V and parabola";
-    //   }
-    // }
   } else {
     y = new V(toSplit.site, node.site.y).f(x);
-    // console.log(`splitting ${toSplit} y=${y}`);
   }
   var vertex = vec3(x, y, 0);
   var left = toSplit;
@@ -174,10 +165,7 @@ Beachline.prototype.add = function(site) {
     arcNode.x1 = 1;
     this.root = arcNode;
   } else if (this.root.isArc) {
-    var newRoot = splitArcNode(this.root, arcNode, this.dcel);
-    if (!_.isUndefined(newRoot)) {
-      this.root = newRoot;
-    }
+    this.root = splitArcNode(this.root, arcNode, this.dcel);
   } else {
     // Do a binary search to find the arc node that the new
     // site intersects with
@@ -188,16 +176,13 @@ Beachline.prototype.add = function(site) {
     while (child.isEdge) {
       parent = child;
       x = parent.intersection(site.y).x;
-      side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
+      side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD; // test using y value?
       child = parent.getChild(side);
     }
     // Child is an arc node. Split it.
-    var newNode = splitArcNode(child, arcNode, this.dcel);
-    if (!_.isUndefined(newNode)) {
-      parent.setChild(newNode, side);
-      // TEST - assumes the sweepline is moving down in a negative direction
-      updateArcBounds(this.root, -1, 1, site.y - 0.0001);
-    }
+    parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
+    // TEST - assumes the sweepline is moving down in a negative direction
+    updateArcBounds(this.root, -1, 1, site.y - 0.0001);
   }
 
   // Create close events

@@ -267,17 +267,17 @@ function fortune() {
   var pointsCopy = points.slice();
   var segmentsCopy = segments.slice();
   var events = new TinyQueue(pointsCopy.concat(segmentsCopy), function(a, b) {
-    // // TODO
-    // // Ensure segments are placed in the middle of their outer points
-    // if (a.type == "segment") {
-    //   var minY = Math.min(a[0].y, a[1].y);
-    //   return b.y <= minY ? 0 : 1;
-    // }
     return a.y > b.y ? -1 : a.y < b.y ? 1 : 0;
   });
   closeEventPoints = [];
   while (events.length > 0 && events.peek().y > sweepline) {
     var e = events.pop();
+    // test ordering events by segments
+    if (e.type == "segment" && !e.ordered) {
+      e.ordered = true;
+      events.push(e);
+      e = events.pop();
+    }
     if (e.isCloseEvent) {
       if (e.live) {
 	e.arcNode.prevEdge().dcelEdge.dest.point = e.point;
