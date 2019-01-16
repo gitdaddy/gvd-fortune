@@ -54,6 +54,18 @@ function updateArcBounds(node, leftx, rightx, directrix) {
   updateArcBounds(node.right, p.x, rightx, directrix);
 }
 
+function addCloseEvent(events, newEvent) {
+  if (newEvent == null) return;
+  var existing = _.filter(events, function(event) { 
+    var tolerance = 0.00001;
+    return (Math.abs(newEvent.point.x - event.point.x) < tolerance 
+    && Math.abs(newEvent.point.y - event.point.y) < tolerance);
+  });
+  if (_.isEmpty(existing)) {
+    events.push(newEvent);
+  }
+}
+
 //------------------------------------------------------------
 // Beachline
 //------------------------------------------------------------
@@ -176,7 +188,7 @@ Beachline.prototype.add = function(site) {
     while (child.isEdge) {
       parent = child;
       x = parent.intersection(site.y).x;
-      side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD; // test using y value?
+      side = (site.x <= x) ? LEFT_CHILD : RIGHT_CHILD; // test using y value?
       child = parent.getChild(side);
     }
     // Child is an arc node. Split it.
@@ -187,15 +199,8 @@ Beachline.prototype.add = function(site) {
 
   // Create close events
   var closeEvents = [];
-  var e = createCloseEvent(arcNode.prevArc());
-  if (e != null) {
-    closeEvents.push(e);
-  }
-  e = createCloseEvent(arcNode.nextArc());
-  if (e != null) {
-    closeEvents.push(e);
-  }
-
+  addCloseEvent(closeEvents, createCloseEvent(arcNode.prevArc()));
+  addCloseEvent(closeEvents, createCloseEvent(arcNode.nextArc()));
   return closeEvents;
 }
 

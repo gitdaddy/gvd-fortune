@@ -265,6 +265,7 @@ function fortune() {
   dcel = new DCEL();
   var beachline = new Beachline(dcel);
   var pointsCopy = points.slice();
+  _.forEach(segments, function (seg) { seg.ordered = false; });
   var segmentsCopy = segments.slice();
   var events = new TinyQueue(pointsCopy.concat(segmentsCopy), function(a, b) {
     return a.y > b.y ? -1 : a.y < b.y ? 1 : 0;

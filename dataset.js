@@ -6,6 +6,7 @@ function createDatasets() {
     vec3(0.01, -0.61, 0),
 
     vec3(-0.05, 0.41, 0),
+    // vec3(0.2, 0.41, 0), // Bug here
     // p1 -- V -- p2
     // Right side tests
     // vec3(0.32, 0.11, 0),
@@ -28,6 +29,7 @@ function createDatasets() {
     vec3(-0.1, -0.6, 0),
     vec3(0.2, -0.3, 0),
     // remaining points
+    // vec3(-0.15, 0.81, 0),
     vec3(-0.30, 0.1, 0),
     // vec3(-0.26, 0.73, 0),
     vec3(-0.5, 0.3, 0),
