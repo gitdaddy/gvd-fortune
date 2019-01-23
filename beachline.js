@@ -55,14 +55,26 @@ function updateArcBounds(node, leftx, rightx, directrix) {
 }
 
 function addCloseEvent(events, newEvent) {
-  if (newEvent == null) return;
-  var existing = _.filter(events, function(event) { 
+  var search = function(event) { 
     var tolerance = 0.00001;
     return (Math.abs(newEvent.point.x - event.point.x) < tolerance 
     && Math.abs(newEvent.point.y - event.point.y) < tolerance);
-  });
+  };
+  if (newEvent == null) return;
+  var existing = _.filter(events, search);
   if (_.isEmpty(existing)) {
     events.push(newEvent);
+  } else {
+    // If there is a tie use the event with the closest arcNode
+    if (!_.isUndefined(existing[0].arcNode.x0) && !_.isUndefined(newEvent.arcNode.x0)) {
+      if (Math.abs(newEvent.arcNode.x0 - newEvent.point.x) 
+      < Math.abs(existing[0].arcNode.x0 - newEvent.point.x)) {
+        var idx = _.findIndex(events, search);
+        if (idx == -1) return;
+        // replace the old event
+        events[idx] = newEvent;
+      } // otherwise leave the existing event in place
+    }
   }
 }
 
@@ -188,7 +200,7 @@ Beachline.prototype.add = function(site) {
     while (child.isEdge) {
       parent = child;
       x = parent.intersection(site.y).x;
-      side = (site.x <= x) ? LEFT_CHILD : RIGHT_CHILD; // test using y value?
+      side = (site.x <= x) ? LEFT_CHILD : RIGHT_CHILD;
       child = parent.getChild(side);
     }
     // Child is an arc node. Split it.

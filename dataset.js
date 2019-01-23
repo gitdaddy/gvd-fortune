@@ -2,11 +2,11 @@
 
 function createDatasets() {
   let points1 = [
-    vec3(0.01, 0.21, 0),
-    vec3(0.01, -0.61, 0),
+    vec3(0.2, 0.5, 0),
+    vec3(-0.2, -0.5, 0),
 
-    vec3(-0.05, 0.41, 0),
-    // vec3(0.2, 0.41, 0), // Bug here
+    vec3(-0.05, 0.71, 0),
+    vec3(0.6, 0.91, 0),
     // p1 -- V -- p2
     // Right side tests
     // vec3(0.32, 0.11, 0),
@@ -20,7 +20,8 @@ function createDatasets() {
     // vec3(0.02, -0.81, 0),
   ];
   let segments1 = [
-    makeSegment(points1[0], points1[1])
+    makeSegment(points1[0], points1[1]),
+    makeSegment(points1[2], points1[3])
   ];
 
   let points2 = [

@@ -1,2 +1,3 @@
-1. Set live or non-live for close events on the GVD general parabola?
-2. Draw General Computed Surfaces
+V-v intersect 
+Bug fixes - close event accuracy
+Drag and drop sites

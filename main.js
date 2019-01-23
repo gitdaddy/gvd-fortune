@@ -19,6 +19,7 @@ var closeEventPoints = [];
 var dcel;
 
 let showEvents = false;
+let showSegmentBoundaries = false;
 
 function siteColorSvg(id) {
   // return 'black';
@@ -104,6 +105,10 @@ function keydown(event) {
     showEvents = !showEvents;
     d3.selectAll(".close-event")
       .attr('visibility', showEvents ? null : 'hidden');
+  } else if (key == 'b') {
+    showSegmentBoundaries = !showSegmentBoundaries;
+    d3.selectAll(".seg-boundary")
+      .attr('visibility', showSegmentBoundaries ? null : 'hidden');
   }
   if (changed) {
     // Prevent scroll

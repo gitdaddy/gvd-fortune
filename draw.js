@@ -47,7 +47,46 @@ function drawSites(points, segments) {
       .attr("y2", s => s[1].y)
       .attr("stroke", (d,i) => siteColorSvg(d.id))
     ;
+    // draw segment boundaries
+    var boundaries = [];
+    _.forEach(segments, function(s) {
+      var AB = subtract(s.b, s.a);
+      var BA = subtract(s.a, s.b);
+      var v1Clockwise = new vec3(AB.y, -AB.x, 0); // 90 degrees perpendicular 
+      var v1CounterClockwise = new vec3(-AB.y, AB.x, 0); 
+      var v2Clockwise = new vec3(BA.y, -BA.x, 0); 
+      var v2CounterClockwise = new vec3(-BA.y, BA.x, 0); 
+      // define the boundary endpoints - add end point values
+      boundaries.push({
+        p1: add(v1Clockwise, s.a),
+        p2: add(v1CounterClockwise, s.a)
+      });
+      boundaries.push({
+        p1: add(v2Clockwise, s.b),
+        p2: add(v2CounterClockwise, s.b)
+      });
+    });
+
+    let selB = d3.select("#gvd")
+    .selectAll(".seg-boundary")
+    .data(boundaries);
+
+    selB.exit().remove();
+    selB
+      .enter()
+      .append("line")
+      .attr("class", "seg-boundary")
+      .attr("vector-effect", "non-scaling-stroke")
+      .merge(selB)
+      .attr("x1", bound => bound.p1.x)
+      .attr("y1", bound => bound.p1.y)
+      .attr("x2", bound => bound.p2.x)
+      .attr("y2", bound => bound.p2.y)
+      .attr('visibility', showSegmentBoundaries ? null : 'hidden')
+    ;
   }
+
+
 
   {
     let sel = d3.select("#gvd")
