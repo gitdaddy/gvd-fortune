@@ -213,11 +213,20 @@ EdgeNode.prototype.intersection = function(directrix) {
   let rightArcNode = this.nextArc();
   let pleft = this.createBeachlineSegment(leftArcNode.site, directrix);
   let pright = this.createBeachlineSegment(rightArcNode.site, directrix);
+  
+  // if pright is less than pleft the swap the two
+  // if (lessThan(pright, pleft)) {
+  //   var tmp = pright;
+  //   pright = pleft;
+  //   pleft = tmp;
+  // }
+
   let intersections = pleft.intersect(pright);
   this.intersections = intersections;
 
-  if (_.isUndefined(intersections[0]) || _.isUndefined(intersections[1])) {
-    return NaN;
+  if (intersections.length == 1) {
+    this.selectedIntersection = intersections[0];
+    return intersections[0];
   }
 
   var result;

@@ -307,7 +307,6 @@ function intersect(a, b) {
 // Returns the point equidistant from points/segments c1, c2, and c3.
 //------------------------------------------------------------
 function equidistant(c1, c2, c3) {
-
   // TODO FIX for when c1 and c2 share the same segment
   // point but are different types
   // Bisecting types can be either lines or parabolas
@@ -316,3 +315,21 @@ function equidistant(c1, c2, c3) {
   let ret = intersect(b12, b23);
   return ret;
 }
+
+//------------------------------------------------------------
+// LessThan
+//
+// Object site comparision for points and segments
+//------------------------------------------------------------
+// function lessThan(a, b) {
+//   var tolerance = 0.01;
+//   if (a instanceof Parabola && b instanceof Parabola) {
+//     return a.focus.x < b.focus.x && Math.abs(a.focus.x - b.focus.x) > tolerance;
+//   } else if (a instanceof Parabola && b instanceof V) {
+//     return a.focus.x < b.p.x && Math.abs(a.focus.x - b.p.x) > tolerance;
+//   } else if (a instanceof V && b instanceof Parabola) {
+//     return a.p.x < b.focus.x && Math.abs(a.p.x - b.focus.x) > tolerance;
+//   } else {
+//     return a.p.x < b.p.x && Math.abs(a.p.x - b.p.x) > tolerance;
+//   }
+// }

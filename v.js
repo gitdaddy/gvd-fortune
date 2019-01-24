@@ -15,10 +15,11 @@
 // line is given as a pair of points through which the line passes.
 // The sweepline is assumed to be horizontal and is given as a y-value.
 V = function(line, sweepline) {
-  var p1 = line[0];
-  var p2 = line[1];
+  var ret = _.sortBy(line, [function(i) { return i.y; }]);
+  this.y0 = ret[0];
+  this.y1 = ret[1];
   this.p = intersectLines(
-    p1, p2, vec3(-100, sweepline, 0), vec3(100, sweepline, 0));
+    ret[0], ret[1], vec3(-100, sweepline, 0), vec3(100, sweepline, 0));
   this.focus = this.p;
   var theta =
     getSegmentsBisector([vec3(-1, sweepline, 0), vec3(1, sweepline, 0)], line);
@@ -35,19 +36,30 @@ V = function(line, sweepline) {
 }
 
 // Intersect the V with a parabola.
-V.prototype.intersect = function(para) {
-  if (para instanceof Parabola) {
+V.prototype.intersect = function(obj) {
+  if (obj instanceof Parabola) {
     ret = [];
     var p = this.p;
     this.vectors.forEach(function(v) {
-      ret = ret.concat(para.intersectRay(p, v));
+      ret = ret.concat(obj.intersectRay(p, v));
     });
     // sort by xvalues if x0 < x1 [x0, x1]
-    ret = _.sortBy(ret, [function(i) { return i.x; }])
+    ret = _.sortBy(ret, [function(i) { return i.x; }]);
     return ret;
+  } else if (obj instanceof V) {
+    // find the side the obj lies on
+    // using the sign of the cross product
+    var AB = subtract(this.y1, this.y0); 
+    var AC = subtract(obj.y0, this.y0);
+    if (cross(AB, AC).z < 0) {
+      // obj is on the left
+      return [intersectLines(obj.p, obj.vectors[1], this.p, this.vectors[0])];
+    } else {
+      // obj is on the right
+      return [intersectLines(this.p, this.vectors[1], obj.p, obj.vectors[0])];
+    }
   }
-  throw "V-V intersection not implemented";
-  // return ppIntersect(this.h, this.k, this.p, para.h, para.k, para.p);
+  throw "intersection type not implemented";
 }
 
 // Intersect the positive portion of the ray.
