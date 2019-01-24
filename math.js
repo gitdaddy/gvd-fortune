@@ -269,6 +269,7 @@ function bisect(a, b) {
   } else if (b.type == 'vec') {
     bisector = bisectPointSegment(b, a);
   } else {
+    // TODO define this function
     bisector = bisectSegments(a, b);
   }
   return bisector;

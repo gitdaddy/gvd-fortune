@@ -54,9 +54,9 @@ function updateArcBounds(node, leftx, rightx, directrix) {
 }
 
 function addCloseEvent(events, newEvent) {
-  var search = function(event) { 
+  var search = function(event) {
     var tolerance = 0.00001;
-    return (Math.abs(newEvent.point.x - event.point.x) < tolerance 
+    return (Math.abs(newEvent.point.x - event.point.x) < tolerance
     && Math.abs(newEvent.point.y - event.point.y) < tolerance);
   };
   if (newEvent == null) return;
@@ -66,7 +66,7 @@ function addCloseEvent(events, newEvent) {
   } else {
     // If there is a tie use the event with the closest arcNode
     if (!_.isUndefined(existing[0].arcNode.x0) && !_.isUndefined(newEvent.arcNode.x0)) {
-      if (Math.abs(newEvent.arcNode.x0 - newEvent.point.x) 
+      if (Math.abs(newEvent.arcNode.x0 - newEvent.point.x)
       < Math.abs(existing[0].arcNode.x0 - newEvent.point.x)) {
         var idx = _.findIndex(events, search);
         if (idx == -1) return;
@@ -182,6 +182,11 @@ function createCloseEvent(arcNode) {
 //------------------------------------------------------------
 Beachline.prototype.add = function(site) {
   var arcNode = new ArcNode(site);
+  var directrix = site.y;
+  // move the directrix slightly downward for segments
+  if (site.type == "segment") {
+    directrix -= 0.0001;
+  }
 
   if (this.root == null) {
     arcNode.x0 = -1;
@@ -193,19 +198,20 @@ Beachline.prototype.add = function(site) {
     // Do a binary search to find the arc node that the new
     // site intersects with
     var parent = this.root;
-    var x = parent.intersection(site.y).x;
+    var x = parent.intersection(directrix).x;
     var side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
     var child = parent.getChild(side);
     while (child.isEdge) {
       parent = child;
-      x = parent.intersection(site.y).x;
-      side = (site.x <= x) ? LEFT_CHILD : RIGHT_CHILD;
+      x = parent.intersection(directrix).x;
+      // // what if x and site.x are equal?
+      side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
       child = parent.getChild(side);
     }
     // Child is an arc node. Split it.
     parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
     // TEST - assumes the sweepline is moving down in a negative direction
-    updateArcBounds(this.root, -1, 1, site.y - 0.0001);
+    updateArcBounds(this.root, -1, 1, directrix - 0.0001);
   }
 
   // Create close events
