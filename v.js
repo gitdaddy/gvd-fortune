@@ -49,7 +49,7 @@ V.prototype.intersect = function(obj) {
   } else if (obj instanceof V) {
     // find the side the obj lies on
     // using the sign of the cross product
-    var AB = subtract(this.y1, this.y0); 
+    var AB = subtract(this.y1, this.y0);
     var AC = subtract(obj.y0, this.y0);
     if (cross(AB, AC).z < 0) {
       // obj is on the left

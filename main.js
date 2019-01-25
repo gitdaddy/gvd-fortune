@@ -278,7 +278,6 @@ function fortune() {
   closeEventPoints = [];
   while (events.length > 0 && events.peek().y > sweepline) {
     var e = events.pop();
-    // test ordering events by segments
     if (e.type == "segment" && !e.ordered) {
       e.ordered = true;
       events.push(e);

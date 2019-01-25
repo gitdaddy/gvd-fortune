@@ -264,12 +264,10 @@ function bisect(a, b) {
     // Returns a line
     bisector = bisectPoints(a, b);
   } else if (a.type == 'vec') {
-    // Returns PointSegmentBisector
     bisector = bisectPointSegment(a, b);
   } else if (b.type == 'vec') {
     bisector = bisectPointSegment(b, a);
   } else {
-    // TODO define this function
     bisector = bisectSegments(a, b);
   }
   return bisector;
@@ -308,12 +306,14 @@ function intersect(a, b) {
 // Returns the point equidistant from points/segments c1, c2, and c3.
 //------------------------------------------------------------
 function equidistant(c1, c2, c3) {
-  // TODO FIX for when c1 and c2 share the same segment
-  // point but are different types
   // Bisecting types can be either lines or parabolas
   let b12 = bisect(c1, c2);
   let b23 = bisect(c2, c3);
   let ret = intersect(b12, b23);
+  if (Math.abs(ret.x) > 1 || Math.abs(ret.y) > 1){
+    let msg = `equidistant close point (${ret.x}, ${ret.y}) is outside the bounds`;
+  console.log(msg);
+  }
   return ret;
 }
 

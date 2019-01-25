@@ -211,7 +211,7 @@ Beachline.prototype.add = function(site) {
     // Child is an arc node. Split it.
     parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
     // TEST - assumes the sweepline is moving down in a negative direction
-    updateArcBounds(this.root, -1, 1, directrix - 0.0001);
+    updateArcBounds(this.root, -10000, 10000, directrix - 0.0001);
   }
 
   // Create close events
@@ -309,7 +309,7 @@ Beachline.prototype.prepDraw = function(
           throw "Error edge node marked as general surface but is not between a V and parabola";
         }
         var gp = createGeneralParabola(point, segment);
-        gp.prepDraw(-1, vec3(v.x, v.y, 0.0), vec3(p.x, p.y, 0.0));
+        gp.prepDraw(-10000, vec3(v.x, v.y, 0.0), vec3(p.x, p.y, 0.0));
         generalSurfaces.push(gp);
       } else {
         lines.push({x0:v.x, y0:v.y, x1:p.x, y1:p.y, id:node.id, connectedToGVD:node.connectedToGVD});

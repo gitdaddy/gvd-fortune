@@ -52,10 +52,10 @@ function drawSites(points, segments) {
     _.forEach(segments, function(s) {
       var AB = subtract(s.b, s.a);
       var BA = subtract(s.a, s.b);
-      var v1Clockwise = new vec3(AB.y, -AB.x, 0); // 90 degrees perpendicular 
-      var v1CounterClockwise = new vec3(-AB.y, AB.x, 0); 
-      var v2Clockwise = new vec3(BA.y, -BA.x, 0); 
-      var v2CounterClockwise = new vec3(-BA.y, BA.x, 0); 
+      var v1Clockwise = new vec3(AB.y, -AB.x, 0); // 90 degrees perpendicular
+      var v1CounterClockwise = new vec3(-AB.y, AB.x, 0);
+      var v2Clockwise = new vec3(BA.y, -BA.x, 0);
+      var v2CounterClockwise = new vec3(-BA.y, BA.x, 0);
       // define the boundary endpoints - add end point values
       boundaries.push({
         p1: add(v1Clockwise, s.a),
@@ -145,7 +145,7 @@ function drawSurface(dcel) {
           throw "Error edge node marked as general surface but is not between a V and parabola";
         }
         var gp = createGeneralParabola(point, segment);
-        gp.prepDraw(-1, vec3(edge.origin.point.x, edge.origin.point.y, 0.0), vec3(edge.dest.point.x, edge.dest.point.y, 0.0));
+        gp.prepDraw(-10000, vec3(edge.origin.point.x, edge.origin.point.y, 0.0), vec3(edge.dest.point.x, edge.dest.point.y, 0.0));
         generalEdges.push(gp);
       } else {
         edges.push(edge);
@@ -153,7 +153,7 @@ function drawSurface(dcel) {
     }
     result = iter.next();
   }
-  
+
   let line = d3.line()
   .x(function (d) {return d.x;})
   .y(function (d) {return d.y;})
@@ -175,7 +175,7 @@ function drawSurface(dcel) {
     .attr("id", p => p.id)
     .attr("transform", p => p.transform)
   ;
-  
+
   let d3edges = d3.select('#gvd')
     .selectAll('.gvd-surface')
     .data(edges)
@@ -259,7 +259,7 @@ function drawBeachline(beachline, directrix) {
   let lines = [];
   var generalSurfaces = [];
   let events = [];
-  beachline.prepDraw(directrix, beachline.root, -1, 1, arcElements, lines, generalSurfaces, events);
+  beachline.prepDraw(directrix, beachline.root, -10000, 10000, arcElements, lines, generalSurfaces, events);
 
   let parabolas = arcElements.filter(d => d.type == "parabola");
   let vs = arcElements.filter(d => d.type == "v");
@@ -346,7 +346,7 @@ function drawBeachline(beachline, directrix) {
       .attr("id", p => p.id)
       .attr("transform", p => p.transform)
     ;
-    
+
     let lineSelection = d3.select("#gvd").selectAll(".gvd-surface-active")
       .data(lines);
     // exit
