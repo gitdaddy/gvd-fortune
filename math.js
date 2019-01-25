@@ -247,6 +247,27 @@ function bisectPoints(p1, p2) {
 }
 
 //------------------------------------------------------------
+// bisectSegments
+//
+// Return the line bisecting two lines. Returns two points [q1,q2] defining
+// the line. The vector v=q2-q1 will be oriented in the negative y direction.
+// NOTE: this bisects LINES not SEGMENTS.
+//------------------------------------------------------------
+function bisectSegments(s1, s2) {
+  let theta = Math.acos((s1.a.x - s1.b.x) / length(subtract(s1.a, s1.b)));
+  console.log('theta =', theta);
+
+  // var v = subtract(p2, p1);
+  // var q = add(p1, mult(v, 0.5));
+  // [v.x, v.y] = [-v.y, v.x];
+  // if (v.y > 0) {
+  //   v = negate(v);
+  // }
+  // return new Line(q, add(q, v));
+  // // return [q, add(q, v)];
+}
+
+//------------------------------------------------------------
 //------------------------------------------------------------
 // General bisect/intersect functions
 //------------------------------------------------------------
