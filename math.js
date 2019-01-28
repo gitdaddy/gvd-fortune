@@ -66,6 +66,9 @@ PointSegmentBisector = function(p, s) {
   if (d < length(v)) {
     // In the shadow, so fully parabolic
     this.para = createGeneralParabola(p, s);
+    // gp.prepDraw(-10000, vec3(edge.origin.point.x, edge.origin.point.y, 0.0), 
+    // vec3(edge.dest.point.x, edge.dest.point.y, 0.0));
+    this.para.prepDraw(100, s[0], s[1]); // test
   } else {
     throw "PointSegmentBisector not implemented";
   }
@@ -243,7 +246,6 @@ function bisectPoints(p1, p2) {
     v = negate(v);
   }
   return new Line(q, add(q, v));
-  // return [q, add(q, v)];
 }
 
 //------------------------------------------------------------
@@ -254,17 +256,14 @@ function bisectPoints(p1, p2) {
 // NOTE: this bisects LINES not SEGMENTS.
 //------------------------------------------------------------
 function bisectSegments(s1, s2) {
-  let theta = Math.acos((s1.a.x - s1.b.x) / length(subtract(s1.a, s1.b)));
-  console.log('theta =', theta);
-
-  // var v = subtract(p2, p1);
-  // var q = add(p1, mult(v, 0.5));
-  // [v.x, v.y] = [-v.y, v.x];
-  // if (v.y > 0) {
-  //   v = negate(v);
-  // }
-  // return new Line(q, add(q, v));
-  // // return [q, add(q, v)];
+  var beta = getSegmentsBisector(s1, s2);
+  // Get the first positive 90 degree sibling to theta
+  while (beta > 0) beta -= Math.PI/2;
+  while (beta < 0) beta += Math.PI/2;
+  // TODO test
+  var p = intersectLines(s1.a, s1.b, s2.a, s2.b);
+  var v = new vec3(Math.sin(beta), Math.cos(beta), 0);
+  return new Line(p, add(p, v));
 }
 
 //------------------------------------------------------------
@@ -327,31 +326,20 @@ function intersect(a, b) {
 // Returns the point equidistant from points/segments c1, c2, and c3.
 //------------------------------------------------------------
 function equidistant(c1, c2, c3) {
+  // sort objects placing segments first
+  var objs = _.sortBy([c1,c2,c3], function (o) { return o.type == "vec"; });
   // Bisecting types can be either lines or parabolas
-  let b12 = bisect(c1, c2);
-  let b23 = bisect(c2, c3);
+  let b12 = bisect(objs[0], objs[1]);
+  let b23 = bisect(objs[1], objs[2]);
+  debugObjs.push(b12);
+  debugObjs.push(b23);
   let ret = intersect(b12, b23);
+  if (_.isUndefined(ret)) {
+    throw "Equidistant point is undefined";
+  }
   if (Math.abs(ret.x) > 1 || Math.abs(ret.y) > 1){
     let msg = `equidistant close point (${ret.x}, ${ret.y}) is outside the bounds`;
-  console.log(msg);
+    console.log(msg);
   }
   return ret;
 }
-
-//------------------------------------------------------------
-// LessThan
-//
-// Object site comparision for points and segments
-//------------------------------------------------------------
-// function lessThan(a, b) {
-//   var tolerance = 0.01;
-//   if (a instanceof Parabola && b instanceof Parabola) {
-//     return a.focus.x < b.focus.x && Math.abs(a.focus.x - b.focus.x) > tolerance;
-//   } else if (a instanceof Parabola && b instanceof V) {
-//     return a.focus.x < b.p.x && Math.abs(a.focus.x - b.p.x) > tolerance;
-//   } else if (a instanceof V && b instanceof Parabola) {
-//     return a.p.x < b.focus.x && Math.abs(a.p.x - b.focus.x) > tolerance;
-//   } else {
-//     return a.p.x < b.p.x && Math.abs(a.p.x - b.p.x) > tolerance;
-//   }
-// }

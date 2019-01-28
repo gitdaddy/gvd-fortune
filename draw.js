@@ -28,6 +28,59 @@ function hideDebugCircumcircle() {
   ;
 }
 
+function drawDebugObjs(objs) {
+  var parabolas = _.filter(objs, function (o) {
+    return !_.isUndefined(o.para);
+  });
+  parabolas = _.map(parabolas, function (p) { return p.para; });
+  // _.forEach(parabolas, function (p) {
+  //   p.prepDraw();
+  // });
+
+  var lines = _.filter(objs, function (o) {
+    return o instanceof Line;
+  });
+
+  let selB = d3.select("#gvd")
+  .selectAll(".debug-line")
+  .data(lines);
+
+  selB.exit().remove();
+  selB
+    .enter()
+    .append("line")
+    .attr("class", "debug-line")
+    .attr("vector-effect", "non-scaling-stroke")
+    .merge(selB)
+    .attr("x1", l => l.p1.x)
+    .attr("y1", l => l.p1.y)
+    .attr("x2", l => l.p2.x)
+    .attr("y2", l => l.p2.y)
+  ;
+
+  let line = d3.line()
+  .x(function (d) {return d.x;})
+  .y(function (d) {return d.y;})
+  .curve(d3.curveLinear)
+  ;
+  let d3generalEdges = d3.select('#gvd')
+    .selectAll('.gvd-surface-parabola')
+    .data(parabolas)
+  ;
+  d3generalEdges.exit().remove();
+  d3generalEdges.enter()
+    .append("path")
+    .style("fill","none")
+    .attr("class", "gvd-surface-parabola")
+    .attr("vector-effect", "non-scaling-stroke")
+    .merge(d3generalEdges)
+    .style("stroke-width", 5)
+    .attr("d", p => line(p.drawPoints))
+    .attr("id", p => p.id)
+    .attr("transform", p => p.transform)
+  ;  
+}
+
 function drawSites(points, segments) {
   {
     let sel = d3.select("#gvd")
@@ -85,8 +138,6 @@ function drawSites(points, segments) {
       .attr('visibility', showSegmentBoundaries ? null : 'hidden')
     ;
   }
-
-
 
   {
     let sel = d3.select("#gvd")
@@ -365,4 +416,9 @@ function drawBeachline(beachline, directrix) {
       .style("stroke-width", p => activeLineWidth(p))
     ;
   }
+  //------------------------------
+  // Render the debug objects
+  //------------------------------
+  drawDebugObjs(debugObjs);
 }
+

@@ -18,8 +18,11 @@ var vverts = [];
 var closeEventPoints = [];
 var dcel;
 
+var debugObjs = [];
+
 let showEvents = false;
 let showSegmentBoundaries = false;
+let showDebugObjs = false;
 
 function siteColorSvg(id) {
   // return 'black';
@@ -109,6 +112,12 @@ function keydown(event) {
     showSegmentBoundaries = !showSegmentBoundaries;
     d3.selectAll(".seg-boundary")
       .attr('visibility', showSegmentBoundaries ? null : 'hidden');
+  } else if (key == 'd') {
+    showDebugObjs = !showDebugObjs;
+    d3.selectAll(".debug-line")
+    .attr('visibility', showDebugObjs ? null : 'hidden');
+    d3.selectAll(".debug-parabola")
+    .attr('visibility', showDebugObjs ? null : 'hidden');
   }
   if (changed) {
     // Prevent scroll

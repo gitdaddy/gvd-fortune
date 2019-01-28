@@ -37,6 +37,16 @@ line#sweepline {
     stroke-dasharray: 3,3;
 }
 
+.debug-line {
+    stroke: blue;
+    stroke-dasharray: 3,3;
+}
+
+.debug-parabola {
+    stroke: green;
+    stroke-dasharray: 3,3;
+}
+
 .seg-boundary {
     stroke: black;
     stroke-dasharray: 3,3;

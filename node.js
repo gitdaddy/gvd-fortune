@@ -214,13 +214,6 @@ EdgeNode.prototype.intersection = function(directrix) {
   let pleft = this.createBeachlineSegment(leftArcNode.site, directrix);
   let pright = this.createBeachlineSegment(rightArcNode.site, directrix);
   
-  // if pright is less than pleft the swap the two
-  // if (lessThan(pright, pleft)) {
-  //   var tmp = pright;
-  //   pright = pleft;
-  //   pleft = tmp;
-  // }
-
   let intersections = pleft.intersect(pright);
   this.intersections = intersections;
 
