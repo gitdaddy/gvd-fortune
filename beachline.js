@@ -42,7 +42,7 @@ function updateArcBounds(node, leftx, rightx, directrix) {
 
   if (Number.isNaN(p) || _.isUndefined(p)) return;
 
-  if (p.x < leftx) {
+  if (p.x < leftx && Math.abs(leftx - p.x) > 0.00001) {
     let msg = `bound intersection is less than leftx: ${p.x} < ${leftx}.` +
       `id = ${node.id}`;
     console.error(msg);
@@ -135,6 +135,8 @@ function createCloseEvent(arcNode) {
       let r = dist(equi, arcNode.site);
       return new CloseEvent(equi.y-r, arcNode, left, right, equi);
     } else if (isSegment(arcNode.site)) {
+      if (arcNode.site.a == left.site && arcNode.site.b == right.site
+        || arcNode.site.b == left.site && arcNode.site.a == right.site) return null;
       let equi = equidistant(left.site, right.site, arcNode.site);
       if (equi == null) return null;
 
@@ -282,7 +284,7 @@ Beachline.prototype.prepDraw = function(
     // The intersection between the edge node's defining arc nodes
     var p = node.intersection(directrix);
 
-    if (p.x < leftx) {
+    if (p.x < leftx && Math.abs(leftx - p.x) > 0.00001) {
       let msg = `intersection is less than leftx: ${p.x} < ${leftx}.` +
         `id = ${node.id}`;
       console.error(msg);

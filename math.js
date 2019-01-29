@@ -66,9 +66,10 @@ PointSegmentBisector = function(p, s) {
   if (d < length(v)) {
     // In the shadow, so fully parabolic
     this.para = createGeneralParabola(p, s);
-    // gp.prepDraw(-10000, vec3(edge.origin.point.x, edge.origin.point.y, 0.0), 
+    // gp.prepDraw(-10000, vec3(edge.origin.point.x, edge.origin.point.y, 0.0),
     // vec3(edge.dest.point.x, edge.dest.point.y, 0.0));
-    this.para.prepDraw(100, s[0], s[1]); // test
+    this.para.prepDraw(100, add(p, vec3(-1, 0, 0)), add(p, vec3(1,0,0)));
+
   } else {
     throw "PointSegmentBisector not implemented";
   }
@@ -260,7 +261,6 @@ function bisectSegments(s1, s2) {
   // Get the first positive 90 degree sibling to theta
   while (beta > 0) beta -= Math.PI/2;
   while (beta < 0) beta += Math.PI/2;
-  // TODO test
   var p = intersectLines(s1.a, s1.b, s2.a, s2.b);
   var v = new vec3(Math.sin(beta), Math.cos(beta), 0);
   return new Line(p, add(p, v));
@@ -313,9 +313,7 @@ function intersect(a, b) {
     // Handle for parametric intersections - get the first - check that this is correct
     intersection = a.intersectLine(b)[0];
   } else {
-    // parabola and parabola
-    // TODO
-    throw "Parabola and parabola intersection not implemented"
+    intersection = a.intersect(b)[0];
   }
   return intersection;
 }
@@ -329,12 +327,12 @@ function equidistant(c1, c2, c3) {
   // sort objects placing segments first
   var objs = _.sortBy([c1,c2,c3], function (o) { return o.type == "vec"; });
   // Bisecting types can be either lines or parabolas
-  let b12 = bisect(objs[0], objs[1]);
+  let b12 = bisect(objs[0], objs[1]); // FIX for 2 segments
   let b23 = bisect(objs[1], objs[2]);
   debugObjs.push(b12);
   debugObjs.push(b23);
   let ret = intersect(b12, b23);
-  if (_.isUndefined(ret)) {
+  if (_.isUndefined(ret) || ret == null) {
     throw "Equidistant point is undefined";
   }
   if (Math.abs(ret.x) > 1 || Math.abs(ret.y) > 1){

@@ -56,6 +56,7 @@ function drawDebugObjs(objs) {
     .attr("y1", l => l.p1.y)
     .attr("x2", l => l.p2.x)
     .attr("y2", l => l.p2.y)
+    .attr('visibility', showDebugObjs ? null : 'hidden')
   ;
 
   let line = d3.line()
@@ -64,21 +65,22 @@ function drawDebugObjs(objs) {
   .curve(d3.curveLinear)
   ;
   let d3generalEdges = d3.select('#gvd')
-    .selectAll('.gvd-surface-parabola')
+    .selectAll('.debug-parabola')
     .data(parabolas)
   ;
   d3generalEdges.exit().remove();
   d3generalEdges.enter()
     .append("path")
     .style("fill","none")
-    .attr("class", "gvd-surface-parabola")
+    .attr("class", "debug-parabola")
     .attr("vector-effect", "non-scaling-stroke")
     .merge(d3generalEdges)
     .style("stroke-width", 5)
     .attr("d", p => line(p.drawPoints))
     .attr("id", p => p.id)
     .attr("transform", p => p.transform)
-  ;  
+    .attr('visibility', showDebugObjs ? null : 'hidden')
+  ;
 }
 
 function drawSites(points, segments) {

@@ -112,7 +112,7 @@ function keydown(event) {
     showSegmentBoundaries = !showSegmentBoundaries;
     d3.selectAll(".seg-boundary")
       .attr('visibility', showSegmentBoundaries ? null : 'hidden');
-  } else if (key == 'd') {
+  } else if (key == 'v') {
     showDebugObjs = !showDebugObjs;
     d3.selectAll(".debug-line")
     .attr('visibility', showDebugObjs ? null : 'hidden');
@@ -331,6 +331,7 @@ function fortune() {
 }
 
 var render = function() {
+  debugObjs = [];
   var t0 = performance.now();
   var beachline = fortune();
   var t1 = performance.now();
