@@ -63,20 +63,25 @@ PointSegmentBisector = function(p, s) {
   let v_unit = normalize(v);
   let w = subtract(p, s[0]);
   let d = dot(w, v_unit);
-  if (d < length(v)) {
-    // In the shadow, so fully parabolic
-    this.para = createGeneralParabola(p, s);
-    // gp.prepDraw(-10000, vec3(edge.origin.point.x, edge.origin.point.y, 0.0),
-    // vec3(edge.dest.point.x, edge.dest.point.y, 0.0));
-    this.para.prepDraw(100, add(p, vec3(-1, 0, 0)), add(p, vec3(1,0,0)));
-
-  } else {
-    throw "PointSegmentBisector not implemented";
-  }
+  // if (d < length(v)) {
+  //   // In the shadow, so fully parabolic
+  //   this.para = createGeneralParabola(p, s);
+  //   this.para.prepDraw(100, add(p, vec3(-1, -1, 0)), add(p, vec3(1,1,0)));
+  // }
+  // else {
+  //   throw "PointSegmentBisector not implemented";
+  // }
+  this.para = createGeneralParabola(p, s);
+  this.para.prepDraw(100, add(p, vec3(-1, -1, 0)), add(p, vec3(1,1,0)));
 }
 
-PointSegmentBisector.prototype.intersectLine = function(line) {
-  return this.para.intersectLine(line);
+PointSegmentBisector.prototype.intersect = function(obj) {
+  if (obj instanceof Line) {
+    return this.para.intersectRay(obj.p, obj.v);
+  } else if (obj instanceof PointSegmentBisector) {
+    return this.para.intersectPara(obj.para);
+  }
+  throw "PointSegmentBisector intersection with obj not implemented";
 }
 
 //------------------------------------------------------------
@@ -307,11 +312,11 @@ function intersect(a, b) {
   } else if (a instanceof Line) {
     // line and general parabola
     // Handle for parametric intersections - get the first - check that this is correct
-    intersection = b.intersectLine(a)[0];
+    intersection = b.intersect(a)[0];
   } else if (b instanceof Line) {
     // general parabola and line
     // Handle for parametric intersections - get the first - check that this is correct
-    intersection = a.intersectLine(b)[0];
+    intersection = a.intersect(b)[0];
   } else {
     intersection = a.intersect(b)[0];
   }
@@ -324,20 +329,26 @@ function intersect(a, b) {
 // Returns the point equidistant from points/segments c1, c2, and c3.
 //------------------------------------------------------------
 function equidistant(c1, c2, c3) {
-  // sort objects placing segments first
-  var objs = _.sortBy([c1,c2,c3], function (o) { return o.type == "vec"; });
+  var segments = _.filter([c1, c2, c3], { type: "segment" });
+  var points = _.filter([c1, c2, c3], { type: "vec" });
+  var b12, b23;
   // Bisecting types can be either lines or parabolas
-  let b12 = bisect(objs[0], objs[1]); // FIX for 2 segments
-  let b23 = bisect(objs[1], objs[2]);
+  if (1 == points.length) {
+    b12 = bisect(segments[0], points[0]);
+    b23 = bisect(points[0], segments[1]);
+  } else {
+    b12 = bisect(c1, c2);
+    b23 = bisect(c2, c3);
+  }
   debugObjs.push(b12);
   debugObjs.push(b23);
   let ret = intersect(b12, b23);
   if (_.isUndefined(ret) || ret == null) {
     throw "Equidistant point is undefined";
   }
-  if (Math.abs(ret.x) > 1 || Math.abs(ret.y) > 1){
-    let msg = `equidistant close point (${ret.x}, ${ret.y}) is outside the bounds`;
-    console.log(msg);
-  }
+  // if (Math.abs(ret.x) > 1 || Math.abs(ret.y) > 1){
+  //   let msg = `equidistant close point (${ret.x}, ${ret.y}) is outside the bounds`;
+  //   console.log(msg);
+  // }
   return ret;
 }

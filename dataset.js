@@ -30,7 +30,7 @@ function createDatasets() {
   let segments2 = [
     makeSegment(points2[0], points2[1]),
     makeSegment(points2[2], points2[3]),
-    makeSegment(points2[4], points2[5])
+    // makeSegment(points2[4], points2[5])
   ];
 
   let points3 = [];

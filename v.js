@@ -32,7 +32,7 @@ V = function(line, sweepline) {
     vectors.push(vec3(Math.cos(theta), Math.sin(theta), 0));
   });
   this.vectors = vectors;
-  this.miny = sweepline;
+  this.miny = sweepline > Math.min(this.y0.y, this.y1.y) ? sweepline : Math.min(this.y0.y, this.y1.y);
 }
 
 // Intersect the V with a parabola.
@@ -47,16 +47,22 @@ V.prototype.intersect = function(obj) {
     ret = _.sortBy(ret, [function(i) { return i.x; }]);
     return ret;
   } else if (obj instanceof V) {
+    var xValsObj = _.sortBy(obj.f_(obj.miny), function(i) { return i.x; });
+    var xValsThis = _.sortBy(this.f_(this.miny), function(i) { return i.x; });
     // find the side the obj lies on
     // using the sign of the cross product
     var AB = subtract(this.y1, this.y0);
     var AC = subtract(obj.y0, this.y0);
-    if (cross(AB, AC).z < 0) {
-      // obj is on the left
-      return [intersectLines(obj.p, obj.vectors[1], this.p, this.vectors[0])];
+    if (cross(AB, AC).z > 0) {
+      // obj is on the left of this
+      var a = vec3(_.reverse(xValsObj)[0], obj.miny);
+      var b = vec3(xValsThis[0],  this.miny);
+      return [intersectLines(a, obj.vectors[1], b, this.vectors[0])];
     } else {
-      // obj is on the right
-      return [intersectLines(this.p, this.vectors[1], obj.p, obj.vectors[0])];
+      // obj is on the right of this
+      var a = vec3(xValsThis[0], this.miny);
+      var b = vec3(_.reverse(xValsObj)[0], obj.miny);
+      return [intersectLines(a, this.vectors[1], b, obj.vectors[0])];
     }
   }
   throw "intersection type not implemented";
@@ -89,31 +95,6 @@ V.prototype.intersectRay = function(p, v) {
   // return ret;
 }
 
-// Intersect all intersections of a line and V.
-// If there are two intersections, the intersections will
-// be returned in order of t value.
-// The line is given in parametric form p(t) = p + tv
-V.prototype.intersectLine = function(p, v) {
-  throw "intersectLine not implemented";
-  // p = this.transformPoint(p);
-  // v = this.transformVector(v);
-
-  // var tvals = lvIntersect(this.h, this.k, this.p, p, v);
-  // // Sort tvals in increasing order
-  // if (tvals.length == 2 && tvals[1] < tvals[0]) {
-  //   tvals = [tvals[1], tvals[0]];
-  // }
-
-  // pthis = this;
-  // var ret = [];
-  // tvals.forEach(function(t) {
-  //   var q = add(p, mult(v,t));
-  //   q = pthis.untransformPoint(q);
-  //   ret.push(q);
-  // });
-  // return ret;
-}
-
 // y = f(x)
 V.prototype.f = function(x) {
   var v;
@@ -128,10 +109,12 @@ V.prototype.f = function(x) {
 // Inverse of f. x = f_(y)
 V.prototype.f_ = function(y) {
   if (y < this.p.y) return [];
-  if (y == this.p.y) return [p];
+  if (y == this.p.y) return [this.p.x];
   var ret = []
+  var tY = this.p.y;
+  var tX = this.p.x;
   this.vectors.forEach(function(v) {
-    var x = this.p.x + v.x*(y-this.p.y)/v.y;
+    var x = tX + v.x*(y-tY)/v.y;
     ret.push(x);
   });
   return ret;

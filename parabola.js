@@ -384,32 +384,6 @@ GeneralParabola.prototype.intersectRay = function(p, v) {
   return ret;
 }
 
-// Intersect all intersections of a line and parabola.
-// If there are two intersections, the intersections will
-// be returned in order of t value.
-// The line is given in parametric form p(t) = p + tv
-GeneralParabola.prototype.intersectLine = function(line) {
-  p = line.p;
-  v = line.v;
-  p = this.transformPoint(p);
-  v = this.transformVector(v);
-
-  var tvals = lpIntersect(this.parabola.h, this.parabola.k, this.parabola.p, p, v);
-  // Sort tvals in increasing order
-  if (tvals.length == 2 && tvals[1] < tvals[0]) {
-    tvals = [tvals[1], tvals[0]];
-  }
-
-  pthis = this;
-  var ret = [];
-  tvals.forEach(function(t) {
-    var q = add(p, mult(v,t));
-    q = pthis.untransformPoint(q);
-    ret.push(q);
-  });
-  return ret;
-}
-
 // Intersect all intersections of a general parabola and a general parabola.
 // If there are two intersections, the intersections will
 // be returned in order of t value.
