@@ -42,7 +42,7 @@ function updateArcBounds(node, leftx, rightx, directrix) {
 
   if (Number.isNaN(p) || _.isUndefined(p)) return;
 
-  if (p.x < leftx && Math.abs(leftx - p.x) > 0.00001) {
+  if (p.x < leftx && Math.abs(leftx - p.x) > 0.0001) {
     let msg = `bound intersection is less than leftx: ${p.x} < ${leftx}.` +
       `id = ${node.id}`;
     console.error(msg);

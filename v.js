@@ -11,7 +11,7 @@
 // _________\|/___________
 //               sweepline
 //------------------------------------------------------------
-
+var tolerance = 0.0001;
 // line is given as a pair of points through which the line passes.
 // The sweepline is assumed to be horizontal and is given as a y-value.
 V = function(line, sweepline) {
@@ -98,7 +98,7 @@ V.prototype.intersectRay = function(p, v) {
 // y = f(x)
 V.prototype.f = function(x) {
   var v;
-  if (x < this.p.x) {
+  if (x < this.p.x && Math.abs(x - this.p.x) > tolerance) {
     v = this.vectors[0];
   } else {
     v = this.vectors[1];
@@ -108,7 +108,7 @@ V.prototype.f = function(x) {
 
 // Inverse of f. x = f_(y)
 V.prototype.f_ = function(y) {
-  if (y < this.p.y) return [];
+  if (y < this.p.y && Math.abs(y - this.p.y) > tolerance) return [];
   if (y == this.p.y) return [this.p.x];
   var ret = []
   var tY = this.p.y;
