@@ -135,7 +135,7 @@ function keydown(event) {
 let gvdw = 500;
 let gvdh = 500;
 
-let SITE_RADIUS = 8/gvdw;
+let SITE_RADIUS = 10/gvdw;
 let SITE_RADIUS_HIGHLIGHT = 11/gvdw;
 
 function x2win(x) {
@@ -225,7 +225,8 @@ function datasetChange(value) {
   });
 
   initDebugCircumcircle();
-  drawSites(points, segments);
+  drawSites(points);
+  drawSegments(segments);
 
   //------------------------------
   // Check for identical y values.
@@ -330,7 +331,7 @@ function fortune() {
   return beachline;
 }
 
-var render = function() {
+function render() {
   debugObjs = [];
   var t0 = performance.now();
   var beachline = fortune();
@@ -344,6 +345,11 @@ var render = function() {
   showTree(beachline.root);
 
   runTests();
+}
+
+function onSiteDrag() {
+  drawSegments(segments);
+  render();
 }
 
 /// Code For Debugging the GVD

@@ -343,9 +343,6 @@ function equidistant(c1, c2, c3) {
   debugObjs.push(b12);
   debugObjs.push(b23);
   let ret = intersect(b12, b23);
-  if (_.isUndefined(ret) || ret == null) {
-    throw "Equidistant point is undefined";
-  }
   // if (Math.abs(ret.x) > 1 || Math.abs(ret.y) > 1){
   //   let msg = `equidistant close point (${ret.x}, ${ret.y}) is outside the bounds`;
   //   console.log(msg);

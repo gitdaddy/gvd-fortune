@@ -5,7 +5,7 @@ function createDatasets() {
     vec3(0.35, 0.6, 0),
     vec3(0.6, -0.5, 0),
     vec3(-0.55, 0.61, 0),
-    vec3(-0.65, -0.51, 0)
+    vec3(-0.65, -0.51, 0) // TODO fix flipped issue when arcing
   ];
   let segments1 = [
     makeSegment(points1[0], points1[1]),

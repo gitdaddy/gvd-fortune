@@ -132,8 +132,6 @@ V.prototype.prepDraw = function(nodeid, label, x0, x1) {
 
   if (x0 > x1) {
     throw `x0 > x1 in V render: ${x0}, ${x1}`;
-    // this.drawPoints = [vec2(0,0), vec2(0,0)];
-    // return;
   }
 
   var y0 = this.f(x0)

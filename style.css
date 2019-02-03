@@ -6,14 +6,6 @@ svg#gvdsvg {
     font-family: Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace; 
 }
 
-circle.site {
-    /*fill: red;*/
-}
-
-line.site {
-    /*stroke: red;*/
-}
-
 line#sweepline {
     stroke: black;
 }

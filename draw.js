@@ -28,14 +28,24 @@ function hideDebugCircumcircle() {
   ;
 }
 
+var dragSite = d3.drag()
+.on("drag", function(d, i) {
+  this.x = this.x || 0;
+  this.y = this.y || 0;
+  this.x += d3.event.dx;
+  this.y += d3.event.dy;
+  d.x += d3.event.dx;
+  d.y += d3.event.dy;
+  console.log("X:" + d.x + " Y:" + d.y);
+  d3.select(this).attr("transform", "translate(" + this.x + "," + this.y + ")");
+})
+.on("end", function() { onSiteDrag(); });
+
 function drawDebugObjs(objs) {
   var parabolas = _.filter(objs, function (o) {
     return !_.isUndefined(o.para);
   });
   parabolas = _.map(parabolas, function (p) { return p.para; });
-  // _.forEach(parabolas, function (p) {
-  //   p.prepDraw();
-  // });
 
   var lines = _.filter(objs, function (o) {
     return o instanceof Line;
@@ -83,7 +93,31 @@ function drawDebugObjs(objs) {
   ;
 }
 
-function drawSites(points, segments) {
+function drawSites(points) {
+  {
+    let sel = d3.select("#gvd")
+      .selectAll(".point-site")
+      .data(points);
+
+    sel.exit().remove();
+    let enter = sel.enter()
+      .append("g")
+      .call(dragSite)
+      .append("circle")
+      .attr("r", SITE_RADIUS)
+      .attr("class", "site point-site")
+      .merge(sel)
+      .attr("cx", p => p.x)
+      .attr("cy", p => p.y)
+      .attr("fill", (d,i) => siteColorSvg(d.label))
+      .attr("id", d => `site${d.id}`)
+      .attr("href", "#gvd")
+      .append("title").html(d => d.id)
+    ;
+  }
+}
+
+function drawSegments(segments) {
   {
     let sel = d3.select("#gvd")
       .selectAll(".segment-site")
@@ -138,25 +172,6 @@ function drawSites(points, segments) {
       .attr("x2", bound => bound.p2.x)
       .attr("y2", bound => bound.p2.y)
       .attr('visibility', showSegmentBoundaries ? null : 'hidden')
-    ;
-  }
-
-  {
-    let sel = d3.select("#gvd")
-      .selectAll(".point-site")
-      .data(points);
-
-    sel.exit().remove();
-    let enter = sel.enter()
-      .append("circle")
-      .attr("r", SITE_RADIUS)
-      .attr("class", "site point-site")
-      .merge(sel)
-      .attr("cx", p => p.x)
-      .attr("cy", p => p.y)
-      .attr("fill", (d,i) => siteColorSvg(d.label))
-      .attr("id", d => `site${d.id}`)
-      .append("title").html(d => d.id)
     ;
   }
 }
