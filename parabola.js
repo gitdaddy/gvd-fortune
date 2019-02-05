@@ -410,7 +410,7 @@ GeneralParabola.prototype.prepDraw = function(id, p1, p2) {
 GeneralParabola.prototype.setDrawPoints = function() {
   this.parabola.setDrawPoints();
   this.drawPoints = [];
-  // for (let p in this.parabola.drawPoints) {
+  if (_.isNaN(this.parabola.x0) || _.isNaN(this.parabola.x1)) return;
   for (let i=0; i < this.parabola.drawPoints.length; ++i) {
     let p = this.parabola.drawPoints[i];
     p = this.untransformPoint(p);

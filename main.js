@@ -220,7 +220,10 @@ function datasetChange(value) {
         p.label = s.label;
       }
       // if point is on the lowest y point of the segment it is flipped
-      p.flipped = (p.x == s.b.x && p.y == s.b.y);
+      var lowest = _.sortBy([s.a, s.b], function(p) { return p.y; });
+      if (p.x == lowest[0].x && p.y == lowest[0].y) {
+        p.flipped = true;
+      }
     });
   });
 

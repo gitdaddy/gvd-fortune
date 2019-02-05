@@ -55,7 +55,7 @@ function updateArcBounds(node, leftx, rightx, directrix) {
 
 function addCloseEvent(events, newEvent) {
   var search = function(event) {
-    var tolerance = 0.00001;
+    var tolerance = 0.0001;
     return (Math.abs(newEvent.point.x - event.point.x) < tolerance
     && Math.abs(newEvent.point.y - event.point.y) < tolerance);
   };
