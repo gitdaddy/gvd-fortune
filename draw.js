@@ -36,7 +36,7 @@ var dragSite = d3.drag()
   this.y += d3.event.dy;
   d.x += d3.event.dx;
   d.y += d3.event.dy;
-  console.log("X:" + d.x + " Y:" + d.y);
+  // console.log("X:" + d.x + " Y:" + d.y);
   d3.select(this).attr("transform", "translate(" + this.x + "," + this.y + ")");
 })
 .on("end", function() { onSiteDrag(); });

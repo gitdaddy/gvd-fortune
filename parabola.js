@@ -414,7 +414,9 @@ GeneralParabola.prototype.setDrawPoints = function() {
   for (let i=0; i < this.parabola.drawPoints.length; ++i) {
     let p = this.parabola.drawPoints[i];
     p = this.untransformPoint(p);
-    this.drawPoints.push(p);
+    if (!_.isNaN(p.x)){
+      this.drawPoints.push(p);
+    }
   }
 }
 

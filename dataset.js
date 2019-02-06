@@ -5,11 +5,17 @@ function createDatasets() {
     vec3(0.35, 0.6, 0),
     vec3(0.6, -0.5, 0),
     vec3(-0.55, 0.61, 0),
-    vec3(-0.65, -0.51, 0) // TODO fix flipped issue when arcing
+    vec3(-0.65, -0.51, 0),
+    vec3(-0.15, -0.95, 0),
+    vec3(0.14, -0.94, 0),
+    vec3(0.74, -0.94, 0),
+    vec3(0.24, -0.94, 0),
+    vec3(0.48, -0.96, 0)
   ];
   let segments1 = [
     makeSegment(points1[0], points1[1]),
-    makeSegment(points1[2], points1[3])
+    makeSegment(points1[2], points1[3]),
+    makeSegment(points1[4], points1[5])
   ];
 
   let points2 = [

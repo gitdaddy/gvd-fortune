@@ -47,22 +47,20 @@ V.prototype.intersect = function(obj) {
     ret = _.sortBy(ret, [function(i) { return i.x; }]);
     return ret;
   } else if (obj instanceof V) {
-    var xValsObj = _.sortBy(obj.f_(obj.miny), function(i) { return i.x; });
-    var xValsThis = _.sortBy(this.f_(this.miny), function(i) { return i.x; });
     // find the side the obj lies on
     // using the sign of the cross product
     var AB = subtract(this.y1, this.y0);
     var AC = subtract(obj.y0, this.y0);
     if (cross(AB, AC).z > 0) {
       // obj is on the left of this
-      var a = vec3(_.reverse(xValsObj)[0], obj.miny);
-      var b = vec3(xValsThis[0],  this.miny);
-      return [intersectLines(a, obj.vectors[1], b, this.vectors[0])];
+      // var ret = crossIntersect(obj.p, obj.vectors[1], this.p, this.vectors[0]);
+      // return [ret];
+      return [intersectLines(obj.p, obj.vectors[1], this.p, this.vectors[0])];
     } else {
       // obj is on the right of this
-      var a = vec3(xValsThis[0], this.miny);
-      var b = vec3(_.reverse(xValsObj)[0], obj.miny);
-      return [intersectLines(a, this.vectors[1], b, obj.vectors[0])];
+      return [intersectLines(this.p, this.vectors[1], obj.p, obj.vectors[0])];
+      // var ret = crossIntersect(this.p, this.vectors[1], obj.p, obj.vectors[0]);
+      // return [ret];
     }
   }
   throw "intersection type not implemented";
@@ -148,3 +146,45 @@ V.prototype.prepDraw = function(nodeid, label, x0, x1) {
   }
 }
 
+// Point intersection using the cross product TODO fix
+// p + tr = q + us - if there exist  some t and u then both lines intersect
+// t = (q-p) x s/(rxs)
+// u = (p-q) x r/(sxr)
+// Note s x r = -r x s
+function crossIntersect(p0, p1, q0, q1) {
+  var r = normalize(subtract(p1, p0));
+  var s = normalize(subtract(q1, q0));
+  var crs = cross(r,s).z;
+  var vecPQ = subtract(q0, p0);
+  var vecQP = subtract(p0, q0);
+  if (crs == 0 && cross(vecPQ, r).z == 0) {
+    console.log("Intersecting lines colinear");
+    return null;
+  }
+  if (crs == 0 && cross(vecPQ, r).z != 0) {
+    console.log("Intersecting lines are parallel");
+    return null;
+  }
+  var sOverRS = divide(s, crs);
+  var rOverSR = divide(r, cross(s, r).z);
+  var t = cross(vecPQ, sOverRS).z;
+  var u = cross(vecQP, rOverSR).z;
+  // if r x s != 0 and 0 <= t <= 1 and 0 <= u <= 0
+  // then the two lines meet at p + tr = q + us
+  if (crs != 0 && inRange(t, 0, 1) && inRange(u, 0, 1)) {
+    return add(p0, mult(t, r));
+  }
+  return null;
+}
+
+function divide(point, scalar){
+  var tmp = point;
+  tmp.x /= scalar;
+  tmp.y /= scalar;
+  tmp.z /= scalar;
+  return tmp;
+}
+
+function inRange(v, lower, upper) {
+  return lower <= v && v <= upper;
+}
