@@ -202,8 +202,10 @@ function bisectPointSegment(p, s) {
       (p[0] == s1[0] && p[1] == s1[1])) {
     // special case: point is a segment endpoint
     let v0 = subtract(s1, s0);
-    let v = vec3(v0[1], -v0[0]);
-    return new Line(p, add(p, v));
+    // Get both bisecting sides clockwise and counter clockwise
+    let v1 = vec3(v0.y, -v0.x);
+    let v2 = vec3(-v0.y, v0.x);
+    return new Line(add(v1, p), add(v2, p));
   }
   if (dot(subtract(p, s0), normalize(subtract(s0, s1))) ==
       length(subtract(p, s0))) {
@@ -247,11 +249,14 @@ function getSegmentsBisector(s, t) {
 function bisectPoints(p1, p2) {
   var v = subtract(p2, p1);
   var q = add(p1, mult(v, 0.5));
-  [v.x, v.y] = [-v.y, v.x];
   if (v.y > 0) {
     v = negate(v);
   }
-  return new Line(q, add(q, v));
+  // Get both bisecting sides clockwise and counter clockwise
+  // Testing multiple of 2 for better intersection detection effect
+  let v1 = vec3(v.y*2, -v.x*2);
+  let v2 = vec3(-v.y*2, v.x*2);
+  return new Line(add(v1, q), add(v2, q));
 }
 
 //------------------------------------------------------------
