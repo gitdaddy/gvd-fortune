@@ -172,7 +172,7 @@ function crossIntersect(p0, p1, q0, q1) {
   // if r x s != 0 and 0 <= t <= 1 and 0 <= u <= 0
   // then the two lines meet at p + tr = q + us
   if (crs != 0 && inRange(t, 0, 1) && inRange(u, 0, 1)) {
-    return add(p0, mult(t, r));
+    return add(q0, mult(u, s));
   }
   return null;
 }

@@ -58,6 +58,15 @@ ArcNode.prototype.prevEdge = function() {
   return node.parent;
 }
 
+function belongsToSegment(A, B) {
+  if (A.site.type == "segment" && B.site.type == "vec") {
+    return A.site.a == B.site || A.site.b == B.site;
+  } else if (B.site.type == "segment" && A.site.type == "vec") {
+    return B.site.a == A.site || B.site.b == A.site;
+  }
+  return false;
+}
+
 //------------------------------------------------------------
 // prevArc
 // Returns the previous in-order arc arcNode
@@ -252,7 +261,7 @@ EdgeNode.prototype.intersection = function(directrix) {
   //     _____________________________
   //
   // if the point is flipped and is connected to the V
-  if (this.flipped && this.isGeneralSurface) {
+  if (this.flipped && this.isGeneralSurface && belongsToSegment(leftArcNode, rightArcNode)) {
     result = intersections[lower];
   }
 
