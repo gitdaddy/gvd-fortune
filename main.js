@@ -26,15 +26,15 @@ let showDebugObjs = false;
 
 function siteColorSvg(id) {
   // return 'black';
-  return d3.schemeCategory10[id%10];
+  return d3.schemeCategory10[id % 10];
 }
 
 function arcColorSvg(id) {
   // return d3.schemeCategory20[id%20];
-  return d3.schemeCategory10[id%10];
+  return d3.schemeCategory10[id % 10];
 }
 
-var events = new TinyQueue([], function(a, b) {
+var events = new TinyQueue([], function (a, b) {
   return a.y > b.y ? -1 : a.y < b.y ? 1 : 0;
 });
 
@@ -65,9 +65,9 @@ function keydown(event) {
   if (x == 40 || key == "j" || key == "J") {
     // Down arrow
     if (event.shiftKey) {
-      incSweepline(-inc*0.1);
+      incSweepline(-inc * 0.1);
     } else if (event.ctrlKey) {
-      incSweepline(-inc*10);
+      incSweepline(-inc * 10);
     } else {
       incSweepline(-inc);
     }
@@ -75,9 +75,9 @@ function keydown(event) {
   } else if (x == 38 || key == "k" || key == "K") {
     // Up arrow
     if (event.shiftKey) {
-      incSweepline(inc*0.1);
+      incSweepline(inc * 0.1);
     } else if (event.ctrlKey) {
-      incSweepline(inc*10);
+      incSweepline(inc * 10);
     } else {
       incSweepline(inc);
     }
@@ -102,7 +102,7 @@ function keydown(event) {
     // Print the sweepline value
     console.log("sweepline = " + sweepline);
   } else if (key == "i") {
-    isoEdgeWidth = isoEdgeWidth==0 ? 1 : 0;
+    isoEdgeWidth = isoEdgeWidth == 0 ? 1 : 0;
     changed = true;
   } else if (key == 'e') {
     showEvents = !showEvents;
@@ -115,9 +115,9 @@ function keydown(event) {
   } else if (key == 'v') {
     showDebugObjs = !showDebugObjs;
     d3.selectAll(".debug-line")
-    .attr('visibility', showDebugObjs ? null : 'hidden');
+      .attr('visibility', showDebugObjs ? null : 'hidden');
     d3.selectAll(".debug-parabola")
-    .attr('visibility', showDebugObjs ? null : 'hidden');
+      .attr('visibility', showDebugObjs ? null : 'hidden');
   }
   if (changed) {
     // Prevent scroll
@@ -135,13 +135,13 @@ function keydown(event) {
 let gvdw = 500;
 let gvdh = 500;
 
-let SITE_RADIUS = 10/gvdw;
-let SITE_RADIUS_HIGHLIGHT = 11/gvdw;
+let SITE_RADIUS = 10 / gvdw;
+let SITE_RADIUS_HIGHLIGHT = 11 / gvdw;
 
 function x2win(x) {
   let xmin = -1;
   let xmax = 1;
-  return (x-xmin)/(xmax-xmin) * gvdw;
+  return (x - xmin) / (xmax - xmin) * gvdw;
 }
 
 function win2x(xWin) {
@@ -153,7 +153,7 @@ function win2x(xWin) {
 function y2win(y) {
   let ymin = -1;
   let ymax = 1;
-  return (1-(y-ymin)/(ymax-ymin)) * gvdh;
+  return (1 - (y - ymin) / (ymax - ymin)) * gvdh;
 }
 
 function win2y(yWin) {
@@ -190,8 +190,7 @@ function init() {
   datasetChange(document.getElementById("dataset").value);
 }
 
-function numLabelsChange(value)
-{
+function numLabelsChange(value) {
   var intVal = parseInt(value);
   numLabels = intVal;
   datasetChange(localStorage.dataset);
@@ -205,22 +204,22 @@ function datasetChange(value) {
   segments = datasets[value].segments;
   // Give all points and segments a unique ID and label
   var id = 1;
-  points.forEach(function(p) {
+  points.forEach(function (p) {
     p.id = id++;
     p.label = p.id % numLabels;
   });
 
-  segments.forEach(function(s) {
+  segments.forEach(function (s) {
     s.id = id++;
     s.label = s.id % numLabels;
     // label all connected sites with the same label
     points.forEach(function (p) {
       if ((p.x == s.a.x && p.y == s.a.y) ||
-          (p.x == s.b.x && p.y == s.b.y)) {
+        (p.x == s.b.x && p.y == s.b.y)) {
         p.label = s.label;
       }
       // if point is on the lowest y point of the segment it is flipped
-      var lowest = _.sortBy([s.a, s.b], function(p) { return p.y; });
+      var lowest = _.sortBy([s.a, s.b], function (p) { return p.y; });
       if (p.x == lowest[0].x && p.y == lowest[0].y) {
         p.flipped = true;
       }
@@ -235,7 +234,7 @@ function datasetChange(value) {
   // Check for identical y values.
   //------------------------------
   var yvalues = [];
-  points.forEach(function(p) {
+  points.forEach(function (p) {
     yvalues.push(p.y);
   });
   // Don't check segments since they're constructed from points
@@ -244,7 +243,7 @@ function datasetChange(value) {
   // });
   yvalues.sort();
   for (var i = 1; i < yvalues.length; ++i) {
-    if (yvalues[i] == yvalues[i-1]) {
+    if (yvalues[i] == yvalues[i - 1]) {
       console.log("WARNING: sites with identical y values of " + yvalues[i]);
     }
   }
@@ -253,12 +252,12 @@ function datasetChange(value) {
   // Check for identical x values.
   //------------------------------
   var xvalues = [];
-  points.forEach(function(p) {
+  points.forEach(function (p) {
     xvalues.push(p.x);
   });
   xvalues.sort();
   for (var i = 1; i < xvalues.length; ++i) {
-    if (xvalues[i] == xvalues[i-1]) {
+    if (xvalues[i] == xvalues[i - 1]) {
       console.log("WARNING: sites with identical x values of " + xvalues[i]);
     }
   }
@@ -266,12 +265,12 @@ function datasetChange(value) {
   events = [];
 
   // Add points as events
-  points.forEach(function(p) {
+  points.forEach(function (p) {
     events.push(p);
   });
 
   // Add segments as events
-  segments.forEach(function(s) {
+  segments.forEach(function (s) {
     events.push(s);
   });
 
@@ -285,7 +284,7 @@ function fortune() {
   var pointsCopy = points.slice();
   _.forEach(segments, function (seg) { seg.ordered = false; });
   var segmentsCopy = segments.slice();
-  var events = new TinyQueue(pointsCopy.concat(segmentsCopy), function(a, b) {
+  var events = new TinyQueue(pointsCopy.concat(segmentsCopy), function (a, b) {
     return a.y > b.y ? -1 : a.y < b.y ? 1 : 0;
   });
   closeEventPoints = [];
@@ -298,27 +297,27 @@ function fortune() {
     }
     if (e.isCloseEvent) {
       if (e.live) {
-	e.arcNode.prevEdge().dcelEdge.dest.point = e.point;
-	e.arcNode.nextEdge().dcelEdge.dest.point = e.point;
-	var newEvents = beachline.remove(e.arcNode, e.point);
-        newEvents.forEach(function(ev) {
+        e.arcNode.prevEdge().dcelEdge.dest.point = e.point;
+        e.arcNode.nextEdge().dcelEdge.dest.point = e.point;
+        var newEvents = beachline.remove(e.arcNode, e.point);
+        newEvents.forEach(function (ev) {
           if (ev.y < e.y - 0.000001) {
-	    events.push(ev);
+            events.push(ev);
             if (ev.isCloseEvent) {
-	      closeEventPoints.push(ev);
+              closeEventPoints.push(ev);
             }
           }
         });
-	// closeEventPoints.push(e.point);
+        // closeEventPoints.push(e.point);
       }
     } else {
       // Site event
       var newEvents = beachline.add(e);
-      newEvents.forEach(function(ev) {
+      newEvents.forEach(function (ev) {
         if (ev.y < e.y - 0.000001) {
-	  events.push(ev);
+          events.push(ev);
           if (ev.isCloseEvent) {
-	    closeEventPoints.push(ev);
+            closeEventPoints.push(ev);
           }
         }
       });

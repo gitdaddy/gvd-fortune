@@ -49,18 +49,22 @@ V.prototype.intersect = function(obj) {
   } else if (obj instanceof V) {
     // find the side the obj lies on
     // using the sign of the cross product
-    var AB = subtract(this.y1, this.y0);
-    var AC = subtract(obj.y0, this.y0);
-    if (cross(AB, AC).z > 0) {
-      // obj is on the left of this
-      // var ret = crossIntersect(obj.p, obj.vectors[1], this.p, this.vectors[0]);
-      // return [ret];
-      return [intersectLines(obj.p, obj.vectors[1], this.p, this.vectors[0])];
+    if (obj.p.x < this.p.x) {
+  // obj is on the left of this
+      var ret = [];
+      var i0 = intersectLines(obj.p, obj.vectors[0], this.p, this.vectors[0]);
+      var i1 = intersectLines(obj.p, obj.vectors[1], this.p, this.vectors[0]);
+      if (i0) ret.push(i0);
+      if (i1) ret.push(i1);
+      return ret;
     } else {
       // obj is on the right of this
-      return [intersectLines(this.p, this.vectors[1], obj.p, obj.vectors[0])];
-      // var ret = crossIntersect(this.p, this.vectors[1], obj.p, obj.vectors[0]);
-      // return [ret];
+      var ret = [];
+      var i0 = intersectLines(this.p, this.vectors[1], obj.p, obj.vectors[0]);
+      var i1 = intersectLines(this.p, this.vectors[1], obj.p, obj.vectors[1]);
+      if (i0) ret.push(i0);
+      if (i1) ret.push(i1);
+      return ret;
     }
   }
   throw "intersection type not implemented";

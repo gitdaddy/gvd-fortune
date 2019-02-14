@@ -4,7 +4,7 @@
 // y is where the event should occur, while point is where the
 // arcs will converge into a Voronoi vertex.
 //------------------------------------------------------------
-var CloseEvent = function(y, arcNode, leftNode, rightNode, point) {
+var CloseEvent = function (y, arcNode, leftNode, rightNode, point) {
   this.yval = y;
   // Point that is equidistant from the three points
   this.point = point;
@@ -15,17 +15,40 @@ var CloseEvent = function(y, arcNode, leftNode, rightNode, point) {
   this.isCloseEvent = true;
   this.live = true;
   if (this.arcNode.isArc) {
-    this.r = length(subtract(vec2(point),vec2(this.arcNode.site)));
+    this.r = length(subtract(vec2(point), vec2(this.arcNode.site)));
   }
 };
 
 Object.defineProperty(CloseEvent.prototype, "y", {
   configurable: true,
   enumerable: true,
-  get: function() {
+  get: function () {
     return this.yval;
   },
 });
+
+function createBeachlineSegment(site, directrix) {
+  if (isSegment(site)) {
+    return new V(site, directrix);
+  }
+  return createParabola(site, directrix);
+}
+
+function parseEquiPoints(closePoints, arcNode) {
+  // choose the point that is closest the the arc intersection
+  // create edge left and edge right and get the intersections 
+  var x0 = arcNode.intersectPrev().x;
+  var x1 = arcNode.intersectNext().x;
+  var centerX = (x0 + x1)/2;
+  var bLine = createBeachlineSegment(arcNode.site, sweepline);
+  var result = vec3(centerX, bLine.f(centerX), 0);
+  var a0 = dist(result, closePoints[0]);
+  var a1 = dist(result, closePoints[1]);
+  if (a0 < a1) {
+    return closePoints[0];
+  }
+  return closePoints[1];
+}
 
 // Set all node bounds x0 and x1 for all arc nodes
 // in the beachline
@@ -54,10 +77,10 @@ function updateArcBounds(node, leftx, rightx, directrix) {
 }
 
 function addCloseEvent(events, newEvent) {
-  var search = function(event) {
+  var search = function (event) {
     var tolerance = 0.0001;
     return (Math.abs(newEvent.point.x - event.point.x) < tolerance
-    && Math.abs(newEvent.point.y - event.point.y) < tolerance);
+      && Math.abs(newEvent.point.y - event.point.y) < tolerance);
   };
   if (newEvent == null) return;
   var existing = _.filter(events, search);
@@ -67,7 +90,7 @@ function addCloseEvent(events, newEvent) {
     // If there is a tie use the event with the closest arcNode
     if (!_.isUndefined(existing[0].arcNode.x0) && !_.isUndefined(newEvent.arcNode.x0)) {
       if (Math.abs(newEvent.arcNode.x0 - newEvent.point.x)
-      < Math.abs(existing[0].arcNode.x0 - newEvent.point.x)) {
+        < Math.abs(existing[0].arcNode.x0 - newEvent.point.x)) {
         var idx = _.findIndex(events, search);
         if (idx == -1) return;
         // replace the old event
@@ -86,7 +109,7 @@ function addCloseEvent(events, newEvent) {
 const LEFT_CHILD = 0;
 const RIGHT_CHILD = 1;
 
-var Beachline = function(dcel) {
+var Beachline = function (dcel) {
   this.root = null;
   this.dcel = dcel;
 }
@@ -117,8 +140,10 @@ function splitArcNode(toSplit, node, dcel) {
   var vertex = vec3(x, y, 0);
   var left = toSplit;
   var right = new ArcNode(toSplit.site);
+  left.isLeftChild = true;
+  right.isLeftChild = false;
   return new EdgeNode(left, new EdgeNode(node, right, vertex, dcel),
-                      vertex, dcel);
+    vertex, dcel);
 }
 
 //------------------------------------------------------------
@@ -126,30 +151,36 @@ function splitArcNode(toSplit, node, dcel) {
 //------------------------------------------------------------
 function createCloseEvent(arcNode) {
   if (arcNode == null) return null;
-
   var left = arcNode.prevArc();
   var right = arcNode.nextArc();
   if (left != null && right != null) {
     if (isSegment(left.site) || isSegment(right.site)) {
       let equi = equidistant(left.site, arcNode.site, right.site);
+      if (equi == null) return null;
+      if (equi.length == 2) {
+        equi = parseEquiPoints(equi, arcNode);
+      }
       let r = dist(equi, arcNode.site);
-      return new CloseEvent(equi.y-r, arcNode, left, right, equi);
+      return new CloseEvent(equi.y - r, arcNode, left, right, equi);
     } else if (isSegment(arcNode.site)) {
       if (arcNode.site.a == left.site && arcNode.site.b == right.site
         || arcNode.site.b == left.site && arcNode.site.a == right.site) return null;
       let equi = equidistant(left.site, right.site, arcNode.site);
       if (equi == null) return null;
+      if (equi.length == 2) {
+        equi = parseEquiPoints(equi, arcNode);
+      }
 
       // // get x0 and x1 for the arc node
       if (_.isUndefined(arcNode.x0) || _.isUndefined(arcNode.x1)
-      || _.isUndefined(left.x0) || _.isUndefined(left.x1)
-      || _.isUndefined(right.x0) || _.isUndefined(right.x1)) {
+        || _.isUndefined(left.x0) || _.isUndefined(left.x1)
+        || _.isUndefined(right.x0) || _.isUndefined(right.x1)) {
         throw "Error - Arc Node with undefined bounds";
       }
 
-      var centerArcX = (arcNode.x0 + arcNode.x1)/2;
-      var centerLeftX = (left.x0 + left.x1)/2;
-      var centerRightX = (right.x0 + right.x1)/2;
+      var centerArcX = (arcNode.x0 + arcNode.x1) / 2;
+      var centerLeftX = (left.x0 + left.x1) / 2;
+      var centerRightX = (right.x0 + right.x1) / 2;
 
       // if the equidistant point lies between the center and the left or the center and the right
       if (centerArcX > equi.x && equi.x > centerLeftX
@@ -161,15 +192,15 @@ function createCloseEvent(arcNode) {
     } else {
       // All three are points
       var equi = equidistant(left.site,
-                             arcNode.site,
-                             right.site);
+        arcNode.site,
+        right.site);
       var u = subtract(left.site, arcNode.site);
       var v = subtract(left.site, right.site);
       // Check if there should be a close event added. In some
       // cases there shouldn't be.
       if (cross(u, v)[2] < 0) {
         let r = length(subtract(arcNode.site, equi));
-        let event_y = equi.y-r;
+        let event_y = equi.y - r;
         return new CloseEvent(event_y, arcNode, left, right, equi);
       }
     }
@@ -182,7 +213,7 @@ function createCloseEvent(arcNode) {
 //
 // Site is a vec3
 //------------------------------------------------------------
-Beachline.prototype.add = function(site) {
+Beachline.prototype.add = function (site) {
   var arcNode = new ArcNode(site);
   var directrix = site.y;
   // move the directrix slightly downward for segments
@@ -226,7 +257,7 @@ Beachline.prototype.add = function(site) {
 //------------------------------------------------------------
 // remove
 //------------------------------------------------------------
-Beachline.prototype.remove = function(arcNode, point) {
+Beachline.prototype.remove = function (arcNode, point) {
   if (!arcNode.isArc) throw "Unexpected edge in remove";
 
   var parent = arcNode.parent;
@@ -240,7 +271,7 @@ Beachline.prototype.remove = function(arcNode, point) {
     newEdge = arcNode.prevEdge();
   }
 
-  var sibling = parent.getChild(1-side);
+  var sibling = parent.getChild(1 - side);
   grandparent.setChild(sibling, parentSide);
   sibling.parent = grandparent;
 
@@ -274,7 +305,7 @@ Beachline.prototype.remove = function(arcNode, point) {
 
 // Sets points on arc elements ready for drawing using whatever
 // method. Also gets events and active surface lines and parabolas.
-Beachline.prototype.prepDraw = function(
+Beachline.prototype.prepDraw = function (
   directrix, node, leftx, rightx, arcElements, lines, generalSurfaces, events) {
   if (node.isArc) {
     arcElements.push(node.createDrawElement(leftx, rightx, directrix));
@@ -295,7 +326,7 @@ Beachline.prototype.prepDraw = function(
     }
 
     if (!Number.isNaN(v.x) && !Number.isNaN(v.y) &&
-        !Number.isNaN(p.x) && !Number.isNaN(p.y)) {
+      !Number.isNaN(p.x) && !Number.isNaN(p.y)) {
       if (node.isGeneralSurface) {
         var point;
         var segment;
@@ -314,7 +345,7 @@ Beachline.prototype.prepDraw = function(
         gp.prepDraw(-10000, vec3(v.x, v.y, 0.0), vec3(p.x, p.y, 0.0));
         generalSurfaces.push(gp);
       } else {
-        lines.push({x0:v.x, y0:v.y, x1:p.x, y1:p.y, id:node.id, connectedToGVD:node.connectedToGVD});
+        lines.push({ x0: v.x, y0: v.y, x1: p.x, y1: p.y, id: node.id, connectedToGVD: node.connectedToGVD });
       }
     }
 

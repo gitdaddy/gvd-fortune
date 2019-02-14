@@ -381,7 +381,7 @@ GeneralParabola.prototype.intersectRay = function(p, v) {
       ret.push(q);
     }
   });
-  return ret;
+  return ret.length == 1 ? ret[0] : ret;
 }
 
 // Intersect all intersections of a general parabola and a general parabola.

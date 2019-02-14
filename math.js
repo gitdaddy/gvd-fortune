@@ -100,6 +100,7 @@ function dist(obj1, obj2) {
     // for point(x0,y0) and line ax + by + c = 0
     // d = abs(a*x0 + b*y0 + c)/ sqrt(a^2 + b^2)
   // 3. Segment to Segment
+  if (obj1 == null || obj2 == null) return null;
 
   if (obj1.type == "vec" && obj2.type == "vec") {
     return length(subtract(vec2(obj1), vec2(obj2)));
@@ -306,7 +307,7 @@ function bisect(a, b) {
 //------------------------------------------------------------
 // intersect
 //
-// Returns the intersecting point between objects a and b.
+// Returns the intersecting point(s) between objects a and b.
 // a and b must be either lines or parabolas.
 //------------------------------------------------------------
 function intersect(a, b) {
@@ -316,14 +317,13 @@ function intersect(a, b) {
     intersection = intersectLines(a.p1, a.p2, b.p1, b.p2);
   } else if (a instanceof Line) {
     // line and general parabola
-    // Handle for parametric intersections - get the first - check that this is correct
-    intersection = b.intersect(a)[0];
+    intersection = b.intersect(a);
   } else if (b instanceof Line) {
     // general parabola and line
-    // Handle for parametric intersections - get the first - check that this is correct
-    intersection = a.intersect(b)[0];
+    intersection = a.intersect(b);
   } else {
-    intersection = a.intersect(b)[0];
+    // Handle for parametric intersections - get the first - check that this is correct
+    intersection = a.intersect(b);
   }
   return intersection;
 }
@@ -332,6 +332,7 @@ function intersect(a, b) {
 // equidistant
 //
 // Returns the point equidistant from points/segments c1, c2, and c3.
+// Function potentially return multiple points
 //------------------------------------------------------------
 function equidistant(c1, c2, c3) {
   var segments = _.filter([c1, c2, c3], { type: "segment" });
@@ -347,10 +348,9 @@ function equidistant(c1, c2, c3) {
   }
   debugObjs.push(b12);
   debugObjs.push(b23);
-  let ret = intersect(b12, b23);
   // if (Math.abs(ret.x) > 1 || Math.abs(ret.y) > 1){
   //   let msg = `equidistant close point (${ret.x}, ${ret.y}) is outside the bounds`;
   //   console.log(msg);
   // }
-  return ret;
+  return intersect(b12, b23);
 }

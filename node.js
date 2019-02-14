@@ -21,6 +21,7 @@ var ArcNode = function(site) {
   this.x0 = undefined;
   this.x1 = undefined;
   this.id = nodeId++;
+  this.isLeftChild = undefined;
 }
 
 ArcNode.prototype.toString = function() {
@@ -98,6 +99,28 @@ ArcNode.prototype.nextArc = function() {
   var node = this.nextEdge();
   if (node == null) return null;
   return node.nextArc();
+}
+
+//------------------------------------------------------------
+// Intersect Next
+// Returns the next in-order intersection to the next arc node
+//------------------------------------------------------------
+ArcNode.prototype.intersectNext = function() {
+  if (this.isLeftChild) {
+    return this.parent.selectedIntersection;
+  }
+  return this.nextArc().parent.selectedIntersection; 
+}
+
+//------------------------------------------------------------
+// Intersect Previous
+// Returns the next in-order intersection to the previous arc node
+//------------------------------------------------------------
+ArcNode.prototype.intersectPrev = function() {
+  if (!this.isLeftChild) {
+    return this.parent.selectedIntersection;
+  }
+  return this.prevArc().parent.selectedIntersection; 
 }
 
 //---------------------------------------------------------------------------
@@ -208,20 +231,13 @@ EdgeNode.prototype.setChild = function(node, side) {
   node.parent = this;
 }
 
-EdgeNode.prototype.createBeachlineSegment = function(site, directrix) {
-  if (isSegment(site)) {
-    return new V(site, directrix);
-  }
-  return createParabola(site, directrix);
-}
-
 // Finds the intersection between the left and right arcs.
 EdgeNode.prototype.intersection = function(directrix) {
   // This is inefficient. We should be storing sites in edge nodes.
   let leftArcNode = this.prevArc();
   let rightArcNode = this.nextArc();
-  let pleft = this.createBeachlineSegment(leftArcNode.site, directrix);
-  let pright = this.createBeachlineSegment(rightArcNode.site, directrix);
+  let pleft = createBeachlineSegment(leftArcNode.site, directrix);
+  let pright = createBeachlineSegment(rightArcNode.site, directrix);
   
   let intersections = pleft.intersect(pright);
   this.intersections = intersections;
