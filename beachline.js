@@ -35,19 +35,24 @@ function createBeachlineSegment(site, directrix) {
 }
 
 function parseEquiPoints(closePoints, arcNode) {
-  // choose the point that is closest the the arc intersection
-  // create edge left and edge right and get the intersections 
-  var x0 = arcNode.intersectPrev().x;
-  var x1 = arcNode.intersectNext().x;
-  var centerX = (x0 + x1)/2;
-  var bLine = createBeachlineSegment(arcNode.site, sweepline);
-  var result = vec3(centerX, bLine.f(centerX), 0);
-  var a0 = dist(result, closePoints[0]);
-  var a1 = dist(result, closePoints[1]);
-  if (a0 < a1) {
-    return closePoints[0];
+  var sorted = _.sortBy(closePoints, function (p){ return p.x; });
+  if (arcNode.isParabola) {
+    if (belongsToSegment(arcNode, arcNode.nextArc())) {
+      return sorted[0];
+    } else if (belongsToSegment(arcNode.prevArc(), arcNode)) {
+      return sorted[1];
+    }
+    return arcNode.isLeftChild ? sorted[0] : sorted[1];
+  } else { // arcNode is a V
+    if (_.isUndefined(arcNode.isLeftChild)) {
+      console.error("found arcNode with undefined property that should be defined");
+      return null;
+    }
+    if (arcNode.isLeftChild) {
+      return sorted[0];
+    }
+    return sorted[1];
   }
-  return closePoints[1];
 }
 
 // Set all node bounds x0 and x1 for all arc nodes
@@ -142,6 +147,7 @@ function splitArcNode(toSplit, node, dcel) {
   var right = new ArcNode(toSplit.site);
   left.isLeftChild = true;
   right.isLeftChild = false;
+  node.isLeftChild = true;
   return new EdgeNode(left, new EdgeNode(node, right, vertex, dcel),
     vertex, dcel);
 }

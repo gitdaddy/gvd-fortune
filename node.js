@@ -4,7 +4,7 @@
 
 var nodeId = 0;
 
-var ArcNode = function(site) {
+var ArcNode = function (site) {
   this.site = site;
   this.isArc = true;
   this.isEdge = false;
@@ -24,13 +24,13 @@ var ArcNode = function(site) {
   this.isLeftChild = undefined;
 }
 
-ArcNode.prototype.toString = function() {
-  return `Type: arc - ${this.isParabola?"parabola":"v"}<br>` +
+ArcNode.prototype.toString = function () {
+  return `Type: arc - ${this.isParabola ? "parabola" : "v"}<br>` +
     `Site: (${this.site.toString()})`
-  ;
+    ;
 }
 
-ArcNode.prototype.createDrawElement = function(leftx, rightx, directrix) {
+ArcNode.prototype.createDrawElement = function (leftx, rightx, directrix) {
   let element = null;
   if (this.isParabola) {
     let para = createParabola(this.site, directrix);
@@ -51,7 +51,7 @@ ArcNode.prototype.createDrawElement = function(leftx, rightx, directrix) {
 // Returns the previous in-order edge arcNode. Find the first
 // ancestor to the left.
 //------------------------------------------------------------
-ArcNode.prototype.prevEdge = function() {
+ArcNode.prototype.prevEdge = function () {
   var node = this;
   while (node.parent != null && node.parent.left == node) {
     node = node.parent;
@@ -72,7 +72,7 @@ function belongsToSegment(A, B) {
 // prevArc
 // Returns the previous in-order arc arcNode
 //------------------------------------------------------------
-ArcNode.prototype.prevArc = function() {
+ArcNode.prototype.prevArc = function () {
   var node = this.prevEdge();
   if (node == null) return null;
   return node.prevArc();
@@ -83,7 +83,7 @@ ArcNode.prototype.prevArc = function() {
 // Returns the next in-order edge node. Find the first
 // ancestor to the right.
 //------------------------------------------------------------
-ArcNode.prototype.nextEdge = function() {
+ArcNode.prototype.nextEdge = function () {
   var node = this;
   while (node.parent != null && node.parent.right == node) {
     node = node.parent;
@@ -95,32 +95,10 @@ ArcNode.prototype.nextEdge = function() {
 // nextArc
 // Returns the next in-order arc arcNode.
 //------------------------------------------------------------
-ArcNode.prototype.nextArc = function() {
+ArcNode.prototype.nextArc = function () {
   var node = this.nextEdge();
   if (node == null) return null;
   return node.nextArc();
-}
-
-//------------------------------------------------------------
-// Intersect Next
-// Returns the next in-order intersection to the next arc node
-//------------------------------------------------------------
-ArcNode.prototype.intersectNext = function() {
-  if (this.isLeftChild) {
-    return this.parent.selectedIntersection;
-  }
-  return this.nextArc().parent.selectedIntersection; 
-}
-
-//------------------------------------------------------------
-// Intersect Previous
-// Returns the next in-order intersection to the previous arc node
-//------------------------------------------------------------
-ArcNode.prototype.intersectPrev = function() {
-  if (!this.isLeftChild) {
-    return this.parent.selectedIntersection;
-  }
-  return this.prevArc().parent.selectedIntersection; 
 }
 
 //---------------------------------------------------------------------------
@@ -133,7 +111,7 @@ ArcNode.prototype.intersectPrev = function() {
 // left is always an ArcNode. Right may be an ArcNode or
 // EdgeNode.
 //------------------------------------------------------------
-var EdgeNode = function(left, right, vertex, dcel) {
+var EdgeNode = function (left, right, vertex, dcel) {
   this.isArc = false;
   this.isEdge = true;
   this.left = left;
@@ -144,19 +122,19 @@ var EdgeNode = function(left, right, vertex, dcel) {
   left.parent = this;
   right.parent = this;
 
-  this.toDot = function() {
+  this.toDot = function () {
     return "\"" + this.id + "\"";
   };
 }
 
-EdgeNode.prototype.toString = function() {
+EdgeNode.prototype.toString = function () {
   return `Type: edge<br>`;
 }
 
 Object.defineProperty(EdgeNode.prototype, "id", {
   configurable: true,
   enumerable: true,
-  get: function() {
+  get: function () {
     return this.prevArc().id + "-" + this.nextArc().id;
   },
 });
@@ -164,7 +142,7 @@ Object.defineProperty(EdgeNode.prototype, "id", {
 Object.defineProperty(EdgeNode.prototype, "connectedToGVD", {
   configurable: true,
   enumerable: true,
-  get: function() {
+  get: function () {
     return this.prevArc().site.label !== this.nextArc().site.label;
   },
 });
@@ -172,7 +150,7 @@ Object.defineProperty(EdgeNode.prototype, "connectedToGVD", {
 Object.defineProperty(EdgeNode.prototype, "isGeneralSurface", {
   configurable: true,
   enumerable: true,
-  get: function() {
+  get: function () {
     var left = this.prevArc();
     var right = this.nextArc();
     return left.isParabola && right.isV || left.isV && right.isParabola;
@@ -181,12 +159,12 @@ Object.defineProperty(EdgeNode.prototype, "isGeneralSurface", {
 
 Object.defineProperty(EdgeNode.prototype, "flipped", {
   configurable: true,
-  get: function() {
+  get: function () {
     return this.prevArc().site.flipped || this.nextArc().site.flipped;
   },
 });
 
-EdgeNode.prototype.updateEdge = function(vertex, dcel) {
+EdgeNode.prototype.updateEdge = function (vertex, dcel) {
   this.dcelEdge = dcel.makeEdge();
   this.dcelEdge.origin.point = vertex;
   var next = this.nextArc();
@@ -199,7 +177,7 @@ EdgeNode.prototype.updateEdge = function(vertex, dcel) {
   this.dcelEdge.generalEdge = prev.isParabola && next.isV || prev.isV && next.isParabola
 }
 
-EdgeNode.prototype.prevArc = function() {
+EdgeNode.prototype.prevArc = function () {
   var node = this;
   node = node.left;
   while (!node.isArc) {
@@ -208,7 +186,7 @@ EdgeNode.prototype.prevArc = function() {
   return node;
 }
 
-EdgeNode.prototype.nextArc = function() {
+EdgeNode.prototype.nextArc = function () {
   var node = this;
   node = node.right;
   while (!node.isArc) {
@@ -217,12 +195,12 @@ EdgeNode.prototype.nextArc = function() {
   return node;
 }
 
-EdgeNode.prototype.getChild = function(side) {
+EdgeNode.prototype.getChild = function (side) {
   if (side == LEFT_CHILD) return this.left;
   return this.right;
 }
 
-EdgeNode.prototype.setChild = function(node, side) {
+EdgeNode.prototype.setChild = function (node, side) {
   if (side == LEFT_CHILD) {
     this.left = node;
   } else {
@@ -232,13 +210,13 @@ EdgeNode.prototype.setChild = function(node, side) {
 }
 
 // Finds the intersection between the left and right arcs.
-EdgeNode.prototype.intersection = function(directrix) {
+EdgeNode.prototype.intersection = function (directrix) {
   // This is inefficient. We should be storing sites in edge nodes.
   let leftArcNode = this.prevArc();
   let rightArcNode = this.nextArc();
   let pleft = createBeachlineSegment(leftArcNode.site, directrix);
   let pright = createBeachlineSegment(rightArcNode.site, directrix);
-  
+
   let intersections = pleft.intersect(pright);
   this.intersections = intersections;
 
@@ -248,14 +226,14 @@ EdgeNode.prototype.intersection = function(directrix) {
   }
 
   var result;
-  let pcenterx = (intersections[0].x + intersections[1].x)/2;
+  let pcenterx = (intersections[0].x + intersections[1].x) / 2;
   let prevy = pleft.f(pcenterx);
   let nexty = pright.f(pcenterx);
   let lower = 1;
   if (prevy < nexty) {
-      lower = 0;
+    lower = 0;
   }
-  result = intersections[1-lower];
+  result = intersections[1 - lower];
 
   // Handle the case where the V arc for the segment (+)
   // needs to be "above" the parabola for the lower

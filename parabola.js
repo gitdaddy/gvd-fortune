@@ -1,12 +1,12 @@
 // Given a parabola (h, k, p), computes the y value at a given
 // x value.
 function f(x, h, k, p) {
-  return (x-h)*(x-h)/(4*p) + k;
+  return (x - h) * (x - h) / (4 * p) + k;
 }
 
 // Computes the inverse of f
 function f_(y, h, k, p) {
-  return quadratic(1/(4*p), -2*h/(4*p), h*h/(4*p)+k-y);
+  return quadratic(1 / (4 * p), -2 * h / (4 * p), h * h / (4 * p) + k - y);
 }
 
 //------------------------------------------------------------
@@ -18,9 +18,9 @@ function lpIntersect(h, k, p, q, v) {
   // v = p1 --> p2
   // var q = p1;
   // var v = subtract(p2, q);
-  var a = v.x*v.x/(4*p);
-  var b = 2*v.x*(q.x-h)/(4*p) - v.y;
-  var c = (q.x*q.x-2*q.x*h+h*h)/(4*p) + k - q.y;
+  var a = v.x * v.x / (4 * p);
+  var b = 2 * v.x * (q.x - h) / (4 * p) - v.y;
+  var c = (q.x * q.x - 2 * q.x * h + h * h) / (4 * p) + k - q.y;
   var tvals = quadratic(a, b, c);
   return tvals;
 }
@@ -39,27 +39,27 @@ function ppIntersect(h1, k1, p1, h2, k2, p2) {
     }
     var x = h1;
     var y = f(x, h2, k2, p2);
-    return [ vec2(x, y), vec2(x, y) ];
+    return [vec2(x, y), vec2(x, y)];
   } else if (Math.abs(p2) < EPSILON) {
     var x = h2;
     var y = f(x, h1, k1, p1);
-    return [ vec2(x, y), vec2(x, y) ];
+    return [vec2(x, y), vec2(x, y)];
   }
 
-  var a = 0.25*(1/p1 - 1/p2);
-  var b = 0.5*(h2/p2 - h1/p1);
-  var c = 0.25*(h1*h1/p1 - h2*h2/p2) + k1 - k2;
-  var disc = b*b - 4*a*c;
+  var a = 0.25 * (1 / p1 - 1 / p2);
+  var b = 0.5 * (h2 / p2 - h1 / p1);
+  var c = 0.25 * (h1 * h1 / p1 - h2 * h2 / p2) + k1 - k2;
+  var disc = b * b - 4 * a * c;
   var xintersections = [];
   if (a == 0) {
     // One solution -- no quadratic term
-    xintersections.push(-c/b);
+    xintersections.push(-c / b);
   } else if (disc < 0) {
     // No real solutions
   } else {
     // One or two solutions.
-    var x1 = (-b + Math.sqrt(disc))/(2*a);
-    var x2 = (-b - Math.sqrt(disc))/(2*a);
+    var x1 = (-b + Math.sqrt(disc)) / (2 * a);
+    var x2 = (-b - Math.sqrt(disc)) / (2 * a);
     if (x1 < x2) {
       xintersections.push(x1);
       xintersections.push(x2);
@@ -70,7 +70,7 @@ function ppIntersect(h1, k1, p1, h2, k2, p2) {
   }
   // return xintersections;
   var ret = [];
-  xintersections.forEach(function(x) {
+  xintersections.forEach(function (x) {
     var y = f(x, h1, k1, p1);//(x-h1)*(x-h1)/(4*p1) + k1;
     ret.push(vec2(x, y));
   });
@@ -87,7 +87,7 @@ function ppIntersect(h1, k1, p1, h2, k2, p2) {
 // directrix is at k-p
 // focus is at k+p
 // y = (x-h)^2/(4p) + k
-Parabola = function(focus, h, k, p) {//, theta, offset) {
+Parabola = function (focus, h, k, p) {//, theta, offset) {
   this.focus = focus;
   this.h = h;
   this.k = k;
@@ -98,12 +98,12 @@ Parabola = function(focus, h, k, p) {//, theta, offset) {
 // The directrix is assumed to be horizontal and is given as a y-value.
 function createParabola(focus, directrix) {
   var h = focus.x;
-  var k = (directrix+focus.y)/2;
-  var p = (focus.y-directrix)/2;
+  var k = (directrix + focus.y) / 2;
+  var p = (focus.y - directrix) / 2;
   return new Parabola(focus, h, k, p, 0, 0);
 }
 
-Parabola.prototype.intersect = function(object) {
+Parabola.prototype.intersect = function (object) {
   if (object instanceof Parabola) {
     return ppIntersect(this.h, this.k, this.p, object.h, object.k, object.p);
   }
@@ -114,7 +114,7 @@ Parabola.prototype.intersect = function(object) {
 // If there are two intersections, the intersections will
 // be returned in order of t value.
 // The ray is given in parametric form p(t) = p + tv
-Parabola.prototype.intersectRay = function(p, v) {
+Parabola.prototype.intersectRay = function (p, v) {
   var tvals = lpIntersect(this.h, this.k, this.p, p, v);
   // Sort tvals in increasing order
   if (tvals.length == 2 && tvals[1] < tvals[0]) {
@@ -122,22 +122,23 @@ Parabola.prototype.intersectRay = function(p, v) {
   }
 
   var ret = [];
-  tvals.forEach(function(t) {
-    if (t >= 0) {
-      var q = add(p, mult(v,t));
-      ret.push(q);
-    }
+  tvals.forEach(function (t) {
+    var q = add(p, mult(v, t));
+    ret.push(q);
+    // Taking this guard out allows are computing close points with negative tvals
+    // if (t >= 0) {
+    // }
   });
   return ret;
 }
 
 // y = f(x)
-Parabola.prototype.f = function(x) {
+Parabola.prototype.f = function (x) {
   return f(x, this.h, this.k, this.p);
 }
 
 // Inverse of f. x = f_(y)
-Parabola.prototype.f_ = function(y) {
+Parabola.prototype.f_ = function (y) {
   return f_(y, this.h, this.k, this.p);
 }
 
@@ -149,25 +150,25 @@ function abc() {
   return 130;
 }
 
-Parabola.prototype.renderSvg = function(id, highlight=false) {
+Parabola.prototype.renderSvg = function (id, highlight = false) {
   let line = d3.line()
-    .x(function (d) {return d.x;})
-    .y(function (d) {return d.y;})
+    .x(function (d) { return d.x; })
+    .y(function (d) { return d.y; })
     .curve(d3.curveCardinal)
-  ;
+    ;
   let pa = d3.select("#gvd")
     .append("path")
     .datum(this.drawPoints)
     .attr("d", line)
-    .style("fill","none")
+    .style("fill", "none")
     .style("stroke", siteColorSvg(id))
     .attr("class", "beach-parabola")
     .attr("vector-effect", "non-scaling-stroke")
-  ;
+    ;
 }
 
 // Prepares this parabola for drawing
-Parabola.prototype.prepDraw = function(nodeid, label, x0, x1) {
+Parabola.prototype.prepDraw = function (nodeid, label, x0, x1) {
   this.nodeid = nodeid;
   this.label = label;
   this.setDrawBounds(x0, x1);
@@ -214,7 +215,7 @@ Parabola.prototype.prepDraw = function(nodeid, label, x0, x1) {
 //   |                              |
 //   |                              |
 //   |______________________________|
-Parabola.prototype.setDrawBounds = function(x0, x1) {
+Parabola.prototype.setDrawBounds = function (x0, x1) {
   if (x0 > 1 || x1 < -1) {
     this.x0 = -1;
     this.x1 = -1;
@@ -225,7 +226,7 @@ Parabola.prototype.setDrawBounds = function(x0, x1) {
     if (this.f(x0) > 1) {
       var xvalues = this.f_(1);
       if (xvalues.length > 0) {
-        x0 = xvalues.reduce(function(a, b) {
+        x0 = xvalues.reduce(function (a, b) {
           return Math.max(x0, Math.min(a, b));
         });
       }
@@ -233,7 +234,7 @@ Parabola.prototype.setDrawBounds = function(x0, x1) {
     if (this.f(x1) > 1) {
       var xvalues = this.f_(1);
       if (xvalues.length > 0) {
-        x1 = xvalues.reduce(function(a, b) {
+        x1 = xvalues.reduce(function (a, b) {
           return Math.min(x1, Math.max(a, b));
         });
       }
@@ -260,7 +261,7 @@ Parabola.prototype.setDrawBounds = function(x0, x1) {
 //   |                              |
 //   |                              |
 //   |______________________________|
-Parabola.prototype.setDrawPoints = function() {
+Parabola.prototype.setDrawPoints = function () {
   let points = [];
   // Hard-coded delta x
   let xinc = 0.01;
@@ -277,8 +278,8 @@ Parabola.prototype.setDrawPoints = function() {
   if (this.theta && this.theta != 0) {
     this.transform =
       `translate(${this.focus.x},${this.focus.y}) ` +
-      `rotate(${(this.theta)*180/Math.PI}) ` +
-      `translate(${-this.h},${-2*this.k})`;
+      `rotate(${(this.theta) * 180 / Math.PI}) ` +
+      `translate(${-this.h},${-2 * this.k})`;
   }
 }
 
@@ -286,7 +287,7 @@ Parabola.prototype.setDrawPoints = function() {
 // GeneralParabola class
 //------------------------------------------------------------
 
-GeneralParabola = function(focus, h, k, p, theta, offset, splitSite = false) {
+GeneralParabola = function (focus, h, k, p, theta, offset, splitSite = false) {
   this.parabola = new Parabola(focus, h, k, p);
   this.theta = theta;
   this.offset = offset;
@@ -303,7 +304,7 @@ function createGeneralParabola(focus, directrix) {
   // Make sure a and b are ordered such that the focus is located
   // on the left of b-a.
   var v = normalize(subtract(b, a));
-  var vxf = cross(v, subtract(focus,a));
+  var vxf = cross(v, subtract(focus, a));
   if (vxf.z < 0) {
     v = negate(v);
     [a, b] = [b, a];
@@ -317,7 +318,7 @@ function createGeneralParabola(focus, directrix) {
   return new GeneralParabola(focus, h, k, p, theta, 0, splitSite);
 }
 
-GeneralParabola.prototype.transformPoint = function(p) {
+GeneralParabola.prototype.transformPoint = function (p) {
   if (this.theta == 0) return p;
 
   // Don't remove this code. It explains what we're doing below.
@@ -332,11 +333,11 @@ GeneralParabola.prototype.transformPoint = function(p) {
   p.y += -this.parabola.focus.y;
   p = mult(this.Rz, p);
   p.x += this.parabola.h;
-  p.y += 2*this.parabola.k;
+  p.y += 2 * this.parabola.k;
   return p;
 }
 
-GeneralParabola.prototype.transformVector = function(v) {
+GeneralParabola.prototype.transformVector = function (v) {
   if (this.theta == 0) return v;
 
   v = mult(this.Rz, vec4(v));
@@ -345,13 +346,13 @@ GeneralParabola.prototype.transformVector = function(v) {
   return v;
 }
 
-GeneralParabola.prototype.untransformPoint = function(p) {
+GeneralParabola.prototype.untransformPoint = function (p) {
   if (this.theta == 0) return p;
 
   // translate, rotate, translate manually for performance
   p = vec4(p);
   p.x += -this.parabola.h;
-  p.y += -2*this.parabola.k;
+  p.y += -2 * this.parabola.k;
   p = mult(this.nRz, p);
   p.x += this.parabola.focus.x;
   p.y += this.parabola.focus.y;
@@ -362,7 +363,7 @@ GeneralParabola.prototype.untransformPoint = function(p) {
 // If there are two intersections, the intersections will
 // be returned in order of t value.
 // The ray is given in parametric form p(t) = p + tv
-GeneralParabola.prototype.intersectRay = function(p, v) {
+GeneralParabola.prototype.intersectRay = function (p, v) {
   p = this.transformPoint(p);
   v = this.transformVector(v);
 
@@ -374,12 +375,13 @@ GeneralParabola.prototype.intersectRay = function(p, v) {
 
   pthis = this;
   var ret = [];
-  tvals.forEach(function(t) {
-    if (t >= 0) {
-      var q = add(p, mult(v,t));
-      q = pthis.untransformPoint(q);
-      ret.push(q);
-    }
+  tvals.forEach(function (t) {
+    var q = add(p, mult(v, t));
+    q = pthis.untransformPoint(q);
+    ret.push(q);
+    // Taking this guard out allows are computing close points with negative tvals
+    // if (t >= 0) {
+    // }
   });
   return ret.length == 1 ? ret[0] : ret;
 }
@@ -388,17 +390,16 @@ GeneralParabola.prototype.intersectRay = function(p, v) {
 // If there are two intersections, the intersections will
 // be returned in order of t value.
 // The line is given in parametric form p(t) = p + tv
-GeneralParabola.prototype.intersectPara = function(genPara) {
+GeneralParabola.prototype.intersectPara = function (genPara) {
   return (this.parabola.intersect(genPara.parabola));
 }
 
 // Prepares this parabola for drawing
-GeneralParabola.prototype.prepDraw = function(id, p1, p2) {
+GeneralParabola.prototype.prepDraw = function (id, p1, p2) {
   this.id = id;
   var x0 = this.transformPoint(p1).x;
   var x1 = this.transformPoint(p2).x;
-  if (x0 > x1)
-  {
+  if (x0 > x1) {
     var temp = x1;
     x1 = x0;
     x0 = temp;
@@ -407,14 +408,14 @@ GeneralParabola.prototype.prepDraw = function(id, p1, p2) {
   this.setDrawPoints();
 }
 
-GeneralParabola.prototype.setDrawPoints = function() {
+GeneralParabola.prototype.setDrawPoints = function () {
   this.parabola.setDrawPoints();
   this.drawPoints = [];
   if (_.isNaN(this.parabola.x0) || _.isNaN(this.parabola.x1)) return;
-  for (let i=0; i < this.parabola.drawPoints.length; ++i) {
+  for (let i = 0; i < this.parabola.drawPoints.length; ++i) {
     let p = this.parabola.drawPoints[i];
     p = this.untransformPoint(p);
-    if (!_.isNaN(p.x)){
+    if (!_.isNaN(p.x)) {
       this.drawPoints.push(p);
     }
   }

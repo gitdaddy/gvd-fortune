@@ -1,3 +1,2 @@
-V-v intersect 
-Bug fixes - close event accuracy
-Drag and drop sites
+1. Fix skew in V-V intersect
+2. Support ploygons

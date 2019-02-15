@@ -51,6 +51,163 @@ Line = function(p1, p2) {
 }
 
 //------------------------------------------------------------
+// quadratic
+// ax^2 + bx + c = 0
+//------------------------------------------------------------
+function quadratic(a, b, c) {
+  if (a == 0) return [];
+  // var disc = Math.sqrt(b*b-4*a*c);
+  var disc = b*b-4*a*c;
+  if (disc < -0.0000001) {
+    return [];
+  }
+  if (Math.abs(disc) < 0.0000001) {
+    return [(-b)/(2*a)];
+  }
+  var sdisc = Math.sqrt(disc);
+  return [(-b+sdisc)/(2*a), (-b-sdisc)/(2*a)];
+}
+
+//------------------------------------------------------------
+//------------------------------------------------------------
+// Specific intersect functions
+//------------------------------------------------------------
+//------------------------------------------------------------
+
+//             * p4
+//           _/
+// p1 *----_/---------* p2
+//       _/
+//      /
+//  p3 *
+function intersectLines(p1, p2, p3, p4) {
+  var x1 = p1.x;
+  var x2 = p2.x;
+  var x3 = p3.x;
+  var x4 = p4.x;
+  var y1 = p1.y;
+  var y2 = p2.y;
+  var y3 = p3.y;
+  var y4 = p4.y;
+  var denom = (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
+  if (Math.abs(denom) < 0.000001) return null;
+  var x = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4))/denom;
+  var y = ((x1*y2-y1*x2)*(y3-y4) - (y1-y2)*(x3*y4-y3*x4))/denom;
+  return vec3(x, y, 0);
+}
+
+//------------------------------------------------------------
+//------------------------------------------------------------
+// Unlimited Line intersection
+//------------------------------------------------------------
+//------------------------------------------------------------
+// Where L(p0, p1) == M(q0, q1)
+// q0 *----x--------* q1 + a*v0
+//
+//       _* p1 + b*v1
+//      /
+//  p0 *
+// p + tr = q + us - if there exist  some t and u then both lines intersect
+// t = (q-p) x s/(rxs)
+// u = (p-q) x r/(sxr)
+// Note s x r = -r x s
+// TODO test
+// function llIntersect(p0, p1, q0, q1) {
+//   var r = normalize(subtract(p1, p0));
+//   var s = normalize(subtract(q1, q0));
+//   var crs = cross(r,s).z;
+//   var vecPQ = subtract(q0, p0);
+//   var vecQP = subtract(p0, q0);
+//   if (crs == 0 && cross(vecPQ, r).z == 0) {
+//     console.log("Intersecting lines colinear");
+//     return null;
+//   }
+//   if (crs == 0 && cross(vecPQ, r).z != 0) {
+//     console.log("Intersecting lines are parallel");
+//     return null;
+//   }
+//   var sOverRS = divide(s, crs);
+//   var rOverSR = divide(r, cross(s, r).z);
+//   var t = cross(vecPQ, sOverRS).z;
+//   var u = cross(vecQP, rOverSR).z;
+//   // if r x s != 0 and 0 <= t <= 1 and 0 <= u <= 0
+//   // then the two lines meet at p + tr = q + us
+//   if (crs != 0 && inRange(t, 0, 1) && inRange(u, 0, 1)) {
+//     return add(q0, mult(u, s));
+//   }
+//   console.log("llIntersect returning null");
+//   return null;
+// }
+
+//------------------------------------------------------------
+// line/parabola intersections
+// The line is given by a ray q(t) = q + tv.
+// Returns t values.
+//------------------------------------------------------------
+function lpIntersect(h, k, p, q, v) {
+  // v = p1 --> p2
+  // var q = p1;
+  // var v = subtract(p2, q);
+  var a = v.x*v.x/(4*p);
+  var b = 2*v.x*(q.x-h)/(4*p) - v.y;
+  var c = (q.x*q.x-2*q.x*h+h*h)/(4*p) + k - q.y;
+  var tvals = quadratic(a, b, c);
+  return tvals;
+}
+
+// Returns intersections ordered by x value
+// h - x offset
+// k - y offset
+// p - scale factor (distance from parabola to directrix)
+function ppIntersect(h1, k1, p1, h2, k2, p2) {
+  // Check for degenerate parabolas
+  const EPSILON = 0.00000001;
+  if (Math.abs(p1) < EPSILON) {
+    if (Math.abs(p2) < EPSILON) {
+      // Both parabolas have no width
+      return [];
+    }
+    var x = h1;
+    var y = f(x, h2, k2, p2);
+    return [ vec2(x, y), vec2(x, y) ];
+  } else if (Math.abs(p2) < EPSILON) {
+    var x = h2;
+    var y = f(x, h1, k1, p1);
+    return [ vec2(x, y), vec2(x, y) ];
+  }
+
+  var a = 0.25*(1/p1 - 1/p2);
+  var b = 0.5*(h2/p2 - h1/p1);
+  var c = 0.25*(h1*h1/p1 - h2*h2/p2) + k1 - k2;
+  var disc = b*b - 4*a*c;
+  var xintersections = [];
+  if (a == 0) {
+    // One solution -- no quadratic term
+    xintersections.push(-c/b);
+  } else if (disc < 0) {
+    // No real solutions
+  } else {
+    // One or two solutions.
+    var x1 = (-b + Math.sqrt(disc))/(2*a);
+    var x2 = (-b - Math.sqrt(disc))/(2*a);
+    if (x1 < x2) {
+      xintersections.push(x1);
+      xintersections.push(x2);
+    } else {
+      xintersections.push(x2);
+      xintersections.push(x1);
+    }
+  }
+  // return xintersections;
+  var ret = [];
+  xintersections.forEach(function(x) {
+    var y = f(x, h1, k1, p1);//(x-h1)*(x-h1)/(4*p1) + k1;
+    ret.push(vec2(x, y));
+  });
+  return ret;
+}
+
+//------------------------------------------------------------
 // PointSegmentBisector class
 //
 // If the point is in the shadow of the line segment then
@@ -59,10 +216,10 @@ Line = function(p1, p2) {
 //------------------------------------------------------------
 PointSegmentBisector = function(p, s) {
   p = vec3(p);
-  let v = subtract(s[1], s[0]);
-  let v_unit = normalize(v);
-  let w = subtract(p, s[0]);
-  let d = dot(w, v_unit);
+  // let v = subtract(s[1], s[0]);
+  // let v_unit = normalize(v);
+  // let w = subtract(p, s[0]);
+  // let d = dot(w, v_unit);
   // if (d < length(v)) {
   //   // In the shadow, so fully parabolic
   //   this.para = createGeneralParabola(p, s);
@@ -118,27 +275,8 @@ function dist(obj1, obj2) {
     var c = obj1[0].x * obj1[1].y - obj1[1].x * obj1[0].y;
     return Math.abs(a * obj2.x + b * obj2.y + c)/Math.sqrt(a*a + b*b);
   } else { // Segment to Segment
-    throw "Segment to Segment distance is not implemented yet";
+    throw "Unable to get distance from parameter objects";
   }
-}
-
-//------------------------------------------------------------
-// quadratic
-//
-// ax^2 + bx + c = 0
-//------------------------------------------------------------
-function quadratic(a, b, c) {
-  if (a == 0) return [];
-  // var disc = Math.sqrt(b*b-4*a*c);
-  var disc = b*b-4*a*c;
-  if (disc < -0.0000001) {
-    return [];
-  }
-  if (Math.abs(disc) < 0.0000001) {
-    return [(-b)/(2*a)];
-  }
-  var sdisc = Math.sqrt(disc);
-  return [(-b+sdisc)/(2*a), (-b-sdisc)/(2*a)];
 }
 
 //------------------------------------------------------------
@@ -154,34 +292,6 @@ function getAngle(s) {
     [p1, p2] = [p2, p1]
   }
   return Math.atan2(p2[1]-p1[1], p2[0]-p1[0]);
-}
-
-//------------------------------------------------------------
-//------------------------------------------------------------
-// Specific intersect functions
-//------------------------------------------------------------
-//------------------------------------------------------------
-
-//             * p4
-//           _/
-// p1 *----_/---------* p2
-//       _/
-//      /
-//  p3 *
-function intersectLines(p1, p2, p3, p4) {
-  var x1 = p1.x;
-  var x2 = p2.x;
-  var x3 = p3.x;
-  var x4 = p4.x;
-  var y1 = p1.y;
-  var y2 = p2.y;
-  var y3 = p3.y;
-  var y4 = p4.y;
-  var denom = (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
-  if (Math.abs(denom) < 0.000001) return null;
-  var x = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4))/denom;
-  var y = ((x1*y2-y1*x2)*(y3-y4) - (y1-y2)*(x3*y4-y3*x4))/denom;
-  return vec3(x, y, 0);
 }
 
 //------------------------------------------------------------

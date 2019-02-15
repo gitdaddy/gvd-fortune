@@ -48,7 +48,7 @@ V.prototype.intersect = function(obj) {
     return ret;
   } else if (obj instanceof V) {
     // find the side the obj lies on
-    // using the sign of the cross product
+    // TODO fix the skew
     if (obj.p.x < this.p.x) {
   // obj is on the left of this
       var ret = [];
@@ -76,25 +76,6 @@ V.prototype.intersect = function(obj) {
 // The ray is given in parametric form p(t) = p + tv
 V.prototype.intersectRay = function(p, v) {
   throw "intersectRay not implemented";
-  // p = this.transformPoint(p);
-  // v = this.transformVector(v);
-
-  // var tvals = lvIntersect(this.h, this.k, this.p, p, v);
-  // // Sort tvals in increasing order
-  // if (tvals.length == 2 && tvals[1] < tvals[0]) {
-  //   tvals = [tvals[1], tvals[0]];
-  // }
-
-  // pthis = this;
-  // var ret = [];
-  // tvals.forEach(function(t) {
-  //   if (t >= 0) {
-  //     var q = add(p, mult(v,t));
-  //     q = pthis.untransformPoint(q);
-  //     ret.push(q);
-  //   }
-  // });
-  // return ret;
 }
 
 // y = f(x)
