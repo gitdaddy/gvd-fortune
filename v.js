@@ -14,15 +14,15 @@
 var tolerance = 0.0001;
 // line is given as a pair of points through which the line passes.
 // The sweepline is assumed to be horizontal and is given as a y-value.
-V = function(line, sweepline) {
-  var ret = _.sortBy(line, [function(i) { return i.y; }]);
-  this.y0 = ret[0];
-  this.y1 = ret[1];
+V = function(line, directrix) {
+  lineSegment = _.sortBy(line, [function(i) { return i.y; }]);
+  this.y0 = lineSegment[0];
+  this.y1 = lineSegment[1];
   this.p = intersectLines(
-    ret[0], ret[1], vec3(-100, sweepline, 0), vec3(100, sweepline, 0));
+    lineSegment[0], lineSegment[1], vec3(-100, directrix, 0), vec3(100, directrix, 0));
   this.focus = this.p;
   var theta =
-    getSegmentsBisector([vec3(-1, sweepline, 0), vec3(1, sweepline, 0)], line);
+    getSegmentsBisector([vec3(-1, directrix, 0), vec3(1, directrix, 0)], lineSegment);
   // Get the first positive 90 degree sibling to theta
   while (theta > 0) theta -= Math.PI/2;
   while (theta < 0) theta += Math.PI/2;
@@ -32,7 +32,22 @@ V = function(line, sweepline) {
     vectors.push(vec3(Math.cos(theta), Math.sin(theta), 0));
   });
   this.vectors = vectors;
-  this.miny = sweepline > Math.min(this.y0.y, this.y1.y) ? sweepline : Math.min(this.y0.y, this.y1.y);
+  this.miny = directrix > Math.min(this.y0.y, this.y1.y) ? directrix : Math.min(this.y0.y, this.y1.y);
+}
+
+V.prototype.updateNewSweeplineForDemoMode = function() {
+  var directrix = Math.min(this.y0.y, this.y1.y) - 0.00001;
+  var theta =
+    getSegmentsBisector([vec3(-1, directrix, 0), vec3(1, directrix, 0)], makeSegment(this.y0, this.y1));
+  // Get the first positive 90 degree sibling to theta
+  while (theta > 0) theta -= Math.PI/2;
+  while (theta < 0) theta += Math.PI/2;
+  this.thetas = [theta + Math.PI/2, theta];
+  var vectors = [];
+  this.thetas.forEach(function(theta) {
+    vectors.push(vec3(Math.cos(theta), Math.sin(theta), 0));
+  });
+  this.vectors = vectors;
 }
 
 // Intersect the V with a parabola.
@@ -48,24 +63,39 @@ V.prototype.intersect = function(obj) {
     return ret;
   } else if (obj instanceof V) {
     // find the side the obj lies on
-    // TODO fix the skew
+    var ret = [];
+    var i0;
+    var i1;
     if (obj.p.x < this.p.x) {
   // obj is on the left of this
-      var ret = [];
-      var i0 = intersectLines(obj.p, obj.vectors[0], this.p, this.vectors[0]);
-      var i1 = intersectLines(obj.p, obj.vectors[1], this.p, this.vectors[0]);
-      if (i0) ret.push(i0);
-      if (i1) ret.push(i1);
-      return ret;
+      var i0 = intersectLines(
+        obj.p, 
+        vec3(obj.f_(obj.y1.y)[0], obj.y1.y, 0), 
+        this.p,
+        vec3(this.f_(this.y1.y)[0], this.y1.y, 0));
+
+      var i1 = intersectLines(
+        this.p, 
+        vec3(this.f_(this.y1.y)[0], this.y1.y, 0), 
+        obj.p,
+        vec3(obj.f_(obj.y1.y)[1], obj.y1.y, 0));
     } else {
       // obj is on the right of this
-      var ret = [];
-      var i0 = intersectLines(this.p, this.vectors[1], obj.p, obj.vectors[0]);
-      var i1 = intersectLines(this.p, this.vectors[1], obj.p, obj.vectors[1]);
-      if (i0) ret.push(i0);
-      if (i1) ret.push(i1);
-      return ret;
+      var i0 = intersectLines(
+        this.p, 
+        vec3(this.f_(this.y1.y)[1], this.y1.y, 0), 
+        obj.p,
+        vec3(obj.f_(obj.y1.y)[0], obj.y1.y, 0));
+
+      var i1 = intersectLines(
+        this.p, 
+        vec3(this.f_(this.y1.y)[1], this.y1.y, 0), 
+        obj.p,
+        vec3(obj.f_(obj.y1.y)[1], obj.y1.y, 0));
     }
+    if (i0) ret.push(i0);
+    if (i1) ret.push(i1);
+    return _.sortBy(ret, function (p) { return p.x; });
   }
   throw "intersection type not implemented";
 }
@@ -129,6 +159,19 @@ V.prototype.prepDraw = function(nodeid, label, x0, x1) {
     this.drawPoints.push({x:x0, y:y0});
     this.drawPoints.push({x:x1, y:y1});
   }
+  // To debug the v
+  // var y0 = this.f(-1)
+  // var y1 = this.f(1)
+  // if (-1 < this.p.x && this.p.x < 1) {
+  //   // case 2
+  //   this.drawPoints.push({x:-1, y:y0});
+  //   this.drawPoints.push({x:this.p.x, y:this.p.y});
+  //   this.drawPoints.push({x:1, y:y1});
+  // } else {
+  //   // cases 1 and 3
+  //   this.drawPoints.push({x:-1, y:y0});
+  //   this.drawPoints.push({x:1, y:y1});
+  // }
 }
 
 // Point intersection using the cross product TODO fix
@@ -136,31 +179,31 @@ V.prototype.prepDraw = function(nodeid, label, x0, x1) {
 // t = (q-p) x s/(rxs)
 // u = (p-q) x r/(sxr)
 // Note s x r = -r x s
-function crossIntersect(p0, p1, q0, q1) {
-  var r = normalize(subtract(p1, p0));
-  var s = normalize(subtract(q1, q0));
-  var crs = cross(r,s).z;
-  var vecPQ = subtract(q0, p0);
-  var vecQP = subtract(p0, q0);
-  if (crs == 0 && cross(vecPQ, r).z == 0) {
-    console.log("Intersecting lines colinear");
-    return null;
-  }
-  if (crs == 0 && cross(vecPQ, r).z != 0) {
-    console.log("Intersecting lines are parallel");
-    return null;
-  }
-  var sOverRS = divide(s, crs);
-  var rOverSR = divide(r, cross(s, r).z);
-  var t = cross(vecPQ, sOverRS).z;
-  var u = cross(vecQP, rOverSR).z;
-  // if r x s != 0 and 0 <= t <= 1 and 0 <= u <= 0
-  // then the two lines meet at p + tr = q + us
-  if (crs != 0 && inRange(t, 0, 1) && inRange(u, 0, 1)) {
-    return add(q0, mult(u, s));
-  }
-  return null;
-}
+// function crossIntersect(p0, p1, q0, q1) {
+//   var r = normalize(subtract(p1, p0));
+//   var s = normalize(subtract(q1, q0));
+//   var crs = cross(r,s).z;
+//   var vecPQ = subtract(q0, p0);
+//   var vecQP = subtract(p0, q0);
+//   if (crs == 0 && cross(vecPQ, r).z == 0) {
+//     console.log("Intersecting lines colinear");
+//     return null;
+//   }
+//   if (crs == 0 && cross(vecPQ, r).z != 0) {
+//     console.log("Intersecting lines are parallel");
+//     return null;
+//   }
+//   var sOverRS = divide(s, crs);
+//   var rOverSR = divide(r, cross(s, r).z);
+//   var t = cross(vecPQ, sOverRS).z;
+//   var u = cross(vecQP, rOverSR).z;
+//   // if r x s != 0 and 0 <= t <= 1 and 0 <= u <= 0
+//   // then the two lines meet at p + tr = q + us
+//   if (crs != 0 && inRange(t, 0, 1) && inRange(u, 0, 1)) {
+//     return add(q0, mult(u, s));
+//   }
+//   return null;
+// }
 
 function divide(point, scalar){
   var tmp = point;
