@@ -4,7 +4,7 @@
 // y is where the event should occur, while point is where the
 // arcs will converge into a Voronoi vertex.
 //------------------------------------------------------------
-var CloseEvent = function (y, arcNode, leftNode, rightNode, point) {
+var CloseEvent = function (y, arcNode, leftNode, rightNode, point, radius) {
   this.yval = y;
   // Point that is equidistant from the three points
   this.point = point;
@@ -14,9 +14,7 @@ var CloseEvent = function (y, arcNode, leftNode, rightNode, point) {
   this.arcNode.closeEvent = this;
   this.isCloseEvent = true;
   this.live = true;
-  if (this.arcNode.isArc) {
-    this.r = length(subtract(vec2(point), vec2(this.arcNode.site)));
-  }
+  this.r = radius;
 };
 
 Object.defineProperty(CloseEvent.prototype, "y", {
@@ -35,7 +33,7 @@ function createBeachlineSegment(site, directrix) {
 }
 
 function parseEquiPoints(closePoints, arcNode) {
-  var sorted = _.sortBy(closePoints, function (p){ return p.x; });
+  var sorted = _.sortBy(closePoints, function (p) { return p.x; });
   if (arcNode.isParabola) {
     if (belongsToSegment(arcNode, arcNode.nextArc())) {
       return sorted[0];
@@ -49,7 +47,16 @@ function parseEquiPoints(closePoints, arcNode) {
       return null;
     }
     if (arcNode.isLeftChild) {
+      var centerArcX = (arcNode.x0 + arcNode.x1) / 2;
+      // if both points lie to the left of the left child get the closest
+      if (sorted[0].x < centerArcX && sorted[1].x < centerArcX) {
+        return Math.abs(sorted[0].x - centerArcX) < Math.abs(sorted[1].x - centerArcX) ?
+          sorted[0] : sorted[1];
+      }
       return sorted[0];
+    } else if (sorted[0].x > centerArcX && sorted[1].x > centerArcX) {
+      return Math.abs(sorted[0].x - centerArcX) < Math.abs(sorted[1].x - centerArcX) ?
+        sorted[0] : sorted[1];
     }
     return sorted[1];
   }
@@ -167,7 +174,7 @@ function createCloseEvent(arcNode) {
         equi = parseEquiPoints(equi, arcNode);
       }
       let r = dist(equi, arcNode.site);
-      return new CloseEvent(equi.y - r, arcNode, left, right, equi);
+      return new CloseEvent(equi.y - r, arcNode, left, right, equi, r);
     } else if (isSegment(arcNode.site)) {
       if (arcNode.site.a == left.site && arcNode.site.b == right.site
         || arcNode.site.b == left.site && arcNode.site.a == right.site) return null;
@@ -193,13 +200,14 @@ function createCloseEvent(arcNode) {
         || centerArcX < equi.x && equi.x < centerRightX) {
         // radius between point and segment
         let r = dist(equi, arcNode.site);
-        return new CloseEvent(equi.y - r, arcNode, left, right, equi);
+        return new CloseEvent(equi.y - r, arcNode, left, right, equi, r);
       }
     } else {
       // All three are points
       var equi = equidistant(left.site,
         arcNode.site,
         right.site);
+      if (equi == null) return null;
       var u = subtract(left.site, arcNode.site);
       var v = subtract(left.site, right.site);
       // Check if there should be a close event added. In some
@@ -207,7 +215,7 @@ function createCloseEvent(arcNode) {
       if (cross(u, v)[2] < 0) {
         let r = length(subtract(arcNode.site, equi));
         let event_y = equi.y - r;
-        return new CloseEvent(event_y, arcNode, left, right, equi);
+        return new CloseEvent(event_y, arcNode, left, right, equi, r);
       }
     }
   }

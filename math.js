@@ -450,6 +450,7 @@ function equidistant(c1, c2, c3) {
   var b12, b23;
   // Bisecting types can be either lines or parabolas
   if (1 == points.length) {
+    // TODO fix skew for point segment segment or seg  seg point
     b12 = bisect(segments[0], points[0]);
     b23 = bisect(points[0], segments[1]);
   } else {
