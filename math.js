@@ -275,7 +275,8 @@ function dist(obj1, obj2) {
     var c = obj1[0].x * obj1[1].y - obj1[1].x * obj1[0].y;
     return Math.abs(a * obj2.x + b * obj2.y + c)/Math.sqrt(a*a + b*b);
   } else { // Segment to Segment
-    throw "Unable to get distance from parameter objects";
+    console.error("Unable to get distance from parameter objects");
+    return;
   }
 }
 
@@ -450,7 +451,7 @@ function equidistant(c1, c2, c3) {
   var b12, b23;
   // Bisecting types can be either lines or parabolas
   if (1 == points.length) {
-    // TODO fix skew for point segment segment or seg  seg point
+    // TODO fix skew for point segment segment or seg seg point
     b12 = bisect(segments[0], points[0]);
     b23 = bisect(points[0], segments[1]);
   } else {

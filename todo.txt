@@ -1,2 +1,2 @@
-1. Fix skew in V-V intersect
-2. Support ploygons
+1. Fix error in dataset 2 - V -intersection
+2. Fix error in dataset 1 - Support ploygons

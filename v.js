@@ -77,11 +77,11 @@ V.prototype.intersect = function(obj) {
       return p.y > miny;
     });
 
-    var centerX = (obj.p.x + this.p.x) / 2.0;
-    // only get the two most valid points that are cloest to the center
-    // TODO use half plane evaluation??
+    // Use the target x as the lowest segments point
+    var targetX = this.y1.y > obj.y1.y ? obj.p.x : this.p.x;
+    // only get the two most valid points that are closest to the midpoint
     var ret = _.sortBy(validPoints, function (p) {
-      return Math.abs(p.x - centerX); // Not precise enough
+      return Math.abs(p.x - targetX);
     });
 
     ret = ret.length > 2 ? [ret[0], ret[1]] : ret;
