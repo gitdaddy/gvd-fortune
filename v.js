@@ -62,39 +62,30 @@ V.prototype.intersect = function(obj) {
     ret = _.sortBy(ret, [function(i) { return i.x; }]);
     return ret;
   } else if (obj instanceof V) {
-    // find the side the obj lies on
-    var ret = [];
-    var i0;
-    var i1;
-    if (obj.p.x < this.p.x) {
-  // obj is on the left of this
-      var i0 = intersectLines(
-        obj.p, 
-        vec3(obj.f_(obj.y1.y)[0], obj.y1.y, 0), 
-        this.p,
-        vec3(this.f_(this.y1.y)[0], this.y1.y, 0));
+    var tlvy = vec3(this.f_(this.y1.y)[0], this.y1.y, 0);
+    var trvy = vec3(this.f_(this.y1.y)[1], this.y1.y, 0);
+    var olvy = vec3(obj.f_(obj.y1.y)[0], obj.y1.y, 0);
+    var orvy = vec3(obj.f_(obj.y1.y)[1], obj.y1.y, 0);
 
-      var i1 = intersectLines(
-        this.p, 
-        vec3(this.f_(this.y1.y)[0], this.y1.y, 0), 
-        obj.p,
-        vec3(obj.f_(obj.y1.y)[1], obj.y1.y, 0));
-    } else {
-      // obj is on the right of this
-      var i0 = intersectLines(
-        this.p, 
-        vec3(this.f_(this.y1.y)[1], this.y1.y, 0), 
-        obj.p,
-        vec3(obj.f_(obj.y1.y)[0], obj.y1.y, 0));
+    var itlol = intersectLines(this.p, tlvy, obj.p, olvy);
+    var itlor = intersectLines(this.p, tlvy, obj.p, orvy);
+    var itrol = intersectLines(this.p, trvy, obj.p, olvy);
+    var itror = intersectLines(this.p, trvy, obj.p, orvy);
 
-      var i1 = intersectLines(
-        this.p, 
-        vec3(this.f_(this.y1.y)[1], this.y1.y, 0), 
-        obj.p,
-        vec3(obj.f_(obj.y1.y)[1], obj.y1.y, 0));
-    }
-    if (i0) ret.push(i0);
-    if (i1) ret.push(i1);
+    var miny = this.p.y;
+    var validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
+      return p.y > miny;
+    });
+
+    var centerX = (obj.p.x + this.p.x) / 2.0;
+    // only get the two most valid points that are cloest to the center
+    // TODO use half plane evaluation??
+    var ret = _.sortBy(validPoints, function (p) {
+      return Math.abs(p.x - centerX); // Not precise enough
+    });
+
+    ret = ret.length > 2 ? [ret[0], ret[1]] : ret;
+
     return _.sortBy(ret, function (p) { return p.x; });
   }
   throw "intersection type not implemented";
