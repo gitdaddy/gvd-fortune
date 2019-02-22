@@ -42,22 +42,27 @@ function parseEquiPoints(closePoints, arcNode) {
     }
     return arcNode.isLeftChild ? sorted[0] : sorted[1];
   } else { // arcNode is a V
-    if (_.isUndefined(arcNode.isLeftChild)) {
-      console.error("found arcNode with undefined property that should be defined");
-      return null;
-    }
-    if (arcNode.isLeftChild) {
-      var centerArcX = (arcNode.x0 + arcNode.x1) / 2;
-      // if both points lie to the left of the left child get the closest
-      if (sorted[0].x < centerArcX && sorted[1].x < centerArcX) {
-        return Math.abs(sorted[0].x - centerArcX) < Math.abs(sorted[1].x - centerArcX) ?
-          sorted[0] : sorted[1];
-      }
-      return sorted[0];
-    } else if (sorted[0].x > centerArcX && sorted[1].x > centerArcX) {
-      return Math.abs(sorted[0].x - centerArcX) < Math.abs(sorted[1].x - centerArcX) ?
-        sorted[0] : sorted[1];
-    }
+    // if (_.isUndefined(arcNode.isLeftChild)) {
+    //   console.error("found arcNode with undefined property that should be defined");
+    //   return null;
+    // }
+    // Test that this is correct
+    var centerArcX = (arcNode.x0 + arcNode.x1) / 2;
+    return Math.abs(sorted[0].x - centerArcX) < Math.abs(sorted[1].x - centerArcX) ?
+      sorted[0] : sorted[1];
+
+    // if (arcNode.isLeftChild) {
+    //   var centerArcX = (arcNode.x0 + arcNode.x1) / 2;
+    //   // if both points lie to the left of the left child get the closest
+    //   if (sorted[0].x < centerArcX && sorted[1].x < centerArcX) {
+    //     return Math.abs(sorted[0].x - centerArcX) < Math.abs(sorted[1].x - centerArcX) ?
+    //       sorted[0] : sorted[1];
+    //   }
+    //   return sorted[0];
+    // } else if (sorted[0].x > centerArcX && sorted[1].x > centerArcX) {
+    //   return Math.abs(sorted[0].x - centerArcX) < Math.abs(sorted[1].x - centerArcX) ?
+    //     sorted[0] : sorted[1];
+    // }
     return sorted[1];
   }
 }
