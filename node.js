@@ -219,15 +219,28 @@ EdgeNode.prototype.intersection = function (directrix) {
   let pright = createBeachlineSegment(rightArcNode.site, directrix);
 
   let intersections = pleft.intersect(pright);
-  this.intersections = intersections;
 
   if (intersections.length == 1) {
+    this.intersections = intersections;
     this.selectedIntersection = intersections[0];
     return intersections[0];
-  } else if (intersections.length > 2) {
-    // TODO choose the correct intersection point
-    throw "error not implemented yet";
   }
+  if (intersections.length > 2) {
+    if (leftArcNode.isV && rightArcNode.isV) {
+      // get the two intersections that are closest to
+      // the left arcNode site
+      var x = (leftArcNode.site.a.x + leftArcNode.site.b.x) / 2.0;
+      // var leftArcPoint = vec3(x, pleft.f(x), 0);
+      var sorted = _.sortBy(intersections, function(i) {
+        // return dist(leftArcPoint, i);
+        return Math.abs(x - i.x);
+      });
+      intersections = [sorted[0], sorted[1]];
+    } else {
+      throw "intersection evaluation not implemented yet";
+    }
+  }
+  this.intersections = intersections;
 
   var result;
   let pcenterx = (intersections[0].x + intersections[1].x) / 2;
