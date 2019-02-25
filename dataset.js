@@ -5,12 +5,12 @@ function createDatasets() {
     vec3(0.35, 0.6, 0),
     vec3(0.651, 0.61, 0),
     vec3(0.65, 0.1, 0),
-    vec3(0.35, 0.11, 0),
+    vec3(0.37, 0.11, 0),
 
-    vec3(-0.65, 0.51, 0),
-    vec3(-0.25, 0.41, 0),
-    vec3(-0.35, 0.12, 0),
-    vec3(-0.75, 0.12, 0),
+    // vec3(-0.65, 0.51, 0),
+    // vec3(-0.25, 0.41, 0),
+    // vec3(-0.35, 0.15, 0),
+    // vec3(-0.75, 0.12, 0),
     // vec3(-0.15, -0.95, 0),
     // vec3(0.14, -0.94, 0),
     // vec3(0.74, -0.94, 0),
@@ -22,10 +22,10 @@ function createDatasets() {
     makeSegment(points1[1], points1[2]),
     makeSegment(points1[2], points1[3]),
     makeSegment(points1[3], points1[0]),
-    makeSegment(points1[4], points1[5]),
-    makeSegment(points1[5], points1[6]),
-    makeSegment(points1[6], points1[7]),
-    makeSegment(points1[7], points1[4]),
+    // makeSegment(points1[4], points1[5]),
+    // makeSegment(points1[5], points1[6]),
+    // makeSegment(points1[6], points1[7]),
+    // makeSegment(points1[7], points1[4]),
   ];
 
   let points2 = [

@@ -60,6 +60,7 @@ ArcNode.prototype.prevEdge = function () {
 }
 
 function belongsToSegment(A, B) {
+  if (A == null || B == null) return false;
   if (A.site.type == "segment" && B.site.type == "vec") {
     return A.site.a == B.site || A.site.b == B.site;
   } else if (B.site.type == "segment" && A.site.type == "vec") {
@@ -223,6 +224,9 @@ EdgeNode.prototype.intersection = function (directrix) {
   if (intersections.length == 1) {
     this.selectedIntersection = intersections[0];
     return intersections[0];
+  } else if (intersections.length > 2) {
+    // TODO choose the correct intersection point
+    throw "error not implemented yet";
   }
 
   var result;

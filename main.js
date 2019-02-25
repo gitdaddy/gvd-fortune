@@ -57,6 +57,10 @@ function incSweepline(inc) {
   setSweepline(sweepline + inc);
 }
 
+function jointSegments(A, B) {
+  return A.a == B.a || A.a == B.b || A.b == B.a || A.b == B.b;
+}
+
 function keydown(event) {
   var x = event.keyCode;
   var key = event.key;
@@ -204,14 +208,21 @@ function datasetChange(value) {
   segments = datasets[value].segments;
   // Give all points and segments a unique ID and label
   var id = 1;
+  var labelCount = 1;
   points.forEach(function (p) {
     p.id = id++;
-    p.label = p.id % numLabels;
+    p.label = labelCount++;
   });
-
   segments.forEach(function (s) {
     s.id = id++;
-    s.label = s.id % numLabels;
+    if (_.isUndefined(s.label)) {
+      s.label = labelCount++;
+    }
+    segments.forEach(function (newS) {
+      if (newS.id != s.id && _.isUndefined(newS.label) && jointSegments(s, newS)) {
+        newS.label = s.label;
+      }
+    });
     // label all connected sites with the same label
     points.forEach(function (p) {
       if ((p.x == s.a.x && p.y == s.a.y) ||

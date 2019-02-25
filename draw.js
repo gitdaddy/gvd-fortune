@@ -134,7 +134,7 @@ function drawSegments(segments) {
       .attr("y1", s => s[0].y)
       .attr("x2", s => s[1].x)
       .attr("y2", s => s[1].y)
-      .attr("stroke", (d,i) => siteColorSvg(d.id))
+      .attr("stroke", (d,i) => siteColorSvg(d.label))
     ;
     // draw segment boundaries
     var boundaries = [];

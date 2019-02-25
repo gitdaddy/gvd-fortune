@@ -74,18 +74,21 @@ V.prototype.intersect = function(obj) {
 
     var miny = this.p.y;
     var validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
-      return p.y > miny;
+      if (p != null) {
+        return p.y > miny;
+      }
     });
-
-    // Use the target x as the lowest segments point
+    if (this.y1.y == obj.y1.y) {
+      // possibly return up to 4 points
+      return _.sortBy(validPoints, function (p) { return p.x; });
+    }
+    // Otherwise use the target intersections 'around' the lowest segment
     var targetX = this.y1.y > obj.y1.y ? obj.p.x : this.p.x;
     // only get the two most valid points that are closest to the midpoint
     var ret = _.sortBy(validPoints, function (p) {
       return Math.abs(p.x - targetX);
     });
-
     ret = ret.length > 2 ? [ret[0], ret[1]] : ret;
-
     return _.sortBy(ret, function (p) { return p.x; });
   }
   throw "intersection type not implemented";
@@ -164,37 +167,6 @@ V.prototype.prepDraw = function(nodeid, label, x0, x1) {
   //   this.drawPoints.push({x:1, y:y1});
   // }
 }
-
-// Point intersection using the cross product TODO fix
-// p + tr = q + us - if there exist  some t and u then both lines intersect
-// t = (q-p) x s/(rxs)
-// u = (p-q) x r/(sxr)
-// Note s x r = -r x s
-// function crossIntersect(p0, p1, q0, q1) {
-//   var r = normalize(subtract(p1, p0));
-//   var s = normalize(subtract(q1, q0));
-//   var crs = cross(r,s).z;
-//   var vecPQ = subtract(q0, p0);
-//   var vecQP = subtract(p0, q0);
-//   if (crs == 0 && cross(vecPQ, r).z == 0) {
-//     console.log("Intersecting lines colinear");
-//     return null;
-//   }
-//   if (crs == 0 && cross(vecPQ, r).z != 0) {
-//     console.log("Intersecting lines are parallel");
-//     return null;
-//   }
-//   var sOverRS = divide(s, crs);
-//   var rOverSR = divide(r, cross(s, r).z);
-//   var t = cross(vecPQ, sOverRS).z;
-//   var u = cross(vecQP, rOverSR).z;
-//   // if r x s != 0 and 0 <= t <= 1 and 0 <= u <= 0
-//   // then the two lines meet at p + tr = q + us
-//   if (crs != 0 && inRange(t, 0, 1) && inRange(u, 0, 1)) {
-//     return add(q0, mult(u, s));
-//   }
-//   return null;
-// }
 
 function divide(point, scalar){
   var tmp = point;
