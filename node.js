@@ -21,7 +21,6 @@ var ArcNode = function (site) {
   this.x0 = undefined;
   this.x1 = undefined;
   this.id = nodeId++;
-  this.isLeftChild = undefined;
 }
 
 ArcNode.prototype.toString = function () {

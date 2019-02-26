@@ -2,15 +2,14 @@
 
 function createDatasets() {
   let points1 = [
-    vec3(0.35, 0.6, 0),
-    vec3(0.651, 0.61, 0),
-    vec3(0.65, 0.1, 0),
-    vec3(0.37, 0.11, 0),
-
+    // vec3(0.35, 0.6, 0),
+    // vec3(0.651, 0.61, 0),
+    // vec3(0.65, 0.1, 0),
+    // vec3(0.37, 0.11, 0),
     // vec3(-0.65, 0.51, 0),
-    // vec3(-0.25, 0.41, 0),
-    // vec3(-0.35, 0.15, 0),
-    // vec3(-0.75, 0.12, 0),
+    vec3(-0.25, 0.41, 0),
+    vec3(-0.35, 0.15, 0),
+    vec3(-0.75, 0.12, 0),
     // vec3(-0.15, -0.95, 0),
     // vec3(0.14, -0.94, 0),
     // vec3(0.74, -0.94, 0),
@@ -20,8 +19,11 @@ function createDatasets() {
   let segments1 = [
     makeSegment(points1[0], points1[1]),
     makeSegment(points1[1], points1[2]),
-    makeSegment(points1[2], points1[3]),
-    makeSegment(points1[3], points1[0]),
+    
+    // makeSegment(points1[0], points1[1]),
+    // makeSegment(points1[1], points1[2]),
+    // makeSegment(points1[2], points1[3]),
+    // makeSegment(points1[3], points1[0]),
     // makeSegment(points1[4], points1[5]),
     // makeSegment(points1[5], points1[6]),
     // makeSegment(points1[6], points1[7]),
@@ -37,7 +39,7 @@ function createDatasets() {
     // vec3(0.95, 0.81, 0),
     // vec3(-0.40, 0.1, 0),
     // vec3(-0.66, 0.73, 0),
-    vec3(0.24,0.524, 0),
+    // vec3(0.24,0.524, 0),
     vec3(-0.024, 0.248, 0),
     // vec3(0.73,0.15, 0),
     // vec3(0.42,0.5, 0),
@@ -45,13 +47,13 @@ function createDatasets() {
   ];
   let segments2 = [
     makeSegment(points2[0], points2[1]),
-    makeSegment(points2[2], points2[3]),
+    // makeSegment(points2[2], points2[3]),
     // makeSegment(points2[4], points2[5])
   ];
 
   let points3 = [];
   {
-    Math.seedrandom('8');
+    Math.seedrandom('6');
     let numRandom = 8;
     for (var i = 0; i < numRandom; ++i) {
       var p = vec3(Math.random()*2-1, Math.random()*2-1, 0);
@@ -60,9 +62,7 @@ function createDatasets() {
   }
   let segments3 = [
     makeSegment(points3[0], points3[1]),
-    makeSegment(points3[2], points3[3]),
-    makeSegment(points3[4], points3[5]),
-    makeSegment(points3[6], points3[7])
+    makeSegment(points3[1], points3[2]),
   ];
 
   let points4 = [

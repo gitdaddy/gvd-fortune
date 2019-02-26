@@ -40,30 +40,14 @@ function parseEquiPoints(closePoints, arcNode) {
     } else if (belongsToSegment(arcNode.prevArc(), arcNode)) {
       return sorted[1];
     }
-    return arcNode.isLeftChild ? sorted[0] : sorted[1];
+    return _.sortBy(sorted, function (c) {
+      return dist(arcNode.site, c);
+    })[0];
   } else { // arcNode is a V
-    // if (_.isUndefined(arcNode.isLeftChild)) {
-    //   console.error("found arcNode with undefined property that should be defined");
-    //   return null;
-    // }
     // Test that this is correct
     var centerArcX = (arcNode.x0 + arcNode.x1) / 2;
     return Math.abs(sorted[0].x - centerArcX) < Math.abs(sorted[1].x - centerArcX) ?
       sorted[0] : sorted[1];
-
-    // if (arcNode.isLeftChild) {
-    //   var centerArcX = (arcNode.x0 + arcNode.x1) / 2;
-    //   // if both points lie to the left of the left child get the closest
-    //   if (sorted[0].x < centerArcX && sorted[1].x < centerArcX) {
-    //     return Math.abs(sorted[0].x - centerArcX) < Math.abs(sorted[1].x - centerArcX) ?
-    //       sorted[0] : sorted[1];
-    //   }
-    //   return sorted[0];
-    // } else if (sorted[0].x > centerArcX && sorted[1].x > centerArcX) {
-    //   return Math.abs(sorted[0].x - centerArcX) < Math.abs(sorted[1].x - centerArcX) ?
-    //     sorted[0] : sorted[1];
-    // }
-    return sorted[1];
   }
 }
 
@@ -157,9 +141,6 @@ function splitArcNode(toSplit, node, dcel) {
   var vertex = vec3(x, y, 0);
   var left = toSplit;
   var right = new ArcNode(toSplit.site);
-  left.isLeftChild = true;
-  right.isLeftChild = false;
-  node.isLeftChild = true;
   return new EdgeNode(left, new EdgeNode(node, right, vertex, dcel),
     vertex, dcel);
 }
@@ -256,12 +237,21 @@ Beachline.prototype.add = function (site) {
     while (child.isEdge) {
       parent = child;
       x = parent.intersection(directrix).x;
-      // // what if x and site.x are equal?
+      // what if x and site.x are equal?
+      if (site.x == x) {
+        console.error("Site and intersect values equal:" + x);
+      }
       side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
       child = parent.getChild(side);
     }
-    // Child is an arc node. Split it.
-    parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
+    // TODO when rendering polygons the 2nd edge arcNode doesn't only split
+    // one but two arcs
+    // if (child.isV && arcNode.isV && child.site.a == arcNode.site.a) {
+    //   parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
+    // } else {
+      // Child is an arc node. Split it.
+      parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
+    // }
     // TEST - assumes the sweepline is moving down in a negative direction
     updateArcBounds(this.root, -10000, 10000, directrix - 0.0001);
   }
