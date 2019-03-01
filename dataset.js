@@ -19,7 +19,7 @@ function createDatasets() {
   let segments1 = [
     makeSegment(points1[0], points1[1]),
     makeSegment(points1[1], points1[2]),
-    
+
     // makeSegment(points1[0], points1[1]),
     // makeSegment(points1[1], points1[2]),
     // makeSegment(points1[2], points1[3]),
@@ -39,7 +39,7 @@ function createDatasets() {
     // vec3(0.95, 0.81, 0),
     // vec3(-0.40, 0.1, 0),
     // vec3(-0.66, 0.73, 0),
-    // vec3(0.24,0.524, 0),
+    vec3(0.24,0.524, 0),
     vec3(-0.024, 0.248, 0),
     // vec3(0.73,0.15, 0),
     // vec3(0.42,0.5, 0),

@@ -310,7 +310,7 @@ function fortune() {
       if (e.live) {
         e.arcNode.prevEdge().dcelEdge.dest.point = e.point;
         e.arcNode.nextEdge().dcelEdge.dest.point = e.point;
-        var newEvents = beachline.remove(e.arcNode, e.point);
+        var newEvents = beachline.remove(e.arcNode, e.point, e.yval);
         newEvents.forEach(function (ev) {
           if (ev.y < e.y - 0.000001) {
             events.push(ev);

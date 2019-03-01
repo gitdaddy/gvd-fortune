@@ -450,19 +450,20 @@ function equidistant(c1, c2, c3) {
   var points = _.filter([c1, c2, c3], { type: "vec" });
   var b12, b23;
   // Bisecting types can be either lines or parabolas
-  if (1 == points.length) {
-    // TODO fix skew for point segment segment or seg seg point
+  if (points.length == 1) {
     b12 = bisect(segments[0], points[0]);
     b23 = bisect(points[0], segments[1]);
+  } else if (segments.length == 1) {
+    // Create a general parabola bisector and line for simplicity TODO
+    b12 = bisect(segments[0], points[0]);
+    b23 = bisect(points[0], points[1]);
+    // b12 = bisect(points[0], segments[0]);
+    // b23 = bisect(segments[0], points[1]);
   } else {
     b12 = bisect(c1, c2);
     b23 = bisect(c2, c3);
   }
   debugObjs.push(b12);
   debugObjs.push(b23);
-  // if (Math.abs(ret.x) > 1 || Math.abs(ret.y) > 1){
-  //   let msg = `equidistant close point (${ret.x}, ${ret.y}) is outside the bounds`;
-  //   console.log(msg);
-  // }
   return intersect(b12, b23);
 }

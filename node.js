@@ -236,7 +236,7 @@ EdgeNode.prototype.intersection = function (directrix) {
       });
       intersections = [sorted[0], sorted[1]];
     } else {
-      throw "intersection evaluation not implemented yet";
+      console.log("Number of intersections greater than 2 evaluation not implemented yet");
     }
   }
   this.intersections = intersections;
