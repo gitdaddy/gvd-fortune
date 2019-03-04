@@ -143,10 +143,10 @@ function createCloseEvent(arcNode, directrix) {
     if (equi == null || equi.length == 0) return null;
     let segV = createBeachlineSegment(arcNode.site, directrix);
     if (equi.length == 2) {
-      // Test this is correct
       // get the point that is closest the corresponding arc center point
       var centerArcX = (arcNode.x0 + arcNode.x1) / 2;
       var centerPoint = vec3(centerArcX, segV.f(centerArcX), 0);
+      // Not always correct FIX
       equi = _.sortBy(equi, function (e) {
         return dist(centerPoint, e);
       })[0];
@@ -190,10 +190,20 @@ function createCloseEvent(arcNode, directrix) {
       } else if (belongsToSegment(arcNode.prevArc(), arcNode)) {
         equi = sorted[1];
       } else {
-        // return lowest point TODO fix
-        equi = _.sortBy(equi, function (p) { return p.y; })[0];
+        let bSeg = createBeachlineSegment(arcNode.site, directrix);
+        var centerArcX = (arcNode.x0 + arcNode.x1) / 2;
+        var centerPoint = vec3(centerArcX, bSeg.f(centerArcX), 0);
+        equi = _.sortBy(equi, function (e) {
+          return dist(centerPoint, e);
+        })[0];
       }
     }
+    // if (arcNode.isParabola && left.isParabola)
+    // {
+
+    // } else if (arcNode.isParabola && right.isParabola) {
+
+    // }
     let r = dist(equi, arcNode.site);
     return new CloseEvent(equi.y - r, arcNode, left, right, equi, r);
   } else {
