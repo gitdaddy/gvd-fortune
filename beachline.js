@@ -100,6 +100,36 @@ var Beachline = function (dcel) {
 //------------------------------------------------------------
 // Utility function
 // toSplit is an arc node. node is also an arc node.
+//   |     |
+// _/|__*  | toSplit
+//  \ \ | /
+//     \|/ 
+//      |
+//      | node
+//      *
+//------------------------------------------------------------
+function splitSiblings(left, right, node, dcel) {
+  if (left.closeEvent) {
+    left.closeEvent.live = false;
+  }
+  if (right.closeEvent) {
+    right.closeEvent.live = false;
+  }
+  var vertex;
+  if (left.isV) {
+    vartex = vec3(node.site.x, new V(left.site, node.site.y).f(x));
+  } else if (right.isV) {
+    vartex = vec3(node.site.x, new V(right.site, node.site.y).f(x));
+  } else {
+    throw "Cannot split siblings";
+  }
+  return new EdgeNode(left, new EdgeNode(node, right, vertex, dcel),
+    vertex, dcel);
+}
+
+//------------------------------------------------------------
+// Utility function
+// toSplit is an arc node. node is also an arc node.
 //
 //  |        | toSplit
 //   \      /
@@ -261,14 +291,19 @@ Beachline.prototype.add = function (site) {
       side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
       child = parent.getChild(side);
     }
-    // TODO when rendering polygons the 2nd edge arcNode doesn't only split
+    // when rendering polygons the 2nd edge arcNode doesn't only split
     // one but two arcs
-    // if (child.isV && arcNode.isV && child.site.a == arcNode.site.a) {
-    //   parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
-    // } else {
-    // Child is an arc node. Split it.
-    parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
-    // }
+    if (child.isV && arcNode.isV && child.site.a == arcNode.site.a) {
+      if (arcNode.site.b.x < child.site.b.x) {
+        // split child and left sibling
+      parent.setChild(splitSiblings(child.getPrev(), child, arcNode, dcel), side);
+    } else {
+      parent.setChild(splitSiblings(child, child.getNext(), arcNode, dcel), side);
+      }
+    } else {
+      // Child is an arc node. Split it.
+      parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
+    }
     // TEST - assumes the sweepline is moving down in a negative direction
     updateArcBounds(this.root, -10000, 10000, directrix - 0.0001);
   }
