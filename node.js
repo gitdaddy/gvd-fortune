@@ -230,12 +230,15 @@ EdgeNode.prototype.intersection = function (directrix) {
   }
   if (intersections.length > 2) {
     if (leftArcNode.isV && rightArcNode.isV) {
+      if (intersections.length == 3) {
+        // return the center intersection
+        this.selectedIntersection = intersections[1];
+        return this.selectedIntersection;
+      }
       // get the two intersections that are closest to
-      // the left arcNode site
+      // the left arcNode site since we are going from left to right
       var x = (leftArcNode.site.a.x + leftArcNode.site.b.x) / 2.0;
-      // var leftArcPoint = vec3(x, pleft.f(x), 0);
       var sorted = _.sortBy(intersections, function(i) {
-        // return dist(leftArcPoint, i);
         return Math.abs(x - i.x);
       });
       intersections = [sorted[0], sorted[1]];

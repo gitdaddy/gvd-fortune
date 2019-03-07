@@ -123,8 +123,8 @@ function splitSiblings(left, right, node, dcel) {
   } else {
     throw "Cannot split siblings";
   }
-  return new EdgeNode(left, new EdgeNode(node, right, vertex, dcel),
-    vertex, dcel);
+  // TODO condition for right?
+  return new EdgeNode(left, node, vertex, dcel);
 }
 
 //------------------------------------------------------------
