@@ -219,6 +219,10 @@ EdgeNode.prototype.intersection = function (directrix) {
 
   let intersections = pleft.intersect(pright);
 
+  if (intersections.length == 0) {
+    throw "error intersections size 0 between node id: " + leftArcNode.id + " and node: " + rightArcNode.id;
+  }
+
   if (intersections.length == 1) {
     this.intersections = intersections;
     this.selectedIntersection = intersections[0];

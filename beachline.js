@@ -103,7 +103,7 @@ var Beachline = function (dcel) {
 //   |     |
 // _/|__*  | toSplit
 //  \ \ | /
-//     \|/ 
+//     \|/
 //      |
 //      | node
 //      *
@@ -117,9 +117,9 @@ function splitSiblings(left, right, node, dcel) {
   }
   var vertex;
   if (left.isV) {
-    vartex = vec3(node.site.x, new V(left.site, node.site.y).f(x));
+    vertex = vec3(node.site.x, new V(left.site, node.site.y).f(node.site.x));
   } else if (right.isV) {
-    vartex = vec3(node.site.x, new V(right.site, node.site.y).f(x));
+    vertex = vec3(node.site.x, new V(right.site, node.site.y).f(node.site.x));
   } else {
     throw "Cannot split siblings";
   }
@@ -296,9 +296,9 @@ Beachline.prototype.add = function (site) {
     if (child.isV && arcNode.isV && child.site.a == arcNode.site.a) {
       if (arcNode.site.b.x < child.site.b.x) {
         // split child and left sibling
-      parent.setChild(splitSiblings(child.getPrev(), child, arcNode, dcel), side);
+      parent.setChild(splitSiblings(child.prevArc(), child, arcNode, dcel), side);
     } else {
-      parent.setChild(splitSiblings(child, child.getNext(), arcNode, dcel), side);
+      parent.setChild(splitSiblings(child, child.nextArc(), arcNode, dcel), side);
       }
     } else {
       // Child is an arc node. Split it.
