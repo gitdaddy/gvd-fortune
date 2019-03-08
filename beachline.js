@@ -108,7 +108,7 @@ var Beachline = function (dcel) {
 //      | node
 //      *
 //------------------------------------------------------------
-function splitSiblings(left, right, node, dcel) {
+function splitSiblings(left, node, right, dcel) {
   if (left.closeEvent) {
     left.closeEvent.live = false;
   }
@@ -118,13 +118,13 @@ function splitSiblings(left, right, node, dcel) {
   var vertex;
   if (left.isV) {
     vertex = vec3(node.site.x, new V(left.site, node.site.y).f(node.site.x));
+    return new EdgeNode(left, node, vertex, dcel);
   } else if (right.isV) {
     vertex = vec3(node.site.x, new V(right.site, node.site.y).f(node.site.x));
+    return new EdgeNode(node, right, vertex, dcel);
   } else {
     throw "Cannot split siblings";
   }
-  // TODO condition for right?
-  return new EdgeNode(left, node, vertex, dcel);
 }
 
 //------------------------------------------------------------
@@ -230,9 +230,7 @@ function createCloseEvent(arcNode, directrix) {
     }
     // if (arcNode.isParabola && left.isParabola)
     // {
-
     // } else if (arcNode.isParabola && right.isParabola) {
-
     // }
     let r = dist(equi, arcNode.site);
     return new CloseEvent(equi.y - r, arcNode, left, right, equi, r);
@@ -291,20 +289,30 @@ Beachline.prototype.add = function (site) {
       side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
       child = parent.getChild(side);
     }
-    // when rendering polygons the 2nd edge arcNode doesn't only split
-    // one but two arcs
-    if (child.isV && arcNode.isV && child.site.a == arcNode.site.a) {
-      if (arcNode.site.b.x < child.site.b.x) {
-        // split child and left sibling
-      parent.setChild(splitSiblings(child.prevArc(), child, arcNode, dcel), side);
-    } else {
-      parent.setChild(splitSiblings(child, child.nextArc(), arcNode, dcel), side);
-      }
-    } else {
-      // Child is an arc node. Split it.
-      parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
-    }
-    // TEST - assumes the sweepline is moving down in a negative direction
+
+    // var siblingLeft = child.prevArc();
+    // var siblingRight = child.nextArc();
+    // // var isJointApexNode = arcNode.isV && child.isV && child.site.a == arcNode.site.a;
+    // // var isJointChildNode = child.isParabola && arcNode.isV && child.site.flipped;
+    // // var isJointClosingNode = child.isParabola && arcNode.isV && child.site.flipped;
+
+    // if (isJointApexNode) {
+    //   var newChild = arcNode.site.b.x < child.site.b.x ?
+    //   splitSiblings(siblingLeft, arcNode, child, dcel) : splitSiblings(child, arcNode, siblingRight, dcel);
+    //   parent.setChild(newChild, side);
+    // } else if (isJointChildNode) {
+    //   // is this a left hull joint or right hull joint
+    //   var newChild = siblingLeft.isV && equal(siblingLeft.site.b, arcNode.site.a) ?
+    //   splitSiblings(siblingLeft, arcNode, child, dcel) : splitSiblings(child, arcNode, siblingRight, dcel);
+    //   parent.setChild(newChild, side);
+    // } else {
+    //   // Child is an arc node. Split it.
+    //   parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
+    // }
+
+    // Child is an arc node. Split it.
+    parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
+      // TEST - assumes the sweepline is moving down in a negative direction
     updateArcBounds(this.root, -10000, 10000, directrix - 0.0001);
   }
 

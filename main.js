@@ -213,6 +213,7 @@ function datasetChange(value) {
     p.id = id++;
     p.label = labelCount++;
   });
+
   segments.forEach(function (s) {
     s.id = id++;
     if (_.isUndefined(s.label)) {
@@ -223,19 +224,22 @@ function datasetChange(value) {
         newS.label = s.label;
       }
     });
-    // label all connected sites with the same label
-    points.forEach(function (p) {
+  });
+
+  // label all connected sites with the same label
+  points.forEach(function (p) {
+    segments.forEach(function(s) {
       if ((p.x == s.a.x && p.y == s.a.y) ||
         (p.x == s.b.x && p.y == s.b.y)) {
         p.label = s.label;
       }
-      // if point is on the lowest y point of the segment it is flipped
-      var lowest = _.sortBy([s.a, s.b], function (p) { return p.y; });
-      if (p.x == lowest[0].x && p.y == lowest[0].y) {
-        p.flipped = true;
-      }
     });
+    // if point is on the lowest y point of all segments then it is flipped
+    p.flipped = isFlipped(p, segments);
   });
+
+
+  populateDataProps(points, segments);
 
   initDebugCircumcircle();
   drawSites(points);

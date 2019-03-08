@@ -1,11 +1,108 @@
 "use strict";
 
+/* Node conditions for jointed sites
+  Order of addition: point, s1, s2, s3 ....
+  1. Apex node - top point s.a == child s.a
+  2. Child node - left or right hull
+  3. Closing node - bottom point - not sure if we need to do anything here
+*/
+
+var NODE_RELATION = {
+  APEX: 1,
+  CHILD_LEFT_HULL: 2,
+  CHILD_RIGHT_HULL: 3,
+  CLOSING: 4
+}
+
+// function isLowestPoint(p, segs) {
+//   var startPoint = false;
+//   var endPoint = false;
+//   // return true if point is lowest of all segments it is a part of
+//    segs.forEach(function(s) {
+//     if (equal(p, s.a)) {
+//       startPoint = true;
+//       return;
+//     } else if (equal(p, s.b)) {
+//       endPoint = true;
+//     }
+//   });
+//   return startPoint ? false : endPoint;
+// }
+
+// Get next Lower segment or undefined
+function getNextSeg(current, segments) {
+  var next = _.find(segments, function(s) {
+    if (equal(current.b, s.a) && current.b.y > s.b.y) {
+      return true;
+    }
+  });
+  return next;
+}
+
+function populateDataProps(points, segments) {
+  var uniqueLabels = _.uniq(_.map(segments, "label"));
+  _.forEach(uniqueLabels, function(l) {
+    definePointGroupProperties(_.filter(points, { label: l }), _.filter(segments, { label: l }));
+  });
+}
+
+function definePointGroupProperties(gp, gs) {
+  // No two points of the same label should ever share the same y value
+  var ySortedPoints = _.sortBy(gp, function(i) { return i.y; });
+  ySortedPoints[0].relation = NODE_RELATION.CLOSING;
+  ySortedPoints[ySortedPoints.length - 1].relation = NODE_RELATION.APEX;
+  var parents = _.filter(gs, function(s) { return equal(s.a, ySortedPoints[ySortedPoints.length - 1]); });
+  var sortedParents = _.sortBy(parents, function(s) { return s.b.x; });
+
+  if (sortedParents.length == 2) {
+    // follow left path
+    var curLeft = getNextSeg(sortedParents[0], gs);
+    while(curLeft) {
+      var curLeft = getNextSeg(curLeft, gs);
+      if (curLeft && getNextSeg(curLeft)) {
+        // mark points
+        gp.forEach(function (p) {
+          if (equal(p, curLeft.a) || equal(p, curLeft.b)) {
+            p.relation = NODE_RELATION.CHILD_LEFT_HULL; // Never set ??
+          }
+        });
+      }
+    }
+
+    // follow right path
+    var curRight = getNextSeg(sortedParents[1], gs);
+    while(curRight) {
+      var curRight = getNextSeg(curRight, gs);
+      if (curRight && getNextSeg(curRight)) {
+        // mark points
+        gp.forEach(function (p) {
+          if (equal(p, curRight.a) || equal(p, curRight.b)) {
+            p.relation = NODE_RELATION.CHILD_RIGHT_HULL;
+          }
+        });
+      }
+    }
+  }
+}
+
+function isFlipped(p, segs) {
+  var endPoint = false;
+  // return true if point is lowest of all segments it is a part of
+   segs.forEach(function(s) {
+    if (equal(p, s.b)) {
+      endPoint = true;
+      return;
+    }
+  });
+  return endPoint;
+}
+
 function createDatasets() {
   let points1 = [
     vec3(0.35, 0.6, 0),
     vec3(0.651, 0.61, 0),
     vec3(0.65, 0.1, 0),
-    // vec3(0.37, 0.11, 0),
+    vec3(0.37, 0.11, 0),
     // vec3(-0.65, 0.51, 0),
     // vec3(-0.25, 0.41, 0),
     // vec3(-0.35, 0.15, 0),
@@ -19,11 +116,9 @@ function createDatasets() {
   let segments1 = [
     makeSegment(points1[0], points1[1]),
     makeSegment(points1[1], points1[2]),
+    makeSegment(points1[2], points1[3]),
+    makeSegment(points1[3], points1[0]),
 
-    // makeSegment(points1[0], points1[1]),
-    // makeSegment(points1[1], points1[2]),
-    // makeSegment(points1[2], points1[3]),
-    // makeSegment(points1[3], points1[0]),
     // makeSegment(points1[4], points1[5]),
     // makeSegment(points1[5], points1[6]),
     // makeSegment(points1[6], points1[7]),
