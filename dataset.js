@@ -49,38 +49,46 @@ function populateDataProps(points, segments) {
 function definePointGroupProperties(gp, gs) {
   // No two points of the same label should ever share the same y value
   var ySortedPoints = _.sortBy(gp, function(i) { return i.y; });
-  ySortedPoints[0].relation = NODE_RELATION.CLOSING;
-  ySortedPoints[ySortedPoints.length - 1].relation = NODE_RELATION.APEX;
   var parents = _.filter(gs, function(s) { return equal(s.a, ySortedPoints[ySortedPoints.length - 1]); });
   var sortedParents = _.sortBy(parents, function(s) { return s.b.x; });
 
   if (sortedParents.length == 2) {
+    sortedParents[0].a.relation = NODE_RELATION.APEX;
+    sortedParents[1].a.relation = NODE_RELATION.APEX;
+    ySortedPoints[0].relation = NODE_RELATION.CLOSING;
+    ySortedPoints[ySortedPoints.length - 1].relation = NODE_RELATION.APEX;
     // follow left path
     var curLeft = getNextSeg(sortedParents[0], gs);
     while(curLeft) {
-      var curLeft = getNextSeg(curLeft, gs);
-      if (curLeft && getNextSeg(curLeft)) {
+      var next = getNextSeg(curLeft, gs);
+      if (next) {
         // mark points
         gp.forEach(function (p) {
           if (equal(p, curLeft.a) || equal(p, curLeft.b)) {
-            p.relation = NODE_RELATION.CHILD_LEFT_HULL; // Never set ??
+            p.relation = NODE_RELATION.CHILD_LEFT_HULL; 
+            curLeft.b.relation = NODE_RELATION.CHILD_LEFT_HULL;
+            curLeft.a.relation = NODE_RELATION.CHILD_LEFT_HULL;
           }
         });
       }
+      var curLeft = next;
     }
 
     // follow right path
     var curRight = getNextSeg(sortedParents[1], gs);
     while(curRight) {
-      var curRight = getNextSeg(curRight, gs);
-      if (curRight && getNextSeg(curRight)) {
+      var next = getNextSeg(curRight, gs);
+      if (next) {
         // mark points
         gp.forEach(function (p) {
           if (equal(p, curRight.a) || equal(p, curRight.b)) {
-            p.relation = NODE_RELATION.CHILD_RIGHT_HULL;
+            p.relation = NODE_RELATION.CHILD_RIGHT_HULL; 
+            curLeft.b.relation = NODE_RELATION.CHILD_RIGHT_HULL;
+            curLeft.a.relation = NODE_RELATION.CHILD_RIGHT_HULL;
           }
         });
       }
+      curRight = next;
     }
   }
 }
@@ -99,10 +107,10 @@ function isFlipped(p, segs) {
 
 function createDatasets() {
   let points1 = [
-    vec3(0.35, 0.6, 0),
-    vec3(0.651, 0.61, 0),
-    vec3(0.65, 0.1, 0),
-    vec3(0.37, 0.11, 0),
+    vec3(0.35, 0.6, 0), // left
+    vec3(0.651, 0.61, 0), // apex
+    vec3(0.65, 0.1, 0), // close
+    vec3(0.37, 0.11, 0), // left
     // vec3(-0.65, 0.51, 0),
     // vec3(-0.25, 0.41, 0),
     // vec3(-0.35, 0.15, 0),
