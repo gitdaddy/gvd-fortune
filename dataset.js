@@ -65,7 +65,7 @@ function definePointGroupProperties(gp, gs) {
         // mark points
         gp.forEach(function (p) {
           if (equal(p, curLeft.a) || equal(p, curLeft.b)) {
-            p.relation = NODE_RELATION.CHILD_LEFT_HULL; 
+            p.relation = NODE_RELATION.CHILD_LEFT_HULL;
             curLeft.b.relation = NODE_RELATION.CHILD_LEFT_HULL;
             curLeft.a.relation = NODE_RELATION.CHILD_LEFT_HULL;
           }
@@ -82,9 +82,9 @@ function definePointGroupProperties(gp, gs) {
         // mark points
         gp.forEach(function (p) {
           if (equal(p, curRight.a) || equal(p, curRight.b)) {
-            p.relation = NODE_RELATION.CHILD_RIGHT_HULL; 
-            curLeft.b.relation = NODE_RELATION.CHILD_RIGHT_HULL;
-            curLeft.a.relation = NODE_RELATION.CHILD_RIGHT_HULL;
+            p.relation = NODE_RELATION.CHILD_RIGHT_HULL;
+            curRight.b.relation = NODE_RELATION.CHILD_RIGHT_HULL;
+            curRight.a.relation = NODE_RELATION.CHILD_RIGHT_HULL;
           }
         });
       }
@@ -111,6 +111,7 @@ function createDatasets() {
     vec3(0.651, 0.61, 0), // apex
     vec3(0.65, 0.1, 0), // close
     vec3(0.37, 0.11, 0), // left
+
     // vec3(-0.65, 0.51, 0),
     // vec3(-0.25, 0.41, 0),
     // vec3(-0.35, 0.15, 0),

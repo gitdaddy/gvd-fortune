@@ -279,8 +279,17 @@ EdgeNode.prototype.intersection = function (directrix) {
   //
   // if the point is flipped and is connected to the V
   if (this.flipped && this.isGeneralSurface && belongsToSegment(leftArcNode, rightArcNode)) {
-    result = intersections[lower];
+    if (leftArcNode.isParabola && rightArcNode.isV && _.get(rightArcNode, "site.a.relation", false) == NODE_RELATION.CHILD_LEFT_HULL) {
+      result = intersections[lower - 1];
+    } else if (rightArcNode.isParabola && leftArcNode.isV && _.get(leftArcNode, "site.a.relation", false) == NODE_RELATION.CHILD_RIGHT_HULL) {
+      // TODO check
+      result = intersections[lower];
+    } else {
+      result = intersections[lower];
+    }
   }
+
+  // if ()
 
   this.selectedIntersection = result;
   return this.selectedIntersection;

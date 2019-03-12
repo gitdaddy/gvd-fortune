@@ -447,6 +447,7 @@ function intersect(a, b) {
 // Function potentially return multiple points
 //------------------------------------------------------------
 function equidistant(c1, c2, c3) {
+  // TODO fix for 3 segments
   var segments = _.filter([c1, c2, c3], { type: "segment" });
   var points = _.filter([c1, c2, c3], { type: "vec" });
   var b12, b23;
