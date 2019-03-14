@@ -68,6 +68,16 @@ function belongsToSegment(A, B) {
   return false;
 }
 
+function belongsToSegmentEndpoint(A, B) {
+  if (A == null || B == null) return false;
+  if (A.site.type == "segment" && B.site.type == "vec") {
+    return A.site.b == B.site;
+  } else if (B.site.type == "segment" && A.site.type == "vec") {
+    return B.site.b == A.site;
+  }
+  return false;
+}
+
 //------------------------------------------------------------
 // prevArc
 // Returns the previous in-order arc arcNode
@@ -278,18 +288,10 @@ EdgeNode.prototype.intersection = function (directrix) {
   //     _____________________________
   //
   // if the point is flipped and is connected to the V
-  if (this.flipped && this.isGeneralSurface && belongsToSegment(leftArcNode, rightArcNode)) {
-    if (leftArcNode.isParabola && rightArcNode.isV && _.get(rightArcNode, "site.a.relation", false) == NODE_RELATION.CHILD_LEFT_HULL) {
-      result = intersections[lower - 1];
-    } else if (rightArcNode.isParabola && leftArcNode.isV && _.get(leftArcNode, "site.a.relation", false) == NODE_RELATION.CHILD_RIGHT_HULL) {
-      // TODO check
-      result = intersections[lower];
-    } else {
-      result = intersections[lower];
-    }
+  if (this.flipped && this.isGeneralSurface &&
+     belongsToSegmentEndpoint(leftArcNode, rightArcNode)) {
+    result = intersections[lower];
   }
-
-  // if ()
 
   this.selectedIntersection = result;
   return this.selectedIntersection;

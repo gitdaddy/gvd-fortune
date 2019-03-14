@@ -35,21 +35,6 @@ V = function(line, directrix) {
   this.miny = directrix > Math.min(this.y0.y, this.y1.y) ? directrix : Math.min(this.y0.y, this.y1.y);
 }
 
-V.prototype.updateNewSweeplineForDemoMode = function() {
-  var directrix = Math.min(this.y0.y, this.y1.y) - 0.00001;
-  var theta =
-    getSegmentsBisector([vec3(-1, directrix, 0), vec3(1, directrix, 0)], makeSegment(this.y0, this.y1));
-  // Get the first positive 90 degree sibling to theta
-  while (theta > 0) theta -= Math.PI/2;
-  while (theta < 0) theta += Math.PI/2;
-  this.thetas = [theta + Math.PI/2, theta];
-  var vectors = [];
-  this.thetas.forEach(function(theta) {
-    vectors.push(vec3(Math.cos(theta), Math.sin(theta), 0));
-  });
-  this.vectors = vectors;
-}
-
 // Intersect the V with a parabola.
 V.prototype.intersect = function(obj) {
   if (obj instanceof Parabola) {

@@ -226,7 +226,7 @@ function createCloseEvent(arcNode, directrix) {
   if (arcNode.isV) {
     if (arcNode.site.a == left.site && arcNode.site.b == right.site
       || arcNode.site.b == left.site && arcNode.site.a == right.site) return null;
-    let equi = equidistant(left.site, right.site, arcNode.site);
+    let equi = equidistant(left.site, arcNode.site, right.site);
     if (equi == null || equi.length == 0) return null;
     let segV = createBeachlineSegment(arcNode.site, directrix);
     if (equi.length == 2) {
@@ -293,9 +293,7 @@ function createCloseEvent(arcNode, directrix) {
     return new CloseEvent(equi.y - r, arcNode, left, right, equi, r);
   } else {
     // All three are points
-    var equi = equidistant(left.site,
-      arcNode.site,
-      right.site);
+    var equi = equidistant(left.site, arcNode.site, right.site);
     if (equi == null) return null;
     var u = subtract(left.site, arcNode.site);
     var v = subtract(left.site, right.site);
@@ -350,20 +348,22 @@ Beachline.prototype.add = function (site) {
 
     var siblingLeft = child.prevArc();
     var siblingRight = child.nextArc();
-    if (arcNode.isV && child.isV && _.get(arcNode, "site.a.relation", false) == NODE_RELATION.APEX) {
+    if (arcNode.isV && child.isV &&
+       _.get(arcNode, "site.a.relation", false) == NODE_RELATION.APEX) {
       var newChild = arcNode.site.b.x < child.site.b.x ?
       apexSplitSiblings(siblingLeft, arcNode, child, dcel) : apexSplitSiblings(child, arcNode, siblingRight, dcel);
       parent.setChild(newChild, side);
-    } else if (arcNode.isV && _.get(arcNode, "site.a.relation", false) == NODE_RELATION.CHILD_LEFT_HULL) {
+    } else if (arcNode.isV &&
+       _.get(arcNode, "site.a.relation", false) == NODE_RELATION.CHILD_LEFT_HULL) {
       // is this a left hull joint
       var newNode = leftJointSplit(child, arcNode, siblingRight, dcel);
       // set the parent since a left joint split may not preserve order
       parent.parent.setChild(newNode, parentSide);
-      // or set the grandparent's child?
-    } else if (arcNode.isV && _.get(arcNode, "site.a.relation", false) == NODE_RELATION.CHILD_RIGHT_HULL) {
-      // is a arc created by the right hull joint
+    } else if (arcNode.isV &&
+       _.get(arcNode, "site.a.relation", false) == NODE_RELATION.CHILD_RIGHT_HULL) {
+      // is a arc created by the right hull joint TODO
       // var newNode = rightJointSplit(siblingLeft, arcNode, child, dcel);
-      // parent.parent.setChild(newNode, ); // right side?
+      // parent.parent.setChild(newNode, parentSide);
     }
     // else if (arcNode.isParabola && _.get(child, "site.relation", false) == NODE_RELATION.CLOSING) {
     //   // TODO

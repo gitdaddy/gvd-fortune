@@ -14,21 +14,6 @@ var NODE_RELATION = {
   CLOSING: 4
 }
 
-// function isLowestPoint(p, segs) {
-//   var startPoint = false;
-//   var endPoint = false;
-//   // return true if point is lowest of all segments it is a part of
-//    segs.forEach(function(s) {
-//     if (equal(p, s.a)) {
-//       startPoint = true;
-//       return;
-//     } else if (equal(p, s.b)) {
-//       endPoint = true;
-//     }
-//   });
-//   return startPoint ? false : endPoint;
-// }
-
 // Get next Lower segment or undefined
 function getNextSeg(current, segments) {
   var next = _.find(segments, function(s) {

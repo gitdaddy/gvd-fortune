@@ -73,7 +73,6 @@ function quadratic(a, b, c) {
 // Specific intersect functions
 //------------------------------------------------------------
 //------------------------------------------------------------
-
 //             * p4
 //           _/
 // p1 *----_/---------* p2
@@ -381,11 +380,19 @@ function bisectPoints(p1, p2) {
 //------------------------------------------------------------
 function bisectSegments(s1, s2) {
   var beta = getSegmentsBisector(s1, s2);
+  var sortedY = _.sortBy([s1, s2], [function(s) { return s.a.y; }]);
+
   // Get the first positive 90 degree sibling to theta
-  while (beta > 0) beta -= Math.PI/2;
-  while (beta < 0) beta += Math.PI/2;
+  // while (beta > 0) beta -= Math.PI/2;
+  // while (beta < 0) beta += Math.PI/2;
+
+  // Test
+  if (_.get(sortedY[0], "a.relation") == NODE_RELATION.CHILD_LEFT_HULL) {
+    beta += Math.PI/2;
+  } 
+
   var p = intersectLines(s1.a, s1.b, s2.a, s2.b);
-  var v = new vec3(Math.sin(beta), Math.cos(beta), 0);
+  var v = new vec3(Math.cos(beta), Math.sin(beta), 0);
   return new Line(p, add(p, v));
 }
 
@@ -446,26 +453,29 @@ function intersect(a, b) {
 // Returns the point equidistant from points/segments c1, c2, and c3.
 // Function potentially return multiple points
 //------------------------------------------------------------
-function equidistant(c1, c2, c3) {
-  // TODO fix for 3 segments
-  var segments = _.filter([c1, c2, c3], { type: "segment" });
-  var points = _.filter([c1, c2, c3], { type: "vec" });
-  var b12, b23;
+function equidistant(left, arc, right) {
+  var segments = _.filter([left, arc, right], { type: "segment" });
+  var points = _.filter([left, arc, right], { type: "vec" });
+  var b1, b2;
   // Bisecting types can be either lines or parabolas
   if (points.length == 1) {
-    b12 = bisect(segments[0], points[0]);
-    b23 = bisect(points[0], segments[1]);
+    b1 = bisect(segments[0], points[0]);
+    b2 = bisect(points[0], segments[1]);
   } else if (segments.length == 1) {
     // Create a general parabola bisector and line for simplicity TODO
-    b12 = bisect(segments[0], points[0]);
-    b23 = bisect(points[0], points[1]);
-    // b12 = bisect(points[0], segments[0]);
-    // b23 = bisect(segments[0], points[1]);
+    b1 = bisect(segments[0], points[0]);
+    b2 = bisect(points[0], points[1]);
+    // b1 = bisect(points[0], segments[0]);
+    // b2 = bisect(segments[0], points[1]);
+  } else if (segments.length == 3) {
+    b1 = bisect(arc, left);
+    b2 = bisect(arc, right);
+    // Testing only
+    debugObjs.push(b1);
+    debugObjs.push(b2);
   } else {
-    b12 = bisect(c1, c2);
-    b23 = bisect(c2, c3);
+    b1 = bisect(left, arc);
+    b2 = bisect(arc, right);
   }
-  debugObjs.push(b12);
-  debugObjs.push(b23);
-  return intersect(b12, b23);
+  return intersect(b1, b2);
 }
