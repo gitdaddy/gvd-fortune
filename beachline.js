@@ -184,6 +184,34 @@ function rightJointSplit(left, node, right, dcel) {
   return new EdgeNode(left, new EdgeNode(node, right, leftVertex, dcel), rightVertex, dcel);
 }
 
+
+//------------------------------------------------------------
+// Utility function right joint split
+//  is an arc node. node is also an arc node.   
+//   \  |
+//    \ |
+//     \| node
+//      *
+//------------------------------------------------------------
+function closePointSplit(sibling, node, side, dcel) {
+  if (!sibling.isV || !node.isV) {
+    throw "invalid close joint split";
+  }
+  // Do we need this?
+  // if (sibling.closeEvent) {
+  //   sibling.closeEvent.live = false;
+  // }
+  var siblingVertex = vec3(node.site.x, new V(sibling.site, node.site.y).f(node.site.x));
+    // return new EdgeNode(sibling, node, vertex, dcel);
+  if (side == 1) {
+    // right
+    return new EdgeNode(sibling, node, siblingVertex, dcel);
+  } else {
+    // left
+    return new EdgeNode(node, sibling, siblingVertex, dcel);
+  }
+}
+
 //------------------------------------------------------------
 // Utility function
 // toSplit is an arc node. node is also an arc node.
@@ -254,14 +282,8 @@ function createCloseEvent(arcNode, directrix) {
    var p0 = vec3(arcNode.x0, segV.f(arcNode.x0), 0);
    var p1 = vec3(arcNode.x1, segV.f(arcNode.x1), 0);
    var BA = subtract(arcNode.site.a, arcNode.site.b);
-   var Bp0 = subtract(p0, arcNode.site.b);
-   var Bp1 = subtract(p1, arcNode.site.b);
-   var c0 = cross(BA, Bp0);
-   var c1 = cross(BA, Bp1);
-  //  console.log("Node id:" + arcNode.id + " c0.z:" + c0.z + "  -c1.z:" + c1.z);
-   if (c0.z < 0 && c1.z < 0 || c0.z > 0 && c1.z > 0)
+   if (!dividesPoints(BA, arcNode.site.b, p0, p1))
    {
-    //  console.log("V separated: " + arcNode.id);
      let r = dist(equi, arcNode.site);
       return new CloseEvent(equi.y - r, arcNode, left, right, equi, r);
    }
@@ -365,10 +387,13 @@ Beachline.prototype.add = function (site) {
       // var newNode = rightJointSplit(siblingLeft, arcNode, child, dcel);
       // parent.parent.setChild(newNode, parentSide);
     }
-    // else if (arcNode.isParabola && _.get(child, "site.relation", false) == NODE_RELATION.CLOSING) {
-    //   // TODO
-    //   throw "closing not yet implemented";
-    // }
+    else if (arcNode.isParabola && _.get(child, "site.relation", false) == NODE_RELATION.CLOSING) {
+      // TODO test
+      var newNode = closePointSplit(child, arcNode, side, dcel);
+      // update dcel?
+      // newEdge.updateEdge(point, this.dcel);
+      parent.setChild(newNode, side);
+    }
     else {
       // Child is an arc node. Split it.
       parent.setChild(splitArcNode(child, arcNode, this.dcel), side);

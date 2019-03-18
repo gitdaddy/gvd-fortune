@@ -24,6 +24,10 @@ function getNextSeg(current, segments) {
   return next;
 }
 
+function segShareSite(s1, s2) {
+  return equal(s1.a, s2.b) || equal(s1.b, s2.a) || equal(s1.a, s2.a) || equal(s1.b, s2.b);
+}
+
 function populateDataProps(points, segments) {
   var uniqueLabels = _.uniq(_.map(segments, "label"));
   _.forEach(uniqueLabels, function(l) {

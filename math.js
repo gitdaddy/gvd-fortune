@@ -280,6 +280,26 @@ function dist(obj1, obj2) {
   }
 }
 
+/*------------------------------------------------------------
+ dividesPoints
+ Does vector v run between p1 and p2?
+     *p2   |*v             
+      \    |            
+       \   |      * p1  
+        \  |          
+         \ | /
+          \|/
+           *origin
+------------------------------------------------------------*/
+function dividesPoints(v, origin, p1, p2) {
+  var v1 = subtract(p1, origin);
+  var v2 = subtract(p2, origin);
+  var c0 = cross(v, v1);
+  var c1 = cross(v, v2);
+ //  console.log("Node id:" + arcNode.id + " c0.z:" + c0.z + "  -c1.z:" + c1.z);
+  return c0.z < 0 && c1.z > 0 || c0.z > 0 && c1.z < 0;
+}
+
 //------------------------------------------------------------
 // getAngle
 // s is an array of length 2
@@ -294,6 +314,15 @@ function getAngle(s) {
   }
   return Math.atan2(p2[1]-p1[1], p2[0]-p1[0]);
 }
+
+// Angle between two vectors theta = arccos(dot(v1,v2)/ |v1|* |v2|)
+// returns the angle in radians
+// function getAngleBetweenTwoVec(v1, v2) {
+//   var d = dot(v1, v2);
+//   var m1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+//   var m2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
+//   return Math.acos(d/(m1*m2));
+// }
 
 //------------------------------------------------------------
 //------------------------------------------------------------
@@ -377,23 +406,46 @@ function bisectPoints(p1, p2) {
 // Return the line bisecting two lines. Returns two points [q1,q2] defining
 // the line. The vector v=q2-q1 will be oriented in the negative y direction.
 // NOTE: this bisects LINES not SEGMENTS.
+// Only to be used with jointed segments 
 //------------------------------------------------------------
 function bisectSegments(s1, s2) {
+  var p, p1, p2, v1, v2;
+  if (equal(s1.a, s2.a)) {
+    p = s1.a;
+    p1 = s1.b;
+    p2 = s2.b;
+    // v1 = subtract(s1.b, s1.a);
+    // v2 = subtract(s2.b, s2.a);
+  } else if (equal(s1.b, s2.b)) {
+    p = s1.b;
+    p1 = s1.a;
+    p2 = s2.a;
+    // v1 = subtract(s1.a, s1.b);
+    // v2 = subtract(s2.a, s2.b);
+  } else if (equal(s1.a, s2.b)) {
+    p = s1.a;
+    p1 = s1.b;
+    p2 = s2.a;
+    // v1 = subtract(s1.b, s1.a);
+    // v2 = subtract(s2.a, s2.b);
+  } else if (equal(s1.b, s2.a)) {
+    p = s1.b;
+    p1 = s1.a;
+    p2 = s2.b;
+    // v1 = subtract(s1.a, s1.b);
+    // v2 = subtract(s2.b, s2.a);
+  } else {
+    throw "attempting to bisect dis-joint segments";
+  }
   var beta = getSegmentsBisector(s1, s2);
-  var sortedY = _.sortBy([s1, s2], [function(s) { return s.a.y; }]);
 
-  // Get the first positive 90 degree sibling to theta
-  // while (beta > 0) beta -= Math.PI/2;
-  // while (beta < 0) beta += Math.PI/2;
-
-  // Test
-  if (_.get(sortedY[0], "a.relation") == NODE_RELATION.CHILD_LEFT_HULL) {
-    beta += Math.PI/2;
-  } 
-
-  var p = intersectLines(s1.a, s1.b, s2.a, s2.b);
   var v = new vec3(Math.cos(beta), Math.sin(beta), 0);
-  return new Line(p, add(p, v));
+  var l = new Line(p, add(p, v)); 
+  if (!dividesPoints(v,p,p1,p2)) {
+    var newV = new vec3(-Math.cos(beta), Math.sin(beta), 0);
+    l = new Line(p, add(p, newV));
+  }
+  return l;
 }
 
 //------------------------------------------------------------
@@ -462,14 +514,31 @@ function equidistant(left, arc, right) {
     b1 = bisect(segments[0], points[0]);
     b2 = bisect(points[0], segments[1]);
   } else if (segments.length == 1) {
-    // Create a general parabola bisector and line for simplicity TODO
+    // Create a general parabola bisector and line for simplicity
     b1 = bisect(segments[0], points[0]);
     b2 = bisect(points[0], points[1]);
-    // b1 = bisect(points[0], segments[0]);
-    // b2 = bisect(segments[0], points[1]);
   } else if (segments.length == 3) {
-    b1 = bisect(arc, left);
-    b2 = bisect(arc, right);
+    // if segments are sharing an equi point
+    // they must be adjacent and we can process them
+    // using the 'shared' segment as the reference point
+    var sharedSeg, s1, s2;
+    if (segShareSite(left, arc) && segShareSite(arc, right)) {
+      sharedSeg = arc;
+      s1 = left;
+      s2 = right;
+    } else if (segShareSite(arc, left) && segShareSite(left, right)) {
+      sharedSeg = left;
+      s1 = arc;
+      s2 = right;
+    } else if (segShareSite(left, right) && segShareSite(right, arc)) {
+      sharedSeg = right;
+      s1 = left;
+      s2 = arc;
+    } else {
+      throw "invalid segment bisection";
+    }
+    b1 = bisect(sharedSeg, s1);
+    b2 = bisect(sharedSeg, s2);
     // Testing only
     debugObjs.push(b1);
     debugObjs.push(b2);
