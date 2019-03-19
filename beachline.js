@@ -109,7 +109,6 @@ var Beachline = function (dcel) {
 //      *
 //------------------------------------------------------------
 function apexSplitSiblings(left, node, right, dcel) {
-  // Do we need this?
   if (left.closeEvent) {
     left.closeEvent.live = false;
   }
@@ -143,13 +142,13 @@ function leftJointSplit(left, node, right, dcel) {
   if (!left.isParabola || !right.isV) {
     throw "invalid left joint split";
   }
-  // Do we need this?
   if (left.closeEvent) {
     left.closeEvent.live = false;
   }
   if (right.closeEvent) {
     right.closeEvent.live = false;
   }
+
   var leftVertex = vec3(node.site.x, createParabola(left.site, node.site.y).f(node.site.x));
     // return new EdgeNode(left, node, vertex, dcel);
   var rightVertex = vec3(node.site.x, new V(right.site, node.site.y).f(node.site.x));
@@ -167,48 +166,39 @@ function leftJointSplit(left, node, right, dcel) {
 //      | node
 //      *
 //------------------------------------------------------------
-function rightJointSplit(left, node, right, dcel) {
-  if (!left.isV || !right.isParabola) {
+function rightJointSplit(left, child, right, dcel) {
+  if (!left.isV || !child.isParabola || !right.isV) {
     throw "invalid right joint split";
   }
-  // Do we need this?
   if (left.closeEvent) {
     left.closeEvent.live = false;
   }
   if (right.closeEvent) {
     right.closeEvent.live = false;
   }
-  var leftVertex = vec3(node.site.x, new V(left.site, node.site.y).f(node.site.x));
-    // return new EdgeNode(left, node, vertex, dcel);
-  var rightVertex = vec3(node.site.x, createParabola(right.site, node.site.y).f(node.site.x));
-  return new EdgeNode(left, new EdgeNode(node, right, leftVertex, dcel), rightVertex, dcel);
+
+  // var leftVertex = vec3(child.site.x, new V(left.site, child.site.y).f(child.site.x));
+  // var rightVertex = vec3(child.site.x, new V(right.site, child.site.y).f(child.site.x));
+  return new EdgeNode(left, new EdgeNode(child, right, child.site, dcel), child.site, dcel);
 }
 
 
 //------------------------------------------------------------
 // Utility function right joint split
-//  is an arc node. node is also an arc node.   
+//  is an arc node. node is also an arc node.
 //   \  |
 //    \ |
 //     \| node
 //      *
 //------------------------------------------------------------
-function closePointSplit(sibling, node, side, dcel) {
-  if (!sibling.isV || !node.isV) {
-    throw "invalid close joint split";
-  }
-  // Do we need this?
-  // if (sibling.closeEvent) {
-  //   sibling.closeEvent.live = false;
-  // }
-  var siblingVertex = vec3(node.site.x, new V(sibling.site, node.site.y).f(node.site.x));
-    // return new EdgeNode(sibling, node, vertex, dcel);
-  if (side == 1) {
-    // right
-    return new EdgeNode(sibling, node, siblingVertex, dcel);
+function closePointSplit(left, right, dcel) {
+
+  if (left.isV && right.isParabola) {
+    return new EdgeNode(left, right, right.site, dcel);
+  } else if (left.isParabola && right.isV) {
+    return new EdgeNode(left, right, left.site, dcel);
   } else {
-    // left
-    return new EdgeNode(node, sibling, siblingVertex, dcel);
+    throw "invalid close joint split";
   }
 }
 
@@ -383,16 +373,18 @@ Beachline.prototype.add = function (site) {
       parent.parent.setChild(newNode, parentSide);
     } else if (arcNode.isV &&
        _.get(arcNode, "site.a.relation", false) == NODE_RELATION.CHILD_RIGHT_HULL) {
-      // is a arc created by the right hull joint TODO
-      // var newNode = rightJointSplit(siblingLeft, arcNode, child, dcel);
-      // parent.parent.setChild(newNode, parentSide);
+      // is a arc created by the right hull joint
+      var newNode = rightJointSplit(arcNode, child, siblingRight, dcel);
+      parent.parent.setChild(newNode, parentSide);
     }
-    else if (arcNode.isParabola && _.get(child, "site.relation", false) == NODE_RELATION.CLOSING) {
-      // TODO test
-      var newNode = closePointSplit(child, arcNode, side, dcel);
-      // update dcel?
-      // newEdge.updateEdge(point, this.dcel);
-      parent.setChild(newNode, side);
+    else if (arcNode.isParabola && _.get(arcNode, "site.relation", false) == NODE_RELATION.CLOSING) {
+      if (side == RIGHT_CHILD) {
+        var newNode = closePointSplit(child, arcNode, dcel);
+        parent.setChild(newNode, side);
+      } else if (side == LEFT_CHILD) {
+        var newNode = closePointSplit(arcNode, child, side, dcel);
+        parent.setChild(newNode, side);
+      }
     }
     else {
       // Child is an arc node. Split it.
