@@ -96,15 +96,15 @@ function isFlipped(p, segs) {
 
 function createDatasets() {
   let points1 = [
-    vec3(0.35, 0.6, 0), // left
-    vec3(0.651, 0.61, 0), // apex
-    vec3(0.65, 0.1, 0), // close
-    vec3(0.37, 0.11, 0), // left
+    // vec3(0.35, 0.6, 0), // left
+    // vec3(0.651, 0.61, 0), // apex
+    // vec3(0.65, 0.1, 0), // close
+    // vec3(0.37, 0.11, 0), // left
 
-    // vec3(-0.65, 0.51, 0),
-    // vec3(-0.25, 0.41, 0),
-    // vec3(-0.35, 0.15, 0),
-    // vec3(-0.75, 0.12, 0),
+    vec3(-0.65, 0.51, 0), // top
+    vec3(-0.25, 0.41, 0), // right
+    vec3(-0.35, 0.15, 0), // lower right
+    vec3(-0.75, 0.12, 0), // close
     // vec3(-0.15, -0.95, 0),
     // vec3(0.14, -0.94, 0),
     // vec3(0.74, -0.94, 0),

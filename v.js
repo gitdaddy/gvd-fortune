@@ -35,6 +35,14 @@ V = function(line, directrix) {
   this.miny = directrix > Math.min(this.y0.y, this.y1.y) ? directrix : Math.min(this.y0.y, this.y1.y);
 }
 
+function getJoint(ay0, ay1, by0, by1) {
+  if (equal(ay0, by0)) return {point: ay0, relation: ay0.relation};
+  if (equal(ay1, by0)) return {point: ay1, relation: ay1.relation};
+  if (equal(ay0, by1)) return {point: ay0, relation: ay0.relation};
+  if (equal(ay1, by1)) return {point: ay1, relation: ay1.relation};
+  return null;
+}
+
 // Intersect the V with a parabola.
 V.prototype.intersect = function(obj) {
   if (obj instanceof Parabola) {
@@ -57,12 +65,48 @@ V.prototype.intersect = function(obj) {
     var itrol = intersectLines(this.p, trvy, obj.p, olvy);
     var itror = intersectLines(this.p, trvy, obj.p, orvy);
 
-    var miny = this.p.y;
-    var validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
-      if (p != null) {
-        return p.y > miny;
+    // test for jointness between sites
+    var validPoints;
+    var joint = getJoint(this.y0, this.y1, obj.y0, obj.y1);
+    if (joint) {
+      switch(joint.relation) {
+        case NODE_RELATION.APEX:
+          validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
+            if (p != null) {
+              return p.y < joint.point.y;
+            }
+          });
+          break;
+        case NODE_RELATION.CHILD_LEFT_HULL:
+          validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
+            if (p != null) {
+              return p.x > joint.point.x;
+            }
+          });
+          break;
+        case NODE_RELATION.CHILD_RIGHT_HULL:
+          validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
+            if (p != null) {
+              return p.x < joint.point.x;
+            }
+          });
+          break;
+        case NODE_RELATION.CLOSING:
+          validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
+            if (p != null) {
+              return p.y < joint.point.y;
+            }
+          });
       }
-    });
+    } else {
+      var miny = this.p.y;
+      validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
+        if (p != null) {
+          return p.y > miny;
+        }
+      });
+    }
+
     if (this.y1.y == obj.y1.y) {
       // possibly return up to 4 points
       return _.sortBy(validPoints, function (p) { return p.x; });

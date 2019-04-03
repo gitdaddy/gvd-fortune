@@ -382,7 +382,7 @@ Beachline.prototype.add = function (site) {
         var newNode = closePointSplit(child, arcNode, dcel);
         parent.setChild(newNode, side);
       } else if (side == LEFT_CHILD) {
-        var newNode = closePointSplit(arcNode, child, side, dcel);
+        var newNode = closePointSplit(arcNode, child, dcel);
         parent.setChild(newNode, side);
       }
     }
@@ -391,7 +391,7 @@ Beachline.prototype.add = function (site) {
       parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
     }
     // TEST - assumes the sweepline is moving down in a negative direction
-    updateArcBounds(this.root, -10000, 10000, directrix - 0.0001);
+    updateArcBounds(this.root, -10000, 10000, directrix - 0.00001);
   }
 
   // Create close events
