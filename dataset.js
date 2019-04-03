@@ -6,7 +6,6 @@
   2. Child node - left or right hull
   3. Closing node - bottom point - not sure if we need to do anything here
 */
-
 var NODE_RELATION = {
   APEX: 1,
   CHILD_LEFT_HULL: 2,
@@ -96,15 +95,15 @@ function isFlipped(p, segs) {
 
 function createDatasets() {
   let points1 = [
-    // vec3(0.35, 0.6, 0), // left
-    // vec3(0.651, 0.61, 0), // apex
-    // vec3(0.65, 0.1, 0), // close
-    // vec3(0.37, 0.11, 0), // left
+    vec3(0.35, 0.4, 0), // left
+    vec3(0.651, 0.41, 0), // apex
+    vec3(0.65, -0.1, 0), // close
+    vec3(0.37, -0.09, 0), // left
 
-    vec3(-0.65, 0.51, 0), // top
-    vec3(-0.25, 0.41, 0), // right
-    vec3(-0.35, 0.15, 0), // lower right
-    vec3(-0.75, 0.12, 0), // close
+    vec3(-0.65, 0.31, 0), // top
+    vec3(-0.45, 0.21, 0), // right
+    vec3(-0.35, -0.05, 0), // lower right
+    vec3(-0.75, -0.08, 0), // close
     // vec3(-0.15, -0.95, 0),
     // vec3(0.14, -0.94, 0),
     // vec3(0.74, -0.94, 0),
@@ -117,31 +116,25 @@ function createDatasets() {
     makeSegment(points1[2], points1[3]),
     makeSegment(points1[3], points1[0]),
 
-    // makeSegment(points1[4], points1[5]),
-    // makeSegment(points1[5], points1[6]),
-    // makeSegment(points1[6], points1[7]),
-    // makeSegment(points1[7], points1[4]),
+    makeSegment(points1[4], points1[5]),
+    makeSegment(points1[5], points1[6]),
+    makeSegment(points1[6], points1[7]),
+    makeSegment(points1[7], points1[4]),
   ];
 
   let points2 = [
-    // segment test points
-    vec3(-0.072, 0.512, 0),
-    vec3(-0.076, 0.1, 0),
-    // vec3(0.7, -0.3, 0),
-    // remaining points
-    // vec3(0.95, 0.81, 0),
-    // vec3(-0.40, 0.1, 0),
-    // vec3(-0.66, 0.73, 0),
+    vec3(-0.072, 0.542, 0),
     vec3(0.24,0.524, 0),
-    vec3(-0.024, 0.248, 0),
-    // vec3(0.73,0.15, 0),
-    // vec3(0.42,0.5, 0),
-    // vec3(0.0, -0.7, 0),
+    vec3(0.73,0.15, 0),
+    vec3(0.0, -0.7, 0),
+    vec3(-0.076, 0.1, 0),
   ];
   let segments2 = [
     makeSegment(points2[0], points2[1]),
-    // makeSegment(points2[2], points2[3]),
-    // makeSegment(points2[4], points2[5])
+    makeSegment(points2[1], points2[2]),
+    makeSegment(points2[2], points2[3]),
+    makeSegment(points2[3], points2[4]),
+    makeSegment(points2[4], points2[0]),
   ];
 
   let points3 = [];
@@ -154,7 +147,6 @@ function createDatasets() {
     }
   }
   let segments3 = [
-    makeSegment(points3[0], points3[1]),
     makeSegment(points3[1], points3[2]),
   ];
 
@@ -166,7 +158,15 @@ function createDatasets() {
     vec3(0.73,-0.13, 0),
     vec3(-0.65, -0.15, 0),
   ];
-  let segments4 = [];
+  let segments4 = [
+    makeSegment(points4[0], points4[1]),
+    makeSegment(points4[1], points4[4]),
+    makeSegment(points4[4], points4[0]),
+
+    makeSegment(points4[2], points4[3]),
+    makeSegment(points4[3], points4[5]),
+    makeSegment(points4[5], points4[2]),
+  ];
 
   Math.seedrandom('3');
   let numRandom = 100;

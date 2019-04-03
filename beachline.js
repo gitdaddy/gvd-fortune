@@ -272,10 +272,17 @@ function createCloseEvent(arcNode, directrix) {
    var p0 = vec3(arcNode.x0, segV.f(arcNode.x0), 0);
    var p1 = vec3(arcNode.x1, segV.f(arcNode.x1), 0);
    var BA = subtract(arcNode.site.a, arcNode.site.b);
-   if (!dividesPoints(BA, arcNode.site.b, p0, p1))
+   // if close for 3 Vs get the radius as the arcNode's upper site
+   var r;
+   if (left.isV && right.isV) {
+    r = Math.min(Math.min(dist(equi, left.site), dist(equi, arcNode.site)), dist(equi, right.site));
+   } else {
+    r = dist(equi, arcNode.site);
+   }
+   var newY = equi.y - r;
+   if (!dividesPoints(BA, arcNode.site.b, p0, p1) || newY < arcNode.site.b.y)
    {
-     let r = dist(equi, arcNode.site);
-      return new CloseEvent(equi.y - r, arcNode, left, right, equi, r);
+      return new CloseEvent(newY, arcNode, left, right, equi, r);
    }
   } else if (isSegment(left.site) || isSegment(right.site)) {
     let equi = equidistant(left.site, arcNode.site, right.site);
@@ -297,10 +304,6 @@ function createCloseEvent(arcNode, directrix) {
         })[0];
       }
     }
-    // if (arcNode.isParabola && left.isParabola)
-    // {
-    // } else if (arcNode.isParabola && right.isParabola) {
-    // }
     let r = dist(equi, arcNode.site);
     return new CloseEvent(equi.y - r, arcNode, left, right, equi, r);
   } else {
@@ -398,8 +401,16 @@ Beachline.prototype.add = function (site) {
   var closeEvents = [];
   var left = arcNode.prevArc();
   var right = arcNode.nextArc();
-  addCloseEvent(closeEvents, createCloseEvent(left, directrix));
-  addCloseEvent(closeEvents, createCloseEvent(right, directrix));
+  if (arcNode.isParabola && 
+    _.get(arcNode, "site.relation", false) == NODE_RELATION.CHILD_LEFT_HULL) {
+    addCloseEvent(closeEvents, createCloseEvent(left, directrix));
+  } else if (arcNode.isParabola && 
+      _.get(arcNode, "site.relation", false) == NODE_RELATION.CHILD_RIGHT_HULL) {
+    addCloseEvent(closeEvents, createCloseEvent(right, directrix));
+  } else {
+    addCloseEvent(closeEvents, createCloseEvent(left, directrix));
+    addCloseEvent(closeEvents, createCloseEvent(right, directrix));
+  }
   return closeEvents;
 }
 
