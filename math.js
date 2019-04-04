@@ -7,10 +7,10 @@
 //------------------------------------------------------------
 // Segment "class"
 //------------------------------------------------------------
-function makeSegment(p1, p2) {
+function makeSegment(p1, p2, forceOrder = false) {
   var s = [p1, p2];
   // Always store vertex with greatest y value first.
-  if (p1.y < p2.y) {
+  if (!forceOrder && p1.y < p2.y) {
     s = [p2, p1];
   }
   Object.defineProperty(s, "y", {
@@ -304,11 +304,11 @@ function dividesPoints(v, origin, p1, p2) {
 // getAngle
 // s is an array of length 2
 //------------------------------------------------------------
-function getAngle(s) {
+function getAngle(s, consider_order=true) {
   var p1 = s[0]; // lower point
   var p2 = s[1]; // upper point
   if (p1[1] == p2[1]) return 0;
-  if (p1[1] > p2[1]) {
+  if (consider_order && p1[1] > p2[1]) {
     // swap
     [p1, p2] = [p2, p1]
   }
@@ -372,13 +372,23 @@ function bisectPointSegment(p, s) {
 // The bisector is between the angle s to the angle t.
 // s,t are arrays of length 2
 //------------------------------------------------------------
-function getSegmentsBisector(s, t) {
-  var stheta = getAngle(s);
-  var ttheta = getAngle(t);
+function getSegmentsBisector(s, t, debug=false) {
+  var stheta = getAngle(s, false);
+  var ttheta = getAngle(t, false);
+  if (stheta < 0) stheta += Math.PI*2;
+  if (ttheta < 0) ttheta += Math.PI*2;
+  if (debug) {
+    console.log("stheta = " + (stheta*180/Math.PI));
+    console.log("ttheta = " + (ttheta*180/Math.PI));
+  }
   if (ttheta < stheta) {
     ttheta += 2.0 * Math.PI;
   }
-  return (stheta + ttheta) / 2.0;
+  var beta = (stheta + ttheta) / 2.0;
+  if (debug) {
+    console.log("beta = " + (beta*180/Math.PI));
+  }
+  return beta;
 }
 
 //------------------------------------------------------------
@@ -418,18 +428,22 @@ function bisectSegments(s1, s2) {
     // v2 = subtract(s2.b, s2.a);
   } else if (equal(s1.b, s2.b)) {
     p = s1.b;
+    s1 = makeSegment(s1.b, s1.a, true);
+    s2 = makeSegment(s2.b, s2.a, true);
     p1 = s1.a;
     p2 = s2.a;
     // v1 = subtract(s1.a, s1.b);
     // v2 = subtract(s2.a, s2.b);
   } else if (equal(s1.a, s2.b)) {
     p = s1.a;
+    s2 = makeSegment(s2.b, s2.a, true);
     p1 = s1.b;
     p2 = s2.a;
     // v1 = subtract(s1.b, s1.a);
     // v2 = subtract(s2.a, s2.b);
   } else if (equal(s1.b, s2.a)) {
     p = s1.b;
+    s1 = makeSegment(s1.b, s1.a, true);
     p1 = s1.a;
     p2 = s2.b;
     // v1 = subtract(s1.a, s1.b);
@@ -437,14 +451,14 @@ function bisectSegments(s1, s2) {
   } else {
     throw "attempting to bisect dis-joint segments";
   }
-  var beta = getSegmentsBisector(s1, s2);
+  var beta = getSegmentsBisector(s1, s2, false);
 
   var v = new vec3(Math.cos(beta), Math.sin(beta), 0);
   var l = new Line(p, add(p, v)); 
-  if (!dividesPoints(v,p,p1,p2)) {
-    var newV = new vec3(-Math.cos(beta), Math.sin(beta), 0);
-    l = new Line(p, add(p, newV));
-  }
+  // if (!dividesPoints(v,p,p1,p2)) {
+  //   var newV = new vec3(-Math.cos(beta), Math.sin(beta), 0);
+  //   l = new Line(p, add(p, newV));
+  // }
   return l;
 }
 
