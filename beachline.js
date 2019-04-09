@@ -381,10 +381,12 @@ Beachline.prototype.add = function (site) {
       parent.parent.setChild(newNode, parentSide);
     }
     else if (arcNode.isParabola && _.get(arcNode, "site.relation", false) == NODE_RELATION.CLOSING) {
-      if (side == RIGHT_CHILD) {
+      if (_.get(child, "site.b.relation") == NODE_RELATION.CLOSING &&
+          _.get(siblingRight, "site.b.relation") == NODE_RELATION.CLOSING &&
+          equal(child.site.b, siblingRight.site.b)) {
         var newNode = closePointSplit(child, arcNode, dcel);
         parent.setChild(newNode, side);
-      } else if (side == LEFT_CHILD) {
+      } else {
         var newNode = closePointSplit(arcNode, child, dcel);
         parent.setChild(newNode, side);
       }
@@ -401,10 +403,10 @@ Beachline.prototype.add = function (site) {
   var closeEvents = [];
   var left = arcNode.prevArc();
   var right = arcNode.nextArc();
-  if (arcNode.isParabola && 
+  if (arcNode.isParabola &&
     _.get(arcNode, "site.relation", false) == NODE_RELATION.CHILD_LEFT_HULL) {
     addCloseEvent(closeEvents, createCloseEvent(left, directrix));
-  } else if (arcNode.isParabola && 
+  } else if (arcNode.isParabola &&
       _.get(arcNode, "site.relation", false) == NODE_RELATION.CHILD_RIGHT_HULL) {
     addCloseEvent(closeEvents, createCloseEvent(right, directrix));
   } else {

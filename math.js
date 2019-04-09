@@ -283,10 +283,10 @@ function dist(obj1, obj2) {
 /*------------------------------------------------------------
  dividesPoints
  Does vector v run between p1 and p2?
-     *p2   |*v             
-      \    |            
-       \   |      * p1  
-        \  |          
+     *p2   |*v
+      \    |
+       \   |      * p1
+        \  |
          \ | /
           \|/
            *origin
@@ -416,7 +416,7 @@ function bisectPoints(p1, p2) {
 // Return the line bisecting two lines. Returns two points [q1,q2] defining
 // the line. The vector v=q2-q1 will be oriented in the negative y direction.
 // NOTE: this bisects LINES not SEGMENTS.
-// Only to be used with jointed segments 
+// Only to be used with jointed segments
 //------------------------------------------------------------
 function bisectSegments(s1, s2) {
   var p, p1, p2, v1, v2;
@@ -454,7 +454,7 @@ function bisectSegments(s1, s2) {
   var beta = getSegmentsBisector(s1, s2, false);
 
   var v = new vec3(Math.cos(beta), Math.sin(beta), 0);
-  var l = new Line(p, add(p, v)); 
+  var l = new Line(p, add(p, v));
   // if (!dividesPoints(v,p,p1,p2)) {
   //   var newV = new vec3(-Math.cos(beta), Math.sin(beta), 0);
   //   l = new Line(p, add(p, newV));
@@ -531,6 +531,9 @@ function equidistant(left, arc, right) {
     // Create a general parabola bisector and line for simplicity
     b1 = bisect(segments[0], points[0]);
     b2 = bisect(points[0], points[1]);
+    // Testing only
+    debugObjs.push(b1);
+    debugObjs.push(b2);
   } else if (segments.length == 3) {
     // if segments are sharing an equi point
     // they must be adjacent and we can process them
@@ -549,13 +552,12 @@ function equidistant(left, arc, right) {
       s1 = left;
       s2 = arc;
     } else {
-      throw "invalid segment bisection";
+      // throw "invalid segment bisection";
+      // TODO test
+      return null;
     }
-    b1 = bisect(sharedSeg, s1);
+    b1 = bisect(s1, sharedSeg);
     b2 = bisect(sharedSeg, s2);
-    // Testing only
-    debugObjs.push(b1);
-    debugObjs.push(b2);
   } else {
     b1 = bisect(left, arc);
     b2 = bisect(arc, right);

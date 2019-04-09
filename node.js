@@ -253,7 +253,9 @@ EdgeNode.prototype.intersection = function (directrix) {
       });
       intersections = [sorted[0], sorted[1]];
     } else {
-      console.log("Number of intersections greater than 2 evaluation not implemented yet");
+      var sorted = _.sortBy(intersections, function(i) { i.x });
+      // get the two outer intersections
+      intersections = [sorted[0], sorted[sorted.length - 1]];
     }
   }
   this.intersections = intersections;
