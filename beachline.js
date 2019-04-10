@@ -421,8 +421,6 @@ Beachline.prototype.remove = function (arcNode, point, directrix) {
 
   newEdge.updateEdge(point, this.dcel);
 
-  // Update the new arc bounds - test
-  updateArcBounds(this.root, -10000, 10000, directrix - 0.0001);
   // Cancel the close event for this arc and adjoining arcs.
   // Add new close events for adjoining arcs.
   var closeEvents = [];
@@ -430,7 +428,8 @@ Beachline.prototype.remove = function (arcNode, point, directrix) {
   if (prevArc.closeEvent) {
     prevArc.closeEvent.live = false;
   }
-  var e = createCloseEvent(prevArc, arcNode.site.y);
+  var e = prevArc.isV ? createCloseEvent(prevArc, arcNode.site.y - 0.0001)
+  : createCloseEvent(prevArc, arcNode.site.y);
   if (e != null) {
     closeEvents.push(e);
   }
@@ -438,7 +437,8 @@ Beachline.prototype.remove = function (arcNode, point, directrix) {
   if (nextArc.closeEvent) {
     nextArc.closeEvent.live = false;
   }
-  e = createCloseEvent(nextArc, arcNode.site.y);
+  var e = nextArc.isV ? createCloseEvent(nextArc, arcNode.site.y - 0.0001)
+  : createCloseEvent(nextArc, arcNode.site.y);
   if (e != null) {
     closeEvents.push(e);
   }
