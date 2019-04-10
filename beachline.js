@@ -96,10 +96,17 @@ var Beachline = function (dcel) {
   this.root = null;
   this.dcel = dcel;
 }
-
 //------------------------------------------------------------
-// Utility function
-// toSplit is an arc node. node is also an arc node.
+// Utility functions
+//
+
+// Return true or false if the arcNode should be able to close in the designated spot
+function canClose(left, arcNode, right, equi) {
+  // TODO
+  return true;
+}
+
+// function to split the apex node
 //   |     |
 // _/|__*  | toSplit
 //  \ \ | /
@@ -273,9 +280,9 @@ function createCloseEvent(arcNode, directrix) {
       var sorted = _.sortBy(equi, function (p) { return p.x; });
       if (arcNode.parent.flipped) {
         equi = sorted[1]; // always true? test
-      } else if (belongsToSegment(arcNode, arcNode.nextArc())) {
+      } else if (belongsToSegment(arcNode, right)) {
         equi = sorted[0];
-      } else if (belongsToSegment(arcNode.prevArc(), arcNode)) {
+      } else if (belongsToSegment(left, arcNode)) {
         equi = sorted[1];
       } else {
         let bSeg = createBeachlineSegment(arcNode.site, directrix);
@@ -287,7 +294,9 @@ function createCloseEvent(arcNode, directrix) {
       }
     }
     let r = dist(equi, arcNode.site);
-    return new CloseEvent(equi.y - r, arcNode, left, right, equi, r);
+    if (canClose(left, arcNode, right, equi)) {
+      return new CloseEvent(equi.y - r, arcNode, left, right, equi, r);
+    }
   } else {
     // All three are points
     var equi = equidistant(left.site, arcNode.site, right.site);
@@ -377,7 +386,6 @@ Beachline.prototype.add = function (site) {
       // Child is an arc node. Split it.
       parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
     }
-    // TEST - assumes the sweepline is moving down in a negative direction
     updateArcBounds(this.root, -10000, 10000, directrix - 0.00001);
   }
 
