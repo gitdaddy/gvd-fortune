@@ -48,35 +48,29 @@ function definePointGroupProperties(gp, gs) {
     // follow left path
     var curLeft = getNextSeg(sortedParents[0], gs);
     while(curLeft) {
-      var next = getNextSeg(curLeft, gs);
-      if (next) {
-        // mark points
-        gp.forEach(function (p) {
-          if (equal(p, curLeft.a) || equal(p, curLeft.b)) {
-            p.relation = NODE_RELATION.CHILD_LEFT_HULL;
-            curLeft.b.relation = NODE_RELATION.CHILD_LEFT_HULL;
-            curLeft.a.relation = NODE_RELATION.CHILD_LEFT_HULL;
-          }
-        });
-      }
-      var curLeft = next;
+      // mark points
+      gp.forEach(function (p) {
+        if (equal(p, curLeft.a) || equal(p, curLeft.b)) {
+          p.relation = NODE_RELATION.CHILD_LEFT_HULL;
+          curLeft.b.relation = NODE_RELATION.CHILD_LEFT_HULL;
+          curLeft.a.relation = NODE_RELATION.CHILD_LEFT_HULL;
+        }
+      });
+      var curLeft = getNextSeg(curLeft, gs);
     }
 
     // follow right path
     var curRight = getNextSeg(sortedParents[1], gs);
     while(curRight) {
-      var next = getNextSeg(curRight, gs);
-      if (next) {
-        // mark points
-        gp.forEach(function (p) {
-          if (equal(p, curRight.a) || equal(p, curRight.b)) {
-            p.relation = NODE_RELATION.CHILD_RIGHT_HULL;
-            curRight.b.relation = NODE_RELATION.CHILD_RIGHT_HULL;
-            curRight.a.relation = NODE_RELATION.CHILD_RIGHT_HULL;
-          }
-        });
-      }
-      curRight = next;
+      // mark points
+      gp.forEach(function (p) {
+        if (equal(p, curRight.a) || equal(p, curRight.b)) {
+          p.relation = NODE_RELATION.CHILD_RIGHT_HULL;
+          curRight.b.relation = NODE_RELATION.CHILD_RIGHT_HULL;
+          curRight.a.relation = NODE_RELATION.CHILD_RIGHT_HULL;
+        }
+      });
+      curRight = getNextSeg(curRight, gs);
     }
   }
 }
@@ -100,10 +94,10 @@ function createDatasets() {
     vec3(0.25, -0.1, 0), // close
     vec3(0.07, -0.09, 0), // left
 
-    vec3(-0.65, 0.31, 0), // top
-    vec3(-0.45, 0.21, 0), // right
-    vec3(-0.35, -0.05, 0), // lower right
-    vec3(-0.75, -0.08, 0), // close
+    vec3(-0.45, 0.31, 0), // top
+    vec3(-0.25, 0.21, 0), // right
+    vec3(-0.15, -0.05, 0), // lower right
+    vec3(-0.55, -0.08, 0), // close
     // vec3(-0.15, -0.95, 0),
     // vec3(0.14, -0.94, 0),
     // vec3(0.74, -0.94, 0),
@@ -127,7 +121,7 @@ function createDatasets() {
     vec3(0.24,0.524, 0),
     vec3(0.73,0.15, 0),
     vec3(0.0, -0.7, 0),
-    vec3(-0.076, 0.1, 0),
+    vec3(-0.23, 0.1, 0),
   ];
   let segments2 = [
     makeSegment(points2[0], points2[1]),

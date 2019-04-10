@@ -109,12 +109,7 @@ var Beachline = function (dcel) {
 //      *
 //------------------------------------------------------------
 function apexSplitSiblings(left, node, right, dcel) {
-  if (left.closeEvent) {
-    left.closeEvent.live = false;
-  }
-  if (right.closeEvent) {
-    right.closeEvent.live = false;
-  }
+  // Set live events to dead events?
   var vertex;
   if (left.isV) {
     vertex = vec3(node.site.x, new V(left.site, node.site.y).f(node.site.x));
@@ -142,12 +137,7 @@ function leftJointSplit(left, node, right, dcel) {
   if (!left.isParabola || !right.isV) {
     throw "invalid left joint split";
   }
-  if (left.closeEvent) {
-    left.closeEvent.live = false;
-  }
-  if (right.closeEvent) {
-    right.closeEvent.live = false;
-  }
+  // Set live events to dead events?
 
   var leftVertex = vec3(node.site.x, createParabola(left.site, node.site.y).f(node.site.x));
     // return new EdgeNode(left, node, vertex, dcel);
@@ -170,15 +160,7 @@ function rightJointSplit(left, child, right, dcel) {
   if (!left.isV || !child.isParabola || !right.isV) {
     throw "invalid right joint split";
   }
-  if (left.closeEvent) {
-    left.closeEvent.live = false;
-  }
-  if (right.closeEvent) {
-    right.closeEvent.live = false;
-  }
-
-  // var leftVertex = vec3(child.site.x, new V(left.site, child.site.y).f(child.site.x));
-  // var rightVertex = vec3(child.site.x, new V(right.site, child.site.y).f(child.site.x));
+  // Set live events to dead events?
   return new EdgeNode(left, new EdgeNode(child, right, child.site, dcel), child.site, dcel);
 }
 
