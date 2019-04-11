@@ -363,9 +363,9 @@ Beachline.prototype.add = function (site) {
     while (child.isEdge) {
       parent = child;
       x = parent.intersection(directrix).x;
-      if (site.x == x) {
-        console.log("Site and intersect values equal:" + x + " for intersection: " + parent.id);
-      }
+      // if (site.x == x) {
+        // console.log("Site and intersect values equal:" + x + " for intersection: " + parent.id);
+      // }
       parentSide = side;
       side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
       child = parent.getChild(side);
@@ -428,7 +428,7 @@ Beachline.prototype.add = function (site) {
 //------------------------------------------------------------
 // remove
 //------------------------------------------------------------
-Beachline.prototype.remove = function (arcNode, point, directrix) {
+Beachline.prototype.remove = function (arcNode, point) {
   if (!arcNode.isArc) throw "Unexpected edge in remove";
 
   var parent = arcNode.parent;

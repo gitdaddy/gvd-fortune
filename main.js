@@ -314,7 +314,7 @@ function fortune() {
       if (e.live) {
         e.arcNode.prevEdge().dcelEdge.dest.point = e.point;
         e.arcNode.nextEdge().dcelEdge.dest.point = e.point;
-        var newEvents = beachline.remove(e.arcNode, e.point, e.yval);
+        var newEvents = beachline.remove(e.arcNode, e.point);
         newEvents.forEach(function (ev) {
           if (ev.y < e.y - 0.000001) {
             events.push(ev);
@@ -342,7 +342,11 @@ function fortune() {
   let ev = '<br>';
   while (events.length > 0) {
     var e = events.pop();
-    ev += e.y + '<br>';
+    if (e.isCloseEvent) {
+      ev += e.y + ' - close node id:' + e.arcNode.id + '<br>';
+    } else {
+      ev += e.y + '<br>';
+    }
   }
   document.getElementById("events").innerHTML = ev;
   return beachline;

@@ -76,6 +76,32 @@ function quadratic(a, b, c) {
 
 //------------------------------------------------------------
 //------------------------------------------------------------
+// Calculate area created by 3 points
+//------------------------------------------------------------
+//------------------------------------------------------------
+// p1 *------------* p2
+//           * p3
+function pointArea(p1, p2, p3) {
+  if (!p1 || !p2 || !p3) return 1000000;
+  var s = _.sortBy([p1,p2,p3], 'x');
+  var x1 = s[2].x;
+  var y1 = s[2].y;
+  var x2 = s[1].x;
+  var y2 = s[1].y;
+  var x3 = s[0].x;
+  var y3 = s[0].y;
+  // Calculation the area of
+  // triangle. We have skipped
+  // multiplication with 0.5
+  // to avoid floating point
+  // computations
+  return  x1 * (y2 - y3) +
+          x2 * (y3 - y1) +
+          x3 * (y1 - y2);
+}
+
+//------------------------------------------------------------
+//------------------------------------------------------------
 // Specific intersect functions
 //------------------------------------------------------------
 //------------------------------------------------------------
@@ -101,49 +127,6 @@ function intersectLines(p1, p2, p3, p4) {
   var y = ((x1*y2-y1*x2)*(y3-y4) - (y1-y2)*(x3*y4-y3*x4))/denom;
   return vec3(x, y, 0);
 }
-
-//------------------------------------------------------------
-//------------------------------------------------------------
-// Unlimited Line intersection
-//------------------------------------------------------------
-//------------------------------------------------------------
-// Where L(p0, p1) == M(q0, q1)
-// q0 *----x--------* q1 + a*v0
-//
-//       _* p1 + b*v1
-//      /
-//  p0 *
-// p + tr = q + us - if there exist  some t and u then both lines intersect
-// t = (q-p) x s/(rxs)
-// u = (p-q) x r/(sxr)
-// Note s x r = -r x s
-// TODO test
-// function llIntersect(p0, p1, q0, q1) {
-//   var r = normalize(subtract(p1, p0));
-//   var s = normalize(subtract(q1, q0));
-//   var crs = cross(r,s).z;
-//   var vecPQ = subtract(q0, p0);
-//   var vecQP = subtract(p0, q0);
-//   if (crs == 0 && cross(vecPQ, r).z == 0) {
-//     console.log("Intersecting lines colinear");
-//     return null;
-//   }
-//   if (crs == 0 && cross(vecPQ, r).z != 0) {
-//     console.log("Intersecting lines are parallel");
-//     return null;
-//   }
-//   var sOverRS = divide(s, crs);
-//   var rOverSR = divide(r, cross(s, r).z);
-//   var t = cross(vecPQ, sOverRS).z;
-//   var u = cross(vecQP, rOverSR).z;
-//   // if r x s != 0 and 0 <= t <= 1 and 0 <= u <= 0
-//   // then the two lines meet at p + tr = q + us
-//   if (crs != 0 && inRange(t, 0, 1) && inRange(u, 0, 1)) {
-//     return add(q0, mult(u, s));
-//   }
-//   console.log("llIntersect returning null");
-//   return null;
-// }
 
 //------------------------------------------------------------
 // line/parabola intersections
@@ -425,33 +408,23 @@ function bisectPoints(p1, p2) {
 //------------------------------------------------------------
 function bisectSegments(s1, s2) {
   // get the closest points
-  var p1,p2;
   var d1 = dist(s1.a, s2.a);
   var d2 = dist(s1.a, s2.b);
   var d3 = dist(s1.b, s2.a);
   var d4 = dist(s1.b, s2.b);
   if (d1 < d2 && d1 < d3 && d1 < d4) {
-    p1 = s1.a;
-    p2 = s2.a;
   } else if (d2 < d1 && d2 < d1 && d2 < d4) {
-    p1 = s1.a;
-    p2 = s2.b;
     s2 = makeSegment(s2.b, s2.a, true);
   } else if (d3 < d1 && d3 < d2 && d3 < d4) {
-    p1 = s1.b;
-    p2 = s2.a;
     s1 = makeSegment(s1.b, s1.a, true);
   } else if (d4 < d1 && d4 < d2 && d4 < d3) {
-    p1 = s1.b;
-    p2 = s2.b;
     s1 = makeSegment(s1.b, s1.a, true);
     s2 = makeSegment(s2.b, s2.a, true);
   }
 
   var beta = getSegmentsBisector(s1, s2, false);
   var v = new vec3(Math.cos(beta), Math.sin(beta), 0);
-  // console.log(v);
-  var p = midPoint(p1, p2);
+  var p = intersectLines(s1.a, s1.b, s2.a, s2.b);
   var l = new Line(p, add(p, v));
   return l;
 }
@@ -529,14 +502,11 @@ function equidistant(left, arc, right) {
     b1 = bisect(left, arc);
     b2 = bisect(arc, right);
     // Testing only
-    debugObjs.push(b1);
-    debugObjs.push(b2);
+    // debugObjs.push(b1);
+    // debugObjs.push(b2);
   } else {
     b1 = bisect(left, arc);
     b2 = bisect(arc, right);
   }
-  // Testing only
-  debugObjs.push(b1);
-  debugObjs.push(b2);
   return intersect(b1, b2);
 }

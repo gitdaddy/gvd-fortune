@@ -16,8 +16,8 @@ var tolerance = 0.0001;
 // The sweepline is assumed to be horizontal and is given as a y-value.
 V = function(line, directrix) {
   lineSegment = _.sortBy(line, [function(i) { return i.y; }]);
-  this.y0 = lineSegment[0];
   this.y1 = lineSegment[1];
+  this.y0 = lineSegment[0];
   this.p = intersectLines(
     lineSegment[0], lineSegment[1], vec3(-100, directrix, 0), vec3(100, directrix, 0));
   this.focus = this.p;
@@ -55,6 +55,7 @@ V.prototype.intersect = function(obj) {
     ret = _.sortBy(ret, [function(i) { return i.x; }]);
     return ret;
   } else if (obj instanceof V) {
+
     var tlvy = vec3(this.f_(this.y1.y)[0], this.y1.y, 0);
     var trvy = vec3(this.f_(this.y1.y)[1], this.y1.y, 0);
     var olvy = vec3(obj.f_(obj.y1.y)[0], obj.y1.y, 0);
@@ -65,60 +66,81 @@ V.prototype.intersect = function(obj) {
     var itrol = intersectLines(this.p, trvy, obj.p, olvy);
     var itror = intersectLines(this.p, trvy, obj.p, orvy);
 
-    // test for jointness between sites
-    var validPoints;
-    var joint = getJoint(this.y0, this.y1, obj.y0, obj.y1);
-    if (joint) {
-      switch(joint.relation) {
-        case NODE_RELATION.APEX:
-          validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
-            if (p != null) {
-              return p.y < joint.point.y;
-            }
-          });
-          break;
-        case NODE_RELATION.CHILD_LEFT_HULL:
-          validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
-            if (p != null) {
-              return p.x > joint.point.x;
-            }
-          });
-          break;
-        case NODE_RELATION.CHILD_RIGHT_HULL:
-          validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
-            if (p != null) {
-              return p.x < joint.point.x;
-            }
-          });
-          break;
-        case NODE_RELATION.CLOSING:
-          validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
-            if (p != null) {
-              return p.y < joint.point.y;
-            }
-          });
-      }
-    } else {
-      var miny = this.p.y;
-      validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
-        if (p != null) {
-          return p.y > miny;
-        }
-      });
-    }
+    var b = bisectSegments(makeSegment(this.y0, this.y1), makeSegment(obj.y0, obj.y1));
+    debugObjs.push(b);
+    console.log("p1:" + b.p1 + " p2:" + b.p2);
+    var a1 = { area: pointArea(itlol, b.p1, b.p2), value: [itlol] };
+    var a2 = { area: pointArea(itlor, b.p1, b.p2), value: [itlor] };
+    var a3 = { area: pointArea(itrol, b.p1, b.p2), value: [itrol] };
+    var a4 = { area: pointArea(itror, b.p1, b.p2), value: [itror] };
+    return _.minBy([a1, a2, a3, a4], 'area').value;
+    // return whichever is above miny and zero z
+    // if (a1 < a2 && a1 < ) {
+    //   return [itlol];
+    // } else if (collinear(itlor, b.p1, b.p2)) {
+    //   return [itlor];
+    // } else if (collinear(itrol, b.p1, b.p2)) {
+    //   return [itrol];
+    // } else if  (collinear(itror, b.p1, b.p2)) {
+    //   return [itror];
+    // } else {
+    //   throw "no V-V intersection found";
+    // }
 
-    if (this.y1.y == obj.y1.y) {
-      // possibly return up to 4 points
-      return _.sortBy(validPoints, function (p) { return p.x; });
-    }
-    // Otherwise use the target intersections 'around' the lowest segment
-    var targetX = this.y1.y > obj.y1.y ? obj.p.x : this.p.x;
-    // only get the two most valid points that are closest to the midpoint
-    var ret = _.sortBy(validPoints, function (p) {
-      return Math.abs(p.x - targetX);
-    });
-    ret = ret.length > 2 ? [ret[0], ret[1]] : ret;
-    return _.sortBy(ret, function (p) { return p.x; });
+    // // test for jointness between sites
+    // var validPoints;
+    // var joint = getJoint(this.y0, this.y1, obj.y0, obj.y1);
+    // if (joint) {
+    //   switch(joint.relation) {
+    //     case NODE_RELATION.APEX:
+    //       validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
+    //         if (p != null) {
+    //           return p.y < joint.point.y;
+    //         }
+    //       });
+    //       break;
+    //     case NODE_RELATION.CHILD_LEFT_HULL:
+    //       validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
+    //         if (p != null) {
+    //           return p.x > joint.point.x;
+    //         }
+    //       });
+    //       break;
+    //     case NODE_RELATION.CHILD_RIGHT_HULL:
+    //       validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
+    //         if (p != null) {
+    //           return p.x < joint.point.x;
+    //         }
+    //       });
+    //       break;
+    //     case NODE_RELATION.CLOSING:
+    //       validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
+    //         if (p != null) {
+    //           return p.y > joint.point.y;
+    //         }
+    //       });
+    //   }
+    // } else {
+    //   var miny = this.p.y;
+    //   validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
+    //     if (p != null) {
+    //       return p.y > miny;
+    //     }
+    //   });
+    // }
+
+    // if (this.y1.y == obj.y1.y) {
+    //   // possibly return up to 4 points
+    //   return _.sortBy(validPoints, function (p) { return p.x; });
+    // }
+    // // Otherwise use the target intersections 'around' the lowest segment
+    // var targetX = this.y1.y > obj.y1.y ? obj.p.x : this.p.x;
+    // // only get the two most valid points that are closest to the midpoint
+    // var ret = _.sortBy(validPoints, function (p) {
+    //   return Math.abs(p.x - targetX);
+    // });
+    // // ret = ret.length > 2 ? [ret[0], ret[1]] : ret;
+    // return _.sortBy(ret, function (p) { return p.x; });
   }
   throw "intersection type not implemented";
 }

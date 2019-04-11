@@ -311,9 +311,9 @@ function drawCloseEvents(eventPoints) {
   ;
 }
 
-function activeLineWidth(point) {
-  return point.connectedToGVD ? 1 : 0;
-}
+// function activeLineWidth(point) {
+//   return point.connectedToGVD ? 1 : 0;
+// }
 
 function drawBeachline(beachline, directrix) {
   if (beachline.root == null) {
@@ -431,7 +431,7 @@ function drawBeachline(beachline, directrix) {
       .attr('x2', d => d.x1)
       .attr('y2', d => d.y1)
       .attr("id", p => `treenode${p.id}`)
-      .style("stroke-width", p => activeLineWidth(p))
+      .style("stroke-width", 1)
     ;
   }
   //------------------------------
