@@ -51,9 +51,9 @@ function definePointGroupProperties(gp, gs) {
       // mark points
       gp.forEach(function (p) {
         if (equal(p, curLeft.a) || equal(p, curLeft.b)) {
-          p.relation = NODE_RELATION.CHILD_LEFT_HULL;
-          curLeft.b.relation = NODE_RELATION.CHILD_LEFT_HULL;
-          curLeft.a.relation = NODE_RELATION.CHILD_LEFT_HULL;
+          if (!p.relation) p.relation = NODE_RELATION.CHILD_LEFT_HULL;
+          if (!curLeft.b.relation) curLeft.b.relation = NODE_RELATION.CHILD_LEFT_HULL;
+          if (!curLeft.a.relation) curLeft.a.relation = NODE_RELATION.CHILD_LEFT_HULL;
         }
       });
       var curLeft = getNextSeg(curLeft, gs);
@@ -65,9 +65,9 @@ function definePointGroupProperties(gp, gs) {
       // mark points
       gp.forEach(function (p) {
         if (equal(p, curRight.a) || equal(p, curRight.b)) {
-          p.relation = NODE_RELATION.CHILD_RIGHT_HULL;
-          curRight.b.relation = NODE_RELATION.CHILD_RIGHT_HULL;
-          curRight.a.relation = NODE_RELATION.CHILD_RIGHT_HULL;
+          if (!p.relation) p.relation = NODE_RELATION.CHILD_RIGHT_HULL;
+          if (!curRight.b.relation) curRight.b.relation = NODE_RELATION.CHILD_RIGHT_HULL;
+          if (!curRight.a.relation) curRight.a.relation = NODE_RELATION.CHILD_RIGHT_HULL;
         }
       });
       curRight = getNextSeg(curRight, gs);

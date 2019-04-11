@@ -51,7 +51,7 @@ function updateArcBounds(node, leftx, rightx, directrix) {
   if (p.x < leftx && Math.abs(leftx - p.x) > 0.0001) {
     let msg = `bound intersection is less than leftx: ${p.x} < ${leftx}.` +
       `id = ${node.id}`;
-    console.error(msg);
+    console.log(msg);
   }
 
   // check left then right
@@ -100,10 +100,44 @@ var Beachline = function (dcel) {
 // Utility functions
 //
 
-// Return true or false if the arcNode should be able to close in the designated spot
-function canClose(left, arcNode, right, equi) {
-  // TODO
-  return true;
+/* Return true or false if the arcNode should be able to close in the designated spot
+   Does the shared segment run between p1 and equi/close point?
+   Arc node must be a parabola arc for this test
+   If the segment divides the start of the parabola and the close point then it cannot close
+   true otherwise
+   |
+    *p1   * a
+     \    |
+      \   |      * close
+       \  |
+        \ | /
+         \|/
+          * b
+*/
+function canClose(left, arcNode, right, equi, directrix) {
+  if (arcNode.isV) {
+    var siteX;
+    if (equi.y < arcNode.site.b.y) {
+      siteX = arcNode.site.b.x;
+    } else {
+      // if x0,x1,equi.x are strictly less or greater than p
+      let segV = createBeachlineSegment(arcNode.site, directrix);
+      siteX = segV.p.x;
+    }
+    return arcNode.x0 < siteX && arcNode.x1 < siteX && equi.x < siteX // why is p so behind?
+    || arcNode.x0 > siteX && arcNode.x1 > siteX && equi.x > siteX;
+  } else {
+    var seg;
+    if (left.isV && belongsToSegment(arcNode, left)) {
+      seg = left.site;
+    } else if (right.isV && belongsToSegment(arcNode, right)) {
+      seg = right.site;
+    } else {
+      return true;
+    }
+    let segV = createBeachlineSegment(seg, directrix);
+    return arcNode.x0 < segV.p.x && equi.x < segV.p.x || arcNode.x0 > segV.p.x && equi.x > segV.p.x;
+  }
 }
 
 // function to split the apex node
@@ -246,21 +280,6 @@ function createCloseEvent(arcNode, directrix) {
       })[0];
     }
 
-    /* Determine if the close event is a true close event
-    // In many cases the close event can be false
-    |       a
-     \     |             /e
-      \    |            /
-       \   |      * p  /
-        \  |          d
-         \ | /
-          \|/
-           b
-      False close point created by equidistant point between S(a-b), a and d while examining the V arc
-    */
-   var p0 = vec3(arcNode.x0, segV.f(arcNode.x0), 0);
-   var p1 = vec3(arcNode.x1, segV.f(arcNode.x1), 0);
-   var BA = subtract(arcNode.site.a, arcNode.site.b);
    // if close for 3 Vs get the radius as the arcNode's upper site
    var r;
    if (left.isV && right.isV) {
@@ -269,7 +288,7 @@ function createCloseEvent(arcNode, directrix) {
     r = dist(equi, arcNode.site);
    }
    var newY = equi.y - r;
-   if (!dividesPoints(BA, arcNode.site.b, p0, p1) || newY < arcNode.site.b.y)
+   if (canClose(left, arcNode, right, equi, directrix))
    {
       return new CloseEvent(newY, arcNode, left, right, equi, r);
    }
@@ -294,7 +313,7 @@ function createCloseEvent(arcNode, directrix) {
       }
     }
     let r = dist(equi, arcNode.site);
-    if (canClose(left, arcNode, right, equi)) {
+    if (canClose(left, arcNode, right, equi, directrix)) {
       return new CloseEvent(equi.y - r, arcNode, left, right, equi, r);
     }
   } else {
@@ -345,7 +364,7 @@ Beachline.prototype.add = function (site) {
       parent = child;
       x = parent.intersection(directrix).x;
       if (site.x == x) {
-        console.error("Site and intersect values equal:" + x);
+        console.log("Site and intersect values equal:" + x + " for intersection: " + parent.id);
       }
       parentSide = side;
       side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
