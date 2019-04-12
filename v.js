@@ -56,91 +56,26 @@ V.prototype.intersect = function(obj) {
     return ret;
   } else if (obj instanceof V) {
 
-    var tlvy = vec3(this.f_(this.y1.y)[0], this.y1.y, 0);
-    var trvy = vec3(this.f_(this.y1.y)[1], this.y1.y, 0);
-    var olvy = vec3(obj.f_(obj.y1.y)[0], obj.y1.y, 0);
-    var orvy = vec3(obj.f_(obj.y1.y)[1], obj.y1.y, 0);
-
-    var itlol = intersectLines(this.p, tlvy, obj.p, olvy);
-    var itlor = intersectLines(this.p, tlvy, obj.p, orvy);
-    var itrol = intersectLines(this.p, trvy, obj.p, olvy);
-    var itror = intersectLines(this.p, trvy, obj.p, orvy);
-
     var b = bisectSegments(makeSegment(this.y0, this.y1), makeSegment(obj.y0, obj.y1));
     debugObjs.push(b);
-    console.log("p1:" + b.p1 + " p2:" + b.p2);
-    var a1 = { area: pointArea(itlol, b.p1, b.p2), value: [itlol] };
-    var a2 = { area: pointArea(itlor, b.p1, b.p2), value: [itlor] };
-    var a3 = { area: pointArea(itrol, b.p1, b.p2), value: [itrol] };
-    var a4 = { area: pointArea(itror, b.p1, b.p2), value: [itror] };
-    return _.minBy([a1, a2, a3, a4], 'area').value;
-    // return whichever is above miny and zero z
-    // if (a1 < a2 && a1 < ) {
-    //   return [itlol];
-    // } else if (collinear(itlor, b.p1, b.p2)) {
-    //   return [itlor];
-    // } else if (collinear(itrol, b.p1, b.p2)) {
-    //   return [itrol];
-    // } else if  (collinear(itror, b.p1, b.p2)) {
-    //   return [itror];
-    // } else {
-    //   throw "no V-V intersection found";
-    // }
 
-    // // test for jointness between sites
-    // var validPoints;
-    // var joint = getJoint(this.y0, this.y1, obj.y0, obj.y1);
-    // if (joint) {
-    //   switch(joint.relation) {
-    //     case NODE_RELATION.APEX:
-    //       validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
-    //         if (p != null) {
-    //           return p.y < joint.point.y;
-    //         }
-    //       });
-    //       break;
-    //     case NODE_RELATION.CHILD_LEFT_HULL:
-    //       validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
-    //         if (p != null) {
-    //           return p.x > joint.point.x;
-    //         }
-    //       });
-    //       break;
-    //     case NODE_RELATION.CHILD_RIGHT_HULL:
-    //       validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
-    //         if (p != null) {
-    //           return p.x < joint.point.x;
-    //         }
-    //       });
-    //       break;
-    //     case NODE_RELATION.CLOSING:
-    //       validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
-    //         if (p != null) {
-    //           return p.y > joint.point.y;
-    //         }
-    //       });
-    //   }
-    // } else {
-    //   var miny = this.p.y;
-    //   validPoints = _.filter([itlol, itlor, itrol, itror], function (p) {
-    //     if (p != null) {
-    //       return p.y > miny;
-    //     }
-    //   });
-    // }
-
-    // if (this.y1.y == obj.y1.y) {
-    //   // possibly return up to 4 points
-    //   return _.sortBy(validPoints, function (p) { return p.x; });
-    // }
-    // // Otherwise use the target intersections 'around' the lowest segment
-    // var targetX = this.y1.y > obj.y1.y ? obj.p.x : this.p.x;
-    // // only get the two most valid points that are closest to the midpoint
-    // var ret = _.sortBy(validPoints, function (p) {
-    //   return Math.abs(p.x - targetX);
-    // });
-    // // ret = ret.length > 2 ? [ret[0], ret[1]] : ret;
-    // return _.sortBy(ret, function (p) { return p.x; });
+    var y0_y1 = subtract(this.y1, this.y0);
+    var y0_Oy0 = subtract(obj.y0, this.y0);
+    var y0_Oy1 = subtract(obj.y1, this.y0);
+    var zFactor = cross(y0_y1, y0_Oy0).z + cross(y0_y1, y0_Oy1).z;
+    if (zFactor == 0) {
+      // collinear
+      console.log("collinear v-v arc!");
+      return [this.p];
+    }
+    // choose this v left or right based on zFactor
+    if (zFactor < 0) {
+      // segment right
+      return [intersectLines(this.p, vec3(this.f_(this.y1.y)[1], this.y1.y, 0), b.p1, b.p2)];
+    } else {
+      // segment left
+      return [intersectLines(this.p, vec3(this.f_(this.y1.y)[0], this.y1.y, 0), b.p1, b.p2)];
+    }
   }
   throw "intersection type not implemented";
 }
