@@ -38,7 +38,12 @@ function definePointGroupProperties(gp, gs) {
   // No two points of the same label should ever share the same y value
   var ySortedPoints = _.sortBy(gp, function(i) { return i.y; });
   var parents = _.filter(gs, function(s) { return equal(s.a, ySortedPoints[ySortedPoints.length - 1]); });
-  var sortedParents = _.sortBy(parents, function(s) { return s.b.x; });
+
+  // cross product
+  var v0 = subtract(parents[0].b, ySortedPoints[ySortedPoints.length - 1]);
+  var v1 = subtract(parents[1].b, ySortedPoints[ySortedPoints.length - 1]);
+  var sortedParents = cross(v0, v1).z < 0 ? [parents[1], parents[0]] : [parents[0], parents[1]];
+  // var sortedParents = _.sortBy(parents, function(s) { return s.b.x; });
 
   if (sortedParents.length == 2) {
     sortedParents[0].a.relation = NODE_RELATION.APEX;
@@ -147,19 +152,20 @@ function createDatasets() {
   let points4 = [
     vec3(-0.26, 0.73, 0),
     vec3(0.62, 0.37, 0),
-    vec3(-0.12,0.13, 0),
-    vec3(-0.30, -0.1, 0),
     vec3(0.73,-0.13, 0),
-    vec3(-0.65, -0.15, 0),
+    
+    // vec3(-0.65, -0.15, 0),
+    // vec3(-0.12,0.13, 0),
+    // vec3(-0.30, -0.1, 0),
   ];
   let segments4 = [
     makeSegment(points4[0], points4[1]),
-    makeSegment(points4[1], points4[4]),
-    makeSegment(points4[4], points4[0]),
+    makeSegment(points4[1], points4[2]),
+    makeSegment(points4[2], points4[0]),
 
-    makeSegment(points4[2], points4[3]),
-    makeSegment(points4[3], points4[5]),
-    makeSegment(points4[5], points4[2]),
+    // makeSegment(points4[2], points4[3]),
+    // makeSegment(points4[3], points4[5]),
+    // makeSegment(points4[5], points4[2]),
   ];
 
   Math.seedrandom('3');

@@ -375,8 +375,10 @@ Beachline.prototype.add = function (site) {
     var siblingRight = child.nextArc();
     if (arcNode.isV && child.isV &&
        _.get(arcNode, "site.a.relation", false) == NODE_RELATION.APEX) {
-      var newChild = arcNode.site.b.x < child.site.b.x ?
-      apexSplitSiblings(siblingLeft, arcNode, child, dcel) : apexSplitSiblings(child, arcNode, siblingRight, dcel);
+        var vC = subtract(child.site.b, arcNode.site.a);
+        var vN = subtract(arcNode.site.b, arcNode.site.a);
+        var z0 = cross(vC, vN).z;
+      var newChild = z0 < 0 ? apexSplitSiblings(siblingLeft, arcNode, child, dcel) : apexSplitSiblings(child, arcNode, siblingRight, dcel);
       parent.setChild(newChild, side);
     } else if (arcNode.isV &&
        _.get(arcNode, "site.a.relation", false) == NODE_RELATION.CHILD_LEFT_HULL) {
