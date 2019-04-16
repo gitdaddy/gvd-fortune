@@ -122,18 +122,35 @@ function createDatasets() {
   ];
 
   let points2 = [
-    vec3(-0.072, 0.542, 0),
-    vec3(0.24,0.524, 0),
-    vec3(0.73,0.15, 0),
-    vec3(0.0, -0.7, 0),
-    vec3(-0.23, 0.1, 0),
+    vec3(-0.572, 0.542, 0), // t1
+    vec3(-0.072, 0.31, 0), // cmid
+    vec3(0.372, 0.51, 0), // t2
+
+    vec3(0.64,0.28, 0), // right
+    vec3(0.14, 0.18, 0), // right2
+    vec3(0.5,-0.08, 0), // right3
+
+    vec3(0.23, -0.31, 0), // c2
+    vec3(0.01, -0.07, 0), // t3
+    vec3(-0.53, -0.45, 0), // c 1
+
+    vec3(-0.5,-0.28, 0), // left3
+    vec3(-0.14,0.2, 0), // left2
+    vec3(-0.54,0.38, 0), // left
   ];
   let segments2 = [
     makeSegment(points2[0], points2[1]),
     makeSegment(points2[1], points2[2]),
     makeSegment(points2[2], points2[3]),
     makeSegment(points2[3], points2[4]),
-    makeSegment(points2[4], points2[0]),
+    makeSegment(points2[4], points2[5]),
+    makeSegment(points2[5], points2[6]),
+    makeSegment(points2[6], points2[7]),
+    makeSegment(points2[7], points2[8]),
+    makeSegment(points2[8], points2[9]),
+    makeSegment(points2[9], points2[10]),
+    makeSegment(points2[10], points2[11]),
+    makeSegment(points2[11], points2[0]),
   ];
 
   let points3 = [];
@@ -153,19 +170,19 @@ function createDatasets() {
     vec3(-0.26, 0.73, 0),
     vec3(0.62, 0.37, 0),
     vec3(0.73,-0.13, 0),
-    
-    // vec3(-0.65, -0.15, 0),
-    // vec3(-0.12,0.13, 0),
-    // vec3(-0.30, -0.1, 0),
+
+    vec3(-0.65, -0.15, 0),
+    vec3(-0.12,0.13, 0),
+    vec3(-0.30, -0.1, 0),
   ];
   let segments4 = [
     makeSegment(points4[0], points4[1]),
     makeSegment(points4[1], points4[2]),
     makeSegment(points4[2], points4[0]),
 
-    // makeSegment(points4[2], points4[3]),
-    // makeSegment(points4[3], points4[5]),
-    // makeSegment(points4[5], points4[2]),
+    makeSegment(points4[3], points4[4]),
+    makeSegment(points4[4], points4[5]),
+    makeSegment(points4[5], points4[3]),
   ];
 
   Math.seedrandom('3');

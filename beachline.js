@@ -449,6 +449,7 @@ Beachline.prototype.remove = function (arcNode, point) {
   sibling.parent = grandparent;
 
   newEdge.updateEdge(point, this.dcel);
+  arcNode.closeEvent.live = false;
 
   // Cancel the close event for this arc and adjoining arcs.
   // Add new close events for adjoining arcs.

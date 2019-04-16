@@ -56,25 +56,53 @@ V.prototype.intersect = function(obj) {
     return ret;
   } else if (obj instanceof V) {
 
-    var b = bisectSegments(makeSegment(this.y0, this.y1), makeSegment(obj.y0, obj.y1));
-    debugObjs.push(b);
+    if (this.y0.label == obj.y0.label) {
+      var y0_y1 = subtract(this.y1, this.y0);
+      var y0_Oy0 = subtract(obj.y0, this.y0);
+      var y0_Oy1 = subtract(obj.y1, this.y0);
+      // z area between this and obj
+      var zArea = cross(y0_y1, y0_Oy0).z + cross(y0_y1, y0_Oy1).z;
+      if (zArea == 0) {
+        // collinear
+        console.log("collinear v-v arc!");
+        return [this.p];
+      }
+      // choose this v left or right based on zArea
+      var b = bisectSegments(makeSegment(this.y0, this.y1), makeSegment(obj.y0, obj.y1));
+      // debugObjs.push(b);
 
-    var y0_y1 = subtract(this.y1, this.y0);
-    var y0_Oy0 = subtract(obj.y0, this.y0);
-    var y0_Oy1 = subtract(obj.y1, this.y0);
-    var zFactor = cross(y0_y1, y0_Oy0).z + cross(y0_y1, y0_Oy1).z;
-    if (zFactor == 0) {
-      // collinear
-      console.log("collinear v-v arc!");
-      return [this.p];
-    }
-    // choose this v left or right based on zFactor
-    if (zFactor < 0) {
-      // segment right
-      return [intersectLines(this.p, vec3(this.f_(this.y1.y)[1], this.y1.y, 0), b.p1, b.p2)];
+      if (zArea < 0) {
+        // segment right - should this always be used or should obj be used?
+        return [intersectLines(this.p, vec3(this.f_(this.y1.y)[1], this.y1.y, 0), b.p1, b.p2)];
+      } else {
+        // segment left
+        return [intersectLines(this.p, vec3(this.f_(this.y1.y)[0], this.y1.y, 0), b.p1, b.p2)];
+      }
     } else {
-      // segment left
-      return [intersectLines(this.p, vec3(this.f_(this.y1.y)[0], this.y1.y, 0), b.p1, b.p2)];
+      // The lower V should never have to worry about intersecting with the
+      // the upper V's 'hidden' arc
+      var upperV = this.y1.y > obj.y1.y ? this : obj;
+      var lowerV = this.y1.y > obj.y1.y ? obj : this;
+      // the lower V must be to one side of the upper V
+      // use the zArea to determine which side
+      var y0_y1 = subtract(upperV.y1, upperV.y0);
+      var y0_Ly0 = subtract(lowerV.y0, upperV.y0);
+      var y0_Ly1 = subtract(lowerV.y1, upperV.y0);
+      // z area between this and obj
+      var zArea = cross(y0_y1, y0_Ly0).z + cross(y0_y1, y0_Ly1).z;
+      var p1,p2v0,p2v1,p3,p4;
+      p1 = lowerV.p;
+      p2v0 = vec3(lowerV.f_(lowerV.y1.y)[0], lowerV.y1.y, 0);
+      p2v1 = vec3(lowerV.f_(lowerV.y1.y)[1], lowerV.y1.y, 0);
+      p3 = upperV.p;
+      if (zArea < 0) {
+        // right of upper
+        p4 = vec3(upperV.f_(upperV.y1.y)[1], upperV.y1.y, 0);
+      } else {
+        // left of upper
+        p4 = vec3(upperV.f_(upperV.y1.y)[0], upperV.y1.y, 0);
+      }
+      return _.sortBy([intersectLines(p1, p2v0, p3, p4), intersectLines(p1, p2v1, p3, p4)], 'x');
     }
   }
   throw "intersection type not implemented";

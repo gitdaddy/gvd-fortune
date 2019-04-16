@@ -311,7 +311,7 @@ function fortune() {
       e = events.pop();
     }
     if (e.isCloseEvent) {
-      if (e.live) {
+      if (e.live && e.arcNode.closeEvent.live) {
         e.arcNode.prevEdge().dcelEdge.dest.point = e.point;
         e.arcNode.nextEdge().dcelEdge.dest.point = e.point;
         var newEvents = beachline.remove(e.arcNode, e.point);

@@ -475,12 +475,13 @@ function equidistant(left, arc, right) {
   } else if (segments.length == 3) {
     b1 = bisect(left, arc);
     b2 = bisect(arc, right);
-    // Testing only
-    // debugObjs.push(b1);
-    // debugObjs.push(b2);
+
   } else {
     b1 = bisect(left, arc);
     b2 = bisect(arc, right);
   }
+     // Testing only
+    debugObjs.push(b1);
+    debugObjs.push(b2);
   return intersect(b1, b2);
 }
