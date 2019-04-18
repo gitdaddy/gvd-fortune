@@ -48,7 +48,7 @@ function updateArcBounds(node, leftx, rightx, directrix) {
 
   if (Number.isNaN(p) || _.isUndefined(p)) return;
 
-  if (p.x < leftx && Math.abs(leftx - p.x) > 0.0001) {
+  if (p.x < leftx && Math.abs(leftx - p.x) > 0.001) {
     let msg = `bound intersection is less than leftx: ${p.x} < ${leftx}.` +
       `id = ${node.id}`;
     console.log(msg);
@@ -127,6 +127,7 @@ function canClose(left, arcNode, right, equi, directrix) {
     return arcNode.x0 < siteX && arcNode.x1 < siteX && equi.x < siteX // why is p so behind?
     || arcNode.x0 > siteX && arcNode.x1 > siteX && equi.x > siteX;
   } else {
+    // TODO FIX - does always work
     var seg;
     if (left.isV && belongsToSegment(arcNode, left)) {
       seg = left.site;
@@ -138,6 +139,32 @@ function canClose(left, arcNode, right, equi, directrix) {
     let segV = createBeachlineSegment(seg, directrix);
     return arcNode.x0 < segV.p.x && equi.x < segV.p.x || arcNode.x0 > segV.p.x && equi.x > segV.p.x;
   }
+  /*
+  if (left.isV && belongsToSegment(arcNode, left)) {
+      // seg = left.site;
+      // let segV = createBeachlineSegment(left.site, directrix);
+      // return equi.x > segV.p.x;
+      var v0 = subtract(left.site.a, left.site.b);
+      var v1 = subtract(vec3(equi.x, equi.y, 0), left.site.b);
+      if (arcNode.site.flipped) {
+        return cross(v0, v1).z > 0; // equi is on the right like it should be
+      } else {
+        return cross(v0, v1).z < 0; // equi is on the right like it should be
+      }
+    } else if (right.isV && belongsToSegment(arcNode, right)) {
+      // seg = right.site;
+      // let segV = createBeachlineSegment(right.site, directrix);
+      // return equi.x < segV.p.x;
+      var v0 = subtract(right.site.a, right.site.b);
+      var v1 = subtract(vec3(equi.x, equi.y, 0), right.site.b);
+      if (arcNode.site.flipped) {
+        return cross(v0, v1).z < 0; // equi is on the right like it should be
+      } else {
+        return cross(v0, v1).z > 0; // equi is on the right like it should be
+      }
+    }
+    return true;
+  */
 }
 
 // function to split the top node

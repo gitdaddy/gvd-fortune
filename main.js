@@ -305,7 +305,12 @@ function fortune() {
   closeEventPoints = [];
   while (events.length > 0 && events.peek().y > sweepline) {
     var e = events.pop();
-    if (e.type == "segment" && !e.ordered) {
+    /* process segment end points first before the segments
+     Example    * A      In the Queue order: BCA
+              /  \       Processing order ABC
+          B  /    \ C
+     */
+    while (e.type == "segment" && !e.ordered) {
       e.ordered = true;
       events.push(e);
       e = events.pop();

@@ -1,3 +1,2 @@
-1. Fix error in dataset 4 - false close point
+1. Fix error in dataset 4
 2. Fix d 1 with no close point
-3. Define non-convex poly
