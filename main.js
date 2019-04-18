@@ -239,7 +239,7 @@ function datasetChange(value) {
   });
 
 
-  populateDataProps(points, segments);
+  populateDataProps(segments);
 
   initDebugCircumcircle();
   drawSites(points);
@@ -312,6 +312,7 @@ function fortune() {
     }
     if (e.isCloseEvent) {
       if (e.live && e.arcNode.closeEvent.live) {
+        // console.log("DEST point:" + e.point);
         e.arcNode.prevEdge().dcelEdge.dest.point = e.point;
         e.arcNode.nextEdge().dcelEdge.dest.point = e.point;
         var newEvents = beachline.remove(e.arcNode, e.point);
@@ -345,7 +346,7 @@ function fortune() {
     if (e.isCloseEvent) {
       ev += e.y + ' - close node id:' + e.arcNode.id + '<br>';
     } else {
-      ev += e.y + '<br>';
+      ev += e.y + " r: " + e.relation + '<br>';
     }
   }
   document.getElementById("events").innerHTML = ev;

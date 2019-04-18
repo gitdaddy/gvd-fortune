@@ -176,6 +176,9 @@ Object.defineProperty(EdgeNode.prototype, "flipped", {
 
 EdgeNode.prototype.updateEdge = function (vertex, dcel) {
   this.dcelEdge = dcel.makeEdge();
+  // if (_.isNaN(vertex.y))
+  //   debugger;
+  // console.log("Origin point:" + vertex);
   this.dcelEdge.origin.point = vertex;
   var next = this.nextArc();
   var prev = this.prevArc();

@@ -140,7 +140,7 @@ function canClose(left, arcNode, right, equi, directrix) {
   }
 }
 
-// function to split the apex node
+// function to split the top node
 //   |     |
 // _/|__*  | toSplit
 //  \ \ | /
@@ -149,13 +149,19 @@ function canClose(left, arcNode, right, equi, directrix) {
 //      | node
 //      *
 //------------------------------------------------------------
-function apexSplitSiblings(left, node, right, dcel) {
+function topSplitSiblings(left, node, right, dcel) {
   // Set live events to dead events?
   var vertex;
   if (left.isV) {
+    if (right.closeEvent) {
+      right.closeEvent.live = false;
+    }
     vertex = vec3(node.site.x, new V(left.site, node.site.y).f(node.site.x));
     return new EdgeNode(left, node, vertex, dcel);
   } else if (right.isV) {
+    if (left.closeEvent) {
+      left.closeEvent.live = false;
+    }
     vertex = vec3(node.site.x, new V(right.site, node.site.y).f(node.site.x));
     return new EdgeNode(node, right, vertex, dcel);
   } else {
@@ -178,12 +184,10 @@ function leftJointSplit(left, node, right, dcel) {
   if (!left.isParabola || !right.isV) {
     throw "invalid left joint split";
   }
-  // Set live events to dead events?
-
-  var leftVertex = vec3(node.site.x, createParabola(left.site, node.site.y).f(node.site.x));
-    // return new EdgeNode(left, node, vertex, dcel);
-  var rightVertex = vec3(node.site.x, new V(right.site, node.site.y).f(node.site.x));
-  return new EdgeNode(new EdgeNode(left, node, leftVertex, dcel), right, rightVertex, dcel);
+  if (left.closeEvent) {
+    left.closeEvent.live = false;
+  }
+  return new EdgeNode(new EdgeNode(left, node, left.site, dcel), right, node.site, dcel);
 }
 
 //------------------------------------------------------------
@@ -201,7 +205,9 @@ function rightJointSplit(left, child, right, dcel) {
   if (!left.isV || !child.isParabola || !right.isV) {
     throw "invalid right joint split";
   }
-  // Set live events to dead events?
+  if (child.closeEvent) {
+    child.closeEvent.live = false;
+  }
   return new EdgeNode(left, new EdgeNode(child, right, child.site, dcel), child.site, dcel);
 }
 
@@ -248,6 +254,7 @@ function splitArcNode(toSplit, node, dcel) {
   } else {
     y = new V(toSplit.site, node.site.y).f(x);
   }
+  // if y is NAN?
   var vertex = vec3(x, y, 0);
   var left = toSplit;
   var right = new ArcNode(toSplit.site);
@@ -288,18 +295,19 @@ function createCloseEvent(arcNode, directrix) {
     r = dist(equi, arcNode.site);
    }
    var newY = equi.y - r;
-   if (canClose(left, arcNode, right, equi, directrix))
-   {
-      return new CloseEvent(newY, arcNode, left, right, equi, r);
+   if (canClose(left, arcNode, right, equi, directrix)){
+    //  equi.x += 0.5;
+    return new CloseEvent(newY, arcNode, left, right, equi, r);
    }
   } else if (isSegment(left.site) || isSegment(right.site)) {
     let equi = equidistant(left.site, arcNode.site, right.site);
     if (equi == null || equi.length == 0) return null;
     if (equi.length == 2) {
       var sorted = _.sortBy(equi, function (p) { return p.x; });
-      if (arcNode.parent.flipped) {
-        equi = sorted[1]; // always true? test
-      } else if (belongsToSegment(arcNode, right)) {
+      // if (arcNode.parent.flipped) {
+      //   equi = sorted[1]; // always true? test
+    // } else if (belongsToSegment(arcNode, right)) {
+      if (belongsToSegment(arcNode, right)) {
         equi = sorted[0];
       } else if (belongsToSegment(left, arcNode)) {
         equi = sorted[1];
@@ -314,6 +322,7 @@ function createCloseEvent(arcNode, directrix) {
     }
     let r = dist(equi, arcNode.site);
     if (canClose(left, arcNode, right, equi, directrix)) {
+      // equi.x += 0.5;
       return new CloseEvent(equi.y - r, arcNode, left, right, equi, r);
     }
   } else {
@@ -353,6 +362,9 @@ Beachline.prototype.add = function (site) {
   } else if (this.root.isArc) {
     this.root = splitArcNode(this.root, arcNode, this.dcel);
   } else {
+
+    // if (arcNode.site.y == -0.07)
+    //   debugger;
     // Do a binary search to find the arc node that the new
     // site intersects with
     var parent = this.root;
@@ -374,11 +386,16 @@ Beachline.prototype.add = function (site) {
     var siblingLeft = child.prevArc();
     var siblingRight = child.nextArc();
     if (arcNode.isV && child.isV &&
-       _.get(arcNode, "site.a.relation", false) == NODE_RELATION.APEX) {
+       _.get(arcNode, "site.a.relation", false) == NODE_RELATION.TOP) {
         var vC = subtract(child.site.b, arcNode.site.a);
         var vN = subtract(arcNode.site.b, arcNode.site.a);
         var z0 = cross(vC, vN).z;
-      var newChild = z0 < 0 ? apexSplitSiblings(siblingLeft, arcNode, child, dcel) : apexSplitSiblings(child, arcNode, siblingRight, dcel);
+      var newChild;
+      if (z0 < 0) {
+        newChild = topSplitSiblings(siblingLeft, arcNode, child, dcel);
+      } else {
+        newChild = topSplitSiblings(child, arcNode, siblingRight, dcel);
+      }
       parent.setChild(newChild, side);
     } else if (arcNode.isV &&
        _.get(arcNode, "site.a.relation", false) == NODE_RELATION.CHILD_LEFT_HULL) {

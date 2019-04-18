@@ -2,81 +2,94 @@
 
 /* Node conditions for jointed sites
   Order of addition: point, s1, s2, s3 ....
-  1. Apex node - top point s.a == child s.a
+  1. TOP node - top point s.a == child s.a
   2. Child node - left or right hull
   3. Closing node - bottom point - not sure if we need to do anything here
 */
 var NODE_RELATION = {
-  APEX: 1,
+  TOP: 1,
   CHILD_LEFT_HULL: 2,
   CHILD_RIGHT_HULL: 3,
-  CLOSING: 4
+  CLOSING: 4,
+  NONE: 5
 }
 
-// Get next Lower segment or undefined
-function getNextSeg(current, segments) {
+function getNextSeg(p, segments, segId) {
   var next = _.find(segments, function(s) {
-    if (equal(current.b, s.a) && current.b.y > s.b.y) {
-      return true;
-    }
+    if (equal(p, s.a) || equal(p, s.b))
+      return segId !== s.id;
   });
-  return next;
+  if (!next) return;
+  if (equal(p, next.a)) {
+    return {side: 'a', seg: next};
+  } else {
+    return {side: 'b', seg: next};
+  }
 }
 
-function segShareSite(s1, s2) {
-  return equal(s1.a, s2.b) || equal(s1.b, s2.a) || equal(s1.a, s2.a) || equal(s1.b, s2.b);
-}
-
-function populateDataProps(points, segments) {
-  var uniqueLabels = _.uniq(_.map(segments, "label"));
-  _.forEach(uniqueLabels, function(l) {
-    definePointGroupProperties(_.filter(points, { label: l }), _.filter(segments, { label: l }));
-  });
-}
-
-function definePointGroupProperties(gp, gs) {
-  // No two points of the same label should ever share the same y value
-  var ySortedPoints = _.sortBy(gp, function(i) { return i.y; });
-  var parents = _.filter(gs, function(s) { return equal(s.a, ySortedPoints[ySortedPoints.length - 1]); });
-
-  // cross product
-  var v0 = subtract(parents[0].b, ySortedPoints[ySortedPoints.length - 1]);
-  var v1 = subtract(parents[1].b, ySortedPoints[ySortedPoints.length - 1]);
-  var sortedParents = cross(v0, v1).z < 0 ? [parents[1], parents[0]] : [parents[0], parents[1]];
-  // var sortedParents = _.sortBy(parents, function(s) { return s.b.x; });
-
-  if (sortedParents.length == 2) {
-    sortedParents[0].a.relation = NODE_RELATION.APEX;
-    sortedParents[1].a.relation = NODE_RELATION.APEX;
-    ySortedPoints[0].relation = NODE_RELATION.CLOSING;
-    ySortedPoints[ySortedPoints.length - 1].relation = NODE_RELATION.APEX;
-    // follow left path
-    var curLeft = getNextSeg(sortedParents[0], gs);
-    while(curLeft) {
-      // mark points
-      gp.forEach(function (p) {
-        if (equal(p, curLeft.a) || equal(p, curLeft.b)) {
-          if (!p.relation) p.relation = NODE_RELATION.CHILD_LEFT_HULL;
-          if (!curLeft.b.relation) curLeft.b.relation = NODE_RELATION.CHILD_LEFT_HULL;
-          if (!curLeft.a.relation) curLeft.a.relation = NODE_RELATION.CHILD_LEFT_HULL;
-        }
-      });
-      var curLeft = getNextSeg(curLeft, gs);
+function setRelationTop(cur, next) {
+  if (!_.isUndefined(cur.a.relation)) return;
+  if (next.side == 'a') {
+    cur.a.relation = NODE_RELATION.TOP;
+    next.seg.a.relation = NODE_RELATION.TOP;
+  } else {
+    // either a left or right bend
+    var v0 = subtract(cur.b, cur.a);
+    var v1 = subtract(cur.b, next.seg.a);
+    if (cross(v0, v1).z < 0) {
+      // right
+      cur.a.relation = NODE_RELATION.CHILD_LEFT_HULL;
+      next.seg.b.relation = NODE_RELATION.CHILD_LEFT_HULL;
+    } else {
+      // left
+      cur.a.relation = NODE_RELATION.CHILD_RIGHT_HULL;
+      next.seg.b.relation = NODE_RELATION.CHILD_RIGHT_HULL;
     }
+  }
+}
 
-    // follow right path
-    var curRight = getNextSeg(sortedParents[1], gs);
-    while(curRight) {
-      // mark points
-      gp.forEach(function (p) {
-        if (equal(p, curRight.a) || equal(p, curRight.b)) {
-          if (!p.relation) p.relation = NODE_RELATION.CHILD_RIGHT_HULL;
-          if (!curRight.b.relation) curRight.b.relation = NODE_RELATION.CHILD_RIGHT_HULL;
-          if (!curRight.a.relation) curRight.a.relation = NODE_RELATION.CHILD_RIGHT_HULL;
-        }
-      });
-      curRight = getNextSeg(curRight, gs);
+function setRelationBottom(cur, next) {
+  if (!_.isUndefined(cur.b.relation)) return;
+  if (next.side == 'b') {
+    cur.b.relation = NODE_RELATION.CLOSING;
+    next.seg.b.relation = NODE_RELATION.CLOSING;
+  } else {
+    // either a left or right bend
+    var v0 = subtract(cur.b, cur.a);
+    var v1 = subtract(cur.b, next.seg.b);
+    if (cross(v0, v1).z < 0) {
+      // right
+      cur.b.relation = NODE_RELATION.CHILD_LEFT_HULL;
+      next.seg.a.relation = NODE_RELATION.CHILD_LEFT_HULL;
+    } else {
+      // left
+      cur.b.relation = NODE_RELATION.CHILD_RIGHT_HULL;
+      next.seg.a.relation = NODE_RELATION.CHILD_RIGHT_HULL;
     }
+  }
+}
+
+function populateDataProps(segments) {
+  markSiteRelations(segments);
+}
+
+function markSiteRelations(segments) {
+  var find = function(s){ return _.isUndefined(s.a.relation) || _.isUndefined(s.b.relation); };
+  var cur = _.find(segments, find);
+  while(cur) {
+    var fromA = getNextSeg(cur.a, segments, cur.id);
+    if (!fromA) {
+      cur.a.relation = NODE_RELATION.NONE;
+    } else {
+      setRelationTop(cur, fromA);
+    }
+    var fromB = getNextSeg(cur.b, segments, cur.id);
+    if (!fromB) {
+      cur.b.relation = NODE_RELATION.NONE;
+    } else {
+      setRelationBottom(cur, fromB);
+    }
+    var cur = _.find(segments, find);
   }
 }
 
@@ -95,7 +108,7 @@ function isFlipped(p, segs) {
 function createDatasets() {
   let points1 = [
     vec3(0.05, 0.4, 0), // left
-    vec3(0.251, 0.41, 0), // apex
+    vec3(0.251, 0.41, 0), // TOP
     vec3(0.25, -0.1, 0), // close
     vec3(0.07, -0.09, 0), // left
 
@@ -128,11 +141,11 @@ function createDatasets() {
 
     vec3(0.64,0.28, 0), // right
     vec3(0.14, 0.18, 0), // right2
-    vec3(0.5,-0.08, 0), // right3
+    vec3(0.5, 0.09, 0), // right3
 
     vec3(0.23, -0.31, 0), // c2
     vec3(0.01, -0.07, 0), // t3
-    vec3(-0.53, -0.45, 0), // c 1
+    vec3(-0.43, -0.45, 0), // c 1
 
     vec3(-0.5,-0.28, 0), // left3
     vec3(-0.14,0.2, 0), // left2
