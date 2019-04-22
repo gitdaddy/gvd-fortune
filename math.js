@@ -469,9 +469,17 @@ function equidistant(left, arc, right) {
     b1 = bisect(segments[0], points[0]);
     b2 = bisect(points[0], segments[1]);
   } else if (segments.length == 1) {
-    // Create a general parabola bisector and line for simplicity
-    b1 = bisect(segments[0], points[0]);
-    b2 = bisect(points[0], points[1]);
+    // Prefer line bisectors
+    if (points[0] == segments[0].a || points[0] == segments[0].b) {
+      b1 = bisect(segments[0], points[0]);
+      b2 = bisect(points[0], points[1]);
+    } else if (points[1] == segments[0].a || points[1] == segments[0].b) {
+      b1 = bisect(segments[0], points[1]);
+      b2 = bisect(points[0], points[1]);
+    } else {
+      b1 = bisect(segments[0], points[0]);
+      b2 = bisect(points[0], points[1]);
+    }
   } else if (segments.length == 3) {
     b1 = bisect(left, arc);
     b2 = bisect(arc, right);
