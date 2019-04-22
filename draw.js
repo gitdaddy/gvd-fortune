@@ -327,7 +327,6 @@ function drawBeachline(beachline, directrix) {
   let lines = [];
   var generalSurfaces = [];
   let events = [];
-  updateArcBounds(beachline.root, -10000, 10000, directrix - 0.0001);
   beachline.prepDraw(directrix, beachline.root, -10000, 10000, arcElements, lines, generalSurfaces, events);
 
   let parabolas = arcElements.filter(d => d.type == "parabola");

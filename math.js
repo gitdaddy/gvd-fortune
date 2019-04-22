@@ -468,6 +468,17 @@ function equidistant(left, arc, right) {
   if (points.length == 1) {
     b1 = bisect(segments[0], points[0]);
     b2 = bisect(points[0], segments[1]);
+    // // Prefer line bisectors
+    // if (points[0] == segments[0].a || points[0] == segments[0].b) {
+    //   b1 = bisect(segments[0], points[0]);
+    //   b2 = bisect(segments[0], segments[1]);
+    // } else if (points[0] == segments[1].a || points[0] == segments[1].b) {
+    //   b1 = bisect(segments[1], points[0]);
+    //   b2 = bisect(segments[0], segments[1]);
+    // } else {
+    //   b1 = bisect(segments[0], points[0]);
+    //   b2 = bisect(points[0], segments[1]);
+    // }
   } else if (segments.length == 1) {
     // Prefer line bisectors
     if (points[0] == segments[0].a || points[0] == segments[0].b) {

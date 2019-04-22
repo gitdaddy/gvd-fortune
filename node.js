@@ -18,8 +18,6 @@ var ArcNode = function (site) {
     this.closePoint = site[1];
   }
   // define arc boundaries
-  this.x0 = undefined;
-  this.x1 = undefined;
   this.id = nodeId++;
 }
 
@@ -111,6 +109,26 @@ ArcNode.prototype.nextArc = function () {
   return node.nextArc();
 }
 
+ArcNode.prototype.getHorizontalBounds = function (directrix) {
+  var left = this.prevArc();
+  var right = this.nextArc();
+  var lI, rI;
+  if (left.parent.hasId(this.id)) {
+    lI = left.parent.intersection(directrix);
+  } else {
+    lI = this.parent.intersection(directrix);
+  }
+
+  if (right.parent.hasId(this.id)) {
+    rI = right.parent.intersection(directrix);
+  } else {
+    rI = this.parent.intersection(directrix);
+  }
+
+  // var rightI = this.parent.intersection(directrix);
+  return {x0: lI.x, x1: rI.x};
+}
+
 //---------------------------------------------------------------------------
 // EdgeNode
 //---------------------------------------------------------------------------
@@ -135,6 +153,10 @@ var EdgeNode = function (left, right, vertex, dcel) {
   this.toDot = function () {
     return "\"" + this.id + "\"";
   };
+}
+
+EdgeNode.prototype.hasId = function (id) {
+  return this.id.includes(id.toString());
 }
 
 EdgeNode.prototype.toString = function () {
@@ -227,30 +249,40 @@ EdgeNode.prototype.intersection = function (directrix) {
   // This is inefficient. We should be storing sites in edge nodes.
   let leftArcNode = this.prevArc();
   let rightArcNode = this.nextArc();
-  let pleft = createBeachlineSegment(leftArcNode.site, directrix);
-  let pright = createBeachlineSegment(rightArcNode.site, directrix);
+  var obj = intersectArcs(leftArcNode, rightArcNode, this.flipped, this.isGeneralSurface, directrix);
+  this.intersections = obj.results;
+  this.selectedIntersection =  obj.results[obj.resultIdx];
+  return obj.results[obj.resultIdx];
+};
 
+function intersectArcs(left, right, isFlipped, isGeneral, directrix){
+  let pleft = createBeachlineSegment(left.site, directrix);
+  let pright = createBeachlineSegment(right.site, directrix);
   let intersections = pleft.intersect(pright);
 
-  if (intersections.length == 0) {
-    throw "error intersections size 0 between node id: " + leftArcNode.id + " and node: " + rightArcNode.id;
+  if (intersections.length == 0 || !intersections[0]) {
+    throw "error intersections size 0 between node id: " + left.id + " and node: " + right.id;
   }
 
   if (intersections.length == 1) {
-    this.intersections = intersections;
-    this.selectedIntersection = intersections[0];
-    return intersections[0];
+    return {
+      results: intersections,
+      resultIdx: 0
+    };
   }
+
   if (intersections.length > 2) {
-    if (leftArcNode.isV && rightArcNode.isV) {
+    if (left.isV && right.isV) {
       if (intersections.length == 3) {
-        // return the center intersection
-        this.selectedIntersection = intersections[1];
-        return this.selectedIntersection;
+        console.log("Warning - 3 intersections");
+        return {
+          result: intersections,
+          resultIdx: 0
+        };
       }
       // get the two intersections that are closest to
       // the left arcNode site since we are going from left to right
-      var x = (leftArcNode.site.a.x + leftArcNode.site.b.x) / 2.0;
+      var x = (left.site.a.x + left.site.b.x) / 2.0;
       var sorted = _.sortBy(intersections, function(i) {
         return Math.abs(x - i.x);
       });
@@ -261,9 +293,9 @@ EdgeNode.prototype.intersection = function (directrix) {
       intersections = [sorted[0], sorted[sorted.length - 1]];
     }
   }
-  this.intersections = intersections;
 
-  var result;
+  this.intersections = intersections;
+  var idx;
   let pcenterx = (intersections[0].x + intersections[1].x) / 2;
   let prevy = pleft.f(pcenterx);
   let nexty = pright.f(pcenterx);
@@ -271,8 +303,7 @@ EdgeNode.prototype.intersection = function (directrix) {
   if (prevy < nexty) {
     lower = 0;
   }
-  result = intersections[1 - lower];
-
+  idx = 1 - lower;
   // Handle the case where the V arc for the segment (+)
   // needs to be "above" the parabola for the lower
   // end of the segment (*). The (=) is for the parabola
@@ -293,11 +324,12 @@ EdgeNode.prototype.intersection = function (directrix) {
   //     _____________________________
   //
   // if the point is flipped and is connected to the V
-  if (this.flipped && this.isGeneralSurface &&
-     belongsToSegmentEndpoint(leftArcNode, rightArcNode)) {
-    result = intersections[lower];
+  if (isFlipped && isGeneral &&
+     belongsToSegmentEndpoint(left, right)) {
+    idx = lower;
   }
-
-  this.selectedIntersection = result;
-  return this.selectedIntersection;
-};
+  return {
+    results: intersections,
+    resultIdx: idx
+  };
+}

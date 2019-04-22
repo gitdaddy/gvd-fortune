@@ -32,33 +32,6 @@ function createBeachlineSegment(site, directrix) {
   return createParabola(site, directrix);
 }
 
-
-// Set all node bounds x0 and x1 for all arc nodes
-// in the beachline
-function updateArcBounds(node, leftx, rightx, directrix) {
-  if (node.isArc) {
-    // set bounds
-    node.x0 = leftx;
-    node.x1 = rightx;
-    return;
-  }
-  // else node is an edge node
-  // The intersection between the edge node's defining arc nodes
-  var p = node.intersection(directrix);
-
-  if (Number.isNaN(p) || _.isUndefined(p)) return;
-
-  if (p.x < leftx && Math.abs(leftx - p.x) > 0.001) {
-    let msg = `bound intersection is less than leftx: ${p.x} < ${leftx}.` +
-      `id = ${node.id}`;
-    console.log(msg);
-  }
-
-  // check left then right
-  updateArcBounds(node.left, leftx, p.x, directrix);
-  updateArcBounds(node.right, p.x, rightx, directrix);
-}
-
 function addCloseEvent(events, newEvent) {
   var search = function (event) {
     var tolerance = 0.00001;
@@ -70,16 +43,20 @@ function addCloseEvent(events, newEvent) {
   if (_.isEmpty(existing)) {
     events.push(newEvent);
   } else {
+    var idx = _.findIndex(events, search);
+    if (idx == -1) return;
+    // replace the old event
+    events[idx] = newEvent;
     // If there is a tie use the event with the closest arcNode
-    if (!_.isUndefined(existing[0].arcNode.x0) && !_.isUndefined(newEvent.arcNode.x0)) {
-      if (Math.abs(newEvent.arcNode.x0 - newEvent.point.x)
-        < Math.abs(existing[0].arcNode.x0 - newEvent.point.x)) {
-        var idx = _.findIndex(events, search);
-        if (idx == -1) return;
-        // replace the old event
-        events[idx] = newEvent;
-      } // otherwise leave the existing event in place
-    }
+    // if (!_.isUndefined(existing[0].arcNode.x0) && !_.isUndefined(newEvent.arcNode.x0)) {
+    //   if (Math.abs(newEvent.arcNode.x0 - newEvent.point.x)
+    //     < Math.abs(existing[0].arcNode.x0 - newEvent.point.x)) {
+    //     var idx = _.findIndex(events, search);
+    //     if (idx == -1) return;
+    //     // replace the old event
+    //     events[idx] = newEvent;
+    //   } // otherwise leave the existing event in place
+    // }
   }
 }
 
@@ -116,18 +93,11 @@ var Beachline = function (dcel) {
 */
 function canClose(left, arcNode, right, equi, directrix) {
   if (arcNode.isV) {
-    var siteX;
-    if (equi.y < arcNode.site.b.y) {
-      siteX = arcNode.site.b.x;
-    } else {
-      // if x0,x1,equi.x are strictly less or greater than p
-      let segV = createBeachlineSegment(arcNode.site, directrix);
-      siteX = segV.p.x;
-    }
-    return arcNode.x0 < siteX && arcNode.x1 < siteX && equi.x < siteX // why is p so behind?
-    || arcNode.x0 > siteX && arcNode.x1 > siteX && equi.x > siteX;
+    let segV = createBeachlineSegment(arcNode.site, directrix);
+    siteX = segV.p.x;
+    b1 = arcNode.getHorizontalBounds(segV.p.y);
+    return b1.x0 < siteX && b1.x1 < siteX && equi.x < siteX || b1.x0 > siteX && b1.x1 > siteX && equi.x > siteX;
   } else {
-    // TODO FIX - does always work
     var seg;
     if (left.isV && belongsToSegment(arcNode, left)) {
       seg = left.site;
@@ -137,34 +107,10 @@ function canClose(left, arcNode, right, equi, directrix) {
       return true;
     }
     let segV = createBeachlineSegment(seg, directrix);
-    return arcNode.x0 < segV.p.x && equi.x < segV.p.x || arcNode.x0 > segV.p.x && equi.x > segV.p.x;
+    // use the outer bounds
+    var b1 = arcNode.getHorizontalBounds(directrix);
+    return b1.x0 < segV.p.x && equi.x < segV.p.x || b1.x1 > segV.p.x && equi.x > segV.p.x;
   }
-  /*
-  if (left.isV && belongsToSegment(arcNode, left)) {
-      // seg = left.site;
-      // let segV = createBeachlineSegment(left.site, directrix);
-      // return equi.x > segV.p.x;
-      var v0 = subtract(left.site.a, left.site.b);
-      var v1 = subtract(vec3(equi.x, equi.y, 0), left.site.b);
-      if (arcNode.site.flipped) {
-        return cross(v0, v1).z > 0; // equi is on the right like it should be
-      } else {
-        return cross(v0, v1).z < 0; // equi is on the right like it should be
-      }
-    } else if (right.isV && belongsToSegment(arcNode, right)) {
-      // seg = right.site;
-      // let segV = createBeachlineSegment(right.site, directrix);
-      // return equi.x < segV.p.x;
-      var v0 = subtract(right.site.a, right.site.b);
-      var v1 = subtract(vec3(equi.x, equi.y, 0), right.site.b);
-      if (arcNode.site.flipped) {
-        return cross(v0, v1).z < 0; // equi is on the right like it should be
-      } else {
-        return cross(v0, v1).z > 0; // equi is on the right like it should be
-      }
-    }
-    return true;
-  */
 }
 
 // function to split the top node
@@ -299,6 +245,8 @@ function createCloseEvent(arcNode, directrix) {
   if (left == null || right == null) return null;
 
   if (arcNode.isV) {
+    // for same site nan parabola error
+    directrix -= 0.0001;
     if (arcNode.site.a == left.site && arcNode.site.b == right.site
       || arcNode.site.b == left.site && arcNode.site.a == right.site) return null;
     let equi = equidistant(left.site, arcNode.site, right.site);
@@ -306,14 +254,13 @@ function createCloseEvent(arcNode, directrix) {
     let segV = createBeachlineSegment(arcNode.site, directrix);
     if (equi.length == 2) {
       // get the point that is closest the corresponding arc center point
-      var centerArcX = (arcNode.x0 + arcNode.x1) / 2;
+      var b1 = arcNode.getHorizontalBounds(directrix);
+      var centerArcX = (b1.x0 + b1.x1) / 2;
       var centerPoint = vec3(centerArcX, segV.f(centerArcX), 0);
-      // Not always correct FIX
       equi = _.sortBy(equi, function (e) {
         return dist(centerPoint, e);
       })[0];
     }
-
    // if close for 3 Vs get the radius as the arcNode's upper site
    var r;
    if (left.isV && right.isV) {
@@ -323,7 +270,6 @@ function createCloseEvent(arcNode, directrix) {
    }
    var newY = equi.y - r;
    if (canClose(left, arcNode, right, equi, directrix)){
-    //  equi.x += 0.5;
     return new CloseEvent(newY, arcNode, left, right, equi, r);
    }
   } else if (isSegment(left.site) || isSegment(right.site)) {
@@ -340,7 +286,8 @@ function createCloseEvent(arcNode, directrix) {
         equi = sorted[1];
       } else {
         let bSeg = createBeachlineSegment(arcNode.site, directrix);
-        var centerArcX = (arcNode.x0 + arcNode.x1) / 2;
+        var b1 = arcNode.getHorizontalBounds(directrix);
+        var centerArcX = (b1.x0 + b1.x1) / 2;
         var centerPoint = vec3(centerArcX, bSeg.f(centerArcX), 0);
         equi = _.sortBy(equi, function (e) {
           return dist(centerPoint, e);
@@ -348,8 +295,8 @@ function createCloseEvent(arcNode, directrix) {
       }
     }
     let r = dist(equi, arcNode.site);
+
     if (canClose(left, arcNode, right, equi, directrix)) {
-      // equi.x += 0.5;
       return new CloseEvent(equi.y - r, arcNode, left, right, equi, r);
     }
   } else {
@@ -383,15 +330,10 @@ Beachline.prototype.add = function (site) {
   }
 
   if (this.root == null) {
-    arcNode.x0 = -1;
-    arcNode.x1 = 1;
     this.root = arcNode;
   } else if (this.root.isArc) {
     this.root = splitArcNode(this.root, arcNode, this.dcel);
   } else {
-
-    // if (arcNode.site.y == -0.07)
-    //   debugger;
     // Do a binary search to find the arc node that the new
     // site intersects with
     var parent = this.root;
@@ -451,7 +393,6 @@ Beachline.prototype.add = function (site) {
       // Child is an arc node. Split it.
       parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
     }
-    updateArcBounds(this.root, -10000, 10000, directrix - 0.00001);
   }
 
   // Create close events
@@ -474,7 +415,7 @@ Beachline.prototype.add = function (site) {
 //------------------------------------------------------------
 // remove
 //------------------------------------------------------------
-Beachline.prototype.remove = function (arcNode, point) {
+Beachline.prototype.remove = function (arcNode, point, directrix) {
   if (!arcNode.isArc) throw "Unexpected edge in remove";
 
   var parent = arcNode.parent;
@@ -502,8 +443,7 @@ Beachline.prototype.remove = function (arcNode, point) {
   if (prevArc.closeEvent) {
     prevArc.closeEvent.live = false;
   }
-  var e = prevArc.isV ? createCloseEvent(prevArc, arcNode.site.y - 0.0001)
-  : createCloseEvent(prevArc, arcNode.site.y);
+  var e = createCloseEvent(prevArc, directrix);
   if (e != null) {
     closeEvents.push(e);
   }
@@ -511,8 +451,7 @@ Beachline.prototype.remove = function (arcNode, point) {
   if (nextArc.closeEvent) {
     nextArc.closeEvent.live = false;
   }
-  var e = nextArc.isV ? createCloseEvent(nextArc, arcNode.site.y - 0.0001)
-  : createCloseEvent(nextArc, arcNode.site.y);
+  var e = createCloseEvent(nextArc, directrix);
   if (e != null) {
     closeEvents.push(e);
   }
