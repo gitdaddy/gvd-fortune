@@ -181,7 +181,7 @@ function rightJointSplit(left, child, right, dcel) {
   if (child.closeEvent) {
     child.closeEvent.live = false;
   }
-  return new EdgeNode(left, new EdgeNode(child, right, child.site, dcel), child.site, dcel);
+  return new EdgeNode(new EdgeNode(left, child, child.site, dcel), right, child.site, dcel);
 }
 
 
@@ -194,7 +194,6 @@ function rightJointSplit(left, child, right, dcel) {
 //      *
 //------------------------------------------------------------
 function closePointSplit(left, right, dcel) {
-
   if (left.isV && right.isParabola) {
     return new EdgeNode(left, right, right.site, dcel);
   } else if (left.isParabola && right.isV) {
@@ -379,6 +378,12 @@ Beachline.prototype.add = function (site) {
       parent.parent.setChild(newNode, parentSide);
     }
     else if (arcNode.isParabola && _.get(arcNode, "site.relation", false) == NODE_RELATION.CLOSING) {
+      // TODO update edge dest point!!
+      var newEdge = child.nextEdge();
+      if (side == LEFT_CHILD) {
+        newEdge = child.prevEdge();
+      }
+      newEdge.updateEdge(child.site, dcel);
       if (_.get(child, "site.b.relation") == NODE_RELATION.CLOSING &&
           _.get(siblingRight, "site.b.relation") == NODE_RELATION.CLOSING &&
           equal(child.site.b, siblingRight.site.b)) {
@@ -470,7 +475,7 @@ Beachline.prototype.prepDraw = function (
     arcElements.push(node.createDrawElement(leftx, rightx, directrix));
   } else {
     // The point where this edge node was born
-    var v = node.dcelEdge.origin.point;
+    var origin = node.dcelEdge.origin.point;
     // The intersection between the edge node's defining arc nodes
     var p = node.intersection(directrix);
 
@@ -480,11 +485,11 @@ Beachline.prototype.prepDraw = function (
       console.error(msg);
     }
 
-    if (!Number.isNaN(v.x) && !Number.isNaN(v.y)) {
-      events.push(v);
+    if (!Number.isNaN(origin.x) && !Number.isNaN(origin.y)) {
+      events.push(origin);
     }
 
-    if (!Number.isNaN(v.x) && !Number.isNaN(v.y) &&
+    if (!Number.isNaN(origin.x) && !Number.isNaN(origin.y) &&
       !Number.isNaN(p.x) && !Number.isNaN(p.y)) {
       if (node.isGeneralSurface) {
         var point;
@@ -501,10 +506,12 @@ Beachline.prototype.prepDraw = function (
           throw "Error edge node marked as general surface but is not between a V and parabola";
         }
         var gp = createGeneralParabola(point, segment);
-        gp.prepDraw(-10000, vec3(v.x, v.y, 0.0), vec3(p.x, p.y, 0.0));
+        // console.log("origin:" + origin + " - p:" + p);
+        // TODO fix
+        gp.prepDraw(1, vec3(origin.x, origin.y, 0.0), vec3(p.x, p.y, 0.0));
         generalSurfaces.push(gp);
       } else {
-        lines.push({ x0: v.x, y0: v.y, x1: p.x, y1: p.y, id: node.id, connectedToGVD: node.connectedToGVD });
+        lines.push({ x0: origin.x, y0: origin.y, x1: p.x, y1: p.y, id: node.id, connectedToGVD: node.connectedToGVD });
       }
     }
 

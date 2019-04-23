@@ -213,7 +213,9 @@ function drawSurface(dcel) {
           throw "Error edge node marked as general surface but is not between a V and parabola";
         }
         var gp = createGeneralParabola(point, segment);
-        gp.prepDraw(-10000, vec3(edge.origin.point.x, edge.origin.point.y, 0.0), vec3(edge.dest.point.x, edge.dest.point.y, 0.0));
+        var idStr = edge.a.toString() + "-" + edge.b.toString();
+        console.log("ID: " + idStr + " origin:" + edge.origin.point + " - dest:" + edge.dest.point);
+        gp.prepDraw(idStr, edge.origin.point, edge.dest.point);
         generalEdges.push(gp);
       } else {
         edges.push(edge);
