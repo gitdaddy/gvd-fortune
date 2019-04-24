@@ -367,15 +367,15 @@ Beachline.prototype.add = function (site) {
       parent.setChild(newChild, side);
     } else if (arcNode.isV &&
        _.get(arcNode, "site.a.relation", false) == NODE_RELATION.CHILD_LEFT_HULL) {
-      // TODO update edge info
-      // is this a left hull joint
+      // Set edge information since we are using a left joint split
+      child.nextEdge().dcelEdge.generalEdge = false;
       var newNode = leftJointSplit(child, arcNode, siblingRight, dcel);
       // set the parent since a left joint split may not preserve order
       parent.parent.setChild(newNode, parentSide);
     } else if (arcNode.isV &&
        _.get(arcNode, "site.a.relation", false) == NODE_RELATION.CHILD_RIGHT_HULL) {
-      // TODO update edge info
-      // child.nextEdge().dcelEdge.dest.point = arcNode.site;
+      // Set edge information since we are using a right joint split
+      child.prevEdge().dcelEdge.generalEdge = false;
       // is a arc created by the right hull joint
       var newNode = rightJointSplit(arcNode, child, siblingRight, dcel);
       parent.parent.setChild(newNode, parentSide);
