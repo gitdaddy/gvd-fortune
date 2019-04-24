@@ -317,9 +317,15 @@ function fortune() {
     }
     if (e.isCloseEvent) {
       if (e.live && e.arcNode.closeEvent.live) {
-        // console.log("DEST point:" + e.point);
-        e.arcNode.prevEdge().dcelEdge.dest.point = e.point;
-        e.arcNode.nextEdge().dcelEdge.dest.point = e.point;
+        var destPrev = e.arcNode.prevEdge().dcelEdge.dest;
+        var destNext = e.arcNode.nextEdge().dcelEdge.dest;
+        // only set if not overridden
+        if (!destPrev.overridden) {
+          destPrev.point = e.point;
+        }
+        if (!destNext.overridden) {
+          destNext.point = e.point;
+        }
         var newEvents = beachline.remove(e.arcNode, e.point, e.y);
         newEvents.forEach(function (ev) {
           if (ev.y < e.y - 0.000001) {

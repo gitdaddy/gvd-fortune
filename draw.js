@@ -415,6 +415,7 @@ function drawBeachline(beachline, directrix) {
       .attr("d", p => line(p.drawPoints))
       .attr("id", p => p.id)
       .attr("transform", p => p.transform)
+      .style("stroke-width", 1)
     ;
 
     let lineSelection = d3.select("#gvd").selectAll(".gvd-surface-active")

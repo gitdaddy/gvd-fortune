@@ -385,8 +385,10 @@ Beachline.prototype.add = function (site) {
       if (updateEdge.isGeneralSurface) {
         updateEdge = child.nextEdge();
       }
-      if (updateEdge)
+      if (updateEdge){
+        updateEdge.dcelEdge.dest.overridden = true;
         updateEdge.dcelEdge.dest.point = arcNode.site;
+      }
       if (_.get(child, "site.b.relation") == NODE_RELATION.CLOSING &&
           _.get(siblingRight, "site.b.relation") == NODE_RELATION.CLOSING &&
           equal(child.site.b, siblingRight.site.b)) {
@@ -508,11 +510,14 @@ Beachline.prototype.prepDraw = function (
         } else {
           throw "Error edge node marked as general surface but is not between a V and parabola";
         }
-        var gp = createGeneralParabola(point, segment);
-        // console.log("origin:" + origin + " - p:" + p);
-        // TODO fix
-        gp.prepDraw(1, vec3(origin.x, origin.y, 0.0), vec3(p.x, p.y, 0.0));
-        generalSurfaces.push(gp);
+
+        if (!node.flipped || !belongsToSegment(node.prevArc(), node.nextArc())) {
+          var gp = createGeneralParabola(point, segment);
+          var idStr = next.id.toString() + "-" + prev.id.toString();
+          // console.log("ID: " + idStr + " origin:" + origin + " - dest:" + p);
+          gp.prepDraw(idStr, origin, p);
+          generalSurfaces.push(gp);
+        }
       } else {
         lines.push({ x0: origin.x, y0: origin.y, x1: p.x, y1: p.y, id: node.id, connectedToGVD: node.connectedToGVD });
       }

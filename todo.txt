@@ -1,2 +1,2 @@
-1. Fix error in dataset 4
-2. Fix d 1 with no close point
+1. Fix surface lines
+2. Load polygons
