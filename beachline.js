@@ -367,23 +367,26 @@ Beachline.prototype.add = function (site) {
       parent.setChild(newChild, side);
     } else if (arcNode.isV &&
        _.get(arcNode, "site.a.relation", false) == NODE_RELATION.CHILD_LEFT_HULL) {
+      // TODO update edge info
       // is this a left hull joint
       var newNode = leftJointSplit(child, arcNode, siblingRight, dcel);
       // set the parent since a left joint split may not preserve order
       parent.parent.setChild(newNode, parentSide);
     } else if (arcNode.isV &&
        _.get(arcNode, "site.a.relation", false) == NODE_RELATION.CHILD_RIGHT_HULL) {
+      // TODO update edge info
+      // child.nextEdge().dcelEdge.dest.point = arcNode.site;
       // is a arc created by the right hull joint
       var newNode = rightJointSplit(arcNode, child, siblingRight, dcel);
       parent.parent.setChild(newNode, parentSide);
     }
     else if (arcNode.isParabola && _.get(arcNode, "site.relation", false) == NODE_RELATION.CLOSING) {
-      // TODO update edge dest point!!
-      var newEdge = child.nextEdge();
-      if (side == LEFT_CHILD) {
-        newEdge = child.prevEdge();
+      var updateEdge = child.prevEdge();
+      if (updateEdge.isGeneralSurface) {
+        updateEdge = child.nextEdge();
       }
-      newEdge.updateEdge(child.site, dcel);
+      if (updateEdge)
+        updateEdge.dcelEdge.dest.point = arcNode.site;
       if (_.get(child, "site.b.relation") == NODE_RELATION.CLOSING &&
           _.get(siblingRight, "site.b.relation") == NODE_RELATION.CLOSING &&
           equal(child.site.b, siblingRight.site.b)) {
