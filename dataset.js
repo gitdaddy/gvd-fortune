@@ -93,6 +93,24 @@ function markSiteRelations(segments) {
   }
 }
 
+// function readTextFile(file)
+// {
+//     var rawFile = new XMLHttpRequest();
+//     rawFile.open("GET", file, false);
+//     rawFile.onreadystatechange = function ()
+//     {
+//         if(rawFile.readyState === 4)
+//         {
+//             if(rawFile.status === 200 || rawFile.status == 0)
+//             {
+//                 var allText = rawFile.responseText;
+//                 alert(allText);
+//             }
+//         }
+//     }
+//     rawFile.send(null);
+// }
+
 function isFlipped(p, segs) {
   var endPoint = false;
   // return true if point is lowest of all segments it is a part of
@@ -207,11 +225,27 @@ function createDatasets() {
   }
   let segments5 = [];
 
+  // File dataset
+  let points6 = [];
+  let segments6 = [];
+
+
+  // sync jquery call to the server for data
+  $.get( "/data", function( jsonStr ) {
+    console.log("json: " + jsonStr);
+    // parse the json and put it into dataset 6
+    var data = JSON.parse(jsonStr);
+    if (!data)
+      console.error("unable to parse data")
+  });
+
+
   datasets = {
     'dataset1' : { points:points1, segments:segments1 },
     'dataset2' : { points:points2, segments:segments2 },
     'dataset3' : { points:points3, segments:segments3 },
     'dataset4' : { points:points4, segments:segments4 },
     'dataset5' : { points:points5, segments:segments5 },
+    'dataset6' : { points:points6, segments:segments6 },
   };
 }
