@@ -14,7 +14,6 @@ var pMatrix;
 
 var points = [];
 var segments = [];
-var vverts = [];
 var closeEventPoints = [];
 var dcel;
 
@@ -32,6 +31,92 @@ function siteColorSvg(id) {
 function arcColorSvg(id) {
   // return d3.schemeCategory20[id%20];
   return d3.schemeCategory10[id % 10];
+}
+
+function processNewDataset() {
+  // Give all points and segments a unique ID and label
+  var id = 1;
+  var labelCount = 1;
+  points.forEach(function (p) {
+    p.id = id++;
+    p.label = labelCount++;
+  });
+
+  segments.forEach(function (s) {
+    s.id = id++;
+    if (_.isUndefined(s.label)) {
+      s.label = labelCount++;
+    }
+    segments.forEach(function (newS) {
+      if (newS.id != s.id && _.isUndefined(newS.label) && jointSegments(s, newS)) {
+        newS.label = s.label;
+      }
+    });
+  });
+
+  // label all connected sites with the same label
+  points.forEach(function (p) {
+    segments.forEach(function(s) {
+      if ((p.x == s.a.x && p.y == s.a.y) ||
+        (p.x == s.b.x && p.y == s.b.y)) {
+        p.label = s.label;
+      }
+    });
+    // if point is on the lowest y point of all segments then it is flipped
+    p.flipped = isFlipped(p, segments);
+  });
+
+  populateDataProps(segments);
+
+  initDebugCircumcircle();
+  drawSites(points);
+  drawSegments(segments);
+
+  //------------------------------
+  // Check for identical y values.
+  //------------------------------
+  var yvalues = [];
+  points.forEach(function (p) {
+    yvalues.push(p.y);
+  });
+  // Don't check segments since they're constructed from points
+  // segments.forEach(function(s) {
+  //   yvalues.push(s.y);
+  // });
+  yvalues.sort();
+  for (var i = 1; i < yvalues.length; ++i) {
+    if (yvalues[i] == yvalues[i - 1]) {
+      console.log("WARNING: sites with identical y values of " + yvalues[i]);
+    }
+  }
+
+  //------------------------------
+  // Check for identical x values.
+  //------------------------------
+  var xvalues = [];
+  points.forEach(function (p) {
+    xvalues.push(p.x);
+  });
+  xvalues.sort();
+  for (var i = 1; i < xvalues.length; ++i) {
+    if (xvalues[i] == xvalues[i - 1]) {
+      console.log("WARNING: sites with identical x values of " + xvalues[i]);
+    }
+  }
+
+  events = [];
+
+  // Add points as events
+  points.forEach(function (p) {
+    events.push(p);
+  });
+
+  // Add segments as events
+  segments.forEach(function (s) {
+    events.push(s);
+  });
+
+  render();
 }
 
 var events = new TinyQueue([], function (a, b) {
@@ -204,92 +289,21 @@ function datasetChange(value) {
   console.log(value);
   localStorage.dataset = value;
 
-  points = datasets[value].points;
-  segments = datasets[value].segments;
-  // Give all points and segments a unique ID and label
-  var id = 1;
-  var labelCount = 1;
-  points.forEach(function (p) {
-    p.id = id++;
-    p.label = labelCount++;
-  });
-
-  segments.forEach(function (s) {
-    s.id = id++;
-    if (_.isUndefined(s.label)) {
-      s.label = labelCount++;
-    }
-    segments.forEach(function (newS) {
-      if (newS.id != s.id && _.isUndefined(newS.label) && jointSegments(s, newS)) {
-        newS.label = s.label;
-      }
+  if (value == 'dataset6' && !datasets[value].points || datasets[value].points.length == 0) {
+    console.log("Loading in file dataset");
+    $.get("/data").then(function (json) {
+      var data = parseInputJSON(json);
+      datasets[value].points = data.points;
+      datasets[value].segments = data.segments;
+      points = data.points;
+      segments = data.segments;
+      processNewDataset();
     });
-  });
-
-  // label all connected sites with the same label
-  points.forEach(function (p) {
-    segments.forEach(function(s) {
-      if ((p.x == s.a.x && p.y == s.a.y) ||
-        (p.x == s.b.x && p.y == s.b.y)) {
-        p.label = s.label;
-      }
-    });
-    // if point is on the lowest y point of all segments then it is flipped
-    p.flipped = isFlipped(p, segments);
-  });
-
-
-  populateDataProps(segments);
-
-  initDebugCircumcircle();
-  drawSites(points);
-  drawSegments(segments);
-
-  //------------------------------
-  // Check for identical y values.
-  //------------------------------
-  var yvalues = [];
-  points.forEach(function (p) {
-    yvalues.push(p.y);
-  });
-  // Don't check segments since they're constructed from points
-  // segments.forEach(function(s) {
-  //   yvalues.push(s.y);
-  // });
-  yvalues.sort();
-  for (var i = 1; i < yvalues.length; ++i) {
-    if (yvalues[i] == yvalues[i - 1]) {
-      console.log("WARNING: sites with identical y values of " + yvalues[i]);
-    }
+  } else {
+    points = datasets[value].points;
+    segments = datasets[value].segments;
+    processNewDataset();
   }
-
-  //------------------------------
-  // Check for identical x values.
-  //------------------------------
-  var xvalues = [];
-  points.forEach(function (p) {
-    xvalues.push(p.x);
-  });
-  xvalues.sort();
-  for (var i = 1; i < xvalues.length; ++i) {
-    if (xvalues[i] == xvalues[i - 1]) {
-      console.log("WARNING: sites with identical x values of " + xvalues[i]);
-    }
-  }
-
-  events = [];
-
-  // Add points as events
-  points.forEach(function (p) {
-    events.push(p);
-  });
-
-  // Add segments as events
-  segments.forEach(function (s) {
-    events.push(s);
-  });
-
-  render();
 }
 
 function fortune() {

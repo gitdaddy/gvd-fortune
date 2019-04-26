@@ -93,23 +93,28 @@ function markSiteRelations(segments) {
   }
 }
 
-// function readTextFile(file)
-// {
-//     var rawFile = new XMLHttpRequest();
-//     rawFile.open("GET", file, false);
-//     rawFile.onreadystatechange = function ()
-//     {
-//         if(rawFile.readyState === 4)
-//         {
-//             if(rawFile.status === 200 || rawFile.status == 0)
-//             {
-//                 var allText = rawFile.responseText;
-//                 alert(allText);
-//             }
-//         }
-//     }
-//     rawFile.send(null);
-// }
+function parseInputJSON(jsonStr) {
+  var data = JSON.parse(jsonStr);
+  if (!data)
+    console.error("unable to parse data");
+  var points = [];
+  var segments = [];
+  _.forEach(data.polygons, function(polygon) {
+    _.forEach(polygon.points, function(p) {
+      var point = new vec3(p.x, p.y, 0);
+      if (points.indexOf(point) === -1) {
+        var lastIdx = points.push(point) - 1;
+        // TODO fix - create segments between points
+        // if (lastIdx != 0) // if not the first point
+        //   segments.push(makeSegment(points[lastIdx-1], points[lastIdx]));
+      } else {
+        // last segment in the polygon
+        // segments.push(makeSegment(points[points.length-1], point));
+      }
+    });
+  });
+  return { points:points, segments:segments };
+}
 
 function isFlipped(p, segs) {
   var endPoint = false;
@@ -226,19 +231,8 @@ function createDatasets() {
   let segments5 = [];
 
   // File dataset
-  let points6 = [];
-  let segments6 = [];
-
-
-  // sync jquery call to the server for data
-  $.get( "/data", function( jsonStr ) {
-    console.log("json: " + jsonStr);
-    // parse the json and put it into dataset 6
-    var data = JSON.parse(jsonStr);
-    if (!data)
-      console.error("unable to parse data")
-  });
-
+  // let points6 = [];
+  // let segments6 = [];
 
   datasets = {
     'dataset1' : { points:points1, segments:segments1 },
@@ -246,6 +240,6 @@ function createDatasets() {
     'dataset3' : { points:points3, segments:segments3 },
     'dataset4' : { points:points4, segments:segments4 },
     'dataset5' : { points:points5, segments:segments5 },
-    'dataset6' : { points:points6, segments:segments6 },
+    'dataset6' : { points:[], segments:[] }, // loaded asynchronously
   };
 }

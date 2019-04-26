@@ -261,7 +261,7 @@ function intersectArcs(left, right, isFlipped, isGeneral, directrix){
   let intersections = pleft.intersect(pright);
 
   if (intersections.length == 0 || !intersections[0]) {
-    throw "error intersections size 0 between node id: " + left.id + " and node: " + right.id;
+    throw "error number of intersections is 0 between node id: " + left.id + " and node: " + right.id;
   }
 
   if (intersections.length == 1) {

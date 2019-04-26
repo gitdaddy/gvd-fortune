@@ -2,6 +2,7 @@ const open = require('opn');
 const express = require('express');
 var router = express();
 var fs = require('fs');
+// var rl = require('readline-sync');
 
 const hostname = 'localhost';
 const port = 8080;
@@ -9,21 +10,26 @@ const port = 8080;
 function getDatasetJson() {
   // read in the files
   var json = {};
-  var shapes = [];
-  var polygon = {points: []};
-
-  var lineReader = require('readline').createInterface({
-    input: fs.createReadStream('./data/maze/files.txt')
+  var polygons = [];
+  // var polygon = {points: []};
+  // var files = fs.readFileSync('./data/testFiles.txt', 'utf-8').split('\n');
+  var files = fs.readFileSync('./data/maze/files.txt', 'utf-8').split('\n');
+  files.forEach(file => {
+    var inputPoints = fs.readFileSync(file, 'utf-8').split('\n');
+    var dataPoints = [];
+    inputPoints.forEach(input => {
+      if (input !== "") {
+        var p = input.split(" ");
+        if (p.length != 2)
+          throw "Invalid input data line:" + input;
+        dataPoints.push({x: parseFloat(p[0]), y: parseFloat(p[1])});
+      }
+    });
+    // one file per polygon
+    polygons.push({points: dataPoints});
   });
 
-  lineReader.on('line', function (line) {
-    console.log('Line from file:', line);
-    // TODO for each line read in the polygon
-  });
-
-  shapes.push(polygon);
-
-  json.polygons = shapes;
+  json.polygons = polygons;
   return JSON.stringify(json); // {polygons:[{points: [{}], ..]}
 }
 
@@ -37,6 +43,11 @@ router.get('/data', function(req, res) {
   res.type('json');
   res.json(getDatasetJson());
 });
+
+// router.get('/testData', function(req, res) {
+//   res.type('json');
+//   res.json(getTestDatasetJson());
+// });
 
 router.use(express.static(__dirname));
 
