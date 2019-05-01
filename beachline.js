@@ -294,6 +294,7 @@ function createCloseEvent(arcNode, directrix) {
       }
     }
     let r = dist(equi, arcNode.site);
+    if (!r) return null;
 
     if (canClose(left, arcNode, right, equi, directrix)) {
       return new CloseEvent(equi.y - r, arcNode, left, right, equi, r);

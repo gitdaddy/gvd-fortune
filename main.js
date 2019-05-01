@@ -2,8 +2,8 @@
 
 var sweepline = 0.1;
 
-let datasets;
-var numLabels = 2;
+let g_datasets = {};
+let g_polygons = [];
 
 var circle;
 var sweepLine;
@@ -12,8 +12,6 @@ var program;
 var mvMatrix;
 var pMatrix;
 
-var points = [];
-var segments = [];
 var closeEventPoints = [];
 var dcel;
 
@@ -34,39 +32,13 @@ function arcColorSvg(id) {
 }
 
 function processNewDataset() {
-  // Give all points and segments a unique ID and label
-  var id = 1;
-  var labelCount = 1;
-  points.forEach(function (p) {
-    p.id = id++;
-    p.label = labelCount++;
+  var segments = [];
+  var points = [];
+  g_polygons.forEach(function(poly) {
+    markSiteRelations(poly.segments);
+    segments = segments.concat(poly.segments);
+    points = points.concat(poly.points);
   });
-
-  segments.forEach(function (s) {
-    s.id = id++;
-    if (_.isUndefined(s.label)) {
-      s.label = labelCount++;
-    }
-    segments.forEach(function (newS) {
-      if (newS.id != s.id && _.isUndefined(newS.label) && jointSegments(s, newS)) {
-        newS.label = s.label;
-      }
-    });
-  });
-
-  // label all connected sites with the same label
-  points.forEach(function (p) {
-    segments.forEach(function(s) {
-      if ((p.x == s.a.x && p.y == s.a.y) ||
-        (p.x == s.b.x && p.y == s.b.y)) {
-        p.label = s.label;
-      }
-    });
-    // if point is on the lowest y point of all segments then it is flipped
-    p.flipped = isFlipped(p, segments);
-  });
-
-  populateDataProps(segments);
 
   initDebugCircumcircle();
   drawSites(points);
@@ -79,10 +51,6 @@ function processNewDataset() {
   points.forEach(function (p) {
     yvalues.push(p.y);
   });
-  // Don't check segments since they're constructed from points
-  // segments.forEach(function(s) {
-  //   yvalues.push(s.y);
-  // });
   yvalues.sort();
   for (var i = 1; i < yvalues.length; ++i) {
     if (yvalues[i] == yvalues[i - 1]) {
@@ -105,17 +73,14 @@ function processNewDataset() {
   }
 
   events = [];
-
   // Add points as events
   points.forEach(function (p) {
     events.push(p);
   });
-
   // Add segments as events
   segments.forEach(function (s) {
     events.push(s);
   });
-
   render();
 }
 
@@ -261,53 +226,48 @@ function init() {
   document.getElementById("sweeplineLabel").innerHTML = sweepline.toFixed(3);
 
   createDatasets();
-  for (let key in datasets) {
+  for (let key in g_datasets) {
     var option = document.createElement("option");
     option.text = key;
-    document.getElementById("dataset").add(option);
+    document.getElementById("g_dataset").add(option);
   }
 
-  for (var i = 2; i < 10; i++) {
-    var option = document.createElement("option");
-    option.text = i;
-    document.getElementById("numLabels").add(option);
+  if (localStorage.g_dataset) {
+    document.getElementById("g_dataset").value = localStorage.g_dataset;
   }
-
-  if (localStorage.dataset) {
-    document.getElementById("dataset").value = localStorage.dataset;
-  }
-  datasetChange(document.getElementById("dataset").value);
-}
-
-function numLabelsChange(value) {
-  var intVal = parseInt(value);
-  numLabels = intVal;
-  datasetChange(localStorage.dataset);
+  datasetChange(document.getElementById("g_dataset").value);
 }
 
 function datasetChange(value) {
   console.log(value);
-  localStorage.dataset = value;
+  localStorage.g_dataset = value;
 
-  if (value == 'dataset6' && !datasets[value].points || datasets[value].points.length == 0) {
-    console.log("Loading in file dataset");
-    $.get("/data").then(function (json) {
-      var data = parseInputJSON(json);
-      datasets[value].points = data.points;
-      datasets[value].segments = data.segments;
-      points = data.points;
-      segments = data.segments;
+  if (value == 'dataset6') {
+    if (g_datasets[value].length == 0) {
+      $.get("/data").then(function (json) {
+        var polygons = parseInputJSON(json);
+        g_datasets[value] = polygons;
+        g_polygons = polygons;
+        processNewDataset();
+      });
+    } else {
+      g_polygons = g_datasets[value]; // load the cached data
       processNewDataset();
-    });
+    }
   } else {
-    points = datasets[value].points;
-    segments = datasets[value].segments;
+    g_polygons = g_datasets[value];
     processNewDataset();
   }
 }
 
 function fortune() {
   nodeId = 1;
+  var points = [];
+  var segments = [];
+  g_polygons.forEach(function(poly) {
+    points = points.concat(poly.points);
+    segments = segments.concat(poly.segments);
+  });
   dcel = new DCEL();
   var beachline = new Beachline(dcel);
   var pointsCopy = points.slice();
@@ -394,13 +354,13 @@ function render() {
   runTests();
 }
 
+// TODO fix
 function onSiteDrag() {
-  drawSegments(segments);
+  drawSegments(g_polygons.segments);
   render();
 }
 
 /// Code For Debugging the GVD
-
 function mouseclick(e) {
   document.getElementById("mouseX").innerHTML = win2x(e.offsetX);
   document.getElementById("mouseY").innerHTML = win2y(e.offsetY);

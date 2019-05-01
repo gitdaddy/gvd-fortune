@@ -1,1 +1,2 @@
-./data/maze/poly7.dat
+./data/test/t1.dat
+./data/test/t2.dat
