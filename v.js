@@ -69,7 +69,6 @@ V.prototype.intersect = function(obj) {
       }
       // choose this v left or right based on zArea
       var b = bisectSegments(makeSegment(this.y0, this.y1), makeSegment(obj.y0, obj.y1));
-        // debugObjs.push(b);
 
       if (zArea < 0) {
         // segment right - should this always be used or should obj be used?

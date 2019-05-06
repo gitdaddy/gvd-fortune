@@ -387,7 +387,7 @@ function bisectSegments(s1, s2) {
   var d3 = dist(s1.b, s2.a);
   var d4 = dist(s1.b, s2.b);
   if (d1 < d2 && d1 < d3 && d1 < d4) {
-  } else if (d2 < d1 && d2 < d1 && d2 < d4) {
+  } else if (d2 < d1 && d2 < d3 && d2 < d4) {
     s2 = makeSegment(s2.b, s2.a, true);
   } else if (d3 < d1 && d3 < d2 && d3 < d4) {
     s1 = makeSegment(s1.b, s1.a, true);
@@ -466,19 +466,19 @@ function equidistant(left, arc, right) {
   var b1, b2;
   // Bisecting types can be either lines or parabolas
   if (points.length == 1) {
-    b1 = bisect(segments[0], points[0]);
-    b2 = bisect(points[0], segments[1]);
-    // // Prefer line bisectors
-    // if (points[0] == segments[0].a || points[0] == segments[0].b) {
-    //   b1 = bisect(segments[0], points[0]);
-    //   b2 = bisect(segments[0], segments[1]);
-    // } else if (points[0] == segments[1].a || points[0] == segments[1].b) {
-    //   b1 = bisect(segments[1], points[0]);
-    //   b2 = bisect(segments[0], segments[1]);
-    // } else {
-    //   b1 = bisect(segments[0], points[0]);
-    //   b2 = bisect(points[0], segments[1]);
-    // }
+    // b1 = bisect(segments[0], points[0]);
+    // b2 = bisect(points[0], segments[1]);
+    // Prefer line bisectors TODO
+    if (points[0] == segments[0].a || points[0] == segments[0].b) {
+      b1 = bisect(segments[0], points[0]);
+      b2 = bisect(segments[0], segments[1]); // doesn't seem to always return the right line..
+    } else if (points[0] == segments[1].a || points[0] == segments[1].b) {
+      b1 = bisect(segments[1], points[0]);
+      b2 = bisect(segments[0], segments[1]);
+    } else {
+      b1 = bisect(segments[0], points[0]);
+      b2 = bisect(points[0], segments[1]);
+    }
   } else if (segments.length == 1) {
     // Prefer line bisectors
     if (points[0] == segments[0].a || points[0] == segments[0].b) {
@@ -499,8 +499,10 @@ function equidistant(left, arc, right) {
     b1 = bisect(left, arc);
     b2 = bisect(arc, right);
   }
-     // Testing only
-    debugObjs.push(b1);
-    debugObjs.push(b2);
+
+  if (g_addDebug) {
+    g_debugObjs.push(b1);
+    g_debugObjs.push(b2);
+  }
   return intersect(b1, b2);
 }

@@ -210,7 +210,7 @@ function createDatasets() {
   for (var i = 0; i < numRandom1; ++i) {
     p31.addPoint(vec3(Math.random()*2-1, Math.random()*2-1, 0));
   }
-  p31.createSegment(2,3);
+  p31.createSegment(3,4);
   polygons3.push(p31);
 
   var polygons4 = [];
@@ -219,7 +219,7 @@ function createDatasets() {
 
   p41.addPoint(vec3(-0.26, 0.73, 0));
   p41.addPoint(vec3(0.62, 0.37, 0));
-  p41.addPoint(vec3(0.73,-0.13, 0));
+  p41.addPoint(vec3(0.1,-0.11, 0));
 
   p42.addPoint(vec3(-0.65, -0.15, 0));
   p42.addPoint(vec3(-0.12,0.13, 0));

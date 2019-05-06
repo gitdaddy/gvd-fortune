@@ -1,6 +1,18 @@
 let isoEdgeWidth = 1;
 let nonisoEdgeWidth = 5;
 
+// function initGvdZoom() {
+//   var svg = d3.select("#gvd")
+//   // .append("svg")
+//   .attr("width", "100%")
+//   .attr("height", "100%")
+//   .call(d3.zoom().on("zoom", function () {
+//     // svg.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")")
+//     svg.attr("transform", d3.event.transform)
+//   }))
+//   .append("g")
+// }
+
 function initDebugCircumcircle() {
   // Draw the close event highlight circle
   d3.select("#gvd").append("circle")
@@ -402,6 +414,6 @@ function drawBeachline(beachline, directrix) {
   //------------------------------
   // Render the debug objects
   //------------------------------
-  drawDebugObjs(debugObjs);
+  drawDebugObjs(g_debugObjs);
 }
 

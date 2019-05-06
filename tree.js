@@ -55,7 +55,7 @@ function highlight(d) {
 }
 
 function showTree(treeData) {
-  if (treeData == null) return;
+  if (treeData == null || fullScreen) return;
 
   // set the dimensions and margins of the diagram
   // var margin = {top: 20, right: 90, bottom: 30, left: 90},

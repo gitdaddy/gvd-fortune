@@ -23,7 +23,11 @@
 
   </head>
   <body onload="init()">
-    Dataset: <select id="g_dataset" onchange="datasetChange(this.value)"></select>
+    <div>
+      Dataset: <select id="g_dataset" onchange="datasetChange(this.value)"></select>
+      <label for="fullscreenToggle">Toggle Fullscreen</label>
+      <input type="checkbox" id="fullscreenToggle"/>
+    </div>
     <!-- Number of Labeled Sites: <select value=2 id="numLabels" onchange="numLabelsChange(this.value)"></select> -->
     <br>
     <svg id="gvdsvg" width="500" height="500" xmlns="http://www.w3.org/2000/svg">

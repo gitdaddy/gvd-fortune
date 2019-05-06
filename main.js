@@ -15,11 +15,13 @@ var pMatrix;
 var closeEventPoints = [];
 var dcel;
 
-var debugObjs = [];
+var g_debugObjs = [];
+var g_addDebug = false;
 
 let showEvents = false;
 let showSegmentBoundaries = false;
 let showDebugObjs = false;
+let fullScreen = false;
 
 function siteColorSvg(id) {
   // return 'black';
@@ -220,9 +222,11 @@ function init() {
   if (localStorage.sweepline) {
     sweepline = parseFloat(localStorage.sweepline);
   }
+  // initGvdZoom();
 
   document.onkeydown = keydown;
   document.getElementById("gvdsvg").onclick = mouseclick;
+  document.getElementById("fullscreenToggle").onclick = toggleFS;
   document.getElementById("sweeplineLabel").innerHTML = sweepline.toFixed(3);
 
   createDatasets();
@@ -339,7 +343,7 @@ function fortune() {
 }
 
 function render() {
-  debugObjs = [];
+  g_debugObjs = [];
   var t0 = performance.now();
   var beachline = fortune();
   var t1 = performance.now();
@@ -356,7 +360,11 @@ function render() {
 
 // TODO fix
 function onSiteDrag() {
-  drawSegments(g_polygons.segments);
+  var segments = [];
+  g_polygons.forEach(function(poly) {
+    segments = segments.concat(poly.segments);
+  });
+  drawSegments(segments);
   render();
 }
 
@@ -364,6 +372,28 @@ function onSiteDrag() {
 function mouseclick(e) {
   document.getElementById("mouseX").innerHTML = win2x(e.offsetX);
   document.getElementById("mouseY").innerHTML = win2y(e.offsetY);
+}
+
+function toggleFS() {
+  fullScreen = !fullScreen;
+
+  if (fullScreen) {
+    d3.select(".tree").html("");
+    d3.select(".tree")
+      .attr("width", 0)
+      .attr("height", 0);
+
+    var s = d3.select("#gvdsvg")
+      .attr("width", window.innerWidth)
+      .attr("height", window.innerHeight);
+
+    var h2 = window.innerHeight/2;
+    var w2 = window.innerWidth/2;
+    var g = d3.select("#gvd")
+      .attr("transform",
+      "translate(" + w2 + "," + h2 + ") scale(" + 250 + "," + -250 + ")");
+  }
+  // TODO else shrink back again
 }
 
 function setDebug(msg) {

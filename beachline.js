@@ -243,6 +243,13 @@ function createCloseEvent(arcNode, directrix) {
   var right = arcNode.nextArc();
   if (left == null || right == null) return null;
 
+  // if (arcNode.id == 11) {
+  //   g_addDebug = true;
+  //   debugger;
+  // } else {
+  //   g_addDebug = false;
+  // }
+
   if (arcNode.isV) {
     // for same site nan parabola error
     directrix -= 0.0001;
@@ -383,9 +390,10 @@ Beachline.prototype.add = function (site) {
     }
     else if (arcNode.isParabola && _.get(arcNode, "site.relation", false) == NODE_RELATION.CLOSING) {
       var updateEdge = child.prevEdge();
-      if (updateEdge.isGeneralSurface) {
+      if (siblingRight.isV && child.isV && equal(child.site.b, siblingRight.site.b)) {
         updateEdge = child.nextEdge();
       }
+
       if (updateEdge){
         updateEdge.dcelEdge.dest.overridden = true;
         updateEdge.dcelEdge.dest.point = arcNode.site;
