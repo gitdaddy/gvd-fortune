@@ -243,9 +243,9 @@ function createCloseEvent(arcNode, directrix) {
   var right = arcNode.nextArc();
   if (left == null || right == null) return null;
 
-  // if (arcNode.id == 11) {
+  // if (arcNode.id == 9) {
   //   g_addDebug = true;
-  //   debugger;
+  //   // debugger;
   // } else {
   //   g_addDebug = false;
   // }
@@ -257,8 +257,9 @@ function createCloseEvent(arcNode, directrix) {
       || arcNode.site.b == left.site && arcNode.site.a == right.site) return null;
     let equi = equidistant(left.site, arcNode.site, right.site);
     if (equi == null || equi.length == 0) return null;
-    let segV = createBeachlineSegment(arcNode.site, directrix);
+
     if (equi.length == 2) {
+      let segV = createBeachlineSegment(arcNode.site, directrix);
       // get the point that is closest the corresponding arc center point
       var b1 = arcNode.getHorizontalBounds(directrix);
       var centerArcX = (b1.x0 + b1.x1) / 2;
@@ -267,7 +268,6 @@ function createCloseEvent(arcNode, directrix) {
         return dist(centerPoint, e);
       })[0];
     }
-   // if close for 3 Vs get the radius as the arcNode's upper site
    var r;
    if (left.isV && right.isV) {
     r = Math.min(Math.min(dist(equi, left.site), dist(equi, arcNode.site)), dist(equi, right.site));
@@ -283,9 +283,6 @@ function createCloseEvent(arcNode, directrix) {
     if (equi == null || equi.length == 0) return null;
     if (equi.length == 2) {
       var sorted = _.sortBy(equi, function (p) { return p.x; });
-      // if (arcNode.parent.flipped) {
-      //   equi = sorted[1]; // always true? test
-    // } else if (belongsToSegment(arcNode, right)) {
       if (belongsToSegment(arcNode, right)) {
         equi = sorted[0];
       } else if (belongsToSegment(left, arcNode)) {

@@ -388,9 +388,9 @@ function bisectSegments(s1, s2) {
   var d4 = dist(s1.b, s2.b);
   if (d1 < d2 && d1 < d3 && d1 < d4) {
   } else if (d2 < d1 && d2 < d3 && d2 < d4) {
-    s2 = makeSegment(s2.b, s2.a, true);
+      s2 = makeSegment(s2.b, s2.a, true);
   } else if (d3 < d1 && d3 < d2 && d3 < d4) {
-    s1 = makeSegment(s1.b, s1.a, true);
+      s1 = makeSegment(s1.b, s1.a, true);
   } else if (d4 < d1 && d4 < d2 && d4 < d3) {
     s1 = makeSegment(s1.b, s1.a, true);
     s2 = makeSegment(s2.b, s2.a, true);
@@ -464,21 +464,10 @@ function equidistant(left, arc, right) {
   var segments = _.filter([left, arc, right], { type: "segment" });
   var points = _.filter([left, arc, right], { type: "vec" });
   var b1, b2;
-  // Bisecting types can be either lines or parabolas
+  // Bisecting types can be either lines or parabolas - lines are preferred
   if (points.length == 1) {
-    // b1 = bisect(segments[0], points[0]);
-    // b2 = bisect(points[0], segments[1]);
-    // Prefer line bisectors TODO
-    if (points[0] == segments[0].a || points[0] == segments[0].b) {
-      b1 = bisect(segments[0], points[0]);
-      b2 = bisect(segments[0], segments[1]); // doesn't seem to always return the right line..
-    } else if (points[0] == segments[1].a || points[0] == segments[1].b) {
-      b1 = bisect(segments[1], points[0]);
-      b2 = bisect(segments[0], segments[1]);
-    } else {
-      b1 = bisect(segments[0], points[0]);
-      b2 = bisect(points[0], segments[1]);
-    }
+    b1 = bisect(segments[0], points[0]);
+    b2 = bisect(points[0], segments[1]);
   } else if (segments.length == 1) {
     // Prefer line bisectors
     if (points[0] == segments[0].a || points[0] == segments[0].b) {
@@ -494,7 +483,6 @@ function equidistant(left, arc, right) {
   } else if (segments.length == 3) {
     b1 = bisect(left, arc);
     b2 = bisect(arc, right);
-
   } else {
     b1 = bisect(left, arc);
     b2 = bisect(arc, right);
