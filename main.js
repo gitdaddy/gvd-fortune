@@ -22,6 +22,7 @@ let showEvents = false;
 let showSegmentBoundaries = false;
 let showDebugObjs = false;
 let fullScreen = false;
+let hideInfo = false;
 
 function siteColorSvg(id) {
   // return 'black';
@@ -222,11 +223,12 @@ function init() {
   if (localStorage.sweepline) {
     sweepline = parseFloat(localStorage.sweepline);
   }
-  // initGvdZoom();
+  drawInit();
 
   document.onkeydown = keydown;
   document.getElementById("gvdsvg").onclick = mouseclick;
   document.getElementById("fullscreenToggle").onclick = toggleFS;
+  document.getElementById("hideInfo").onclick = toggleHideInfo;
   document.getElementById("sweeplineLabel").innerHTML = sweepline.toFixed(3);
 
   createDatasets();
@@ -333,9 +335,9 @@ function fortune() {
   while (events.length > 0) {
     var e = events.pop();
     if (e.isCloseEvent) {
-      ev += e.y + ' - close node id:' + e.arcNode.id + '<br>';
+      ev += e.y + ' - close node id:' + e.arcNode.id + ' : ';
     } else {
-      ev += e.y + " r: " + e.relation + '<br>';
+      ev += e.y + " r: " + e.relation + ' : ';
     }
   }
   document.getElementById("events").innerHTML = ev;
@@ -378,22 +380,44 @@ function toggleFS() {
   fullScreen = !fullScreen;
 
   if (fullScreen) {
-    d3.select(".tree").html("");
     d3.select(".tree")
       .attr("width", 0)
       .attr("height", 0);
 
-    var s = d3.select("#gvdsvg")
-      .attr("width", window.innerWidth)
-      .attr("height", window.innerHeight);
+    var w = window.innerWidth - margin.left - margin.right;
+    var h = window.innerHeight - margin.top - margin.bottom;
+
+    d3.select("#gvdsvg")
+      .attr("width", w)
+      .attr("height", h);
 
     var h2 = window.innerHeight/2;
     var w2 = window.innerWidth/2;
-    var g = d3.select("#gvd")
+    d3.select("#gvd")
       .attr("transform",
-      "translate(" + w2 + "," + h2 + ") scale(" + 250 + "," + -250 + ")");
+      "translate(" + w2 + "," + h2 + ") scale(" + width/2.0 + "," + -1*height/2.0 + ")");
+  } else {
+    d3.select(".tree")
+    .attr("width", widthT)
+    .attr("height", heightT);
+
+    d3.select("#gvdsvg")
+      .attr("width", width)
+      .attr("height", height);
+
+    d3.select("#gvd")
+      .attr("transform",
+      "translate(" + width/2.0 + "," + height/2.0 + ") scale(" + width/2.0 + "," + -1*height/2.0 + ")");
   }
-  // TODO else shrink back again
+}
+
+function toggleHideInfo() {
+  hideInfo = !hideInfo;
+  if (hideInfo) {
+    document.getElementById("moreInfo").hidden = true;
+  } else {
+    document.getElementById("moreInfo").hidden = false;
+  }
 }
 
 function setDebug(msg) {

@@ -1,3 +1,9 @@
+
+  // set the dimensions and margins of the diagram
+  let marginT = {top: 20, right: 90, bottom: 90, left: 90},
+  widthT = 660 - marginT.left - marginT.right,
+  heightT = 512 - marginT.top - marginT.bottom;
+
 function nodeColor(node) {
   if (node.isEdge) {
     return "black";
@@ -57,15 +63,9 @@ function highlight(d) {
 function showTree(treeData) {
   if (treeData == null || fullScreen) return;
 
-  // set the dimensions and margins of the diagram
-  // var margin = {top: 20, right: 90, bottom: 30, left: 90},
-  var margin = {top: 20, right: 90, bottom: 90, left: 90},
-  width = 660 - margin.left - margin.right,
-  height = 512 - margin.top - margin.bottom;
-
   // declares a tree layout and assigns the size
   var treemap = d3.tree()
-    .size([height, width]);
+    .size([heightT, widthT]);
 
   // var diagonal = d3.svg.diagonal()
   // 	.projection(function(d) { return [d.x, d.y]; });
@@ -84,12 +84,12 @@ function showTree(treeData) {
   // appends a 'group' element to 'svg'
   // moves the 'group' element to the top left margin
   d3.select(".tree").html("");
-  var svg = d3.select(".tree")//.append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom),
+  var svg = d3.select(".tree")
+    .attr("width", widthT + marginT.left + marginT.right)
+    .attr("height", heightT + marginT.top + marginT.bottom),
   g = svg.append("g")
     .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")")
+          "translate(" + marginT.left + "," + marginT.top + ")")
   ;
 
   // adds the links between the nodes
