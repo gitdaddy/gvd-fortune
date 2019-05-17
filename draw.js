@@ -40,12 +40,22 @@ var zoom = d3.zoom()
 
 function drawInit()
 {
-  svg = d3.select("#mainView")
-    .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .attr("id", "gvdsvg")
-    .attr("xmlns", "http://www.w3.org/2000/svg");
+  zoomCatcher = d3.select("#mainView")
+  .append("rect")
+  .attr("class", "zoomCatcher")
+  .attr("x", margin.left)
+  .attr("y", margin.top)
+  .attr("width", width)
+  .attr("height", height)
+  .attr("fill", "transparent")
+  .attr("stroke", "none")
+  .call(zoom);
+  svg = zoomCatcher
+  .append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+  .attr("id", "gvdsvg")
+  .attr("xmlns", "http://www.w3.org/2000/svg");
 
   // svg.append("defs")
   //   .append('clipPath')
@@ -78,19 +88,8 @@ function drawInit()
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
       .call(yAxis);
 
-  // d3.select("#fixIt")
-  // .on("click", fixIt);
-
-  zoomCatcher = svg
-    .append("rect")
-    .attr("class", "zoomCatcher")
-    .attr("x", margin.left)
-    .attr("y", margin.top)
-    .attr("width", width)
-    .attr("height", height)
-    .attr("fill", "transparent")
-    .attr("stroke", "none")
-    .call(zoom);
+  d3.select("#fixIt")
+  .on("click", fixIt);
 }
 
 function initDebugCircumcircle() {
@@ -498,25 +497,27 @@ function drawBeachline(beachline, directrix) {
 }
 
 function zoomed() {
-  // console.log("Zooming: x:" + d3.event.transform.x + " y:" + d3.event.transform.y);
   // svg.attr("transform", "translate(" +  d3.event.transform.x + ","
   // +  d3.event.transform.y + ") scale(" +  d3.event.transform.k + ")");
   //   svg.attr("transform", "translate(" +  d3.event.sourceEvent.pageX + ","
   // +  d3.event.sourceEvent.pageY + ") scale(" +  d3.event.transform.k + ")");
-  // svg.attr("transform", d3.event.transform);
-  view.attr("transform", d3.event.transform);
+  // zoomCatcher.attr("transform", d3.event.transform);
+
+  // view.attr("transform", d3.event.transform);
+  // d3.event.target.scaleTo(svg, d3.event.transform.k);
+  svg.attr("transform", "scale(" + d3.event.transform.k + ")");
   gX.call(xAxis.scale(d3.event.transform.rescaleX(x)));
   gY.call(yAxis.scale(d3.event.transform.rescaleY(y)));
 }
 
-// function fixIt() {
-//   console.log("fixing..")
-//   zoomCatcher
-//     .call(zoom.transform, d3.zoomIdentity);
+function fixIt() {
+  console.log("fixing..")
+  zoomCatcher
+    .call(zoom.transform, d3.zoomIdentity);
 
-//   zoomCatcher
-//     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-//     .attr("x", 0)
-//     .attr("y", 0);
-// }
+  zoomCatcher
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+    .attr("x", 0)
+    .attr("y", 0);
+}
 
