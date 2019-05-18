@@ -6,10 +6,7 @@ let margin = {top: -5, right: -5, bottom: -5, left: -5},
     height = 700 - margin.top - margin.bottom;
 
 let svg;
-let view;
 let zoomCatcher;
-let gX;
-let gY;
 
 var x = d3.scaleLinear()
     .domain([0, width])
@@ -28,13 +25,9 @@ var yAxis = d3.axisRight(y)
     .tickSize(width)
     .tickPadding(8 - width);
 
-// var zoom = d3.zoom()
-//     .scaleExtent([1, 100])
-//     .on("zoom", zoomed);
-
 var zoom = d3.zoom()
-    .extent([[0, 0], [width, height]])
-    .scaleExtent([1, 40])
+    .extent([[100000, 100000], [width, height]])
+    .scaleExtent([1, 100])
     .translateExtent([[0, 0], [width, height]])
     .on("zoom", zoomed);
 
@@ -57,39 +50,17 @@ function drawInit()
   .attr("id", "gvdsvg")
   .attr("xmlns", "http://www.w3.org/2000/svg");
 
-  // svg.append("defs")
-  //   .append('clipPath')
-  //   .attr('id', "myClipPath")
-  //   .append('rect')
-  //   .attr('width', width)
-  //   .attr('height', height);
-
-  view = svg.append("g")
+  svg.append("g")
     .attr("id", "gvd")
     .attr("transform", "translate(" + width/2.0
-      + "," + height/2.0 + ") scale(" + width/2.0 + "," + -1*height/2.0 + ")");
-
-      // .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-    view.append("line")
+      + "," + height/2.0 + ") scale(" + width/2.0 + "," + -1*height/2.0 + ")")
+    .append("line")
     .attr("id", "sweepline")
     .attr("x1", -1)
     .attr("y1", 0)
     .attr("x2", 1)
     .attr("y2", 0)
     .attr("vector-effect", "non-scaling-stroke");
-
-  gX = svg.append("g")
-    .attr("class", "axis axis--x")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-    .call(xAxis);
-
-  gY = svg.append("g")
-      .attr("class", "axis axis--y")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-      .call(yAxis);
-
-  d3.select("#fixIt")
-  .on("click", fixIt);
 }
 
 function initDebugCircumcircle() {
@@ -497,27 +468,18 @@ function drawBeachline(beachline, directrix) {
 }
 
 function zoomed() {
-  // svg.attr("transform", "translate(" +  d3.event.transform.x + ","
-  // +  d3.event.transform.y + ") scale(" +  d3.event.transform.k + ")");
-  //   svg.attr("transform", "translate(" +  d3.event.sourceEvent.pageX + ","
-  // +  d3.event.sourceEvent.pageY + ") scale(" +  d3.event.transform.k + ")");
-  // zoomCatcher.attr("transform", d3.event.transform);
-
-  // view.attr("transform", d3.event.transform);
-  // d3.event.target.scaleTo(svg, d3.event.transform.k);
-  svg.attr("transform", "scale(" + d3.event.transform.k + ")");
-  gX.call(xAxis.scale(d3.event.transform.rescaleX(x)));
-  gY.call(yAxis.scale(d3.event.transform.rescaleY(y)));
+  svg.attr("transform", "translate(" +  d3.event.transform.x + ","
+  +  d3.event.transform.y + ") scale(" +  d3.event.transform.k + ")");
 }
 
-function fixIt() {
-  console.log("fixing..")
-  zoomCatcher
-    .call(zoom.transform, d3.zoomIdentity);
+// function fixIt() {
+//   console.log("fixing..")
+//   zoomCatcher
+//     .call(zoom.transform, d3.zoomIdentity);
 
-  zoomCatcher
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-    .attr("x", 0)
-    .attr("y", 0);
-}
+//   zoomCatcher
+//     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+//     .attr("x", 0)
+//     .attr("y", 0);
+// }
 

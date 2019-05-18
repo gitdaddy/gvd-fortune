@@ -19,6 +19,7 @@ body {
     width: 50%;
     padding: 10px;
     height: 750px; /* Should be removed. Only for demonstration */
+    /* overflow: hidden; */
 }
 
   /* Clear floats after the columns */
@@ -28,13 +29,10 @@ body {
     clear: both;
 }
 
-.axis path {
-    display: none;
-}
-
-.axis line {
-    stroke-opacity: 0.3;
-    shape-rendering: crispEdges;
+.fullscreen {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
 }
 
 .debug {

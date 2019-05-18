@@ -5,12 +5,10 @@ var sweepline = 0.1;
 let g_datasets = {};
 let g_polygons = [];
 
-var circle;
 var sweepLine;
 var program;
 
 var mvMatrix;
-var pMatrix;
 
 var closeEventPoints = [];
 var dcel;
@@ -19,7 +17,6 @@ var g_debugObjs = [];
 var g_addDebug = false;
 
 let showEvents = false;
-let showSegmentBoundaries = false;
 let showDebugObjs = false;
 let fullScreen = false;
 let hideInfo = false;
@@ -165,10 +162,6 @@ function keydown(event) {
     showEvents = !showEvents;
     d3.selectAll(".close-event")
       .attr('visibility', showEvents ? null : 'hidden');
-  } else if (key == 'b') {
-    showSegmentBoundaries = !showSegmentBoundaries;
-    d3.selectAll(".seg-boundary")
-      .attr('visibility', showSegmentBoundaries ? null : 'hidden');
   } else if (key == 'v') {
     showDebugObjs = !showDebugObjs;
     d3.selectAll(".debug-line")
@@ -189,20 +182,18 @@ function keydown(event) {
   }
 }
 
-let gvdw = 500;
-let gvdh = 500;
+let SITE_RADIUS = 0.001;
 
-let SITE_RADIUS = 10 / gvdw;
-let SITE_RADIUS_HIGHLIGHT = 11 / gvdw;
+let SITE_RADIUS_HIGHLIGHT = 11 / width;
 
 function x2win(x) {
   let xmin = -1;
   let xmax = 1;
-  return (x - xmin) / (xmax - xmin) * gvdw;
+  return (x - xmin) / (xmax - xmin) * width;
 }
 
 function win2x(xWin) {
-  var half = gvdw / 2;
+  var half = width / 2;
   var dist = xWin - half;
   return dist / half;
 }
@@ -210,11 +201,11 @@ function win2x(xWin) {
 function y2win(y) {
   let ymin = -1;
   let ymax = 1;
-  return (1 - (y - ymin) / (ymax - ymin)) * gvdh;
+  return (1 - (y - ymin) / (ymax - ymin)) * height;
 }
 
 function win2y(yWin) {
-  var half = gvdh / 2;
+  var half = height / 2;
   var dist = half - yWin;
   return dist / half;
 }
@@ -396,6 +387,7 @@ function toggleFS() {
     d3.select("#gvd")
       .attr("transform",
       "translate(" + w2 + "," + h2 + ") scale(" + width/2.0 + "," + -1*height/2.0 + ")");
+    document.getElementById("mainView").className = "fullscreen";
   } else {
     d3.select(".tree")
     .attr("width", widthT)
@@ -408,6 +400,7 @@ function toggleFS() {
     d3.select("#gvd")
       .attr("transform",
       "translate(" + width/2.0 + "," + height/2.0 + ") scale(" + width/2.0 + "," + -1*height/2.0 + ")");
+    document.getElementById("mainView").className = "column";
   }
 }
 
