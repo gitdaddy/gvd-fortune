@@ -182,7 +182,7 @@ function keydown(event) {
   }
 }
 
-let SITE_RADIUS = 0.001;
+let SITE_RADIUS = 0.0001;
 
 let SITE_RADIUS_HIGHLIGHT = 11 / width;
 

@@ -35,6 +35,9 @@ Polygon.prototype.createSegment = function (pIdxStart, pIdxEnd) {
   s.id = g_id++;
   s.label = this.label;
   this.segments.push(s);
+  if (this.points[pIdxStart].y == this.points[pIdxEnd].y) {
+    console.error("Horizontal segment detected with y values of: " + this.points[pIdxEnd].y);
+  }
   this.points[pIdxStart].flipped = isFlipped(this.points[pIdxStart], this.segments);
   this.points[pIdxEnd].flipped = isFlipped(this.points[pIdxEnd], this.segments);
 }
@@ -128,11 +131,11 @@ function parseInputJSON(jsonStr) {
         poly.addPoint(point);
         if (i !== 0) {
           // if not the first point in the polygon
-          //  poly.createSegment(i-1, i); // TODO Evaluate segments when ready
+           poly.createSegment(i-1, i);
         }
       } else {
         // last segment in the polygon (end, start)
-        // poly.createSegment(i-1, 0);
+        poly.createSegment(i-1, 0);
       }
     }
     result.push(poly);

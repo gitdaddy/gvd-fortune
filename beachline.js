@@ -47,16 +47,6 @@ function addCloseEvent(events, newEvent) {
     if (idx == -1) return;
     // replace the old event
     events[idx] = newEvent;
-    // If there is a tie use the event with the closest arcNode
-    // if (!_.isUndefined(existing[0].arcNode.x0) && !_.isUndefined(newEvent.arcNode.x0)) {
-    //   if (Math.abs(newEvent.arcNode.x0 - newEvent.point.x)
-    //     < Math.abs(existing[0].arcNode.x0 - newEvent.point.x)) {
-    //     var idx = _.findIndex(events, search);
-    //     if (idx == -1) return;
-    //     // replace the old event
-    //     events[idx] = newEvent;
-    //   } // otherwise leave the existing event in place
-    // }
   }
 }
 
@@ -76,6 +66,13 @@ var Beachline = function (dcel) {
 //------------------------------------------------------------
 // Utility functions
 //
+
+function shareVClosing(arcNode, sibling) {
+  if (!arcNode.isV || !sibling.isV) return false;
+  return _.get(arcNode, "site.b.relation") == NODE_RELATION.CLOSING &&
+  _.get(sibling, "site.b.relation") == NODE_RELATION.CLOSING &&
+   equal(arcNode.site.b, sibling.site.b);
+}
 
 /* Return true or false if the arcNode should be able to close in the designated spot
    Does the shared segment run between p1 and equi/close point?
@@ -243,7 +240,7 @@ function createCloseEvent(arcNode, directrix) {
   var right = arcNode.nextArc();
   if (left == null || right == null) return null;
 
-  // if (arcNode.id == 9) {
+  // if (arcNode.id == 33) {
   //   g_addDebug = true;
   //   // debugger;
   // } else {
@@ -255,6 +252,11 @@ function createCloseEvent(arcNode, directrix) {
     directrix -= 0.0001;
     if (arcNode.site.a == left.site && arcNode.site.b == right.site
       || arcNode.site.b == left.site && arcNode.site.a == right.site) return null;
+
+    // If siblings reference the same closing node don't let them close until
+    // the closing node is processed
+    if (shareVClosing(arcNode, left) || shareVClosing(arcNode, right)) return null;
+
     let equi = equidistant(left.site, arcNode.site, right.site);
     if (equi == null || equi.length == 0) return null;
 

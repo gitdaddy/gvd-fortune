@@ -1,2 +1,3 @@
-./data/test/t1.dat
-./data/test/t2.dat
+./data/maze/poly46.dat
+./data/maze/poly47.dat
+./data/maze/poly48.dat
