@@ -158,23 +158,14 @@ function isFlipped(p, segs) {
 function createDatasets() {
   var polygons1 = [];
   var p11 = new Polygon();
-  p11.addPoint(vec3(0.05, 0.4, 0));
-  p11.addPoint(vec3(0.251, 0.41, 0));
+  p11.addPoint(vec3(-0.5, 0.4, 0));
+  p11.addPoint(vec3(0.51, 0.41, 0));
   p11.addPoint(vec3(0.25, -0.1, 0));
-  p11.addPoint(vec3(0.07, -0.09, 0));
   p11.createSegment(0,1);
-  p11.createSegment(1,2);
-  p11.createSegment(2,3);
-  p11.createSegment(3,0);
   var p12 = new Polygon();
-  p12.addPoint(vec3(-0.45, 0.31, 0));
-  p12.addPoint(vec3(-0.11, 0.21, 0));
-  p12.addPoint(vec3(-0.15, -0.05, 0));
-  p12.addPoint(vec3(-0.55, -0.08, 0));
+  p12.addPoint(vec3(0.55, -0.5, 0));
+  p12.addPoint(vec3(-0.55, -0.5, 0));
   p12.createSegment(0,1);
-  p12.createSegment(1,2);
-  p12.createSegment(2,3);
-  p12.createSegment(3,0);
   polygons1.push(p11);
   polygons1.push(p12);
 
@@ -220,16 +211,20 @@ function createDatasets() {
   var p41 = new Polygon();
   var p42 = new Polygon();
 
-  p41.addPoint(vec3(-0.26, 0.73, 0));
-  p41.addPoint(vec3(0.62, 0.37, 0));
-  p41.addPoint(vec3(0.1,-0.11, 0));
+  p41.addPoint(vec3(-0.56, 0.73, 0));
+  p41.addPoint(vec3(-0.62, -0.77, 0));
+  p41.addPoint(vec3(0.69, -0.57, 0));
+  p41.addPoint(vec3(0.62, 0.67, 0));
 
-  p42.addPoint(vec3(-0.65, -0.15, 0));
+  p42.addPoint(vec3(-0.45, -0.15, 0));
   p42.addPoint(vec3(-0.12,0.13, 0));
-  p42.addPoint(vec3(-0.30, -0.1, 0));
+  p42.addPoint(vec3(-0.20, -0.1, 0));
+
   p41.createSegment(0, 1);
   p41.createSegment(1, 2);
-  p41.createSegment(2, 0);
+  p41.createSegment(2, 3);
+  p41.createSegment(3, 0);
+
   p42.createSegment(0, 1);
   p42.createSegment(1, 2);
   p42.createSegment(2, 0);
