@@ -322,14 +322,17 @@ function fortune() {
     }
   }
 
-  let ev = '<br>';
+  var ev;
+  var count = 0;
   while (events.length > 0) {
     var e = events.pop();
+    if (count % 2 == 0) ev += '<br>';
     if (e.isCloseEvent) {
-      ev += e.y + ' - close node id:' + e.arcNode.id + ' : ';
+      ev += ' <' + e.y + ' - close node id:' + e.arcNode.id + '>';
     } else {
-      ev += e.y + " r: " + e.relation + ' : ';
+      ev += ' <' + e.y + " r: " + e.relation + '>';
     }
+    count++;
   }
   document.getElementById("events").innerHTML = ev;
   return beachline;
