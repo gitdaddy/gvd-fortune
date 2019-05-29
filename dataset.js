@@ -36,7 +36,7 @@ Polygon.prototype.createSegment = function (pIdxStart, pIdxEnd) {
   s.label = this.label;
   this.segments.push(s);
   if (this.points[pIdxStart].y == this.points[pIdxEnd].y) {
-    console.error("Horizontal segment detected with y values of: " + this.points[pIdxEnd].y);
+    console.log("Horizontal segment detected with y values of: " + this.points[pIdxEnd].y);
   }
   this.points[pIdxStart].flipped = isFlipped(this.points[pIdxStart], this.segments);
   this.points[pIdxEnd].flipped = isFlipped(this.points[pIdxEnd], this.segments);

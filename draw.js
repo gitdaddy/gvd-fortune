@@ -471,15 +471,3 @@ function zoomed() {
   svg.attr("transform", "translate(" +  d3.event.transform.x + ","
   +  d3.event.transform.y + ") scale(" +  d3.event.transform.k + ")");
 }
-
-// function fixIt() {
-//   console.log("fixing..")
-//   zoomCatcher
-//     .call(zoom.transform, d3.zoomIdentity);
-
-//   zoomCatcher
-//     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-//     .attr("x", 0)
-//     .attr("y", 0);
-// }
-

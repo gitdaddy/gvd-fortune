@@ -119,7 +119,8 @@ function createCloseEvent(arcNode, directrix) {
   var right = arcNode.nextArc();
   if (left == null || right == null) return null;
 
-  if (arcNode.id == 4 && left.id == 2 && right.id == 8) {
+  // if (left.id == 8 && arcNode.id == 9 && right.id == 7) {
+  if (arcNode.id == 16) {
     g_addDebug = true;
     // debugger;
   } else {
@@ -150,10 +151,13 @@ function createCloseEvent(arcNode, directrix) {
       })[0];
     }
    var r;
-   if (left.isV && right.isV) { // NOT correct
+   if (left.isV && right.isV) {
     r = Math.min(Math.min(dist(equi, left.site), dist(equi, arcNode.site)), dist(equi, right.site));
    } else {
-    r = dist(equi, arcNode.site);
+    var pointSite = _.filter([left.site, arcNode.site, right.site], function(site) {
+      return site.type == "vec";
+    })[0];
+    r = dist(equi, pointSite);
    }
    var newY = equi.y - r;
    if (canClose(left, arcNode, right, equi, directrix)){
@@ -235,6 +239,7 @@ Beachline.prototype.add = function (site) {
       child = parent.getChild(side);
     }
 
+    // TODO clean this up
     var siblingLeft = child.prevArc();
     var siblingRight = child.nextArc();
     if (arcNode.isV && arcNode.site.a.y == arcNode.site.b.y) {

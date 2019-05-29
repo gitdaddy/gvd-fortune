@@ -1,81 +1,13 @@
 // Given a parabola (h, k, p), computes the y value at a given
 // x value.
-function f(x, h, k, p) {
+function parabola_f(x, h, k, p) {
   return (x - h) * (x - h) / (4 * p) + k;
 }
 
 // Computes the inverse of f
-function f_(y, h, k, p) {
-  return quadratic(1 / (4 * p), -2 * h / (4 * p), h * h / (4 * p) + k - y);
-}
-
-//------------------------------------------------------------
-// line/parabola intersections
-// The line is given by a ray q(t) = q + tv.
-// Returns t values.
-//------------------------------------------------------------
-function lpIntersect(h, k, p, q, v) {
-  // v = p1 --> p2
-  // var q = p1;
-  // var v = subtract(p2, q);
-  var a = v.x * v.x / (4 * p);
-  var b = 2 * v.x * (q.x - h) / (4 * p) - v.y;
-  var c = (q.x * q.x - 2 * q.x * h + h * h) / (4 * p) + k - q.y;
-  var tvals = quadratic(a, b, c);
-  return tvals;
-}
-
-// Returns intersections ordered by x value
-// h - x offset
-// k - y offset
-// p - scale factor (distance from parabola to directrix)
-function ppIntersect(h1, k1, p1, h2, k2, p2) {
-  // Check for degenerate parabolas
-  const EPSILON = 0.00000001;
-  if (Math.abs(p1) < EPSILON) {
-    if (Math.abs(p2) < EPSILON) {
-      // Both parabolas have no width
-      return [];
-    }
-    var x = h1;
-    var y = f(x, h2, k2, p2);
-    return [vec2(x, y), vec2(x, y)];
-  } else if (Math.abs(p2) < EPSILON) {
-    var x = h2;
-    var y = f(x, h1, k1, p1);
-    return [vec2(x, y), vec2(x, y)];
-  }
-
-  var a = 0.25 * (1 / p1 - 1 / p2);
-  var b = 0.5 * (h2 / p2 - h1 / p1);
-  var c = 0.25 * (h1 * h1 / p1 - h2 * h2 / p2) + k1 - k2;
-  var disc = b * b - 4 * a * c;
-  var xintersections = [];
-  if (a == 0) {
-    // One solution -- no quadratic term
-    xintersections.push(-c / b);
-  } else if (disc < 0) {
-    // No real solutions
-  } else {
-    // One or two solutions.
-    var x1 = (-b + Math.sqrt(disc)) / (2 * a);
-    var x2 = (-b - Math.sqrt(disc)) / (2 * a);
-    if (x1 < x2) {
-      xintersections.push(x1);
-      xintersections.push(x2);
-    } else {
-      xintersections.push(x2);
-      xintersections.push(x1);
-    }
-  }
-  // return xintersections;
-  var ret = [];
-  xintersections.forEach(function (x) {
-    var y = f(x, h1, k1, p1);//(x-h1)*(x-h1)/(4*p1) + k1;
-    ret.push(vec2(x, y));
-  });
-  return ret;
-}
+// function f_(y, h, k, p) {
+//   return quadratic(1 / (4 * p), -2 * h / (4 * p), h * h / (4 * p) + k - y);
+// }
 
 //------------------------------------------------------------
 // Parabola class
@@ -100,7 +32,7 @@ function createParabola(focus, directrix) {
   var h = focus.x;
   var k = (directrix + focus.y) / 2;
   var p = (focus.y - directrix) / 2;
-  return new Parabola(focus, h, k, p, 0, 0);
+  return new Parabola(focus, h, k, p);
 }
 
 Parabola.prototype.intersect = function (object) {
@@ -134,38 +66,33 @@ Parabola.prototype.intersectRay = function (p, v) {
 
 // y = f(x)
 Parabola.prototype.f = function (x) {
-  return f(x, this.h, this.k, this.p);
+  return (x - this.h) * (x - this.h) / (4 * this.p) + this.k;
 }
 
 // Inverse of f. x = f_(y)
 Parabola.prototype.f_ = function (y) {
-  return f_(y, this.h, this.k, this.p);
+  var h = this.h;
+  var k = this.k;
+  var p = this.p;
+  return quadratic(1 / (4 * p), -2 * h / (4 * p), h * h / (4 * p) + k - y);
 }
 
-var paraPointsBuffer = null;
-var numParaPoints = 20;
-var paraPoints = new Array(numParaPoints);
-
-function abc() {
-  return 130;
-}
-
-Parabola.prototype.renderSvg = function (id, highlight = false) {
-  let line = d3.line()
-    .x(function (d) { return d.x; })
-    .y(function (d) { return d.y; })
-    .curve(d3.curveCardinal)
-    ;
-  let pa = d3.select("#gvd")
-    .append("path")
-    .datum(this.drawPoints)
-    .attr("d", line)
-    .style("fill", "none")
-    .style("stroke", siteColorSvg(id))
-    .attr("class", "beach-parabola")
-    .attr("vector-effect", "non-scaling-stroke")
-    ;
-}
+// Parabola.prototype.renderSvg = function (id, highlight = false) {
+//   let line = d3.line()
+//     .x(function (d) { return d.x; })
+//     .y(function (d) { return d.y; })
+//     .curve(d3.curveCardinal)
+//     ;
+//   let pa = d3.select("#gvd")
+//     .append("path")
+//     .datum(this.drawPoints)
+//     .attr("d", line)
+//     .style("fill", "none")
+//     .style("stroke", siteColorSvg(id))
+//     .attr("class", "beach-parabola")
+//     .attr("vector-effect", "non-scaling-stroke")
+//     ;
+// }
 
 // Prepares this parabola for drawing
 Parabola.prototype.prepDraw = function (nodeid, label, x0, x1) {
@@ -318,6 +245,12 @@ function createGeneralParabola(focus, directrix) {
   return new GeneralParabola(focus, h, k, p, theta, 0, splitSite);
 }
 
+// GeneralParabola.prototype.getTransformedParabola() {
+
+//   var parabola = new Parabola(focus, h, k, p);
+//   // TODO
+// }
+
 GeneralParabola.prototype.transformPoint = function (p) {
   if (this.theta == 0) return p;
 
@@ -359,6 +292,13 @@ GeneralParabola.prototype.untransformPoint = function (p) {
   return p;
 }
 
+GeneralParabola.prototype.intersect = function (object) {
+  if (object instanceof Parabola || object instanceof GeneralParabola) {
+    throw "General parabola to other parabolas is not implemented";
+  }
+  return object.intersect(this);
+}
+
 // Intersect the positive portion of the ray.
 // If there are two intersections, the intersections will
 // be returned in order of t value.
@@ -390,9 +330,24 @@ GeneralParabola.prototype.intersectRay = function (p, v) {
 // If there are two intersections, the intersections will
 // be returned in order of t value.
 // The line is given in parametric form p(t) = p + tv
-GeneralParabola.prototype.intersectPara = function (genPara) {
-  return (this.parabola.intersect(genPara.parabola));
-}
+// GeneralParabola.prototype.intersectPara = function (genPara) {
+
+//   var resultPoints = [];
+//   var r = [];
+//   resultPoints = this.parabola.intersect(genPara.parabola);
+//   // resultPoints = ppIntersect(h1, k1, p1, h2, k2, p2);
+//   var thisp = this;
+//   var genp = genPara;
+//   _.forEach(resultPoints, function (p) {
+//     p = genp.untransformPoint(p);
+//     // p = thisp.untransformPoint(p);
+//     if (!_.isNaN(p.x)) {
+//       r.push(p);
+//     }
+//     console.log("gen-gen point:" + p);
+//   });
+//   return r;
+// }
 
 // Prepares this parabola for drawing
 GeneralParabola.prototype.prepDraw = function (id, p1, p2) {

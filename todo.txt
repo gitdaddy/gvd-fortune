@@ -1,2 +1,2 @@
-1. Fix surface lines
-2. Load polygons
+1. close point choice for para
+2. Clean up beachline.js for closepoint

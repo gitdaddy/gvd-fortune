@@ -111,9 +111,9 @@ function lpIntersect(h, k, p, q, v) {
   // v = p1 --> p2
   // var q = p1;
   // var v = subtract(p2, q);
-  var a = v.x*v.x/(4*p);
-  var b = 2*v.x*(q.x-h)/(4*p) - v.y;
-  var c = (q.x*q.x-2*q.x*h+h*h)/(4*p) + k - q.y;
+  var a = v.x * v.x / (4 * p);
+  var b = 2 * v.x * (q.x - h) / (4 * p) - v.y;
+  var c = (q.x * q.x - 2 * q.x * h + h * h) / (4 * p) + k - q.y;
   var tvals = quadratic(a, b, c);
   return tvals;
 }
@@ -122,6 +122,7 @@ function lpIntersect(h, k, p, q, v) {
 // h - x offset
 // k - y offset
 // p - scale factor (distance from parabola to directrix)
+// * Note this assumes positive parabolas?
 function ppIntersect(h1, k1, p1, h2, k2, p2) {
   // Check for degenerate parabolas
   const EPSILON = 0.00000001;
@@ -131,12 +132,12 @@ function ppIntersect(h1, k1, p1, h2, k2, p2) {
       return [];
     }
     var x = h1;
-    var y = f(x, h2, k2, p2);
-    return [ vec2(x, y), vec2(x, y) ];
+    var y = parabola_f(x, h2, k2, p2);
+    return [vec2(x, y), vec2(x, y)];
   } else if (Math.abs(p2) < EPSILON) {
     var x = h2;
-    var y = f(x, h1, k1, p1);
-    return [ vec2(x, y), vec2(x, y) ];
+    var y = parabola_f(x, h1, k1, p1);
+    return [vec2(x, y), vec2(x, y)];
   }
 
   var a = 0.25*(1/p1 - 1/p2);
@@ -163,8 +164,8 @@ function ppIntersect(h1, k1, p1, h2, k2, p2) {
   }
   // return xintersections;
   var ret = [];
-  xintersections.forEach(function(x) {
-    var y = f(x, h1, k1, p1);//(x-h1)*(x-h1)/(4*p1) + k1;
+  xintersections.forEach(function (x) {
+    var y = parabola_f(x, h1, k1, p1);//(x-h1)*(x-h1)/(4*p1) + k1;
     ret.push(vec2(x, y));
   });
   return ret;
@@ -199,7 +200,8 @@ PointSegmentBisector.prototype.intersect = function(obj) {
   if (obj instanceof Line) {
     return this.para.intersectRay(obj.p, obj.v);
   } else if (obj instanceof PointSegmentBisector) {
-    return this.para.intersectPara(obj.para);
+    // return this.para.intersectPara(obj.para);
+    throw "General parabola to other parabolas is not implemented";
   }
   throw "PointSegmentBisector intersection with obj not implemented";
 }
@@ -281,12 +283,50 @@ function getAngle(s, consider_order=true) {
 
 // Angle between two vectors theta = arccos(dot(v1,v2)/ |v1|* |v2|)
 // returns the angle in radians
-// function getAngleBetweenTwoVec(v1, v2) {
-//   var d = dot(v1, v2);
-//   var m1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
-//   var m2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
-//   return Math.acos(d/(m1*m2));
-// }
+function getAngleBetweenTwoVec(v1, v2) {
+  var d = dot(v1, v2);
+  var m1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+  var m2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
+  return Math.acos(d/(m1*m2));
+}
+
+// only return true if the point belongs on the quadrant
+// with the larger angle
+function chooseLargestAngle(s1, s2, pointHint) {
+  var sUpper, sLower;
+  if (s1.a.y < s2.a.y) {
+    sUpper = s2;
+    sLower = s1;
+  } else {
+    sUpper = s1;
+    sLower = s2;
+  }
+
+  var sUAB = subtract(sUpper.b, sUpper.a);
+  var sUBA = subtract(sUpper.a, sUpper.b);
+  var sLAB = subtract(sLower.b, sLower.a);
+  var sLBA = subtract(sLower.a, sLower.b);
+  var BC = subtract(pointHint, sLower.b);
+
+  var lowerAngle = getAngleBetweenTwoVec(sUAB, sLAB);
+  var upperAngle = getAngleBetweenTwoVec(sUBA, sLAB);
+
+  var cLUA = cross(sLBA, sUBA).z;
+  var cLUB = cross(sLBA, sUAB).z;
+  var cLC = cross(sLBA, BC).z;
+
+  if (upperAngle > lowerAngle) {
+    return (cLC*cLUA > 0);
+  } else {
+    // lower angle is the largest
+    return (cLC*cLUB > 0);
+  }
+}
+
+function connected(s1, s2) {
+  return equal(s1.a, s2.a) || equal(s1.a, s2.b) ||
+  equal(s1.b, s2.a) || equal(s1.b, s2.b);
+}
 
 //------------------------------------------------------------
 //------------------------------------------------------------
@@ -380,7 +420,7 @@ function bisectPoints(p1, p2) {
 // the line. The vector v=q2-q1 will be oriented in the negative y direction.
 // NOTE: this bisects LINES not SEGMENTS.
 //------------------------------------------------------------
-function bisectSegments(s1, s2) {
+function bisectSegments(s1, s2, pointHint) {
   // get the closest points
   var d1 = dist(s1.a, s2.a);
   var d2 = dist(s1.a, s2.b);
@@ -388,8 +428,18 @@ function bisectSegments(s1, s2) {
   var d4 = dist(s1.b, s2.b);
   if (d1 < d2 && d1 < d3 && d1 < d4) {
   } else if (d2 < d1 && d2 < d3 && d2 < d4) {
+    var useLargeAngle = false;
+    if (pointHint && !connected(s1, s2)){
+      useLargeAngle = chooseLargestAngle(s1, s2, pointHint);
+    }
+    if (!useLargeAngle)
       s2 = makeSegment(s2.b, s2.a, true);
   } else if (d3 < d1 && d3 < d2 && d3 < d4) {
+    var useLargeAngle = false;
+    if (pointHint && !connected(s1, s2)){
+      useLargeAngle = chooseLargestAngle(s1, s2, pointHint);
+    }
+    if (!useLargeAngle)
       s1 = makeSegment(s1.b, s1.a, true);
   } else if (d4 < d1 && d4 < d2 && d4 < d3) {
     s1 = makeSegment(s1.b, s1.a, true);
@@ -415,7 +465,7 @@ function bisectSegments(s1, s2) {
 // Returns a bisector of a and b. a and b must be either line
 // segments or points.
 //------------------------------------------------------------
-function bisect(a, b) {
+function bisect(a, b, pointHint = null) {
   let bisector;
   if (a.type == 'vec' && b.type == 'vec') {
     // Returns a line
@@ -425,7 +475,7 @@ function bisect(a, b) {
   } else if (b.type == 'vec') {
     bisector = bisectPointSegment(b, a);
   } else {
-    bisector = bisectSegments(a, b);
+    bisector = bisectSegments(a, b, pointHint);
   }
   return bisector;
 }
@@ -466,10 +516,19 @@ function equidistant(left, arc, right) {
   var b1, b2;
   // Bisecting types can be either lines or parabolas - lines are preferred
   if (points.length == 1) {
-    b1 = bisect(segments[0], points[0]);
-    b2 = bisect(points[0], segments[1]);
+    // b1 = bisect(segments[0], points[0]);
+    // b2 = bisect(points[0], segments[1]);
+    if (points[0] == segments[0].a || points[0] == segments[0].b) {
+      b1 = bisect(segments[0], points[0]);
+      b2 = bisect(points[0], segments[1]);
+    } else if (points[0] == segments[1].a || points[0] == segments[1].b) {
+      b1 = bisect(segments[1], points[0]);
+      b2 = bisect(points[0], segments[0]);
+    } else {
+      b1 = bisect(segments[0], points[0]);
+      b2 = bisect(segments[0], segments[1], points[0]);
+    }
   } else if (segments.length == 1) {
-    // Prefer line bisectors
     if (points[0] == segments[0].a || points[0] == segments[0].b) {
       b1 = bisect(segments[0], points[0]);
       b2 = bisect(points[0], points[1]);
