@@ -415,6 +415,88 @@ function bisectPoints(p1, p2) {
 }
 
 //------------------------------------------------------------
+// bisectSegments3
+// Return up two 4 bisecting lines
+// NOTE: this bisects LINES not SEGMENTS.
+//------------------------------------------------------------
+function bisectSegments4(s1, s2, s3) {
+  var lines = [];
+  if (connected(s1, s2)){
+    var r1 = bisectSegments(s1, s2);
+    lines.push(r1);
+    var r2 = bisectSegments2(s1, s3);
+    lines.push(r2.b1);
+    if (r2.b2)
+      lines.push(r2.b2);
+    return lines;
+  } else if (connected(s1, s3)){
+    var r1 = bisectSegments(s1, s3);
+    lines.push(r1);
+    var r2 = bisectSegments2(s1, s2);
+    lines.push(r2.b1);
+    if (r2.b2)
+      lines.push(r2.b2);
+    return lines;
+  } else if (connected(s2, s3)) {
+    var r1 = bisectSegments(s2, s3);
+    lines.push(r1);
+    var r2 = bisectSegments2(s1, s2);
+    lines.push(r2.b1);
+    if (r2.b2)
+      lines.push(r2.b2);
+    return lines;
+  }
+  var r1 = bisectSegments2(s1, s2);
+  lines.push(r1.b1);
+  if (r1.b2)
+    lines.push(r1.b2);
+  var r2 = bisectSegments2(s2, s3);
+  lines.push(r2.b1);
+  if (r2.b2)
+    lines.push(r2.b2);
+  return lines;
+}
+
+//------------------------------------------------------------
+// bisectSegments2
+// Return the lines bisecting two lines. Possible 2 bisectors
+// NOTE: this bisects LINES not SEGMENTS.
+//------------------------------------------------------------
+function bisectSegments2(s1, s2) {
+  // get the closest points
+  var d1 = dist(s1.a, s2.a);
+  var d2 = dist(s1.a, s2.b);
+  var d3 = dist(s1.b, s2.a);
+  var d4 = dist(s1.b, s2.b);
+
+  if (d1 < d2 && d1 < d3 && d1 < d4) {
+    s1Prime = makeSegment(s1.b, s1.a, true);
+    s2Prime = makeSegment(s2.b, s2.a, true);
+  } else if (d2 < d1 && d2 < d3 && d2 < d4) {
+    s1Prime = s1;
+    s2Prime = s2;
+    s2 = makeSegment(s2.b, s2.a, true);
+  } else if (d3 < d1 && d3 < d2 && d3 < d4) {
+    s1Prime = s1;
+    s2Prime = s2;
+    s1 = makeSegment(s1.b, s1.a, true);
+  } else {
+    s1Prime = s1;
+    s2Prime = s2;
+    s1 = makeSegment(s1.b, s1.a, true);
+    s2 = makeSegment(s2.b, s2.a, true);
+  }
+  var beta1 = getSegmentsBisector(s1, s2, false);
+  var v1 = new vec3(Math.cos(beta1), Math.sin(beta1), 0);
+  var p1 = intersectLines(s1.a, s1.b, s2.a, s2.b);
+  var l1 = new Line(p1, add(p1, v1));
+  var beta2 = getSegmentsBisector(s1Prime, s2Prime, false);
+  var v2 = new vec3(Math.cos(beta2), Math.sin(beta2), 0);
+  var l2 = new Line(p1, add(p1, v2));
+  return {b1:l1, b2:l2};
+}
+
+//------------------------------------------------------------
 // bisectSegments
 // Return the line bisecting two lines. Returns two points [q1,q2] defining
 // the line. The vector v=q2-q1 will be oriented in the negative y direction.
@@ -540,8 +622,20 @@ function equidistant(left, arc, right) {
       b2 = bisect(points[0], points[1]);
     }
   } else if (segments.length == 3) {
-    b1 = bisect(left, arc);
-    b2 = bisect(arc, right);
+    var blines = bisectSegments4(left, arc, right);
+    if (blines.length == 0 || blines.length == 1) return null;
+    var rslt = [];
+    for (var i = 1; i < blines.length; i++)
+    {
+      var l = intersect(blines[i-1], blines[i]);
+      if (g_addDebug) {
+        g_debugObjs.push(blines[i-1]);
+        g_debugObjs.push(blines[i]);
+      }
+      if (l)
+       rslt.push(l);
+    }
+    return rslt;
   } else {
     b1 = bisect(left, arc);
     b2 = bisect(arc, right);

@@ -224,11 +224,11 @@ function createDatasets() {
   p41.createSegment(1, 2);
   p41.createSegment(2, 3);
   p41.createSegment(3, 0);
+  polygons4.push(p41);
 
   p42.createSegment(0, 1);
   p42.createSegment(1, 2);
   p42.createSegment(2, 0);
-  polygons4.push(p41);
   polygons4.push(p42);
 
   Math.seedrandom('3');

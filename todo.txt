@@ -1,2 +1,1 @@
-1. close point choice for para
-2. Clean up beachline.js for closepoint
+1. Horizontal arc?

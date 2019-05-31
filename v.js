@@ -68,14 +68,33 @@ V.prototype.intersect = function(obj) {
         return [this.p];
       }
       // choose this v left or right based on zArea
-      var b = bisectSegments(makeSegment(this.y0, this.y1), makeSegment(obj.y0, obj.y1));
+      var s1 = makeSegment(this.y0, this.y1);
+      var s2 = makeSegment(obj.y0, obj.y1)
+      var bisectors = bisectSegments2(s1, s2);
+
+      if (g_addDebug) {
+        console.log("debugging")
+        g_debugObjs.push(bisectors.b1);
+        if (bisectors.b2)
+          g_debugObjs.push(bisectors.b2);
+      }
 
       if (zArea < 0) {
-        // segment right - should this always be used or should obj be used?
-        return [intersectLines(this.p, vec3(this.f_(this.y1.y)[1], this.y1.y, 0), b.p1, b.p2)];
+        // segment right
+        if (bisectors.b2 && this.y0.label != obj.y0.label) {
+          return [intersectLines(this.p, vec3(this.f_(this.y1.y)[1], this.y1.y, 0),
+           bisectors.b1.p1, bisectors.b1.p2), intersectLines(this.p, vec3(this.f_(this.y1.y)[1], this.y1.y, 0),
+           bisectors.b2.p1, bisectors.b2.p2)];
+        }
+        return [intersectLines(this.p, vec3(this.f_(this.y1.y)[1], this.y1.y, 0), bisectors.b1.p1, bisectors.b1.p2)];
       } else {
         // segment left
-        return [intersectLines(this.p, vec3(this.f_(this.y1.y)[0], this.y1.y, 0), b.p1, b.p2)];
+        if (bisectors.b2 && this.y0.label != obj.y0.label) {
+          return [intersectLines(this.p, vec3(this.f_(this.y1.y)[0], this.y1.y, 0),
+           bisectors.b1.p1, bisectors.b1.p2), intersectLines(this.p, vec3(this.f_(this.y1.y)[0], this.y1.y, 0),
+           bisectors.b2.p1, bisectors.b2.p2)];
+        }
+        return [intersectLines(this.p, vec3(this.f_(this.y1.y)[0], this.y1.y, 0), bisectors.b1.p1, bisectors.b1.p2)];
       }
     } else {
       // The lower V should never have to worry about intersecting with the
@@ -151,7 +170,7 @@ V.prototype.prepDraw = function(nodeid, label, x0, x1) {
   this.drawPoints = [];
 
   if (x0 > x1) {
-    throw `x0 > x1 in V render: ${x0}, ${x1}`;
+    console.error (`x0 > x1 in V render: ${x0}, ${x1}`);
   }
 
   var y0 = this.f(x0)

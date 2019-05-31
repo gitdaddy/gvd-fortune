@@ -36,8 +36,8 @@ function createCloseEvent(arcNode, directrix) {
   var right = arcNode.nextArc();
   if (left == null || right == null) return null;
 
-  // if (left.id == 8 && arcNode.id == 9 && right.id == 7) {
-  if (arcNode.id == 16) {
+  // TODO
+  if (left.id == 2 && arcNode.id == 15 && right.id == 19 ) {
     g_addDebug = true;
     // debugger;
   } else {
@@ -46,7 +46,7 @@ function createCloseEvent(arcNode, directrix) {
 
   if (arcNode.isV) {
     // for same site nan parabola error
-    directrix -= 0.0001;
+    directrix -= 0.00001;
     if (arcNode.site.a == left.site && arcNode.site.b == right.site
       || arcNode.site.b == left.site && arcNode.site.a == right.site) return null;
 
@@ -56,6 +56,7 @@ function createCloseEvent(arcNode, directrix) {
 
     let equi = equidistant(left.site, arcNode.site, right.site);
     if (equi == null || equi.length == 0) return null;
+    if (equi.length == 1) equi = equi[0];
 
     if (equi.length == 2) {
       let segV = createBeachlineSegment(arcNode.site, directrix);
@@ -145,10 +146,12 @@ function createCloseEvent(arcNode, directrix) {
 */
 function canClose(left, arcNode, right, equi, directrix) {
   if (arcNode.isV) {
-    let segV = createBeachlineSegment(arcNode.site, directrix);
-    siteX = segV.p.x;
-    b1 = arcNode.getHorizontalBounds(segV.p.y);
-    return b1.x0 < siteX && b1.x1 < siteX && equi.x < siteX || b1.x0 > siteX && b1.x1 > siteX && equi.x > siteX;
+    // Logic needed here?
+    return true;
+    // let segV = createBeachlineSegment(arcNode.site, directrix);
+    // siteX = segV.p.x;
+    // b1 = arcNode.getHorizontalBounds(segV.p.y);
+    // return b1.x0 < siteX && b1.x1 < siteX && equi.x < siteX || b1.x0 > siteX && b1.x1 > siteX && equi.x > siteX;
   } else {
     var seg;
     if (left.isV && belongsToSegment(arcNode, left)) {
