@@ -12,6 +12,7 @@ function getDatasetJson() {
   var json = {};
   var polygons = [];
   var files = fs.readFileSync('./data/testFiles.txt', 'utf-8').split('\n');
+  // Load the whole dataset
   // var files = fs.readFileSync('./data/maze/files.txt', 'utf-8').split('\n');
   files.forEach(file => {
     var inputPoints = fs.readFileSync(file, 'utf-8').split('\n');

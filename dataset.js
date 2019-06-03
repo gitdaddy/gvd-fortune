@@ -216,7 +216,7 @@ function createDatasets() {
   p41.addPoint(vec3(0.69, -0.57, 0));
   p41.addPoint(vec3(0.62, 0.67, 0));
 
-  p42.addPoint(vec3(-0.45, -0.15, 0));
+  p42.addPoint(vec3(-0.41, 0.45, 0));
   p42.addPoint(vec3(-0.12,0.13, 0));
   p42.addPoint(vec3(-0.20, -0.1, 0));
 

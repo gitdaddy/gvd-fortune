@@ -246,7 +246,7 @@ EdgeNode.prototype.intersection = function (directrix) {
   // This is inefficient. We should be storing sites in edge nodes.
   let leftArcNode = this.prevArc();
   let rightArcNode = this.nextArc();
-  // if (leftArcNode.id == 2 && rightArcNode.id == 15) {
+  // if (leftArcNode.id == 10 && rightArcNode.id == 9) {
   //   g_addDebug = true;
   //   // debugger;
   // } else {
@@ -272,15 +272,6 @@ function intersectStraightArcs(left, right, directrix){
     throw "error number of intersections is 0 between node id: " + left.id + " and node: " + right.id;
   }
 
-  // _.remove(intersections, function (i){
-  //   return i.y < directrix;
-  // });
-
-  if (intersections.length == 0) {
-    console.error("Error no intersections between: " + left.id + "-" + right.id);
-    return null;
-  }
-
   if (intersections.length == 1) {
     return {
       results: intersections,
@@ -289,42 +280,38 @@ function intersectStraightArcs(left, right, directrix){
   }
 
   if (intersections.length > 2) {
-    console.error("Warning over two intersections for straight arcs");
-    return {
-      results: intersections,
-      resultIdx: 0
-    };
+    if (left.isV && right.isV) {
+      if (intersections.length == 3) {
+        console.log("Warning - 3 intersections");
+        return {
+          result: intersections,
+          resultIdx: 0
+        };
+      }
+      // get the two intersections that are closest to
+      // the left arcNode site since we are going from left to right
+      var x = (left.site.a.x + left.site.b.x) / 2.0;
+      var sorted = _.sortBy(intersections, function(i) {
+        return Math.abs(x - i.x);
+      });
+      intersections = [sorted[0], sorted[1]];
+    } else {
+      var sorted = _.sortBy(intersections, function(i) { i.x });
+      // get the two outer intersections
+      intersections = [sorted[0], sorted[sorted.length - 1]];
+    }
   }
 
-  var lowerSite = pleft.y1.y > pright.y1.y ? right.site : left.site;
-  var x0 = intersections[0].x;
-  var x1 = intersections[1].x;
-  var siteOrigin1 = intersectLines(new vec3(x0, 1, 0), new vec3(x0, -1, 0), lowerSite.a, lowerSite.b);
-  if (siteOrigin1.y < intersections[0].y){
-    return {
-      results: intersections,
-      resultIdx: 1
-    };
+  this.intersections = intersections;
+  var idx;
+  let pcenterx = (intersections[0].x + intersections[1].x) / 2;
+  let prevy = pleft.f(pcenterx);
+  let nexty = pright.f(pcenterx);
+  let lower = 1;
+  if (prevy < nexty) {
+    lower = 0;
   }
-  var siteOrigin2 = intersectLines(new vec3(x1, 1, 0), new vec3(x1, -1, 0), lowerSite.a, lowerSite.b);
-  if (siteOrigin2.y < intersections[1].y){
-    return {
-      results: intersections,
-      resultIdx: 0
-    };
-  }
-
-  var v1 = new vec3(x0, directrix, 0);
-  var v2 = new vec3(x1, directrix, 0);
-
-  var d1 = dist(siteOrigin1, v1);
-  var d2 = dist(siteOrigin2, v2);
-
-  var i0 = dist(intersections[0], v1);
-  var i1 = dist(intersections[1], v2);
-
-  // get the intersection that is closest to midpoint between the site and the directrix
-  var idx = Math.abs((d1/2.0) - i0) < Math.abs((d2/2.0) - i1) ? 0 : 1;
+  idx = 1 - lower;
   return {
     results: intersections,
     resultIdx: idx

@@ -55,8 +55,10 @@ V.prototype.intersect = function(obj) {
     ret = _.sortBy(ret, [function(i) { return i.x; }]);
     return ret;
   } else if (obj instanceof V) {
+    var s1 = makeSegment(this.y0, this.y1);
+    var s2 = makeSegment(obj.y0, obj.y1)
 
-    if (this.y0.label == obj.y0.label) {
+    if (connected(s1, s2)) {
       var y0_y1 = subtract(this.y1, this.y0);
       var y0_Oy0 = subtract(obj.y0, this.y0);
       var y0_Oy1 = subtract(obj.y1, this.y0);
@@ -68,33 +70,14 @@ V.prototype.intersect = function(obj) {
         return [this.p];
       }
       // choose this v left or right based on zArea
-      var s1 = makeSegment(this.y0, this.y1);
-      var s2 = makeSegment(obj.y0, obj.y1)
-      var bisectors = bisectSegments2(s1, s2);
-
-      if (g_addDebug) {
-        console.log("debugging")
-        g_debugObjs.push(bisectors.b1);
-        if (bisectors.b2)
-          g_debugObjs.push(bisectors.b2);
-      }
+      var bisector = bisectSegments(s1, s2);
 
       if (zArea < 0) {
         // segment right
-        if (bisectors.b2 && this.y0.label != obj.y0.label) {
-          return [intersectLines(this.p, vec3(this.f_(this.y1.y)[1], this.y1.y, 0),
-           bisectors.b1.p1, bisectors.b1.p2), intersectLines(this.p, vec3(this.f_(this.y1.y)[1], this.y1.y, 0),
-           bisectors.b2.p1, bisectors.b2.p2)];
-        }
-        return [intersectLines(this.p, vec3(this.f_(this.y1.y)[1], this.y1.y, 0), bisectors.b1.p1, bisectors.b1.p2)];
+        return [intersectLines(this.p, vec3(this.f_(this.y1.y)[1], this.y1.y, 0), bisector.p1, bisector.p2)];
       } else {
         // segment left
-        if (bisectors.b2 && this.y0.label != obj.y0.label) {
-          return [intersectLines(this.p, vec3(this.f_(this.y1.y)[0], this.y1.y, 0),
-           bisectors.b1.p1, bisectors.b1.p2), intersectLines(this.p, vec3(this.f_(this.y1.y)[0], this.y1.y, 0),
-           bisectors.b2.p1, bisectors.b2.p2)];
-        }
-        return [intersectLines(this.p, vec3(this.f_(this.y1.y)[0], this.y1.y, 0), bisectors.b1.p1, bisectors.b1.p2)];
+        return [intersectLines(this.p, vec3(this.f_(this.y1.y)[0], this.y1.y, 0), bisector.p1, bisector.p2)];
       }
     } else {
       // The lower V should never have to worry about intersecting with the

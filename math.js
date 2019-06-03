@@ -421,6 +421,22 @@ function bisectPoints(p1, p2) {
 //------------------------------------------------------------
 function bisectSegments4(s1, s2, s3) {
   var lines = [];
+
+  // if fully connected segments
+  if (connected(s1, s2) && connected(s2, s3)){
+    lines.push(bisectSegments(s1, s2));
+    lines.push(bisectSegments(s2, s3));
+    return lines;
+  } else if (connected(s1, s3) && connected(s2, s3)) {
+    lines.push(bisectSegments(s1, s3));
+    lines.push(bisectSegments(s2, s3));
+    return lines;
+  } else if (connected(s1, s3) && connected(s1, s2)) {
+    lines.push(bisectSegments(s1, s3));
+    lines.push(bisectSegments(s1, s2));
+    return lines;
+  }
+
   if (connected(s1, s2)){
     var r1 = bisectSegments(s1, s2);
     lines.push(r1);
@@ -470,8 +486,11 @@ function bisectSegments2(s1, s2) {
   var d4 = dist(s1.b, s2.b);
 
   if (d1 < d2 && d1 < d3 && d1 < d4) {
+    // TODO is this correct?
+    // s1Prime = s1;
+    s2Prime = s2;
     s1Prime = makeSegment(s1.b, s1.a, true);
-    s2Prime = makeSegment(s2.b, s2.a, true);
+    // s2Prime = makeSegment(s2.b, s2.a, true);
   } else if (d2 < d1 && d2 < d3 && d2 < d4) {
     s1Prime = s1;
     s2Prime = s2;
@@ -481,9 +500,11 @@ function bisectSegments2(s1, s2) {
     s2Prime = s2;
     s1 = makeSegment(s1.b, s1.a, true);
   } else {
-    s1Prime = s1;
+    // TODO is this correct?
+    // s1Prime = s1;
     s2Prime = s2;
     s1 = makeSegment(s1.b, s1.a, true);
+    s1Prime = s1;
     s2 = makeSegment(s2.b, s2.a, true);
   }
   var beta1 = getSegmentsBisector(s1, s2, false);
@@ -623,17 +644,57 @@ function equidistant(left, arc, right) {
     }
   } else if (segments.length == 3) {
     var blines = bisectSegments4(left, arc, right);
-    if (blines.length == 0 || blines.length == 1) return null;
+    if (blines.length < 2) return null;
     var rslt = [];
-    for (var i = 1; i < blines.length; i++)
-    {
-      var l = intersect(blines[i-1], blines[i]);
+    // compute n choose 2 intersections for n lines (2-4) lines
+    if (blines.length == 2) {
       if (g_addDebug) {
-        g_debugObjs.push(blines[i-1]);
-        g_debugObjs.push(blines[i]);
+        g_debugObjs.push(blines[0]);
+        g_debugObjs.push(blines[1]);
       }
-      if (l)
-       rslt.push(l);
+      return [intersect(blines[0], blines[1])];
+    } else if (blines.length == 3) {
+      // (ab, ac, bc)
+      var ab = intersect(blines[0], blines[1]);
+      if (ab)
+        rslt.push(ab);
+      var ac = intersect(blines[0], blines[2]);
+      if (ac)
+        rslt.push(ac);
+      var bc = intersect(blines[1], blines[2]);
+      if (bc)
+        rslt.push(bc);
+      if (g_addDebug) {
+        g_debugObjs.push(blines[0]);
+        g_debugObjs.push(blines[1]);
+        g_debugObjs.push(blines[2]);
+      }
+    } else if (blines.length == 4) {
+      // (ab, ac, ad, bc, bd, cd)
+      var ab = intersect(blines[0], blines[1]);
+      if (ab)
+        rslt.push(ab);
+      var ac = intersect(blines[0], blines[2]);
+      if (ac)
+      rslt.push(ac);
+      var ad = intersect(blines[0], blines[3]);
+      if (ad)
+        rslt.push(ad);
+      var bc = intersect(blines[1], blines[2]);
+      if (bc)
+        rslt.push(bc);
+      var bd = intersect(blines[1], blines[3]);
+      if (bd)
+        rslt.push(bd);
+      var cd = intersect(blines[2], blines[3]);
+      if (cd)
+        rslt.push(cd);
+      if (g_addDebug) {
+        g_debugObjs.push(blines[0]);
+        g_debugObjs.push(blines[1]);
+        g_debugObjs.push(blines[2]);
+        g_debugObjs.push(blines[3]);
+      }
     }
     return rslt;
   } else {

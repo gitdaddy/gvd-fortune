@@ -36,7 +36,6 @@ function createCloseEvent(arcNode, directrix) {
   var right = arcNode.nextArc();
   if (left == null || right == null) return null;
 
-  // TODO
   if (left.id == 2 && arcNode.id == 15 && right.id == 19 ) {
     g_addDebug = true;
     // debugger;
@@ -58,7 +57,7 @@ function createCloseEvent(arcNode, directrix) {
     if (equi == null || equi.length == 0) return null;
     if (equi.length == 1) equi = equi[0];
 
-    if (equi.length == 2) {
+    if (equi.length == 2 || equi.length == 3 && equi.type != "vec") {
       let segV = createBeachlineSegment(arcNode.site, directrix);
       // get the point that is closest the corresponding arc center point
       var b1 = arcNode.getHorizontalBounds(directrix);
@@ -146,12 +145,20 @@ function createCloseEvent(arcNode, directrix) {
 */
 function canClose(left, arcNode, right, equi, directrix) {
   if (arcNode.isV) {
-    // Logic needed here?
+    // if the V is arcing with the top parabola then both sites must coincide
+    if (left.isParabola && right.isParabola && equal(arcNode.site.a, left.site)) {
+      // the right site should be on the left of the segment
+      var v1 = subtract(arcNode.site.a, arcNode.site.b);
+      var v2 = subtract(right.site, arcNode.site.b);
+      return cross(v1, v2).z > 0;
+    } else if (right.isParabola && left.isParabola && equal(arcNode.site.a, right.site)) {
+      // the left site should be on the right of the segment
+      var v1 = subtract(arcNode.site.a, arcNode.site.b);
+      var v2 = subtract(left.site, arcNode.site.b);
+      return cross(v1, v2).z < 0;
+    }
+
     return true;
-    // let segV = createBeachlineSegment(arcNode.site, directrix);
-    // siteX = segV.p.x;
-    // b1 = arcNode.getHorizontalBounds(segV.p.y);
-    // return b1.x0 < siteX && b1.x1 < siteX && equi.x < siteX || b1.x0 > siteX && b1.x1 > siteX && equi.x > siteX;
   } else {
     var seg;
     if (left.isV && belongsToSegment(arcNode, left)) {
