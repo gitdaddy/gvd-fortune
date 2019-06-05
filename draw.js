@@ -1,12 +1,15 @@
-let isoEdgeWidth = 1;
-let nonisoEdgeWidth = 5;
+var g_zoomScale = 1;
 
-let margin = {top: -5, right: -5, bottom: -5, left: -5},
+let g_siteRadius = 0.01;
+var g_isoEdgeWidth = 1;
+var g_nonisoEdgeWidth = 5;
+
+var margin = {top: -5, right: -5, bottom: -5, left: -5},
     width = 700 - margin.left - margin.right,
     height = 700 - margin.top - margin.bottom;
 
-let svg;
-let zoomCatcher;
+var svg;
+var zoomCatcher;
 
 var x = d3.scaleLinear()
     .domain([0, width])
@@ -25,9 +28,9 @@ var yAxis = d3.axisRight(y)
     .tickSize(width)
     .tickPadding(8 - width);
 
-var zoom = d3.zoom()
+let zoom = d3.zoom()
     .extent([[100000, 100000], [width, height]])
-    .scaleExtent([1, 100])
+    .scaleExtent([1, 1000])
     .translateExtent([[0, 0], [width, height]])
     .on("zoom", zoomed);
 
@@ -147,7 +150,7 @@ function drawDebugObjs(objs) {
     .attr("class", "debug-parabola")
     .attr("vector-effect", "non-scaling-stroke")
     .merge(d3generalEdges)
-    .style("stroke-width", 5)
+    .style("stroke-width", g_nonisoEdgeWidth)
     .attr("d", p => line(p.drawPoints))
     .attr("id", p => p.id)
     .attr("transform", p => p.transform)
@@ -166,9 +169,9 @@ function drawSites(points) {
       .append("g")
       .call(dragSite)
       .append("circle")
-      .attr("r", SITE_RADIUS)
       .attr("class", "site point-site")
       .merge(sel)
+      .attr("r", g_siteRadius)
       .attr("cx", p => p.x)
       .attr("cy", p => p.y)
       .attr("fill", (d,i) => siteColorSvg(d.label))
@@ -192,6 +195,7 @@ function drawSegments(segments) {
       .attr("class", "site segment-site")
       .attr("vector-effect", "non-scaling-stroke")
       .merge(sel)
+      .style("stroke-width", g_isoEdgeWidth)
       .attr("x1", s => s[0].x)
       .attr("y1", s => s[0].y)
       .attr("x2", s => s[1].x)
@@ -211,7 +215,7 @@ function drawSweepline(sweepline) {
 }
 
 function getSurfaceWidth(bold) {
-  return bold ? nonisoEdgeWidth : isoEdgeWidth;
+  return bold ? g_nonisoEdgeWidth : g_isoEdgeWidth;
 }
 
 function drawSurface(dcel) {
@@ -326,21 +330,17 @@ function drawCloseEvents(eventPoints) {
   // enter
   let enter = selection.enter()
     .append("circle")
-    .attr('r', SITE_RADIUS)
     .attr('class', "close-event")
     .attr("vector-effect", "non-scaling-stroke")
     .on('mouseover', highlight)
     .on('mouseout', unhighlight)
     .merge(selection)
+    .attr('r', g_siteRadius)
     .attr('cx', d => d.point.x)
     .attr('cy', d => d.point.y)
     .attr('visibility', showEvents ? null : 'hidden')
   ;
 }
-
-// function activeLineWidth(point) {
-//   return point.connectedToGVD ? 1 : 0;
-// }
 
 function drawBeachline(beachline, directrix) {
   if (beachline.root == null) {
@@ -468,6 +468,57 @@ function drawBeachline(beachline, directrix) {
 }
 
 function zoomed() {
+  console.log("scale:" + d3.event.transform.k);
+  g_zoomScale = d3.event.transform.k;
+  g_siteRadius = 0.01 / g_zoomScale;
+  g_isoEdgeWidth = 1 / g_zoomScale;
+  g_nonisoEdgeWidth = 5 / g_zoomScale;
+  console.log("site radi:" + g_siteRadius);
   svg.attr("transform", "translate(" +  d3.event.transform.x + ","
   +  d3.event.transform.y + ") scale(" +  d3.event.transform.k + ")");
+
+  // update point sites
+  d3.select("#gvd")
+  .selectAll(".point-site")
+  .attr("r", g_siteRadius);
+
+  d3.select("#gvd")
+  .selectAll(".segment-site")
+  .style("stroke-width", g_isoEdgeWidth);
+
+  // update beachline
+  d3.select("#gvd")
+  .selectAll(".beach-parabola")
+  .style("stroke-width", g_isoEdgeWidth);
+
+  d3.select("#gvd")
+  .selectAll(".beach-v")
+  .style("stroke-width", g_isoEdgeWidth);
+
+  d3.select("#gvd")
+  .selectAll("#sweepline")
+  .style("stroke-width", g_isoEdgeWidth);
+
+  // debug
+  // d3.select('#gvd')
+  // .selectAll('.debug-parabola')
+  // .style("stroke-width", g_nonisoEdgeWidth);
+
+
+
+  // update Edges
+  d3.select("#gvd")
+  .selectAll(".gvd-surface-active-parabola")
+  .style("stroke-width", e => getSurfaceWidth(e.splitSite))
+
+  d3.select("#gvd").selectAll(".gvd-surface-active")
+  .style("stroke-width", e => getSurfaceWidth(e.splitSite))
+
+  d3.select('#gvd')
+  .selectAll('.gvd-surface-parabola')
+  .style("stroke-width", e => getSurfaceWidth(e.splitSite))
+
+  d3.select('#gvd')
+  .selectAll('.gvd-surface')
+  .style("stroke-width", e => getSurfaceWidth(e.splitSite))
 }

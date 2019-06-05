@@ -182,8 +182,6 @@ function keydown(event) {
   }
 }
 
-let SITE_RADIUS = 0.01;
-
 let SITE_RADIUS_HIGHLIGHT = 11 / width;
 
 function x2win(x) {

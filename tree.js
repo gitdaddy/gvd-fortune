@@ -142,7 +142,7 @@ function showTree(treeData) {
       d3.select(`#treenode${d.data.id}`).style("stroke-width", null);
       setDebug('');
       if (d.data.isArc)
-        d3.select(`#site${d.data.site.id}`).attr("r", SITE_RADIUS);
+        d3.select(`#site${d.data.site.id}`).attr("r", g_siteRadius);
     })
 ;
 
