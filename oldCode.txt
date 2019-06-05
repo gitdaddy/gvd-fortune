@@ -36,3 +36,29 @@
       .attr('visibility', showSegmentBoundaries ? null : 'hidden')
     ;
   }
+
+
+// Debug CONFIG JUST IN CASE
+
+  {
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "NodeServer",
+      "program": "${workspaceFolder}/nodeServer.js",
+      "cwd": "${workspaceFolder}",
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Debug chrome",
+      "file": "${workspaceFolder}/index.html",
+      "cwd": "${workspaceFolder}",
+    }
+  ]
+}

@@ -11,9 +11,9 @@ function getDatasetJson() {
   // read in the files
   var json = {};
   var polygons = [];
-  var files = fs.readFileSync('./data/testFiles.txt', 'utf-8').split('\n');
+  // var files = fs.readFileSync('./data/testFiles.txt', 'utf-8').split('\n');
   // Load the whole dataset
-  // var files = fs.readFileSync('./data/maze/files.txt', 'utf-8').split('\n');
+  var files = fs.readFileSync('./data/maze/files.txt', 'utf-8').split('\n');
   files.forEach(file => {
     var inputPoints = fs.readFileSync(file, 'utf-8').split('\n');
     var dataPoints = [];
@@ -22,6 +22,7 @@ function getDatasetJson() {
         var p = input.split(" ");
         if (p.length != 2)
           throw "Invalid input data line:" + input;
+        // TODO find horizontal lines and prevent them
         dataPoints.push({x: parseFloat(p[0]), y: parseFloat(p[1])});
       }
     });

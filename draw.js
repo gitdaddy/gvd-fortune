@@ -30,7 +30,7 @@ var yAxis = d3.axisRight(y)
 
 let zoom = d3.zoom()
     .extent([[100000, 100000], [width, height]])
-    .scaleExtent([1, 1000])
+    .scaleExtent([1, 100000])
     .translateExtent([[0, 0], [width, height]])
     .on("zoom", zoomed);
 
