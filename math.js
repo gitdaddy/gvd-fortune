@@ -12,6 +12,9 @@ function makeSegment(p1, p2, forceOrder = false) {
   // Always store vertex with greatest y value first.
   if (!forceOrder && p1.y < p2.y) {
     s = [p2, p1];
+    p1.isEndPoint = true;
+  } else {
+    p2.isEndPoint = true;
   }
   Object.defineProperty(s, "y", {
     configurable: true,

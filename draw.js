@@ -297,7 +297,7 @@ function drawCloseEvents(eventPoints) {
   eventPoints = eventPoints.filter(d => d.live);
 
   let highlight = function(event) {
-    console.log(event);
+    // console.log(event);
     let arcNode = event.arcNode;
 
     // Highlight the arc
@@ -311,7 +311,7 @@ function drawCloseEvents(eventPoints) {
 
   let unhighlight = function(event) {
     // console.log(event);
-    console.log('unhighlight');
+    // console.log('unhighlight');
     let arcNode = event.arcNode;
 
     // Unhighlight the arc
@@ -468,12 +468,10 @@ function drawBeachline(beachline, directrix) {
 }
 
 function zoomed() {
-  console.log("scale:" + d3.event.transform.k);
   g_zoomScale = d3.event.transform.k;
   g_siteRadius = 0.01 / g_zoomScale;
   g_isoEdgeWidth = 1 / g_zoomScale;
   g_nonisoEdgeWidth = 5 / g_zoomScale;
-  console.log("site radi:" + g_siteRadius);
   svg.attr("transform", "translate(" +  d3.event.transform.x + ","
   +  d3.event.transform.y + ") scale(" +  d3.event.transform.k + ")");
 

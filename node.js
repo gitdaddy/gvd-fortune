@@ -241,6 +241,31 @@ EdgeNode.prototype.setChild = function (node, side) {
   node.parent = this;
 }
 
+// NEEDED for endpoints
+EdgeNode.prototype.findParentArcBySite = function (site) {
+  // Go all the way left then right in an in order traversal
+  var currentLeft = this.left;
+  while (currentLeft.isEdge) {
+    currentLeft = currentLeft.left;
+  }
+  var currentNode = currentLeft;
+  while (currentNode) {
+    if (currentNode.isV && equal(site, currentNode.site.b)) {
+      var pSide = 0;
+      if (currentNode.parent.parent) {
+        pSide = currentNode.parent == currentNode.parent.parent.right ? 1 :0;
+      }
+      return {
+        node: currentNode,
+        side: currentNode == currentNode.parent.right ? 1 : 0,
+        parentSide: pSide
+      };
+    }
+    currentNode = currentNode.nextArc();
+  }
+  return null;
+}
+
 // Finds the intersection between the left and right arcs.
 EdgeNode.prototype.intersection = function (directrix) {
   // This is inefficient. We should be storing sites in edge nodes.

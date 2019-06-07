@@ -37,8 +37,17 @@ Beachline.prototype.add = function (site) {
   var arcNode = new ArcNode(site);
   var directrix = site.y;
   // move the directrix slightly downward for segments
+  // TODO We need to avoid doing this
+  // or make it 1/10 the distance between a.y and b.y
+
   if (site.type == "segment") {
-    directrix -= 0.0001;
+     directrix -= 0.0001;
+
+    // var delta = Math.abs(site.a.y - site.b.y)/10.0;
+    // if (delta > 0.0001)
+    //  directrix -= 0.0001;
+    // else
+    //   directrix -= delta;
   }
 
   if (this.root == null) {
@@ -46,29 +55,44 @@ Beachline.prototype.add = function (site) {
   } else if (this.root.isArc) {
     this.root = splitArcNode(this.root, arcNode, this.dcel);
   } else {
-    // Do a binary search to find the arc node that the new
-    // site intersects with
     var parent = this.root;
-    var x = parent.intersection(directrix).x;
-    var side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
-    var parentSide = side;
-    var child = parent.getChild(side);
-    while (child.isEdge) {
-      parent = child;
-      x = parent.intersection(directrix).x;
-      if (site.x == x) {
-        console.log("Site and intersect values equal:" + x + " for intersection: " + parent.id);
+    var side, parentSide, child;
+    // if node is endpoint information by site
+    var rslt = null;
+    if (arcNode.isParabola && arcNode.site.isEndPoint) {
+      rslt = parent.findParentArcBySite(arcNode.site);
+      if (rslt) {
+        side = rslt.side;
+        parentSide = rslt.parentSide;
+        parent = rslt.node.parent;
+        child = rslt.node;
       }
-      parentSide = side;
+    }
+
+    if (!rslt) {
+      // Do a binary search to find the arc node that the new
+      // site intersects with
+      var x = parent.intersection(directrix).x;
       side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
+      parentSide = side;
       child = parent.getChild(side);
+      while (child.isEdge) {
+        parent = child;
+        // x = parent.intersection(directrix - 0.0001).x;
+        x = parent.intersection(directrix).x;
+        if (site.x == x) {
+          console.log("Site and intersect values equal:" + x + " for intersection: " + parent.id);
+        }
+        parentSide = side;
+        side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
+        child = parent.getChild(side);
+      }
     }
 
     var siblingRight = child.nextArc();
     if (arcNode.isV){
       if (arcNode.site.a.y == arcNode.site.b.y) {
-        // horizontal insert
-        horizontalInsert(child, left, arcNode, right, dcel);
+        throw "Horizontal segment detected";
       } else if (child.isV && _.get(arcNode, "site.a.relation") == NODE_RELATION.TOP) {
           var vC = subtract(child.site.b, arcNode.site.a);
           var vN = subtract(arcNode.site.b, arcNode.site.a);

@@ -47,30 +47,30 @@ function processNewDataset() {
   //------------------------------
   // Check for identical y values.
   //------------------------------
-  var yvalues = [];
-  points.forEach(function (p) {
-    yvalues.push(p.y);
-  });
-  yvalues.sort();
-  for (var i = 1; i < yvalues.length; ++i) {
-    if (yvalues[i] == yvalues[i - 1]) {
-      console.log("WARNING: sites with identical y values of " + yvalues[i]);
-    }
-  }
+  // var yvalues = [];
+  // points.forEach(function (p) {
+  //   yvalues.push(p.y);
+  // });
+  // yvalues.sort();
+  // for (var i = 1; i < yvalues.length; ++i) {
+  //   if (yvalues[i] == yvalues[i - 1]) {
+  //     console.log("WARNING: sites with identical y values of " + yvalues[i]);
+  //   }
+  // }
 
-  //------------------------------
-  // Check for identical x values.
-  //------------------------------
-  var xvalues = [];
-  points.forEach(function (p) {
-    xvalues.push(p.x);
-  });
-  xvalues.sort();
-  for (var i = 1; i < xvalues.length; ++i) {
-    if (xvalues[i] == xvalues[i - 1]) {
-      console.log("WARNING: sites with identical x values of " + xvalues[i]);
-    }
-  }
+  // //------------------------------
+  // // Check for identical x values.
+  // //------------------------------
+  // var xvalues = [];
+  // points.forEach(function (p) {
+  //   xvalues.push(p.x);
+  // });
+  // xvalues.sort();
+  // for (var i = 1; i < xvalues.length; ++i) {
+  //   if (xvalues[i] == xvalues[i - 1]) {
+  //     console.log("WARNING: sites with identical x values of " + xvalues[i]);
+  //   }
+  // }
 
   events = [];
   // Add points as events

@@ -36,14 +36,15 @@ function createCloseEvent(arcNode, directrix) {
   var right = arcNode.nextArc();
   if (left == null || right == null) return null;
 
-  if (left.id == 2 && arcNode.id == 15 && right.id == 19 ) {
-    g_addDebug = true;
-    // debugger;
-  } else {
-    g_addDebug = false;
-  }
+  // if (left.id == 2 && arcNode.id == 15 && right.id == 19 ) {
+  //   g_addDebug = true;
+  //   // debugger;
+  // } else {
+  //   g_addDebug = false;
+  // }
 
   if (arcNode.isV) {
+    // TODO We need to avoid doing this
     // for same site nan parabola error
     directrix -= 0.00001;
     if (arcNode.site.a == left.site && arcNode.site.b == right.site
@@ -53,11 +54,13 @@ function createCloseEvent(arcNode, directrix) {
     // the closing node is processed
     if (shareVClosing(arcNode, left) || shareVClosing(arcNode, right)) return null;
 
+    // can compute up to 6 equi points
     let equi = equidistant(left.site, arcNode.site, right.site);
     if (equi == null || equi.length == 0) return null;
     if (equi.length == 1) equi = equi[0];
 
-    if (equi.length == 2 || equi.length == 3 && equi.type != "vec") {
+    if (equi.length == 2 || equi.length == 3 && equi.type != "vec" || equi > 3) {
+      // TODO find a better solution that doesn't involve the arcs
       let segV = createBeachlineSegment(arcNode.site, directrix);
       // get the point that is closest the corresponding arc center point
       var b1 = arcNode.getHorizontalBounds(directrix);
@@ -157,7 +160,8 @@ function canClose(left, arcNode, right, equi, directrix) {
       var v2 = subtract(left.site, arcNode.site.b);
       return cross(v1, v2).z < 0;
     }
-
+    // Perhaps if the directrix for the close event is below the lower endpoint
+    // return (directrix < arcNode.site.b.y);
     return true;
   } else {
     var seg;

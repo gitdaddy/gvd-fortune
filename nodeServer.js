@@ -22,8 +22,18 @@ function getDatasetJson() {
         var p = input.split(" ");
         if (p.length != 2)
           throw "Invalid input data line:" + input;
-        // TODO find horizontal lines and prevent them
-        dataPoints.push({x: parseFloat(p[0]), y: parseFloat(p[1])});
+
+        var newElem = {x: parseFloat(p[0]), y: parseFloat(p[1])};
+        if (dataPoints.length > 0){
+          var previousElem = dataPoints[dataPoints.length - 1];
+
+          // move the new element down slightly so we don't process the horizontal line
+          if (previousElem.y == newElem.y) {
+            // newElem.y -= 0.0000001;
+            newElem.y -= Math.random() * .00001; // return an random integer between 0 and 0.000001
+          }
+        }
+        dataPoints.push(newElem);
       }
     });
     // one file per polygon
