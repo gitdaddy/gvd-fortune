@@ -182,8 +182,6 @@ function keydown(event) {
   }
 }
 
-let SITE_RADIUS_HIGHLIGHT = 11 / width;
-
 function x2win(x) {
   let xmin = -1;
   let xmax = 1;

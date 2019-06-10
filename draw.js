@@ -2,7 +2,6 @@ var g_zoomScale = 1;
 
 let g_siteRadius = 0.01;
 var g_isoEdgeWidth = 1;
-var g_nonisoEdgeWidth = 5;
 
 var margin = {top: -5, right: -5, bottom: -5, left: -5},
     width = 700 - margin.left - margin.right,
@@ -73,7 +72,7 @@ function initDebugCircumcircle() {
     .attr("cy", 0)
     .attr("r", 0)
     .attr("id", "debug-circumcircle")
-    .attr("stroke-width", 1)
+    .attr("stroke-width", g_isoEdgeWidth)
     .attr("vector-effect", "non-scaling-stroke")
   ;
 }
@@ -84,6 +83,7 @@ function showDebugCircumcircle(cx, cy, r) {
     .attr("cy", cy)
     .attr("r", r)
     .attr("opacity", 1)
+    .attr("stroke-width", g_isoEdgeWidth)
   ;
 }
 
@@ -150,7 +150,7 @@ function drawDebugObjs(objs) {
     .attr("class", "debug-parabola")
     .attr("vector-effect", "non-scaling-stroke")
     .merge(d3generalEdges)
-    .style("stroke-width", g_nonisoEdgeWidth)
+    .style("stroke-width", g_isoEdgeWidth * 5)
     .attr("d", p => line(p.drawPoints))
     .attr("id", p => p.id)
     .attr("transform", p => p.transform)
@@ -177,7 +177,7 @@ function drawSites(points) {
       .attr("fill", (d,i) => siteColorSvg(d.label))
       .attr("id", d => `site${d.id}`)
       .attr("href", "#gvd")
-      .append("title").html(d => d.id)
+      .append("title").html(d => d.id + " r: " + d.relation)
     ;
   }
 }
@@ -215,7 +215,7 @@ function drawSweepline(sweepline) {
 }
 
 function getSurfaceWidth(bold) {
-  return bold ? g_nonisoEdgeWidth : g_isoEdgeWidth;
+  return bold ? g_isoEdgeWidth * 5 : g_isoEdgeWidth;
 }
 
 function drawSurface(dcel) {
@@ -297,15 +297,12 @@ function drawCloseEvents(eventPoints) {
   eventPoints = eventPoints.filter(d => d.live);
 
   let highlight = function(event) {
-    // console.log(event);
     let arcNode = event.arcNode;
 
     // Highlight the arc
     let arcElement = d3.select(`#treenode${arcNode.id}`);
-    arcElement.style("stroke-width", 5);
+    arcElement.style("stroke-width", g_isoEdgeWidth * 5);
 
-    // Highlight the sites
-    // d3.select(`#site${arcNode.site.id}`).attr("r", SITE_RADIUS_HIGHLIGHT);
     showDebugCircumcircle(event.point.x, event.point.y, event.r);
   };
 
@@ -316,7 +313,7 @@ function drawCloseEvents(eventPoints) {
 
     // Unhighlight the arc
     let arcElement = d3.select(`#treenode${arcNode.id}`);
-    arcElement.style("stroke-width", null);
+    arcElement.style("stroke-width", g_isoEdgeWidth);
 
     // Unhighlight the sites
     // d3.select(`#site${arcNode.site.id}`).attr("r", SITE_RADIUS);
@@ -385,6 +382,7 @@ function drawBeachline(beachline, directrix) {
       .attr("leftx", p => p.drawPoints[0].x)
       .attr("rightx", p => p.drawPoints[p.drawPoints.length-1].x)
       .attr("transform", p => p.transform)
+      .style("stroke-width", g_isoEdgeWidth);
     ;
   }
 
@@ -414,6 +412,7 @@ function drawBeachline(beachline, directrix) {
       .attr("id", p => `treenode${p.nodeid}`)
       .attr("leftx", p => p.drawPoints[0].x)
       .attr("rightx", p => p.drawPoints[p.drawPoints.length-1].x)
+      .style("stroke-width", g_isoEdgeWidth);
     ;
   }
 
@@ -440,7 +439,7 @@ function drawBeachline(beachline, directrix) {
       .attr("d", p => line(p.drawPoints))
       .attr("id", p => p.id)
       .attr("transform", p => p.transform)
-      .style("stroke-width", 1)
+      .style("stroke-width", g_isoEdgeWidth);
     ;
 
     let lineSelection = d3.select("#gvd").selectAll(".gvd-surface-active")
@@ -458,7 +457,7 @@ function drawBeachline(beachline, directrix) {
       .attr('x2', d => d.x1)
       .attr('y2', d => d.y1)
       .attr("id", p => `treenode${p.id}`)
-      .style("stroke-width", 1)
+      .style("stroke-width", g_isoEdgeWidth);
     ;
   }
   //------------------------------
@@ -471,7 +470,7 @@ function zoomed() {
   g_zoomScale = d3.event.transform.k;
   g_siteRadius = 0.01 / g_zoomScale;
   g_isoEdgeWidth = 1 / g_zoomScale;
-  g_nonisoEdgeWidth = 5 / g_zoomScale;
+  // g_nonisoEdgeWidth = 5 / g_zoomScale;
   svg.attr("transform", "translate(" +  d3.event.transform.x + ","
   +  d3.event.transform.y + ") scale(" +  d3.event.transform.k + ")");
 
@@ -498,11 +497,13 @@ function zoomed() {
   .style("stroke-width", g_isoEdgeWidth);
 
   // debug
+  d3.select("#gvd")
+  .selectAll(".close-event")
+  .attr("r", g_siteRadius);
+
   // d3.select('#gvd')
   // .selectAll('.debug-parabola')
   // .style("stroke-width", g_nonisoEdgeWidth);
-
-
 
   // update Edges
   d3.select("#gvd")

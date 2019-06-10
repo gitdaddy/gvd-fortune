@@ -37,7 +37,7 @@ function highlight(d) {
 
   if (d.data.isArc) {
     // Highlight the site
-    d3.select(`#site${d.data.site.id}`).attr("r", SITE_RADIUS_HIGHLIGHT);
+    d3.select(`#site${d.data.site.id}`).attr("r", g_siteRadius * 2);
 
     // Debug
     let arc = node;

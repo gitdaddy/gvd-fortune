@@ -2,10 +2,35 @@ const open = require('opn');
 const express = require('express');
 var router = express();
 var fs = require('fs');
+var _ = require('lodash');
 // var rl = require('readline-sync');
 
 const hostname = 'localhost';
 const port = 8080;
+
+function getRandomAdjustment() {
+  var value = Math.random() * .001;
+  return Math.random() < 0.5 ? -value : value;
+}
+
+function getMatch(sortedY) {
+  for (var i = 0; i < sortedY.length; i++) {
+    if (i > 0) {
+      if (sortedY[i].y == sortedY[i-1].y)
+        return sortedY[i];
+    }
+  }
+  return null;
+}
+
+function sanitizeData(dataPoints) {
+  var sortedY = _.sortBy(dataPoints, 'y');
+  var match = getMatch(sortedY);
+  while(match) {
+    match.y -= getRandomAdjustment();
+    match = getMatch(sortedY);
+  }
+}
 
 function getDatasetJson() {
   // read in the files
@@ -29,11 +54,11 @@ function getDatasetJson() {
 
           // move the new element down slightly so we don't process the horizontal line
           if (previousElem.y == newElem.y) {
-            // newElem.y -= 0.0000001;
-            newElem.y -= Math.random() * .00001; // return an random integer between 0 and 0.000001
+            newElem.y -= getRandomAdjustment();
           }
         }
         dataPoints.push(newElem);
+        sanitizeData(dataPoints);
       }
     });
     // one file per polygon
@@ -67,16 +92,3 @@ router.listen(port);
 // open default web client
 open('http://localhost:8080/');
 
-
-// old style server
-// const server = http.createServer((req, res) => {
-//   res.statusCode = 200;
-//   res.setHeader('Content-Type', 'text/plain');
-//   res.end('Welcome\n');
-// });
-
-// server.listen(port, hostname, () => {
-//   console.log(`Server running at http://${hostname}:${port}/`);
-//   // specify the app to open in
-//   open('http://localhost:8080/');
-// });

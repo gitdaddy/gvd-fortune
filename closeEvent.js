@@ -59,7 +59,7 @@ function createCloseEvent(arcNode, directrix) {
     if (equi == null || equi.length == 0) return null;
     if (equi.length == 1) equi = equi[0];
 
-    if (equi.length == 2 || equi.length == 3 && equi.type != "vec" || equi > 3) {
+    if (equi.length == 2 || equi.length == 3 && equi.type != "vec" || equi.length > 3) {
       // equi = getEquiOfV(equi, left, arcNode, right);
       // TODO find a better solution that doesn't involve the arcs
       let segV = createBeachlineSegment(arcNode.site, directrix);
@@ -165,7 +165,7 @@ function canClose(left, arcNode, right, equi, directrix) {
     // return (directrix < arcNode.site.b.y);
     return true;
   } else {
-    // If the circle created intersects the segment site that is a part 
+    // If the circle created intersects the segment site that is a part
     // of the current, left or right arcs then it cannot be on the gvd
     var r = dist(arcNode.site, equi);
     var leftMostArc = left.prevArc();
@@ -185,7 +185,7 @@ function canClose(left, arcNode, right, equi, directrix) {
     if (rightMostArc && right.isParabola && rightMostArc.isV && belongsToSegment(right, rightMostArc)) {
       var int = inteceptCircleSeg({radius:r, center:equi}, {p1:rightMostArc.site.a,p2:rightMostArc.site.b});
       if (int.length == 2) return false;
-    } 
+    }
 
     // cross product test
     var seg;
