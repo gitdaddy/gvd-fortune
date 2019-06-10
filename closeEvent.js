@@ -36,7 +36,7 @@ function createCloseEvent(arcNode, directrix) {
   var right = arcNode.nextArc();
   if (left == null || right == null) return null;
 
-  // if (left.id == 2 && arcNode.id == 15 && right.id == 19 ) {
+  // if (left.id == 2 && arcNode.id == 4 && right.id == 12) {
   //   g_addDebug = true;
   //   // debugger;
   // } else {
@@ -60,6 +60,7 @@ function createCloseEvent(arcNode, directrix) {
     if (equi.length == 1) equi = equi[0];
 
     if (equi.length == 2 || equi.length == 3 && equi.type != "vec" || equi > 3) {
+      // equi = getEquiOfV(equi, left, arcNode, right);
       // TODO find a better solution that doesn't involve the arcs
       let segV = createBeachlineSegment(arcNode.site, directrix);
       // get the point that is closest the corresponding arc center point
@@ -164,6 +165,29 @@ function canClose(left, arcNode, right, equi, directrix) {
     // return (directrix < arcNode.site.b.y);
     return true;
   } else {
+    // If the circle created intersects the segment site that is a part 
+    // of the current, left or right arcs then it cannot be on the gvd
+    var r = dist(arcNode.site, equi);
+    var leftMostArc = left.prevArc();
+    var rightMostArc = right.nextArc();
+    if (leftMostArc && left.isParabola && leftMostArc.isV && belongsToSegment(left, leftMostArc)) {
+      var int = inteceptCircleSeg({radius:r, center:equi}, {p1:leftMostArc.site.a,p2:leftMostArc.site.b});
+      if (int.length == 2) return false;
+    }
+    if (arcNode.isParabola && left.isV && belongsToSegment(arcNode, left)) {
+      var int = inteceptCircleSeg({radius:r, center:equi}, {p1:left.site.a,p2:left.site.b});
+      if (int.length == 2) return false;
+    }
+    if (arcNode.isParabola && right.isV && belongsToSegment(arcNode, right)) {
+      var int = inteceptCircleSeg({radius:r, center:equi}, {p1:right.site.a,p2:right.site.b});
+      if (int.length == 2) return false;
+    }
+    if (rightMostArc && right.isParabola && rightMostArc.isV && belongsToSegment(right, rightMostArc)) {
+      var int = inteceptCircleSeg({radius:r, center:equi}, {p1:rightMostArc.site.a,p2:rightMostArc.site.b});
+      if (int.length == 2) return false;
+    } 
+
+    // cross product test
     var seg;
     if (left.isV && belongsToSegment(arcNode, left)) {
       seg = left.site;
