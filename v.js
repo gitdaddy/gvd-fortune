@@ -11,7 +11,7 @@
 // _________\|/___________
 //               sweepline
 //------------------------------------------------------------
-var tolerance = 0.0001;
+var tolerance = 0.00001;
 // line is given as a pair of points through which the line passes.
 // The sweepline is assumed to be horizontal and is given as a y-value.
 V = function(line, directrix) {
@@ -130,7 +130,7 @@ V.prototype.f = function(x) {
 
 // Inverse of f. x = f_(y)
 V.prototype.f_ = function(y) {
-  if (y < this.p.y && Math.abs(y - this.p.y) > tolerance) return [];
+  if (y < this.p.y && Math.abs(y - this.p.y) > tolerance) return [this.p.x];
   if (y == this.p.y) return [this.p.x];
   var ret = []
   var tY = this.p.y;

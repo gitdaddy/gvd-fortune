@@ -81,7 +81,7 @@ function quadratic(a, b, c) {
 /*------------------------------------------------------------
 ------------------------------------------------------------
  Specific intersect functions
- 
+
 ------------------------------------------------------------
 var circle = {
     radius : 500,
@@ -110,9 +110,9 @@ function inteceptCircleSeg(circle, line){
       return [];
   }
   u1 = (b - d) / c;  // these represent the unit distance of point one and two on the line
-  u2 = (b + d) / c;    
+  u2 = (b + d) / c;
   retP1 = {};   // return points
-  retP2 = {}  
+  retP2 = {}
   ret = []; // return array
   if(u1 <= 1 && u1 >= 0){  // add point if on the line segment
       retP1.x = line.p1.x + v1.x * u1;
@@ -128,7 +128,7 @@ function inteceptCircleSeg(circle, line){
   if (ret.length == 2) {
     var diff = dist(new vec3(ret[0].x, ret[0].y,0), new vec3(ret[1].x, ret[1].y,0));
     if (diff < 1e-15) return [ret[0]];
-  }       
+  }
   return ret;
 }
 
@@ -149,7 +149,7 @@ function intersectLines(p1, p2, p3, p4) {
   var y4 = p4.y;
   var denom = (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
   // tolerance meet with denom of 3.19...e-8 - varify this is correct
-  if (Math.abs(denom) < 0.00000001) return null;
+  if (Math.abs(denom) < 0.00000001) throw "intersectLines - denominator too small!";
   var x = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4))/denom;
   var y = ((x1*y2-y1*x2)*(y3-y4) - (y1-y2)*(x3*y4-y3*x4))/denom;
   return vec3(x, y, 0);
