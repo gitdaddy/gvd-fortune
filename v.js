@@ -72,12 +72,13 @@ V.prototype.intersect = function(obj) {
       // choose this v left or right based on zArea
       var bisector = bisectSegments(s1, s2);
 
+      // often P is too close to p2 increment the height by a 0.01 to get a better width for each vector
       if (zArea < 0) {
         // segment right
-        return [intersectLines(this.p, vec3(this.f_(this.y1.y)[1], this.y1.y, 0), bisector.p1, bisector.p2)];
+        return [intersectLines(this.p, vec3(this.f_(this.y1.y + 0.01)[1], this.y1.y, 0), bisector.p1, bisector.p2)];
       } else {
         // segment left
-        return [intersectLines(this.p, vec3(this.f_(this.y1.y)[0], this.y1.y, 0), bisector.p1, bisector.p2)];
+        return [intersectLines(this.p, vec3(this.f_(this.y1.y + 0.01)[0], this.y1.y, 0), bisector.p1, bisector.p2)];
       }
     } else {
       // The lower V should never have to worry about intersecting with the

@@ -234,6 +234,7 @@ function init() {
 function datasetChange(value) {
   console.log(value);
   localStorage.g_dataset = value;
+  clearSurface();
 
   if (value == 'dataset6') {
     if (g_datasets[value].length == 0) {

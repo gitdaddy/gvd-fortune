@@ -65,6 +65,23 @@ function drawInit()
     .attr("vector-effect", "non-scaling-stroke");
 }
 
+function clearSurface() {
+  d3.select("#gvd")
+  .selectAll(".gvd-surface-active-parabola")
+  .style("stroke-width", e => 0)
+
+  d3.select("#gvd").selectAll(".gvd-surface-active")
+  .style("stroke-width", e => 0)
+
+  d3.select('#gvd')
+  .selectAll('.gvd-surface-parabola')
+  .style("stroke-width", e => 0)
+
+  d3.select('#gvd')
+  .selectAll('.gvd-surface')
+  .style("stroke-width", e => 0)
+}
+
 function initDebugCircumcircle() {
   // Draw the close event highlight circle
   d3.select("#gvd").append("circle")
