@@ -166,11 +166,11 @@ function drawSites(points) {
 
     sel.exit().remove();
     let enter = sel.enter()
-      .append("g")
+    .append("g")
+    .append("circle")
+    .attr("class", "site point-site")
+    .merge(sel)
       .call(dragSite)
-      .append("circle")
-      .attr("class", "site point-site")
-      .merge(sel)
       .attr("r", g_siteRadius)
       .attr("cx", p => p.x)
       .attr("cy", p => p.y)

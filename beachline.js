@@ -23,6 +23,10 @@ function createBeachlineSegment(site, directrix) {
   return createParabola(site, directrix);
 }
 
+// function existSiblingSite(arc, next) {
+//   return next && next.isV && equal(next.site.a, arc.site.a)
+// }
+
 function shareVClosing(arcNode, sibling) {
   if (!arcNode.isV || !sibling.isV) return false;
   return _.get(arcNode, "site.b.relation") == NODE_RELATION.CLOSING &&
@@ -36,18 +40,12 @@ function shareVClosing(arcNode, sibling) {
 Beachline.prototype.add = function (site) {
   var arcNode = new ArcNode(site);
   var directrix = site.y;
+
   // move the directrix slightly downward for segments
-  // TODO We need to avoid doing this
-  // or make it 1/10 the distance between a.y and b.y
-
+  // so we can still process arc intersections
   if (site.type == "segment") {
-     directrix -= 0.0001;
-
-    // var delta = Math.abs(site.a.y - site.b.y)/10.0;
-    // if (delta > 0.0001)
-    //  directrix -= 0.0001;
-    // else
-    //   directrix -= delta;
+    // we need to move the smallest amount possible
+     directrix -= 1e-3;
   }
 
   if (this.root == null) {
@@ -60,7 +58,7 @@ Beachline.prototype.add = function (site) {
     // if node is endpoint information by site
     var rslt = null;
     if (arcNode.isParabola && arcNode.site.isEndPoint) {
-      rslt = parent.findParentArcBySite(arcNode.site);
+      rslt = parent.findParentNodeByEnd(arcNode.site);
       if (rslt) {
         side = rslt.side;
         parentSide = rslt.parentSide;
@@ -78,7 +76,6 @@ Beachline.prototype.add = function (site) {
       child = parent.getChild(side);
       while (child.isEdge) {
         parent = child;
-        // x = parent.intersection(directrix - 0.0001).x;
         x = parent.intersection(directrix).x;
         if (site.x == x) {
           console.log("Site and intersect values equal:" + x + " for intersection: " + parent.id);

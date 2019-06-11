@@ -273,7 +273,7 @@ function fortune() {
   while (events.length > 0 && events.peek().y > sweepline) {
     var e = events.pop();
     /* process segment end points first before the segments
-     Example    * A      In the Queue order: BCA
+                * A      In the Queue order: BCA
               /  \       Processing order ABC
           B  /    \ C
      */
@@ -318,17 +318,21 @@ function fortune() {
     }
   }
 
-  var ev;
-  var count = 0;
+  var ev = '';
   while (events.length > 0) {
     var e = events.pop();
-    if (count % 2 == 0) ev += '<br>';
-    if (e.isCloseEvent) {
-      ev += ' <' + e.y + ' - close node id:' + e.arcNode.id + '>';
+    var data;
+    if (e.type == "segment") {
+      data = 'a(' + e.a.x + ',' + e.a.y + ') - b(' + e.b.x + ',' + e.b.y + ')';
     } else {
-      ev += ' <' + e.y + " r: " + e.relation + '>';
+      data = 'point(' + e.x + ',' + e.y + ')';
     }
-    count++;
+    if (e.isCloseEvent) {
+      ev += data + ' - close node id:' + e.arcNode.id + '>';
+    } else {
+      ev += data + ' r: ' + e.relation;
+    }
+    ev += '\n';
   }
   document.getElementById("events").innerHTML = ev;
   return beachline;
@@ -350,7 +354,6 @@ function render() {
   runTests();
 }
 
-// TODO fix
 function onSiteDrag() {
   var segments = [];
   g_polygons.forEach(function(poly) {

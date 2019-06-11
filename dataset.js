@@ -165,8 +165,10 @@ function createDatasets() {
   var p12 = new Polygon();
   p12.addPoint(vec3(0.55, -0.5, 0));
   p12.addPoint(vec3(0.35, -0.501, 0));
+  p12.addPoint(vec3(0.341, -0.701, 0));
   p12.createSegment(0,1);
-  polygons1.push(p11);
+  p12.createSegment(1,2);
+  // polygons1.push(p11);
   polygons1.push(p12);
 
   var polygons2 = [];

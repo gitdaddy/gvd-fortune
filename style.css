@@ -142,3 +142,8 @@ path.beachline {
 .tooltip:hover .tooltiptext {
     visibility: visible;
 }
+
+.events-box {
+    width: 500px;
+    height: 80px;
+}
