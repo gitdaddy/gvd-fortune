@@ -45,7 +45,7 @@ Beachline.prototype.add = function (site) {
   // so we can still process arc intersections
   if (site.type == "segment") {
     // we need to move the smallest amount possible
-     directrix -= 1e-3;
+     directrix -= 1e-10;
   }
 
   if (this.root == null) {
@@ -222,7 +222,7 @@ Beachline.prototype.prepDraw = function (
 
     if (p.x < leftx && Math.abs(leftx - p.x) > 0.00001) {
       let msg = `intersection is less than leftx: ${p.x} < ${leftx}.` +
-        `id = ${node.id}`;
+        ` id = ${node.id}`;
       console.error(msg);
     }
 
