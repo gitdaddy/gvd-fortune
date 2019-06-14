@@ -44,9 +44,8 @@ function createCloseEvent(arcNode, directrix) {
   // }
 
   if (arcNode.isV) {
-    // TODO We need to avoid doing this
     // for same site nan parabola error
-    directrix -= 0.00001;
+    directrix -= 1e-10;
     if (arcNode.site.a == left.site && arcNode.site.b == right.site
       || arcNode.site.b == left.site && arcNode.site.a == right.site) return null;
 
@@ -161,8 +160,6 @@ function canClose(left, arcNode, right, equi, directrix) {
       var v2 = subtract(left.site, arcNode.site.b);
       return cross(v1, v2).z < 0;
     }
-    // Perhaps if the directrix for the close event is below the lower endpoint
-    // return (directrix < arcNode.site.b.y);
     return true;
   } else {
     // If the circle created intersects the segment site that is a part
