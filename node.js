@@ -296,7 +296,7 @@ EdgeNode.prototype.intersection = function (directrix) {
   // This is inefficient. We should be storing sites in edge nodes.
   let leftArcNode = this.prevArc();
   let rightArcNode = this.nextArc();
-  // if (leftArcNode.id == 10 && rightArcNode.id == 9) {
+  // if (leftArcNode.id == 5 && rightArcNode.id == 3) {
   //   g_addDebug = true;
   //   // debugger;
   // } else {
@@ -330,26 +330,14 @@ function intersectStraightArcs(left, right, directrix){
   }
 
   if (intersections.length > 2) {
-    if (left.isV && right.isV) {
-      if (intersections.length == 3) {
-        console.log("Warning - 3 intersections");
-        return {
-          result: intersections,
-          resultIdx: 0
-        };
-      }
-      // get the two intersections that are closest to
-      // the left arcNode site since we are going from left to right
-      var x = (left.site.a.x + left.site.b.x) / 2.0;
-      var sorted = _.sortBy(intersections, function(i) {
-        return Math.abs(x - i.x);
-      });
-      intersections = [sorted[0], sorted[1]];
-    } else {
-      var sorted = _.sortBy(intersections, function(i) { i.x });
-      // get the two outer intersections
-      intersections = [sorted[0], sorted[sorted.length - 1]];
-    }
+    // get the two intersections that are closest to the x value of the left v
+    var x = pleft.p.x;
+
+    var sorted = _.sortBy(intersections, function(i) {
+      return Math.abs(x - i.x);
+    });
+    intersections = [sorted[0], sorted[1]];
+    intersections = _.sortBy(intersections, 'x');
   }
 
   this.intersections = intersections;
@@ -387,26 +375,20 @@ function intersectParabolicArc(left, right, isFlipped, isGeneral, directrix){
   }
 
   if (intersections.length > 2) {
-    if (left.isV && right.isV) {
-      if (intersections.length == 3) {
-        console.log("Warning - 3 intersections");
-        return {
-          result: intersections,
-          resultIdx: 0
-        };
-      }
-      // get the two intersections that are closest to
-      // the left arcNode site since we are going from left to right
-      var x = (left.site.a.x + left.site.b.x) / 2.0;
-      var sorted = _.sortBy(intersections, function(i) {
-        return Math.abs(x - i.x);
-      });
-      intersections = [sorted[0], sorted[1]];
+    // get the two intersections that are closest to
+    // V arc the point site
+    var x;
+    if (left.isV) {
+      x = pleft.p.x;
     } else {
-      var sorted = _.sortBy(intersections, function(i) { i.x });
-      // get the two outer intersections
-      intersections = [sorted[0], sorted[sorted.length - 1]];
+      x = pright.p.x;
     }
+   
+    var sorted = _.sortBy(intersections, function(i) {
+      return Math.abs(x - i.x);
+    });
+    intersections = [sorted[0], sorted[1]];
+    intersections = _.sortBy(intersections, 'x');
   }
 
   this.intersections = intersections;

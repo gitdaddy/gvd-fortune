@@ -149,7 +149,9 @@ function intersectLines(p1, p2, p3, p4) {
   var y4 = p4.y;
   var denom = (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
   // tolerance meet with denom of 3.19...e-8 - varify this is correct
-  if (Math.abs(denom) < 0.00000001) return null;
+  if (Math.abs(denom) < 0.00000001){
+    return null;
+  }
   var x = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4))/denom;
   var y = ((x1*y2-y1*x2)*(y3-y4) - (y1-y2)*(x3*y4-y3*x4))/denom;
   return vec3(x, y, 0);
