@@ -103,7 +103,9 @@ Beachline.prototype.add = function (site) {
         parent.setChild(newChild, side);
       } else if (_.get(arcNode, "site.a.relation") == NODE_RELATION.CHILD_LEFT_HULL) {
         // Set edge information since we are using a left joint split
-        child.nextEdge().dcelEdge.generalEdge = false;
+        var nextEdge = child.nextEdge();
+        if (nextEdge)
+          nextEdge.dcelEdge.generalEdge = false;
         var newNode = leftJointSplit(child, arcNode, siblingRight, dcel);
         // set the parent since a left joint split may not preserve order
         parent.parent.setChild(newNode, parentSide);

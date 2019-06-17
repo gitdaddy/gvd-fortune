@@ -36,13 +36,6 @@ function createCloseEvent(arcNode, directrix) {
   var right = arcNode.nextArc();
   if (left == null || right == null) return null;
 
-  // if (left.id == 2 && arcNode.id == 4 && right.id == 12) {
-  //   g_addDebug = true;
-  //   // debugger;
-  // } else {
-  //   g_addDebug = false;
-  // }
-
   if (arcNode.isV) {
     // TODO We need to avoid doing this
     // for same site nan parabola error
@@ -62,14 +55,15 @@ function createCloseEvent(arcNode, directrix) {
     if (equi.length == 2 || equi.length == 3 && equi.type != "vec" || equi.length > 3) {
       // equi = getEquiOfV(equi, left, arcNode, right);
       // TODO find a better solution that doesn't involve the arcs
-      let segV = createBeachlineSegment(arcNode.site, directrix);
-      // get the point that is closest the corresponding arc center point
-      var b1 = arcNode.getHorizontalBounds(directrix);
-      var centerArcX = (b1.x0 + b1.x1) / 2;
-      var centerPoint = vec3(centerArcX, segV.f(centerArcX), 0);
-      equi = _.sortBy(equi, function (e) {
-        return dist(centerPoint, e);
-      })[0];
+      // let segV = createBeachlineSegment(arcNode.site, directrix);
+      // // get the point that is closest the corresponding arc center point
+      // var b1 = arcNode.getHorizontalBounds(directrix);
+      // var centerArcX = (b1.x0 + b1.x1) / 2;
+      // var centerPoint = vec3(centerArcX, segV.f(centerArcX), 0);
+      // equi = _.sortBy(equi, function (e) {
+      //   return dist(centerPoint, e);
+      // })[0];
+      equi = equi[0];
     }
    var r;
    if (left.isV && right.isV) {
@@ -81,7 +75,7 @@ function createCloseEvent(arcNode, directrix) {
     r = dist(equi, pointSite);
    }
    var newY = equi.y - r;
-   if (canClose(left, arcNode, right, equi, directrix)){
+   if (canClose(left, arcNode, right, equi)){
     return new CloseEvent(newY, arcNode, left, right, equi, r);
    }
   } else if (isSegment(left.site) || isSegment(right.site)) {
@@ -101,19 +95,20 @@ function createCloseEvent(arcNode, directrix) {
       } else if (belongsToSegment(left, arcNode)) {
         equi = sorted[1];
       } else {
-        let bSeg = createBeachlineSegment(arcNode.site, directrix);
-        var b1 = arcNode.getHorizontalBounds(directrix);
-        var centerArcX = (b1.x0 + b1.x1) / 2;
-        var centerPoint = vec3(centerArcX, bSeg.f(centerArcX), 0);
-        equi = _.sortBy(equi, function (e) {
-          return dist(centerPoint, e);
-        })[0];
+        // let bSeg = createBeachlineSegment(arcNode.site, directrix);
+        // var b1 = arcNode.getHorizontalBounds(directrix);
+        // var centerArcX = (b1.x0 + b1.x1) / 2;
+        // var centerPoint = vec3(centerArcX, bSeg.f(centerArcX), 0);
+        // equi = _.sortBy(equi, function (e) {
+        //   return dist(centerPoint, e);
+        // })[0];
+        equi = equi[0];
       }
     }
 
     var r = dist(equi, arcNode.site);
     if (!r) return null;
-    if (canClose(left, arcNode, right, equi, directrix)) {
+    if (canClose(left, arcNode, right, equi)) {
       return new CloseEvent(equi.y - r, arcNode, left, right, equi, r);
     }
   } else {
@@ -147,7 +142,7 @@ function createCloseEvent(arcNode, directrix) {
          \|/
           * b
 */
-function canClose(left, arcNode, right, equi, directrix) {
+function canClose(left, arcNode, right, equi) {
   if (arcNode.isV) {
     // if the V is arcing with the top parabola then both sites must coincide
     if (left.isParabola && right.isParabola && equal(arcNode.site.a, left.site)) {
@@ -161,8 +156,6 @@ function canClose(left, arcNode, right, equi, directrix) {
       var v2 = subtract(left.site, arcNode.site.b);
       return cross(v1, v2).z < 0;
     }
-    // Perhaps if the directrix for the close event is below the lower endpoint
-    // return (directrix < arcNode.site.b.y);
     return true;
   } else {
     // If the circle created intersects the segment site that is a part
@@ -196,10 +189,11 @@ function canClose(left, arcNode, right, equi, directrix) {
     } else {
       return true;
     }
-    let segV = createBeachlineSegment(seg, directrix);
-    // use the outer bounds
-    var b1 = arcNode.getHorizontalBounds(directrix);
-    return b1.x0 < segV.p.x && equi.x < segV.p.x || b1.x1 > segV.p.x && equi.x > segV.p.x;
+    // let segV = createBeachlineSegment(seg, directrix);
+    // // use the outer bounds
+    // var b1 = arcNode.getHorizontalBounds(directrix);
+    // return b1.x0 < segV.p.x && equi.x < segV.p.x || b1.x1 > segV.p.x && equi.x > segV.p.x;
+    return true;
   }
 }
 
