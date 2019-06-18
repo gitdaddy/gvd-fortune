@@ -374,22 +374,22 @@ function intersectParabolicArc(left, right, isFlipped, isGeneral, directrix){
     };
   }
 
-  if (intersections.length > 2) {
-    // get the two intersections that are closest to
-    // V arc the point site
-    var x;
-    if (left.isV) {
-      x = pleft.p.x;
-    } else {
-      x = pright.p.x;
-    }
-   
-    var sorted = _.sortBy(intersections, function(i) {
-      return Math.abs(x - i.x);
-    });
-    intersections = [sorted[0], sorted[1]];
-    intersections = _.sortBy(intersections, 'x');
-  }
+  // if (intersections.length > 2) {
+  //   // get the two intersections that are closest to
+  //   // the x site of the left element
+  //   var x;
+  //   if (left.isV) {
+  //     x = pleft.p.x;
+  //   } else { // left is parabola
+  //     x = left.site.x;
+  //   }
+
+  //   var sorted = _.sortBy(intersections, function(i) {
+  //     return Math.abs(x - i.x);
+  //   });
+  //   intersections = [sorted[0], sorted[1]];
+  //   intersections = _.sortBy(intersections, 'x');
+  // }
 
   this.intersections = intersections;
   var idx;

@@ -368,7 +368,7 @@ function drawBeachline(beachline, directrix) {
   let lines = [];
   var generalSurfaces = [];
   let events = [];
-  beachline.prepDraw(directrix, beachline.root, -100000000, 100000000, arcElements, lines, generalSurfaces, events);
+  beachline.prepDraw(directrix, beachline.root, -1e15, 1e15, arcElements, lines, generalSurfaces, events);
 
   let parabolas = arcElements.filter(d => d.type == "parabola");
   let vs = arcElements.filter(d => d.type == "v");

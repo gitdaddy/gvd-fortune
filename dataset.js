@@ -163,11 +163,11 @@ function createDatasets() {
   p11.addPoint(vec3(0.25, -0.1, 0));
   p11.createSegment(0,1);
   var p12 = new Polygon();
-  p12.addPoint(vec3(0.55, 0.100000001, 0));
+  p12.addPoint(vec3(0.55, 0.100000001, 0)); // Least degree difference test 0.00001
   p12.addPoint(vec3(-0.75, 0.1, 0));
   p12.addPoint(vec3(-0.641, -0.301, 0));
   p12.createSegment(0,1);
-  p12.createSegment(1,2);
+  // p12.createSegment(1,2);
   // polygons1.push(p11);
   polygons1.push(p12);
 

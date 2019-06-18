@@ -57,7 +57,7 @@ Parabola.prototype.intersectRay = function (p, v) {
   tvals.forEach(function (t) {
     var q = add(p, mult(v, t));
     ret.push(q);
-    // Taking this guard out allows are computing close points with negative tvals
+    // Taking this guard out allows computing close points with negative tvals
     // if (t >= 0) {
     // }
   });
@@ -319,7 +319,7 @@ GeneralParabola.prototype.intersectRay = function (p, v) {
     var q = add(p, mult(v, t));
     q = pthis.untransformPoint(q);
     ret.push(q);
-    // Taking this guard out allows are computing close points with negative tvals
+    // Taking this guard out allows computing close points with negative tvals
     // if (t >= 0) {
     // }
   });

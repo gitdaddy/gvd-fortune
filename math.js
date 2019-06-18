@@ -177,7 +177,7 @@ function lpIntersect(h, k, p, q, v) {
 // h - x offset
 // k - y offset
 // p - scale factor (distance from parabola to directrix)
-// * Note this assumes positive parabolas?
+// * Note this assumes positive parabolas
 function ppIntersect(h1, k1, p1, h2, k2, p2) {
   // Check for degenerate parabolas
   const EPSILON = 0.00000001;
