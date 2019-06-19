@@ -48,26 +48,6 @@ V.prototype.intersect = function(obj) {
   if (obj instanceof Parabola) {
     ret = [];
     var p = this.p;
-    // TODO work out the bugs
-    // get a more normalized p that is limited but accurate along p = p + vt
-    if (Math.abs(p.x) > 1e4) {
-      var x0,x1,y0,y1,q1,q2,q3,q4;
-      x0 = -2;
-      x1 = 2;
-      y0 = -2;
-      y1 = 2;
-      q1 = vec3(x1, y1, 0);
-      q2 = vec3(x0, y1, 0);
-      q3 = vec3(x0, y0, 0);
-      q4 = vec3(x1, y0, 0);
-
-      if (p.x < this.y1.x){
-        p = intersectLines(q2, q3, vec3(x0, this.f(x0), 0), vec3(x1, this.f(x1), 0));
-      } else {
-        p = intersectLines(q1, q4, vec3(x0, this.f(x0), 0), vec3(x1, this.f(x1), 0));
-      }
-    }
-
     this.vectors.forEach(function(v) {
       ret = ret.concat(obj.intersectRay(p, v));
     });

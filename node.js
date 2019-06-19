@@ -305,8 +305,10 @@ EdgeNode.prototype.intersection = function (directrix) {
   var obj = {};
   if (leftArcNode.isV && rightArcNode.isV) {
     obj = intersectStraightArcs(leftArcNode, rightArcNode, directrix);
+  } else if (leftArcNode.isV && rightArcNode.isV) {
+    obj = intersectParabolicToStraightArc(leftArcNode, rightArcNode, this.flipped, this.isGeneralSurface, directrix);
   } else {
-    obj = intersectParabolicArc(leftArcNode, rightArcNode, this.flipped, this.isGeneralSurface, directrix);
+    obj = intersectParabolicArcs(leftArcNode, rightArcNode, directrix);
   }
   this.intersections = obj.results;
   this.selectedIntersection =  obj.results[obj.resultIdx];
@@ -332,7 +334,6 @@ function intersectStraightArcs(left, right, directrix){
   if (intersections.length > 2) {
     // get the two intersections that are closest to the x value of the left v
     var x = pleft.p.x;
-
     var sorted = _.sortBy(intersections, function(i) {
       return Math.abs(x - i.x);
     });
@@ -356,9 +357,8 @@ function intersectStraightArcs(left, right, directrix){
   };
 }
 
-
 // Function supports the intersection of a parabolic arc to any other arc type
-function intersectParabolicArc(left, right, isFlipped, isGeneral, directrix){
+function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, directrix){
   let pleft = createBeachlineSegment(left.site, directrix);
   let pright = createBeachlineSegment(right.site, directrix);
   let intersections = pleft.intersect(pright);
@@ -374,22 +374,24 @@ function intersectParabolicArc(left, right, isFlipped, isGeneral, directrix){
     };
   }
 
-  // if (intersections.length > 2) {
-  //   // get the two intersections that are closest to
-  //   // the x site of the left element
-  //   var x;
-  //   if (left.isV) {
-  //     x = pleft.p.x;
-  //   } else { // left is parabola
-  //     x = left.site.x;
-  //   }
+  if (intersections.length > 2) {
+    // get the two intersections that are closest to
+    // the x site of the left element
+    var p;
+    if (left.isV) {
+      // return the two closest sites to v.p
+      p = pleft.p;
+    } else { // left if parabola
+      // return the two closest sites to p.site
+      p = left.site;
+    }
 
-  //   var sorted = _.sortBy(intersections, function(i) {
-  //     return Math.abs(x - i.x);
-  //   });
-  //   intersections = [sorted[0], sorted[1]];
-  //   intersections = _.sortBy(intersections, 'x');
-  // }
+    var sorted = _.sortBy(intersections, function(i) {
+      return dist(p, i);
+    });
+    intersections = [sorted[0], sorted[1]];
+    intersections = _.sortBy(intersections, 'x');
+  }
 
   this.intersections = intersections;
   var idx;
@@ -430,3 +432,39 @@ function intersectParabolicArc(left, right, isFlipped, isGeneral, directrix){
     resultIdx: idx
   };
 }
+
+// Function supports the intersection of a parabolic arc to any other arc type
+function intersectParabolicArcs(left, right, directrix){
+  let pleft = createBeachlineSegment(left.site, directrix);
+  let pright = createBeachlineSegment(right.site, directrix);
+  let intersections = pleft.intersect(pright);
+
+  if (intersections.length == 0 || !intersections[0]) {
+    throw "error number of intersections is 0 between node id: " + left.id + " and node: " + right.id;
+  }
+
+  if (intersections.length == 1) {
+    return {
+      results: intersections,
+      resultIdx: 0
+    };
+  }
+
+  this.intersections = intersections;
+  var idx;
+  let pcenterx = (intersections[0].x + intersections[1].x) / 2;
+  let prevy = pleft.f(pcenterx);
+  let nexty = pright.f(pcenterx);
+  let lower = 1;
+  if (prevy < nexty) {
+    lower = 0;
+  }
+  idx = 1 - lower;
+
+  return {
+    results: intersections,
+    resultIdx: idx
+  };
+}
+
+
