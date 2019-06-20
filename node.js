@@ -375,21 +375,19 @@ function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, dire
   }
 
   if (intersections.length > 2) {
-    // get the two intersections that are closest to
-    // the x site of the left element
-    var p;
+
+    // the bisector can either be a line or a general parabola
+    var bisector = bisect(left.site, right.site);
     if (left.isV) {
-      // return the two closest sites to v.p
-      p = pleft.p;
-    } else { // left if parabola
-      // return the two closest sites to p.site
-      p = left.site;
+      intersections = left.intersect(bisector);
+    } else { // left is parabola
+      intersections = right.intersect(bisector);
     }
 
-    var sorted = _.sortBy(intersections, function(i) {
-      return dist(p, i);
-    });
-    intersections = [sorted[0], sorted[1]];
+    // var sorted = _.sortBy(intersections, function(i) {
+    //   return dist(p, i);
+    // });
+    // intersections = [sorted[0], sorted[1]];
     intersections = _.sortBy(intersections, 'x');
   }
 

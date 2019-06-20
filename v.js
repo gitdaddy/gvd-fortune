@@ -54,6 +54,10 @@ V.prototype.intersect = function(obj) {
     // sort by xvalues if x0 < x1 [x0, x1]
     ret = _.sortBy(ret, [function(i) { return i.x; }]);
     return ret;
+  } else if (obj instanceof Line) {
+    // TODO
+  } else if (obj instanceof GeneralParabola) {
+    // TODO
   } else if (obj instanceof V) {
     var s1 = makeSegment(this.y0, this.y1);
     var s2 = makeSegment(obj.y0, obj.y1)
