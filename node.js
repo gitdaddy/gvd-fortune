@@ -265,34 +265,8 @@ EdgeNode.prototype.findParentNodeByEnd = function (site) {
   return null;
 }
 
-EdgeNode.prototype.findParentNodeByStart = function (site) {
-  // Go all the way left then right in an in order traversal
-  var currentLeft = this.left;
-  while (currentLeft.isEdge) {
-    currentLeft = currentLeft.left;
-  }
-  var currentNode = currentLeft;
-  var count = 0;
-  while (currentNode) {
-    console.log("test start");
-    if (currentNode.isParabola && equal(site, currentNode.site)) {
-      var pSide = 0;
-      if (currentNode.parent.parent) {
-        pSide = currentNode.parent == currentNode.parent.parent.right ? 1 :0;
-      }
-      return {
-        node: currentNode,
-        side: currentNode == currentNode.parent.right ? 1 : 0,
-        parentSide: pSide
-      };
-    }
-    currentNode = currentNode.nextArc();
-  }
-  return null;
-}
-
 // Finds the intersection between the left and right arcs.
-EdgeNode.prototype.intersection = function (directrix) {
+EdgeNode.prototype.intersection = function (directrix, leftx) {
   // This is inefficient. We should be storing sites in edge nodes.
   let leftArcNode = this.prevArc();
   let rightArcNode = this.nextArc();
@@ -305,8 +279,8 @@ EdgeNode.prototype.intersection = function (directrix) {
   var obj = {};
   if (leftArcNode.isV && rightArcNode.isV) {
     obj = intersectStraightArcs(leftArcNode, rightArcNode, directrix);
-  } else if (leftArcNode.isV && rightArcNode.isV) {
-    obj = intersectParabolicToStraightArc(leftArcNode, rightArcNode, this.flipped, this.isGeneralSurface, directrix);
+  } else if (leftArcNode.isV || rightArcNode.isV) {
+    obj = intersectParabolicToStraightArc(leftArcNode, rightArcNode, leftx, this.flipped, this.isGeneralSurface, directrix);
   } else {
     obj = intersectParabolicArcs(leftArcNode, rightArcNode, directrix);
   }
@@ -358,15 +332,19 @@ function intersectStraightArcs(left, right, directrix){
 }
 
 // Function supports the intersection of a parabolic arc to any other arc type
-function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, directrix){
+function intersectParabolicToStraightArc(left, right, leftx, isFlipped, isGeneral, directrix){
   let pleft = createBeachlineSegment(left.site, directrix);
   let pright = createBeachlineSegment(right.site, directrix);
   let intersections = pleft.intersect(pright);
 
+  _.remove(intersections, function (i) {
+    return _.isUndefined(i) || i.x <= leftx;
+  });
+
   if (intersections.length == 0 || !intersections[0]) {
     throw "error number of intersections is 0 between node id: " + left.id + " and node: " + right.id;
   }
-
+  
   if (intersections.length == 1) {
     return {
       results: intersections,
@@ -374,22 +352,21 @@ function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, dire
     };
   }
 
-  if (intersections.length > 2) {
-
+  // if (intersections.length > 2) {
     // the bisector can either be a line or a general parabola
-    var bisector = bisect(left.site, right.site);
-    if (left.isV) {
-      intersections = left.intersect(bisector);
-    } else { // left is parabola
-      intersections = right.intersect(bisector);
-    }
+    // var bisector = bisect(left.site, right.site);
+    // if (left.isV) {
+    //   intersections = left.intersect(bisector);
+    // } else { // left is parabola
+    //   intersections = right.intersect(bisector);
+    // }
 
     // var sorted = _.sortBy(intersections, function(i) {
     //   return dist(p, i);
     // });
     // intersections = [sorted[0], sorted[1]];
-    intersections = _.sortBy(intersections, 'x');
-  }
+    // intersections = _.sortBy(intersections, 'x');
+  // }
 
   this.intersections = intersections;
   var idx;

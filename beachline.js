@@ -54,36 +54,26 @@ Beachline.prototype.add = function (site) {
     this.root = splitArcNode(this.root, arcNode, this.dcel);
   } else {
     var parent = this.root;
+    var leftx = -1e15;
     var side, parentSide, child;
-    // if node is endpoint information by site
-    var rslt = null;
-    if (arcNode.isParabola && arcNode.site.isEndPoint) {
-      rslt = parent.findParentNodeByEnd(arcNode.site);
-      if (rslt) {
-        side = rslt.side;
-        parentSide = rslt.parentSide;
-        parent = rslt.node.parent;
-        child = rslt.node;
+    
+    // Do a binary search to find the arc node that the new
+    // site intersects with
+    var x = parent.intersection(directrix, leftx).x;
+    leftx = x;
+    side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
+    parentSide = side;
+    child = parent.getChild(side);
+    while (child.isEdge) {
+      parent = child;
+      x = parent.intersection(directrix, leftx).x;
+      leftx = x;
+      if (site.x == x) {
+        console.log("Site and intersect values equal:" + x + " for intersection: " + parent.id);
       }
-    }
-
-    if (!rslt) {
-      // Do a binary search to find the arc node that the new
-      // site intersects with
-      var x = parent.intersection(directrix).x;
-      side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
       parentSide = side;
+      side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
       child = parent.getChild(side);
-      while (child.isEdge) {
-        parent = child;
-        x = parent.intersection(directrix).x;
-        if (site.x == x) {
-          console.log("Site and intersect values equal:" + x + " for intersection: " + parent.id);
-        }
-        parentSide = side;
-        side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
-        child = parent.getChild(side);
-      }
     }
 
     var siblingRight = child.nextArc();
@@ -220,7 +210,7 @@ Beachline.prototype.prepDraw = function (
     // The point where this edge node was born
     var origin = node.dcelEdge.origin.point;
     // The intersection between the edge node's defining arc nodes
-    var p = node.intersection(directrix);
+    var p = node.intersection(directrix, leftx);
 
     if (p.x < leftx && Math.abs(leftx - p.x) > 0.00001) {
       let msg = `intersection is less than leftx: ${p.x} < ${leftx}.` +
