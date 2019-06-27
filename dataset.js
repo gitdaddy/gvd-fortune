@@ -156,20 +156,19 @@ function isFlipped(p, segs) {
 }
 
 function createDatasets() {
+  // bounding box
   var polygons1 = [];
   var p11 = new Polygon();
-  p11.addPoint(vec3(-0.5, 0.4, 0));
-  p11.addPoint(vec3(0.51, 0.41, 0));
-  p11.addPoint(vec3(0.25, -0.1, 0));
+  // p11.addPoint(vec3(0.58, 0.927, 0));
+  p11.addPoint(vec3(0.602, 0.927, 0));
+  p11.addPoint(vec3(0.95, -0.001, 0));
+  p11.addPoint(vec3(0.001, -0.956, 0));
+  p11.addPoint(vec3(0.443, 0.487, 0));
   p11.createSegment(0,1);
-  var p12 = new Polygon();
-  p12.addPoint(vec3(0.55, 0.100000001, 0)); // Least degree difference test 0.00001
-  p12.addPoint(vec3(-0.75, 0.1, 0));
-  p12.addPoint(vec3(-0.641, -0.301, 0));
-  p12.createSegment(0,1);
-  // p12.createSegment(1,2);
-  // polygons1.push(p11);
-  polygons1.push(p12);
+  p11.createSegment(1,2);
+  p11.createSegment(2,3);
+  p11.createSegment(3,0);
+  polygons1.push(p11);
 
   var polygons2 = [];
   var p21 = new Polygon();

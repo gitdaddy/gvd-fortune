@@ -17,6 +17,7 @@ var ArcNode = function (site) {
     this.openPoint = site[0];
     this.closePoint = site[1];
   }
+  this.side = UNDEFINED_SIDE;
   // define arc boundaries
   this.id = nodeId++;
 }
@@ -143,7 +144,9 @@ var EdgeNode = function (left, right, vertex, dcel) {
   this.isArc = false;
   this.isEdge = true;
   this.left = left;
+  this.left.side = LEFT_CHILD;
   this.right = right;
+  this.right.size = RIGHT_CHILD;
 
   this.updateEdge(vertex, dcel);
 
@@ -234,39 +237,15 @@ EdgeNode.prototype.getChild = function (side) {
 
 EdgeNode.prototype.setChild = function (node, side) {
   if (side == LEFT_CHILD) {
-    this.left = node;
+    node.side = LEFT_CHILD;
   } else {
-    this.right = node;
+    node.side = RIGHT_CHILD;
   }
   node.parent = this;
 }
 
-EdgeNode.prototype.findParentNodeByEnd = function (site) {
-  // Go all the way left then right in an in order traversal
-  var currentLeft = this.left;
-  while (currentLeft.isEdge) {
-    currentLeft = currentLeft.left;
-  }
-  var currentNode = currentLeft;
-  while (currentNode) {
-    if (currentNode.isV && equal(site, currentNode.site.b)) {
-      var pSide = 0;
-      if (currentNode.parent.parent) {
-        pSide = currentNode.parent == currentNode.parent.parent.right ? 1 :0;
-      }
-      return {
-        node: currentNode,
-        side: currentNode == currentNode.parent.right ? 1 : 0,
-        parentSide: pSide
-      };
-    }
-    currentNode = currentNode.nextArc();
-  }
-  return null;
-}
-
 // Finds the intersection between the left and right arcs.
-EdgeNode.prototype.intersection = function (directrix, leftx) {
+EdgeNode.prototype.intersection = function (directrix, leftx = -1e15) {
   // This is inefficient. We should be storing sites in edge nodes.
   let leftArcNode = this.prevArc();
   let rightArcNode = this.nextArc();
@@ -335,6 +314,14 @@ function intersectStraightArcs(left, right, directrix){
 function intersectParabolicToStraightArc(left, right, leftx, isFlipped, isGeneral, directrix){
   let pleft = createBeachlineSegment(left.site, directrix);
   let pright = createBeachlineSegment(right.site, directrix);
+
+  // if (left.id === 2 && right.id === 3) {
+  //   g_addDebug = true;
+  //   // debugger;
+  // } else {
+  //   g_addDebug = false;
+  // }
+
   let intersections = pleft.intersect(pright);
 
   _.remove(intersections, function (i) {
@@ -344,7 +331,7 @@ function intersectParabolicToStraightArc(left, right, leftx, isFlipped, isGenera
   if (intersections.length == 0 || !intersections[0]) {
     throw "error number of intersections is 0 between node id: " + left.id + " and node: " + right.id;
   }
-  
+
   if (intersections.length == 1) {
     return {
       results: intersections,

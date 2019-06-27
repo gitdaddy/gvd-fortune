@@ -9,24 +9,34 @@
 //      | node
 //      *
 //------------------------------------------------------------
-function topSplitSiblings(left, node, right, dcel) {
-  // Set live events to dead events?
-  var vertex;
-  if (left.isV) {
-    if (right.closeEvent) {
-      right.closeEvent.live = false;
-    }
-    vertex = vec3(node.site.x, new V(left.site, node.site.y).f(node.site.x));
-    return new EdgeNode(left, node, vertex, dcel);
-  } else if (right.isV) {
-    if (left.closeEvent) {
-      left.closeEvent.live = false;
-    }
-    vertex = vec3(node.site.x, new V(right.site, node.site.y).f(node.site.x));
-    return new EdgeNode(node, right, vertex, dcel);
-  } else {
-    throw "Cannot split siblings";
+function topSplitSiblings(left, right, vertex, dcel) {
+  if (!left.isV || !right.isV) {
+    throw "invalid top split";
   }
+  if (left.closeEvent) {
+    left.closeEvent.live = false;
+  }
+  if (right.closeEvent) {
+    right.closeEvent.live = false;
+  }
+    return new EdgeNode(left, right, vertex, dcel);
+  // Set live events to dead events?
+  // var vertex;
+  // if (left.isV) {
+  //       if (right.closeEvent) {
+  //         right.closeEvent.live = false;
+  //       }
+  //   vertex = vec3(node.site.x, new V(left.site, node.site.y).f(node.site.x));
+  //   return new EdgeNode(left, node, vertex, dcel);
+  // } else if (right.isV) {
+  //   if (left.closeEvent) {
+  //     left.closeEvent.live = false;
+  //   }
+  //   vertex = vec3(node.site.x, new V(right.site, node.site.y).f(node.site.x));
+  //   return new EdgeNode(node, right, vertex, dcel);
+  // } else {
+  //   throw "Cannot split siblings";
+  // }
 }
 
 //------------------------------------------------------------
