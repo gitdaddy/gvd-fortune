@@ -51,116 +51,35 @@ Beachline.prototype.add = function (site) {
 
   if (this.root == null) {
     this.root = arcNode;
-  } else if (this.root.isArc) {
+    return processCloseEvents(arcNode, directrix);
+  } 
+  
+  if (this.root.isArc) {
     this.root = splitArcNode(this.root, arcNode, this.dcel);
-  } else {
-    var parent = this.root;
-    var side, parentSide, child;
+    return processCloseEvents(arcNode, directrix);
+  }
 
-    // Do a binary search to find the arc node that the new
-    // site intersects with
-    var x = parent.intersection(directrix).x;
-    side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
+  var parent = this.root;
+  var side, parentSide, child;
+  // Do a binary search to find the arc node that the new
+  // site intersects with
+  var x = parent.intersection(directrix).x;
+  side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
+  parentSide = side;
+  child = parent.getChild(side);
+  while (child.isEdge) {
+    parent = child;
+    x = parent.intersection(directrix).x;
+    if (site.x == x) {
+      console.log("Site and intersect values equal:" + x + " for intersection: " + parent.id);
+    }
     parentSide = side;
+    side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
     child = parent.getChild(side);
-    while (child.isEdge) {
-      parent = child;
-      x = parent.intersection(directrix).x;
-      if (site.x == x) {
-        console.log("Site and intersect values equal:" + x + " for intersection: " + parent.id);
-      }
-      parentSide = side;
-      side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
-      child = parent.getChild(side);
-    }
-
-    var sRight = child.nextArc();
-    if (arcNode.isV){
-      if (arcNode.site.a.y == arcNode.site.b.y) {
-        throw "Horizontal segment detected";
-      } else if (_.get(arcNode, "site.a.relation") == NODE_RELATION.TOP) {
-        // TODO FIX
-        var siblingV;
-        if (child.isV) {
-          siblingV = child;
-        } else {
-          if (sRight && sRight.isV && equal(sRight.site.a, arcNode.site.a)) {
-            siblingV = child;
-          } else {
-            siblingV = child.prevArc();
-            if (!siblingV || !siblingV.isV || !equal(siblingV.site.a, arcNode.site.a))
-              throw "Incorrect Sibling for top split"
-          }
-        }
-        // Note here the child can be V or a parabola about site.a
-        var vC = subtract(siblingV.site.b, arcNode.site.a);
-        var vN = subtract(arcNode.site.b, arcNode.site.a);
-        var z0 = cross(vC, vN).z;
-        var newChild;
-        if (z0 < 0) {
-          // child is to the right of arcNode
-          newChild = topSplitSiblings(arcNode, siblingV, arcNode.site.a, dcel);
-        } else {
-          newChild = topSplitSiblings(siblingV, arcNode, arcNode.site.a, dcel);
-        }
-        // siblingV.parent.setChild(newChild, siblingV.side);
-      } else if (_.get(arcNode, "site.a.relation") == NODE_RELATION.CHILD_LEFT_HULL) {
-        // Set edge information since we are using a left joint split
-        var nextEdge = child.nextEdge();
-        if (nextEdge)
-          nextEdge.dcelEdge.generalEdge = false;
-        var newNode = leftJointSplit(child, arcNode, sRight, dcel);
-        // set the parent since a left joint split may not preserve order
-        parent.parent.setChild(newNode, parentSide);
-      } else if (_.get(arcNode, "site.a.relation") == NODE_RELATION.CHILD_RIGHT_HULL) {
-        // Set edge information since we are using a right joint split
-        child.prevEdge().dcelEdge.generalEdge = false;
-        // is a arc created by the right hull joint
-        var newNode = rightJointSplit(arcNode, child, sRight, dcel);
-        parent.parent.setChild(newNode, parentSide);
-      } else {
-        // regular split
-        parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
-      }
-    } else { // is parabola
-      if (_.get(arcNode, "site.relation") == NODE_RELATION.CLOSING) {
-        var updateEdge = child.prevEdge();
-        if (sRight.isV && child.isV && equal(child.site.b, sRight.site.b)) {
-          updateEdge = child.nextEdge();
-        }
-        if (updateEdge){
-          updateEdge.dcelEdge.dest.overridden = true;
-          updateEdge.dcelEdge.dest.point = arcNode.site;
-        }
-        if (_.get(child, "site.b.relation") == NODE_RELATION.CLOSING &&
-            _.get(sRight, "site.b.relation") == NODE_RELATION.CLOSING &&
-            equal(child.site.b, sRight.site.b)) {
-          var newNode = closePointSplit(child, arcNode, dcel);
-          parent.setChild(newNode, side);
-        } else {
-          var newNode = closePointSplit(arcNode, child, dcel);
-          parent.setChild(newNode, side);
-        }
-      } else {
-        // regular split
-        parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
-      }
-    }
   }
 
-  // Create close events
-  var closeEvents = [];
-  if (arcNode.isParabola &&
-    _.get(arcNode, "site.relation") == NODE_RELATION.CHILD_LEFT_HULL) {
-    addCloseEvent(closeEvents, createCloseEvent(arcNode.prevArc(), directrix));
-  } else if (arcNode.isParabola &&
-      _.get(arcNode, "site.relation") == NODE_RELATION.CHILD_RIGHT_HULL) {
-    addCloseEvent(closeEvents, createCloseEvent(arcNode.nextArc(), directrix));
-  } else {
-    addCloseEvent(closeEvents, createCloseEvent(arcNode.prevArc(), directrix));
-    addCloseEvent(closeEvents, createCloseEvent(arcNode.nextArc(), directrix));
-  }
-  return closeEvents;
+  nodeInsert(parent, child, arcNode, side, parentSide, dcel);
+  return processCloseEvents(arcNode, directrix);
 }
 
 //------------------------------------------------------------

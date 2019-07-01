@@ -9,34 +9,18 @@
 //      | node
 //      *
 //------------------------------------------------------------
-function topSplitSiblings(left, right, vertex, dcel) {
-  if (!left.isV || !right.isV) {
+function topSplitSiblings(left, node, right, vertex, dcel) {
+  if (!node.isV) {
     throw "invalid top split";
   }
+
   if (left.closeEvent) {
     left.closeEvent.live = false;
   }
   if (right.closeEvent) {
     right.closeEvent.live = false;
   }
-    return new EdgeNode(left, right, vertex, dcel);
-  // Set live events to dead events?
-  // var vertex;
-  // if (left.isV) {
-  //       if (right.closeEvent) {
-  //         right.closeEvent.live = false;
-  //       }
-  //   vertex = vec3(node.site.x, new V(left.site, node.site.y).f(node.site.x));
-  //   return new EdgeNode(left, node, vertex, dcel);
-  // } else if (right.isV) {
-  //   if (left.closeEvent) {
-  //     left.closeEvent.live = false;
-  //   }
-  //   vertex = vec3(node.site.x, new V(right.site, node.site.y).f(node.site.x));
-  //   return new EdgeNode(node, right, vertex, dcel);
-  // } else {
-  //   throw "Cannot split siblings";
-  // }
+  return new EdgeNode(new EdgeNode(left, node, vertex, dcel), right, vertex, dcel);
 }
 
 //------------------------------------------------------------
@@ -131,19 +115,88 @@ function splitArcNode(toSplit, node, dcel) {
     vertex, dcel);
 }
 
+function nodeInsert(parent, child, arcNode, side, parentSide, dcel) {
+  var sRight = child.nextArc();
+  if (arcNode.isV) {
+    if (arcNode.site.a.y == arcNode.site.b.y) {
+      throw "Horizontal segment detected";
+    }
 
-//------------------------------------------------------------
-// Utility function
-// Insert Horizontal segment arc
-//
-//  |        | toSplit
-//   \      /
-//    |    |
-//     \__/
-//
-//  *-------------*
-//------------------------------------------------------------
-function horizontalInsert(child, left, arcNode, right, dcel) {
-  // TODO
-  throw "horizontal insert not implemented";
+    if (_.get(arcNode, "site.a.relation") == NODE_RELATION.TOP) {
+      // TODO under construction
+      var siblingV;
+      if (child.isV) {
+        siblingV = child;
+      } else {
+        if (sRight && sRight.isV && equal(sRight.site.a, arcNode.site.a)) {
+          siblingV = child;
+        } else {
+          siblingV = child.prevArc();
+        }
+      }
+
+      if (!siblingV || !siblingV.isV || !equal(siblingV.site.a, arcNode.site.a)) {
+        // regular split
+        parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
+        return;
+      }
+
+      // Note here the child can be V or a parabola about site.a
+      var vC = subtract(siblingV.site.b, arcNode.site.a);
+      var vN = subtract(arcNode.site.b, arcNode.site.a);
+      var z0 = cross(vC, vN).z;
+      parent = siblingV.parent;
+      var newEdge;
+      if (z0 < 0) {
+        // child is to the right of arcNode
+        newEdge = topSplitSiblings(siblingV.nextArc(), arcNode, siblingV, arcNode.site.a, dcel);
+      } else {
+        newEdge = topSplitSiblings(siblingV.prevArc(), siblingV, arcNode, arcNode.site.a, dcel);
+      }
+      // Test
+      parent.parent.setChild(newEdge, RIGHT_CHILD);
+    } else if (_.get(arcNode, "site.a.relation") == NODE_RELATION.CHILD_LEFT_HULL) {
+      // Set edge information since we are using a left joint split
+      var nextEdge = child.nextEdge();
+      if (nextEdge)
+        nextEdge.dcelEdge.generalEdge = false;
+      var newNode = leftJointSplit(child, arcNode, sRight, dcel);
+      // set the parent since a left joint split may not preserve order
+      parent.parent.setChild(newNode, parentSide);
+    } else if (_.get(arcNode, "site.a.relation") == NODE_RELATION.CHILD_RIGHT_HULL) {
+      // Set edge information since we are using a right joint split
+      child.prevEdge().dcelEdge.generalEdge = false;
+      // is a arc created by the right hull joint
+      var newNode = rightJointSplit(arcNode, child, sRight, dcel);
+      parent.parent.setChild(newNode, parentSide);
+    } else {
+      // regular split
+      parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
+    }
+    return;
+  } 
+
+  // is parabola
+  if (_.get(arcNode, "site.relation") == NODE_RELATION.CLOSING) {
+    var updateEdge = child.prevEdge();
+    if (sRight.isV && child.isV && equal(child.site.b, sRight.site.b)) {
+      updateEdge = child.nextEdge();
+    }
+    if (updateEdge){
+      updateEdge.dcelEdge.dest.overridden = true;
+      updateEdge.dcelEdge.dest.point = arcNode.site;
+    }
+    if (_.get(child, "site.b.relation") == NODE_RELATION.CLOSING &&
+        _.get(sRight, "site.b.relation") == NODE_RELATION.CLOSING &&
+        equal(child.site.b, sRight.site.b)) {
+      var newNode = closePointSplit(child, arcNode, dcel);
+      parent.setChild(newNode, side);
+    } else {
+      var newNode = closePointSplit(arcNode, child, dcel);
+      parent.setChild(newNode, side);
+    }
+  } else {
+    // regular split
+    parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
+  }
 }

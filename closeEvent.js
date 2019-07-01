@@ -213,3 +213,19 @@ function addCloseEvent(events, newEvent) {
     events[idx] = newEvent;
   }
 }
+
+function processCloseEvents(arcNode, directrix) {
+  // Create close events
+  var closeEvents = [];
+  if (arcNode.isParabola &&
+    _.get(arcNode, "site.relation") == NODE_RELATION.CHILD_LEFT_HULL) {
+    addCloseEvent(closeEvents, createCloseEvent(arcNode.prevArc(), directrix));
+  } else if (arcNode.isParabola &&
+      _.get(arcNode, "site.relation") == NODE_RELATION.CHILD_RIGHT_HULL) {
+    addCloseEvent(closeEvents, createCloseEvent(arcNode.nextArc(), directrix));
+  } else {
+    addCloseEvent(closeEvents, createCloseEvent(arcNode.prevArc(), directrix));
+    addCloseEvent(closeEvents, createCloseEvent(arcNode.nextArc(), directrix));
+  }
+  return closeEvents;
+}
