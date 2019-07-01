@@ -9,8 +9,8 @@
 //      | node
 //      *
 //------------------------------------------------------------
-function topSplitSiblings(left, node, right, vertex, dcel) {
-  if (!node.isV) {
+function topSplitSiblings(left, right, vertex, dcel) {
+  if (!left.isV || !right.isV) {
     throw "invalid top split";
   }
 
@@ -20,7 +20,8 @@ function topSplitSiblings(left, node, right, vertex, dcel) {
   if (right.closeEvent) {
     right.closeEvent.live = false;
   }
-  return new EdgeNode(new EdgeNode(left, node, vertex, dcel), right, vertex, dcel);
+
+  return new EdgeNode(left, right, vertex, dcel);
 }
 
 //------------------------------------------------------------
@@ -123,7 +124,6 @@ function nodeInsert(parent, child, arcNode, side, parentSide, dcel) {
     }
 
     if (_.get(arcNode, "site.a.relation") == NODE_RELATION.TOP) {
-      // TODO under construction
       var siblingV;
       if (child.isV) {
         siblingV = child;
@@ -142,19 +142,29 @@ function nodeInsert(parent, child, arcNode, side, parentSide, dcel) {
       }
 
       // Note here the child can be V or a parabola about site.a
+      // ABC newNode(D) -> ABDC or ADBC
       var vC = subtract(siblingV.site.b, arcNode.site.a);
       var vN = subtract(arcNode.site.b, arcNode.site.a);
       var z0 = cross(vC, vN).z;
       parent = siblingV.parent;
       var newEdge;
+      // parent always will set the left child due to how regular split is performed
       if (z0 < 0) {
-        // child is to the right of arcNode
-        newEdge = topSplitSiblings(siblingV.nextArc(), arcNode, siblingV, arcNode.site.a, dcel);
+        // ADBC
+        console.log("ADBC detected");
+        var leftNode = siblingV.getPrev();
+        // sibling is to the right of arcNode
+        newEdge = topSplitSiblings(arcNode, siblingV, arcNode.site.a, dcel);
+        parent.setChild(newEdge, LEFT_CHILD);
+        // update left parent
+        leftNode.parent.updateEdge(arcNode.site.a, dcel);
       } else {
-        newEdge = topSplitSiblings(siblingV.prevArc(), siblingV, arcNode, arcNode.site.a, dcel);
+        // ABDC
+        newEdge = topSplitSiblings(siblingV, arcNode, arcNode.site.a, dcel);
+        parent.setChild(newEdge, LEFT_CHILD);
+        // update right parent
+        parent.updateEdge(arcNode.site.a, dcel);
       }
-      // Test
-      parent.parent.setChild(newEdge, RIGHT_CHILD);
     } else if (_.get(arcNode, "site.a.relation") == NODE_RELATION.CHILD_LEFT_HULL) {
       // Set edge information since we are using a left joint split
       var nextEdge = child.nextEdge();
@@ -174,7 +184,7 @@ function nodeInsert(parent, child, arcNode, side, parentSide, dcel) {
       parent.setChild(splitArcNode(child, arcNode, this.dcel), side);
     }
     return;
-  } 
+  }
 
   // is parabola
   if (_.get(arcNode, "site.relation") == NODE_RELATION.CLOSING) {

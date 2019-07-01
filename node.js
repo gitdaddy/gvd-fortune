@@ -238,8 +238,10 @@ EdgeNode.prototype.getChild = function (side) {
 EdgeNode.prototype.setChild = function (node, side) {
   if (side == LEFT_CHILD) {
     node.side = LEFT_CHILD;
+    this.left = node;
   } else {
     node.side = RIGHT_CHILD;
+    this.right = node;
   }
   node.parent = this;
 }
