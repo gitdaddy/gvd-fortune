@@ -27,105 +27,7 @@ Object.defineProperty(CloseEvent.prototype, "y", {
   },
 });
 
-//------------------------------------------------------------
-// createCloseEvent
-//------------------------------------------------------------
-function createCloseEvent(arcNode, directrix) {
-  if (arcNode == null) return null;
-  var left = arcNode.prevArc();
-  var right = arcNode.nextArc();
-  if (left == null || right == null) return null;
-
-  if (arcNode.isV) {
-    // for same site nan parabola error
-    directrix -= 1e-10;
-    if (arcNode.site.a == left.site && arcNode.site.b == right.site
-      || arcNode.site.b == left.site && arcNode.site.a == right.site) return null;
-
-    // If siblings reference the same closing node don't let them close until
-    // the closing node is processed
-    if (shareVClosing(arcNode, left) || shareVClosing(arcNode, right)) return null;
-
-    // can compute up to 6 equi points
-    let equi = equidistant(left.site, arcNode.site, right.site);
-    if (equi == null || equi.length == 0) return null;
-    if (equi.length == 1) equi = equi[0];
-
-    if (equi.length == 2 || equi.length == 3 && equi.type != "vec" || equi.length > 3) {
-      // equi = getEquiOfV(equi, left, arcNode, right);
-      // TODO find a better solution that doesn't involve the arcs
-      // let segV = createBeachlineSegment(arcNode.site, directrix);
-      // // get the point that is closest the corresponding arc center point
-      // var b1 = arcNode.getHorizontalBounds(directrix);
-      // var centerArcX = (b1.x0 + b1.x1) / 2;
-      // var centerPoint = vec3(centerArcX, segV.f(centerArcX), 0);
-      // equi = _.sortBy(equi, function (e) {
-      //   return dist(centerPoint, e);
-      // })[0];
-      equi = equi[0];
-    }
-   var r;
-   if (left.isV && right.isV) {
-    r = Math.min(Math.min(dist(equi, left.site), dist(equi, arcNode.site)), dist(equi, right.site));
-   } else {
-    var pointSite = _.filter([left.site, arcNode.site, right.site], function(site) {
-      return site.type == "vec";
-    })[0];
-    r = dist(equi, pointSite);
-   }
-   var newY = equi.y - r;
-   if (canClose(left, arcNode, right, equi)){
-    return new CloseEvent(newY, arcNode, left, right, equi, r);
-   }
-  } else if (isSegment(left.site) || isSegment(right.site)) {
-    let equi = equidistant(left.site, arcNode.site, right.site);
-    if (equi == null || equi.length == 0) return null;
-    _.remove(equi, function (e) {
-      if (e.type && e.type == "vec")
-        return (e.y - dist(e, arcNode.site)) > directrix;
-      return false;
-    });
-    if (equi.length == 0) return null;
-    if (equi.length == 1) equi = equi[0];
-    if (equi.length == 2) {
-      var sorted = _.sortBy(equi, function (p) { return p.x; });
-      if (belongsToSegment(arcNode, right)) {
-        equi = sorted[0];
-      } else if (belongsToSegment(left, arcNode)) {
-        equi = sorted[1];
-      } else {
-        // let bSeg = createBeachlineSegment(arcNode.site, directrix);
-        // var b1 = arcNode.getHorizontalBounds(directrix);
-        // var centerArcX = (b1.x0 + b1.x1) / 2;
-        // var centerPoint = vec3(centerArcX, bSeg.f(centerArcX), 0);
-        // equi = _.sortBy(equi, function (e) {
-        //   return dist(centerPoint, e);
-        // })[0];
-        equi = equi[0];
-      }
-    }
-
-    var r = dist(equi, arcNode.site);
-    if (!r) return null;
-    if (canClose(left, arcNode, right, equi)) {
-      return new CloseEvent(equi.y - r, arcNode, left, right, equi, r);
-    }
-  } else {
-    // All three are points
-    var equi = equidistant(left.site, arcNode.site, right.site);
-    if (equi == null) return null;
-    var u = subtract(left.site, arcNode.site);
-    var v = subtract(left.site, right.site);
-    // Check if there should be a close event added. In some
-    // cases there shouldn't be.
-    if (cross(u, v)[2] < 0) {
-      let r = length(subtract(arcNode.site, equi));
-      let event_y = equi.y - r;
-      return new CloseEvent(event_y, arcNode, left, right, equi, r);
-    }
-  }
-  return null;
-}
+///////////////////// Utility Functions ///////////////////////////////////
 
 /* Return true or false if the arcNode should be able to close in the designated spot
    Does the shared segment run between p1 and equi/close point?
@@ -196,9 +98,123 @@ function canClose(left, arcNode, right, equi) {
   }
 }
 
+function getRadius(point, left, node, right) {
+  // given a point and nodes return the radius
+  if (left.isV && node.isV && right.isV) {
+    return Math.min(Math.min(dist(point, left.site), dist(point, node.site)), dist(point, right.site));
+   } else {
+    var pointSite = _.filter([left.site, node.site, right.site], function(site) {
+      return site.type == "vec";
+    })[0];
+    return dist(point, pointSite);
+   }
+}
+
+function getXInt(left, right, directrix) {
+  var obj = {};
+  if (left.isV && right.isV) {
+    obj = intersectStraightArcs(left, right, directrix);
+  } else if (left.isV || right.isV) {
+    var flipped = left.site.flipped || left.site.flipped;
+    var isgen = left.isParabola && right.isV || left.isV && right.isParabola;
+    obj = intersectParabolicToStraightArc(left, right, flipped, isgen, directrix);
+  } else {
+    obj = intersectParabolicArcs(left, right, directrix);
+  }
+  return obj.results[obj.resultIdx].x;
+}
+
+function chooseClosePoint(left, node, right, points, directrix) {
+  var thresh = 0.001;
+  // length test - the length of node's arc should be close to 0
+  // for the correct point
+  var validPoints = _.filter(points, function (p) {
+    var radius = getRadius(p, left, node, right);
+    var newY = p.y - radius;
+    // rule out points too far above the directrix
+    if (newY > directrix) return false;
+
+    // Option: or test that left and right int. is point?
+    var x0 = getXInt(left, node, newY);
+    var x1 = getXInt(node, right, newY);
+    // console.log("Comparing x0:" + x0 + " and x1:" + x1);
+    // true if the difference is less than the threshold
+    return Math.abs(x0 - x1) < thresh;
+  });
+  if (_.isEmpty(validPoints)) return null;
+
+  if (validPoints.length > 1)
+    console.log("Valid close points size > 1 at:" + validPoints.length);
+
+  return validPoints[0];
+}
+
+//------------------------------------------------------------
+// createCloseEvent
+//------------------------------------------------------------
+function createCloseEvent(arcNode, directrix) {
+  if (arcNode == null) return null;
+  var left = arcNode.prevArc();
+  var right = arcNode.nextArc();
+  if (left == null || right == null) return null;
+  var closePoint;
+
+  if (arcNode.isParabola && left.isParabola && right.isParabola) {
+    // All three are points
+    closePoint = equidistant(left.site, arcNode.site, right.site);
+    if (closePoint == null) return null;
+    var u = subtract(left.site, arcNode.site);
+    var v = subtract(left.site, right.site);
+    // Check if there should be a close event added. In some
+    // cases there shouldn't be.
+    if (cross(u, v)[2] < 0) {
+      let r = length(subtract(arcNode.site, closePoint));
+      let event_y = closePoint.y - r;
+      return new CloseEvent(event_y, arcNode, left, right, closePoint, r);
+    }
+    return null;
+  }
+
+  if (arcNode.isV) {
+    // for same site nan parabola error - must test
+    directrix -= 1e-10;
+
+    if (arcNode.site.a == left.site && arcNode.site.b == right.site
+      || arcNode.site.b == left.site && arcNode.site.a == right.site) return null;
+
+    // If siblings reference the same closing node don't let them close until
+    // the closing node is processed
+    if (shareVClosing(arcNode, left) || shareVClosing(arcNode, right)) return null;
+  }
+
+  var radius = null;
+  // can compute up to 6 equi points
+  var equi = equidistant(left.site, arcNode.site, right.site);
+  if (equi == null || equi.length == 0) return null;
+  if (equi.length == 1) {
+    closePoint = equi[0];
+  } else if (equi.type && equi.type == "vec") {
+    closePoint = equi;
+  } else {
+    var p = chooseClosePoint(left, arcNode, right, equi, directrix);
+    if (!p) return null;
+    closePoint = p;
+  }
+
+  radius = getRadius(closePoint, left, arcNode, right);
+  if (!radius) throw "invalid radius";
+
+  if (canClose(left, arcNode, right, closePoint)){
+    return new CloseEvent(closePoint.y - radius, arcNode, left, right, closePoint, radius);
+  }
+
+  return null;
+}
+
 function addCloseEvent(events, newEvent) {
   var search = function (event) {
     var tolerance = 0.00001;
+    if (!newEvent.point) debugger;
     return (Math.abs(newEvent.point.x - event.point.x) < tolerance
       && Math.abs(newEvent.point.y - event.point.y) < tolerance);
   };

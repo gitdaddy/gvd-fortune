@@ -77,6 +77,43 @@ function belongsToSegmentEndpoint(A, B) {
   return false;
 }
 
+function consolidate(intersections, pivotX) {
+  var ret = [];
+  var thresh = 0.000001;
+  var left = _.filter(intersections, function(i) {
+    return i.x < pivotX;
+  });
+  var right = _.filter(intersections, function(i) {
+    return i.x > pivotX;
+  });
+  if ((left.length + right.length) !== intersections.length)
+    throw "invalid intersections";
+  if (left.length === 2) {
+    var d = dist(left[0], left[1]);
+    if (d < thresh) {
+      ret.push(left[0]);
+    } else {
+      ret.push(left[0]);
+      ret.push(left[1]);
+    }
+  } else if (left.length === 1) {
+    ret.push(left[0]);
+  }
+
+  if (right.length === 2) {
+    var d = dist(right[0], right[1]);
+    if (d < thresh) {
+      ret.push(right[0]);
+    } else {
+      ret.push(right[0]);
+      ret.push(right[1]);
+    }
+  } else if (right.length === 1) {
+    ret.push(right[0]);
+  }
+  return ret;
+}
+
 //------------------------------------------------------------
 // prevArc
 // Returns the previous in-order arc arcNode
@@ -247,11 +284,11 @@ EdgeNode.prototype.setChild = function (node, side) {
 }
 
 // Finds the intersection between the left and right arcs.
-EdgeNode.prototype.intersection = function (directrix, leftx = -1e15) {
+EdgeNode.prototype.intersection = function (directrix) {
   // This is inefficient. We should be storing sites in edge nodes.
   let leftArcNode = this.prevArc();
   let rightArcNode = this.nextArc();
-  // if (leftArcNode.id == 5 && rightArcNode.id == 3) {
+  // if (leftArcNode.id == 4 && rightArcNode.id == 8) {
   //   g_addDebug = true;
   //   // debugger;
   // } else {
@@ -261,7 +298,7 @@ EdgeNode.prototype.intersection = function (directrix, leftx = -1e15) {
   if (leftArcNode.isV && rightArcNode.isV) {
     obj = intersectStraightArcs(leftArcNode, rightArcNode, directrix);
   } else if (leftArcNode.isV || rightArcNode.isV) {
-    obj = intersectParabolicToStraightArc(leftArcNode, rightArcNode, leftx, this.flipped, this.isGeneralSurface, directrix);
+    obj = intersectParabolicToStraightArc(leftArcNode, rightArcNode, this.flipped, this.isGeneralSurface, directrix);
   } else {
     obj = intersectParabolicArcs(leftArcNode, rightArcNode, directrix);
   }
@@ -313,24 +350,31 @@ function intersectStraightArcs(left, right, directrix){
 }
 
 // Function supports the intersection of a parabolic arc to any other arc type
-function intersectParabolicToStraightArc(left, right, leftx, isFlipped, isGeneral, directrix){
-  let pleft = createBeachlineSegment(left.site, directrix);
-  let pright = createBeachlineSegment(right.site, directrix);
+function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, directrix){
+  var pleft = createBeachlineSegment(left.site, directrix);
+  var pright = createBeachlineSegment(right.site, directrix);
 
-  // if (left.id === 2 && right.id === 3) {
-  //   g_addDebug = true;
-  //   // debugger;
-  // } else {
-  //   g_addDebug = false;
-  // }
 
-  let intersections = pleft.intersect(pright);
+  var intersections = pleft.intersect(pright);
+
+  // _.remove(intersections, function (i) {
+  //   return _.isUndefined(i) || i.x <= leftx;
+  // });
 
   _.remove(intersections, function (i) {
-    return _.isUndefined(i) || i.x <= leftx;
+    return _.isUndefined(i);
   });
 
   if (intersections.length == 0 || !intersections[0]) {
+    // use a back-up line since the parabola is probably
+    // so narrow that it won't intersect with any ray below p
+    var para = left.isParabola ? pleft : pright;
+    var V = left.isParabola ? pright : pleft;
+    if (belongsToSegment(left, right) && para.p < 1e-5) {
+      var backupLine = new Line(vec3(-1, directrix + para.p, 0), vec3(1, directrix + para.p, 0));
+      intersections = V.intersect(backupLine);
+    }
+    if (intersections.length == 0 || !intersections[0])
     throw "error number of intersections is 0 between node id: " + left.id + " and node: " + right.id;
   }
 
@@ -341,21 +385,11 @@ function intersectParabolicToStraightArc(left, right, leftx, isFlipped, isGenera
     };
   }
 
-  // if (intersections.length > 2) {
-    // the bisector can either be a line or a general parabola
-    // var bisector = bisect(left.site, right.site);
-    // if (left.isV) {
-    //   intersections = left.intersect(bisector);
-    // } else { // left is parabola
-    //   intersections = right.intersect(bisector);
-    // }
-
-    // var sorted = _.sortBy(intersections, function(i) {
-    //   return dist(p, i);
-    // });
-    // intersections = [sorted[0], sorted[1]];
-    // intersections = _.sortBy(intersections, 'x');
-  // }
+  if (intersections.length > 2) {
+    var x = left.isParabola ? left.site.x : right.site.x;
+    // Test get the center intersections
+    intersections = consolidate(intersections, x);
+  }
 
   this.intersections = intersections;
   var idx;

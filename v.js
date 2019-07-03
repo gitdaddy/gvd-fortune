@@ -49,7 +49,17 @@ V.prototype.intersect = function(obj) {
     ret = [];
     var p = this.p;
     this.vectors.forEach(function(v) {
+      // collect all intersection points (0 - 4)
       ret = ret.concat(obj.intersectRay(p, v));
+    });
+    // sort by xvalues if x0 < x1 [x0, x1]
+    ret = _.sortBy(ret, 'x');
+    return ret;
+  } else if (obj instanceof Line) {
+    ret = [];
+    var p = this.p;
+    this.vectors.forEach(function(v) {
+      ret.push(intersectLines(p, v, obj.p1, obj.p2));
     });
     // sort by xvalues if x0 < x1 [x0, x1]
     ret = _.sortBy(ret, [function(i) { return i.x; }]);

@@ -101,22 +101,26 @@ function splitArcNode(toSplit, node, dcel) {
   if (toSplit.closeEvent) {
     toSplit.closeEvent.live = false;
   }
-  var x = node.site.x;
-  var y;
-  if (toSplit.isParabola) {
-    y = createParabola(toSplit.site, node.site.y).f(x);
+  var vertex;
+  if (node.isV) {
+    vertex = node.site.a;
   } else {
-    y = new V(toSplit.site, node.site.y).f(x);
+    var x = node.site.x;
+    var y;
+    if (toSplit.isParabola) {
+      y = createParabola(toSplit.site, node.site.y).f(x);
+    } else {
+      y = new V(toSplit.site, node.site.y).f(x);
+    }
+    vertex = vec3(x, y, 0);
   }
-  // if y is NAN?
-  var vertex = vec3(x, y, 0);
   var left = toSplit;
   var right = new ArcNode(toSplit.site);
   return new EdgeNode(left, new EdgeNode(node, right, vertex, dcel),
     vertex, dcel);
 }
 
-function nodeInsert(parent, child, arcNode, side, parentSide, dcel) {
+function nodeInsert(parent, child, arcNode, side, dcel) {
   var sRight = child.nextArc();
   if (arcNode.isV) {
     if (arcNode.site.a.y == arcNode.site.b.y) {
@@ -166,19 +170,23 @@ function nodeInsert(parent, child, arcNode, side, parentSide, dcel) {
         parent.updateEdge(arcNode.site.a, dcel);
       }
     } else if (_.get(arcNode, "site.a.relation") == NODE_RELATION.CHILD_LEFT_HULL) {
+      if (!child.isParabola) throw "insertion error: invalid child node: " + child.id;
       // Set edge information since we are using a left joint split
       var nextEdge = child.nextEdge();
       if (nextEdge)
         nextEdge.dcelEdge.generalEdge = false;
       var newNode = leftJointSplit(child, arcNode, sRight, dcel);
       // set the parent since a left joint split may not preserve order
-      parent.parent.setChild(newNode, parentSide);
+      parent.parent.setChild(newNode, RIGHT_CHILD);
     } else if (_.get(arcNode, "site.a.relation") == NODE_RELATION.CHILD_RIGHT_HULL) {
+      if (!child.isParabola) throw "insertion error: invalid child node: " + child.id;
       // Set edge information since we are using a right joint split
-      child.prevEdge().dcelEdge.generalEdge = false;
+      var prevEdge = child.prevEdge();
+      if (prevEdge)
+        prevEdge.dcelEdge.generalEdge = false;
       // is a arc created by the right hull joint
       var newNode = rightJointSplit(arcNode, child, sRight, dcel);
-      parent.parent.setChild(newNode, parentSide);
+      parent.parent.setChild(newNode, RIGHT_CHILD);
     } else {
       // regular split
       parent.setChild(splitArcNode(child, arcNode, this.dcel), side);

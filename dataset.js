@@ -161,7 +161,7 @@ function createDatasets() {
   var p11 = new Polygon();
   // p11.addPoint(vec3(0.58, 0.927, 0));
   p11.addPoint(vec3(0.602, 0.927, 0));
-  p11.addPoint(vec3(0.95, -0.001, 0));
+  p11.addPoint(vec3(0.8235, -0.427, 0));
   p11.addPoint(vec3(0.001, -0.956, 0));
   p11.addPoint(vec3(0.443, 0.487, 0));
   p11.createSegment(0,1);

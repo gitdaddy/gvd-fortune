@@ -52,8 +52,8 @@ Beachline.prototype.add = function (site) {
   if (this.root == null) {
     this.root = arcNode;
     return processCloseEvents(arcNode, directrix);
-  } 
-  
+  }
+
   if (this.root.isArc) {
     this.root = splitArcNode(this.root, arcNode, this.dcel);
     return processCloseEvents(arcNode, directrix);
@@ -65,7 +65,6 @@ Beachline.prototype.add = function (site) {
   // site intersects with
   var x = parent.intersection(directrix).x;
   side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
-  parentSide = side;
   child = parent.getChild(side);
   while (child.isEdge) {
     parent = child;
@@ -73,12 +72,11 @@ Beachline.prototype.add = function (site) {
     if (site.x == x) {
       console.log("Site and intersect values equal:" + x + " for intersection: " + parent.id);
     }
-    parentSide = side;
     side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
     child = parent.getChild(side);
   }
 
-  nodeInsert(parent, child, arcNode, side, parentSide, dcel);
+  nodeInsert(parent, child, arcNode, side, dcel);
   return processCloseEvents(arcNode, directrix);
 }
 
@@ -142,7 +140,7 @@ Beachline.prototype.prepDraw = function (
     // The point where this edge node was born
     var origin = node.dcelEdge.origin.point;
     // The intersection between the edge node's defining arc nodes
-    var p = node.intersection(directrix, leftx);
+    var p = node.intersection(directrix);
 
     if (p.x < leftx && Math.abs(leftx - p.x) > 0.00001) {
       let msg = `intersection is less than leftx: ${p.x} < ${leftx}.` +
