@@ -288,7 +288,7 @@ EdgeNode.prototype.intersection = function (directrix) {
   // This is inefficient. We should be storing sites in edge nodes.
   let leftArcNode = this.prevArc();
   let rightArcNode = this.nextArc();
-  // if (leftArcNode.id == 4 && rightArcNode.id == 8) {
+  // if (leftArcNode.id == 12 && rightArcNode.id == 11) {
   //   g_addDebug = true;
   //   // debugger;
   // } else {
@@ -354,6 +354,12 @@ function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, dire
   var pleft = createBeachlineSegment(left.site, directrix);
   var pright = createBeachlineSegment(right.site, directrix);
 
+  // if (leftArcNode.id === 9 && rightArcNode.id === 6) {
+  //   g_addDebug = true;
+  //   // debugger;
+  // } else {
+  //   g_addDebug = false;
+  // }
 
   var intersections = pleft.intersect(pright);
 

@@ -29,6 +29,28 @@ Object.defineProperty(CloseEvent.prototype, "y", {
 
 ///////////////////// Utility Functions ///////////////////////////////////
 
+// return true if the circle test passes false otherwise
+function circleTest(left, node, right, r, closePoint) {
+  // include all associated sites such as segment sites
+  // which may not found through a neighboring arc
+
+  var failNode = _.find([left, node, right], function (node) {
+    if (node.isParabola) {
+      // query for attached segs
+      var segs = findNeighborSegments(node);
+      _.forEach(segs, function (s) {
+        var intercept = inteceptCircleSeg({radius:r, center:closePoint}, {p1:s.a,p2:s.b});
+        if (intercept.length == 2) return true;
+      });
+    } else {
+      var intercept = inteceptCircleSeg({radius:r, center:closePoint}, {p1:node.site.a,p2:node.site.b});
+      if (intercept.length == 2) return true;
+    }
+    return false;
+  });
+  return _.isUndefined(failNode);
+}
+
 /* Return true or false if the arcNode should be able to close in the designated spot
    Does the shared segment run between p1 and equi/close point?
    Arc node must be a parabola arc for this test
@@ -57,44 +79,29 @@ function canClose(left, arcNode, right, equi) {
       var v2 = subtract(left.site, arcNode.site.b);
       return cross(v1, v2).z < 0;
     }
+    // var r = getRadius(equi, left, arcNode, right);
+    // return circleTest(left, arcNode, right, r, equi);
     return true;
   } else {
     // If the circle created intersects the segment site that is a part
     // of the current, left or right arcs then it cannot be on the gvd
     var r = dist(arcNode.site, equi);
-    var leftMostArc = left.prevArc();
-    var rightMostArc = right.nextArc();
-    if (leftMostArc && left.isParabola && leftMostArc.isV && belongsToSegment(left, leftMostArc)) {
-      var int = inteceptCircleSeg({radius:r, center:equi}, {p1:leftMostArc.site.a,p2:leftMostArc.site.b});
-      if (int.length == 2) return false;
-    }
-    if (arcNode.isParabola && left.isV && belongsToSegment(arcNode, left)) {
-      var int = inteceptCircleSeg({radius:r, center:equi}, {p1:left.site.a,p2:left.site.b});
-      if (int.length == 2) return false;
-    }
-    if (arcNode.isParabola && right.isV && belongsToSegment(arcNode, right)) {
-      var int = inteceptCircleSeg({radius:r, center:equi}, {p1:right.site.a,p2:right.site.b});
-      if (int.length == 2) return false;
-    }
-    if (rightMostArc && right.isParabola && rightMostArc.isV && belongsToSegment(right, rightMostArc)) {
-      var int = inteceptCircleSeg({radius:r, center:equi}, {p1:rightMostArc.site.a,p2:rightMostArc.site.b});
-      if (int.length == 2) return false;
-    }
+    return circleTest(left, arcNode, right, r, equi);
 
     // cross product test
-    var seg;
-    if (left.isV && belongsToSegment(arcNode, left)) {
-      seg = left.site;
-    } else if (right.isV && belongsToSegment(arcNode, right)) {
-      seg = right.site;
-    } else {
-      return true;
-    }
+    // var seg;
+    // if (left.isV && belongsToSegment(arcNode, left)) {
+    //   seg = left.site;
+    // } else if (right.isV && belongsToSegment(arcNode, right)) {
+    //   seg = right.site;
+    // } else {
+    //   return true;
+    // }
     // let segV = createBeachlineSegment(seg, directrix);
     // // use the outer bounds
     // var b1 = arcNode.getHorizontalBounds(directrix);
     // return b1.x0 < segV.p.x && equi.x < segV.p.x || b1.x1 > segV.p.x && equi.x > segV.p.x;
-    return true;
+    // return true;
   }
 }
 
@@ -110,7 +117,7 @@ function getRadius(point, left, node, right) {
    }
 }
 
-function getXInt(left, right, directrix) {
+function getIntercpt(left, right, directrix) {
   var obj = {};
   if (left.isV && right.isV) {
     obj = intersectStraightArcs(left, right, directrix);
@@ -121,25 +128,28 @@ function getXInt(left, right, directrix) {
   } else {
     obj = intersectParabolicArcs(left, right, directrix);
   }
-  return obj.results[obj.resultIdx].x;
+  return obj.results[obj.resultIdx];
 }
 
+// return the most viable close points out of a list of close points
+// based on arc size @ point
 function chooseClosePoint(left, node, right, points, directrix) {
-  var thresh = 0.001;
+  if (points.length === 1) return points[0];
   // length test - the length of node's arc should be close to 0
   // for the correct point
-  var validPoints = _.filter(points, function (p) {
+  var validPoints = _.sortBy(points, function (p) {
     var radius = getRadius(p, left, node, right);
     var newY = p.y - radius;
     // rule out points too far above the directrix
-    if (newY > directrix) return false;
+    if (newY > directrix) return 1e10;
 
     // Option: or test that left and right int. is point?
-    var x0 = getXInt(left, node, newY);
-    var x1 = getXInt(node, right, newY);
-    // console.log("Comparing x0:" + x0 + " and x1:" + x1);
-    // true if the difference is less than the threshold
-    return Math.abs(x0 - x1) < thresh;
+    var i0 = getIntercpt(left, node, newY);
+    var i1 = getIntercpt(node, right, newY);
+    if (!i0 || i1) return 1e10;
+    var diffX = Math.abs(i0.x - i1.x);
+    var diffY = Math.abs(i0.y - i1.y);
+    return diffX + diffY; 
   });
   if (_.isEmpty(validPoints)) return null;
 
@@ -158,6 +168,13 @@ function createCloseEvent(arcNode, directrix) {
   var right = arcNode.nextArc();
   if (left == null || right == null) return null;
   var closePoint;
+
+  if (arcNode.id === 8) {
+    g_addDebug = true;
+    // debugger;
+  } else {
+    g_addDebug = false;
+  }
 
   if (arcNode.isParabola && left.isParabola && right.isParabola) {
     // All three are points

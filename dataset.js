@@ -155,6 +155,20 @@ function isFlipped(p, segs) {
   return endPoint;
 }
 
+function findNeighborSegments(node) {
+  if (node.isV) return [node.site];
+  var segs = [];
+  _.forEach(g_polygons, function(poly) {
+    var rslt = _.filter(poly.segments, function(s) {
+      return equal(s.a, node.site) || equal(s.b, node.site);
+    });
+    if (!_.isEmpty(rslt)) {
+      segs = _.concat(segs, rslt);
+    }
+  });
+  return segs;
+}
+
 function createDatasets() {
   // bounding box
   var polygons1 = [];

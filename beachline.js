@@ -46,7 +46,7 @@ Beachline.prototype.add = function (site) {
   // so we can still process arc intersections
   if (site.type == "segment") {
     // we need to move the smallest amount possible
-     directrix -= 1e-5;
+     directrix -= 1e-7;
   }
 
   if (this.root == null) {
@@ -60,7 +60,7 @@ Beachline.prototype.add = function (site) {
   }
 
   var parent = this.root;
-  var side, parentSide, child;
+  var side, child;
   // Do a binary search to find the arc node that the new
   // site intersects with
   var x = parent.intersection(directrix).x;
