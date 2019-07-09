@@ -40,6 +40,11 @@ function isSegment(s) {
   return (Array.isArray(s) && s.length == 2 && Array.isArray(s[0]));
 }
 
+function convertToVec3(p) {
+  if (p.length === 3) return p;
+  return vec3(p.x, p.y, 0);
+}
+
 // Get the mid point between p1 and p2
 function midPoint(p1, p2) {
   if (equal(p1, p2)) return p1;
@@ -127,7 +132,7 @@ function inteceptCircleSeg(circle, line){
   // if the points are too close return the tanget point
   if (ret.length == 2) {
     var diff = dist(new vec3(ret[0].x, ret[0].y,0), new vec3(ret[1].x, ret[1].y,0));
-    if (diff < 1e-15) return [ret[0]];
+    if (diff < 1e-7) return [ret[0]];
   }
   return ret;
 }

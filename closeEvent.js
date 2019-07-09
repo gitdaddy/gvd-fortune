@@ -17,6 +17,7 @@ var CloseEvent = function (y, arcNode, leftNode, rightNode, point, radius) {
   this.isCloseEvent = true;
   this.live = true;
   this.r = radius;
+  this.id = leftNode.id + "-" + arcNode.id + "-" + rightNode.id;
 };
 
 Object.defineProperty(CloseEvent.prototype, "y", {
@@ -28,6 +29,12 @@ Object.defineProperty(CloseEvent.prototype, "y", {
 });
 
 ///////////////////// Utility Functions ///////////////////////////////////
+
+function isRightOfLine(upper, lower, p) {
+  var v1 = subtract(upper, lower);
+  var v2 = subtract(p, lower);
+  return cross(v1, v2).z < 0;
+}
 
 // return true if the circle test passes false otherwise
 function circleTest(left, node, right, r, closePoint) {
@@ -83,25 +90,26 @@ function canClose(left, arcNode, right, equi) {
     // return circleTest(left, arcNode, right, r, equi);
     return true;
   } else {
-    // If the circle created intersects the segment site that is a part
-    // of the current, left or right arcs then it cannot be on the gvd
-    var r = dist(arcNode.site, equi);
-    return circleTest(left, arcNode, right, r, equi);
 
-    // cross product test
-    // var seg;
-    // if (left.isV && belongsToSegment(arcNode, left)) {
-    //   seg = left.site;
-    // } else if (right.isV && belongsToSegment(arcNode, right)) {
-    //   seg = right.site;
-    // } else {
-    //   return true;
-    // }
+    // half plane test
+    var hpTest;
+    // TODO if flipped?
+    if (left.isV && belongsToSegment(arcNode, left)) {
+      hpTest = isRightOfLine(left.site.a, left.site.b, equi);
+    } else if (right.isV && belongsToSegment(arcNode, right)) {
+      hpTest = !isRightOfLine(right.site.a, right.site.b, equi);
+    } else {
+      return circleTest(left, arcNode, right, dist(arcNode.site, equi), equi);
+    }
+
     // let segV = createBeachlineSegment(seg, directrix);
     // // use the outer bounds
     // var b1 = arcNode.getHorizontalBounds(directrix);
-    // return b1.x0 < segV.p.x && equi.x < segV.p.x || b1.x1 > segV.p.x && equi.x > segV.p.x;
-    // return true;
+    // var hpTest = b1.x0 < segV.p.x && equi.x < segV.p.x || b1.x1 > segV.p.x && equi.x > segV.p.x;
+
+    // If the circle created intersects the segment site that is a part
+    // of the current, left or right arcs then it cannot be on the gvd
+    return hpTest && circleTest(left, arcNode, right, dist(arcNode.site, equi), equi);
   }
 }
 
@@ -122,7 +130,7 @@ function getIntercpt(left, right, directrix) {
   if (left.isV && right.isV) {
     obj = intersectStraightArcs(left, right, directrix);
   } else if (left.isV || right.isV) {
-    var flipped = left.site.flipped || left.site.flipped;
+    var flipped = left.site.flipped || right.site.flipped;
     var isgen = left.isParabola && right.isV || left.isV && right.isParabola;
     obj = intersectParabolicToStraightArc(left, right, flipped, isgen, directrix);
   } else {
@@ -145,16 +153,13 @@ function chooseClosePoint(left, node, right, points, directrix) {
 
     // Option: or test that left and right int. is point?
     var i0 = getIntercpt(left, node, newY);
-    var i1 = getIntercpt(node, right, newY);
-    if (!i0 || i1) return 1e10;
+    var i1 = getIntercpt(node, right, newY); // fails between certain sites?
+    if (!i0 || !i1) return 1e10;
     var diffX = Math.abs(i0.x - i1.x);
     var diffY = Math.abs(i0.y - i1.y);
-    return diffX + diffY; 
+    return diffX + diffY;
   });
   if (_.isEmpty(validPoints)) return null;
-
-  if (validPoints.length > 1)
-    console.log("Valid close points size > 1 at:" + validPoints.length);
 
   return validPoints[0];
 }
@@ -169,12 +174,12 @@ function createCloseEvent(arcNode, directrix) {
   if (left == null || right == null) return null;
   var closePoint;
 
-  if (arcNode.id === 8) {
-    g_addDebug = true;
-    // debugger;
-  } else {
-    g_addDebug = false;
-  }
+  // if (left.id === 10 && arcNode.id === 31 && right.id == 33) {
+  //   g_addDebug = true;
+  //   // debugger;
+  // } else {
+  //   g_addDebug = false;
+  // }
 
   if (arcNode.isParabola && left.isParabola && right.isParabola) {
     // All three are points
@@ -221,6 +226,7 @@ function createCloseEvent(arcNode, directrix) {
   radius = getRadius(closePoint, left, arcNode, right);
   if (!radius) throw "invalid radius";
 
+  closePoint = convertToVec3(closePoint);
   if (canClose(left, arcNode, right, closePoint)){
     return new CloseEvent(closePoint.y - radius, arcNode, left, right, closePoint, radius);
   }

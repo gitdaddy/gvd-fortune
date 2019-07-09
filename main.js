@@ -325,11 +325,13 @@ function fortune() {
     var data;
     if (e.type == "segment") {
       data = 'a(' + e.a.x + ',' + e.a.y + ') - b(' + e.b.x + ',' + e.b.y + ')';
+    } else if (e.isCloseEvent) {
+      data = 'Close:' + e.id + ' -point(' + e.point.x + ',' + e.point.y + ')';
     } else {
       data = 'point(' + e.x + ',' + e.y + ')';
     }
     if (e.isCloseEvent) {
-      ev += data + ' - close node id:' + e.arcNode.id + '>';
+      ev += data;
     } else {
       ev += data + ' r: ' + e.relation;
     }

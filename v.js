@@ -82,9 +82,9 @@ V.prototype.intersect = function(obj) {
       // choose this v left or right based on zArea
       var bisector = bisectSegments(s1, s2);
 
-      if (g_addDebug) {
-        g_debugObjs.push(bisector);
-      }
+      // if (g_addDebug) {
+      //   g_debugObjs.push(bisector);
+      // }
 
       // often P is too close to p2 increment the height by a 0.01 to get a better width for each vector
       if (zArea < 0) {

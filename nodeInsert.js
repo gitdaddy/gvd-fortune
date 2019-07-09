@@ -151,7 +151,7 @@ function nodeInsert(parent, child, arcNode, side, dcel) {
       var vN = subtract(arcNode.site.b, arcNode.site.a);
       var z0 = cross(vC, vN).z;
       parent = siblingV.parent;
-      
+
       // reset close points
       var leftNode = siblingV.prevArc();
       var rightNode = siblingV.nextArc();
@@ -160,7 +160,7 @@ function nodeInsert(parent, child, arcNode, side, dcel) {
       // parent always will set the left child due to how regular split is performed
       if (z0 < 0) {
         // ADBC
-        console.log("ADBC detected");
+        // console.log("ADBC detected");
         if (leftNode.closeEvent) {
           leftNode.closeEvent.live = false;
         }

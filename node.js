@@ -395,6 +395,12 @@ function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, dire
     var x = left.isParabola ? left.site.x : right.site.x;
     // Test get the center intersections
     intersections = consolidate(intersections, x);
+    if (intersections.length == 1) {
+      return {
+        results: intersections,
+        resultIdx: 0
+      };
+    }
   }
 
   this.intersections = intersections;
