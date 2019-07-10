@@ -30,6 +30,36 @@ Object.defineProperty(CloseEvent.prototype, "y", {
 
 ///////////////////// Utility Functions ///////////////////////////////////
 
+function radiusTest(left, node, right, closePoint) {
+  var thresh = 1e-8;
+  if (left.isV && node.isV && right.isV) return true;
+  var segments = _.filter([left, node, right], { isV: true });
+  var points = _.filter([left, node, right], { isParabola: true });
+  var radius = undefined;
+  _.forEach(points, function(p) {
+    if (_.isUndefined(radius)) {
+      radius = dist(p.site, closePoint);
+    } else {
+      var newR = dist(p.site, closePoint);
+      var diff = Math.abs(radius - newR);
+      if (diff > thresh) {
+        console.log("failed radius test diff:" + diff + " -for node:" + p.id);
+        return false;
+      }
+    }
+  });
+
+  _.forEach(segments, function(s) {
+    var newR = dist(s.site, closePoint);
+    var diff = Math.abs(radius - newR);
+    if (diff > thresh) {
+      console.log("failed radius test diff:" + diff + " -for node:" + p.id);
+      return false;
+    }
+  });
+  return true;
+}
+
 function isRightOfLine(upper, lower, p) {
   var v1 = subtract(upper, lower);
   var v2 = subtract(p, lower);
@@ -86,8 +116,7 @@ function canClose(left, arcNode, right, equi) {
       var v2 = subtract(left.site, arcNode.site.b);
       return cross(v1, v2).z < 0;
     }
-    // var r = getRadius(equi, left, arcNode, right);
-    // return circleTest(left, arcNode, right, r, equi);
+
     return true;
   } else {
 
@@ -174,7 +203,7 @@ function createCloseEvent(arcNode, directrix) {
   if (left == null || right == null) return null;
   var closePoint;
 
-  // if (left.id === 10 && arcNode.id === 31 && right.id == 33) {
+  // if (left.id === 1 && arcNode.id === 2 && right.id == 12) {
   //   g_addDebug = true;
   //   // debugger;
   // } else {
@@ -223,8 +252,11 @@ function createCloseEvent(arcNode, directrix) {
     closePoint = p;
   }
 
+  // TODO fix dist(seg, point) function
+  if (!radiusTest(left, arcNode, right, closePoint)) return null;
+
   radius = getRadius(closePoint, left, arcNode, right);
-  if (!radius) throw "invalid radius";
+  if (_.isUndefined(radius)) throw "invalid radius";
 
   closePoint = convertToVec3(closePoint);
   if (canClose(left, arcNode, right, closePoint)){

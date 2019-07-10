@@ -287,7 +287,7 @@ function dist(obj1, obj2) {
   if (obj1.type == "vec" && obj2.type == "vec") {
     if (equal(obj1, obj2)) return 0;
     return length(subtract(vec2(obj1), vec2(obj2)));
-  } else if (obj1.type == "vec" && obj2.type == "segment") {
+  } else if (obj1.type == "vec" && obj2.type == "segment") { // TODO redo segments shouldn't be treated as lines...
     // get the equation of the line from the segment ax + by + c = 0
     // (y1 - y2)x + (x2 - x1)y + (x1y2 - x2y1) = 0
     var a = obj2[0].y - obj2[1].y;

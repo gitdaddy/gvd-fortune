@@ -1,5 +1,13 @@
 // Helper functions for insertion operations
 
+
+function findChildPara(childGuess, left, right, newV) {
+  if (childGuess.isParabola && equal(childGuess.site, newV.site.a)) return childGuess;
+  if (left.isParabola && equal(left.site, newV.site.a)) return left;
+  if (right.isParabola && equal(right.site, newV.site.a)) return right;
+  throw "unable to determine child node when inserting node:" + newV.id;
+}
+
 // function to split the top node
 //   |     |
 // _/|__*  | toSplit
@@ -121,9 +129,8 @@ function splitArcNode(toSplit, node, dcel) {
 }
 
 function nodeInsert(parent, child, arcNode, side, dcel) {
-  var sRight = child.nextArc();
   if (arcNode.isV) {
-    if (arcNode.site.a.y == arcNode.site.b.y) {
+    if (arcNode.site.a.y <= arcNode.site.b.y) {
       throw "Horizontal segment detected";
     }
 
@@ -132,6 +139,7 @@ function nodeInsert(parent, child, arcNode, side, dcel) {
       if (child.isV) {
         siblingV = child;
       } else {
+        var sRight = child.nextArc();
         if (sRight && sRight.isV && equal(sRight.site.a, arcNode.site.a)) {
           siblingV = child;
         } else {
@@ -180,22 +188,33 @@ function nodeInsert(parent, child, arcNode, side, dcel) {
         parent.updateEdge(arcNode.site.a, dcel);
       }
     } else if (_.get(arcNode, "site.a.relation") == NODE_RELATION.CHILD_LEFT_HULL) {
-      if (!child.isParabola) throw "insertion error: invalid child node: " + child.id;
+      if (!child.isParabola) {
+        // console.log("finding new child from node:" + child.id);
+        // if do not have the correct child it should be at least 1 arc away
+        child = findChildPara(child, child.prevArc(), child.nextArc(), arcNode);
+        parent = child.parent;
+      }
+
       // Set edge information since we are using a left joint split
       var nextEdge = child.nextEdge();
       if (nextEdge)
         nextEdge.dcelEdge.generalEdge = false;
-      var newNode = leftJointSplit(child, arcNode, sRight, dcel);
+      var newNode = leftJointSplit(child, arcNode, child.nextArc(), dcel);
       // set the parent since a left joint split may not preserve order
       parent.parent.setChild(newNode, RIGHT_CHILD);
     } else if (_.get(arcNode, "site.a.relation") == NODE_RELATION.CHILD_RIGHT_HULL) {
-      if (!child.isParabola) throw "insertion error: invalid child node: " + child.id;
+      if (!child.isParabola) {
+        // console.log("finding new child from node:" + child.id);
+        // if do not have the correct child it should be at least 1 arc away
+        child = findChildPara(child, child.prevArc(), child.nextArc(), arcNode);
+        parent = child.parent;
+      }
       // Set edge information since we are using a right joint split
       var prevEdge = child.prevEdge();
       if (prevEdge)
         prevEdge.dcelEdge.generalEdge = false;
       // is a arc created by the right hull joint
-      var newNode = rightJointSplit(arcNode, child, sRight, dcel);
+      var newNode = rightJointSplit(arcNode, child, child.nextArc(), dcel);
       parent.parent.setChild(newNode, RIGHT_CHILD);
     } else {
       // regular split
@@ -206,6 +225,7 @@ function nodeInsert(parent, child, arcNode, side, dcel) {
 
   // is parabola
   if (_.get(arcNode, "site.relation") == NODE_RELATION.CLOSING) {
+    var sRight = child.nextArc();
     var updateEdge = child.prevEdge();
     if (sRight.isV && child.isV && equal(child.site.b, sRight.site.b)) {
       updateEdge = child.nextEdge();
