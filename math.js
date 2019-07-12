@@ -272,6 +272,40 @@ PointSegmentBisector.prototype.intersect = function(obj) {
 //------------------------------------------------------------
 //------------------------------------------------------------
 
+// Test if a point falls into the boundary of the sight of the segment line
+function fallsInBoundary(s, point) {
+  if (s.a.x === s.b.x) {
+    return point.y < s.a.y && point.y > s.b.y;
+  }
+  var positiveSlope = s.a.x > s.b.x ? true : false;
+  var AB = subtract(s.b, s.a);
+  var BA = subtract(s.a, s.b);
+  var v1Clockwise = new vec3(AB.y, -AB.x, 0); // 90 degrees perpendicular
+  var v1CounterClockwise = new vec3(-AB.y, AB.x, 0);
+  var v2Clockwise = new vec3(BA.y, -BA.x, 0);
+  var v2CounterClockwise = new vec3(-BA.y, BA.x, 0);
+  // define the boundary endpoints - add end point values
+  var p1a = add(v1Clockwise, s.a);
+  var p2a = add(v1CounterClockwise, s.a);
+  var lineA = _.sortBy([p1a, p2a], 'y');
+  var va = subtract(lineA[1], lineA[0]); // vector from lower to upper
+  var vap = subtract(point, lineA[0]);
+  var z1 = cross(va, vap).z;
+
+  var p1b = add(v2Clockwise, s.b);
+  var p2b = add(v2CounterClockwise, s.b);
+  var lineB = _.sortBy([p1b, p2b], 'y');
+  var vb = subtract(lineB[1], lineB[0]); // vector from lower to upper
+  var vbp = subtract(point, lineB[0]);
+  var z2 = cross(vb, vbp).z;
+  // if the point is in segment bounds it must be to the
+  if (positiveSlope) {
+    return z1 > 0 && z2 < 0;
+  } else {
+    return z1 < 0 && z2 > 0;
+  }
+}
+
 //------------------------------------------------------------
 // Returns the distance between objects 1 and 2.
 //------------------------------------------------------------
@@ -287,22 +321,29 @@ function dist(obj1, obj2) {
   if (obj1.type == "vec" && obj2.type == "vec") {
     if (equal(obj1, obj2)) return 0;
     return length(subtract(vec2(obj1), vec2(obj2)));
-  } else if (obj1.type == "vec" && obj2.type == "segment") { // TODO redo segments shouldn't be treated as lines...
-    // get the equation of the line from the segment ax + by + c = 0
-    // (y1 - y2)x + (x2 - x1)y + (x1y2 - x2y1) = 0
-    var a = obj2[0].y - obj2[1].y;
-    var b = obj2[1].x - obj2[0].x;
-    var c = obj2[0].x * obj2[1].y - obj2[1].x * obj2[0].y;
-    return Math.abs(a * obj1.x + b * obj1.y + c)/Math.sqrt(a*a + b*b);
+  }
+
+  var seg, point;
+  if (obj1.type == "vec" && obj2.type == "segment") {
+    seg = obj2;
+    point = obj1;
   } else if (obj1.type == "segment" && obj2.type == "vec") {
-    // same as the above condition
-    var a = obj1[0].y - obj1[1].y;
-    var b = obj1[1].x - obj1[0].x;
-    var c = obj1[0].x * obj1[1].y - obj1[1].x * obj1[0].y;
-    return Math.abs(a * obj2.x + b * obj2.y + c)/Math.sqrt(a*a + b*b);
+    seg = obj1;
+    point = obj2;
   } else { // Segment to Segment
     console.error("Unable to get distance from parameter objects");
     return;
+  }
+
+  if (fallsInBoundary(seg, point)) {
+    // get the equation of the line from the segment ax + by + c = 0
+    // (y1 - y2)x + (x2 - x1)y + (x1y2 - x2y1) = 0
+    var a = seg[0].y - seg[1].y;
+    var b = seg[1].x - seg[0].x;
+    var c = seg[0].x * seg[1].y - seg[1].x * seg[0].y;
+    return Math.abs(a * point.x + b * point.y + c)/Math.sqrt(a*a + b*b);
+  } else {
+    return Math.min(dist(seg[0], point), dist(seg[1], point));
   }
 }
 

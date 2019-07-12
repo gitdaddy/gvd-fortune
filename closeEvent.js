@@ -30,12 +30,23 @@ Object.defineProperty(CloseEvent.prototype, "y", {
 
 ///////////////////// Utility Functions ///////////////////////////////////
 
+// This test states that each segment must have the close point in
+// it's sight or else the test fails
+function sightTest(left, node, right, closePoint) {
+  var pass = true;
+  _.forEach([left, node, right], function(i) {
+    if (i.isV && !fallsInBoundary(i.site, closePoint)) pass = false;
+  });
+  return pass;
+}
+
 function radiusTest(left, node, right, closePoint) {
   var thresh = 1e-8;
   if (left.isV && node.isV && right.isV) return true;
   var segments = _.filter([left, node, right], { isV: true });
   var points = _.filter([left, node, right], { isParabola: true });
   var radius = undefined;
+  var pass = true;
   _.forEach(points, function(p) {
     if (_.isUndefined(radius)) {
       radius = dist(p.site, closePoint);
@@ -43,21 +54,22 @@ function radiusTest(left, node, right, closePoint) {
       var newR = dist(p.site, closePoint);
       var diff = Math.abs(radius - newR);
       if (diff > thresh) {
-        console.log("failed radius test diff:" + diff + " -for node:" + p.id);
-        return false;
+        // console.log("failed radius test diff:" + diff + " -for node:" + node.id);
+        pass = false;
       }
     }
   });
+  if (!pass) return false;
 
   _.forEach(segments, function(s) {
     var newR = dist(s.site, closePoint);
     var diff = Math.abs(radius - newR);
     if (diff > thresh) {
-      console.log("failed radius test diff:" + diff + " -for node:" + p.id);
-      return false;
+      // console.log("failed radius test diff:" + diff + " -for node:" + node.id);
+      pass = false;
     }
   });
-  return true;
+  return pass;
 }
 
 function isRightOfLine(upper, lower, p) {
@@ -203,7 +215,7 @@ function createCloseEvent(arcNode, directrix) {
   if (left == null || right == null) return null;
   var closePoint;
 
-  // if (left.id === 1 && arcNode.id === 2 && right.id == 12) {
+  // if (left.id === 12 && arcNode.id === 19 && right.id == 30) {
   //   g_addDebug = true;
   //   // debugger;
   // } else {
@@ -252,13 +264,13 @@ function createCloseEvent(arcNode, directrix) {
     closePoint = p;
   }
 
-  // TODO fix dist(seg, point) function
+  closePoint = convertToVec3(closePoint);
   if (!radiusTest(left, arcNode, right, closePoint)) return null;
+  // if (!sightTest(left, arcNode, right, closePoint)) return null;
 
   radius = getRadius(closePoint, left, arcNode, right);
   if (_.isUndefined(radius)) throw "invalid radius";
 
-  closePoint = convertToVec3(closePoint);
   if (canClose(left, arcNode, right, closePoint)){
     return new CloseEvent(closePoint.y - radius, arcNode, left, right, closePoint, radius);
   }
