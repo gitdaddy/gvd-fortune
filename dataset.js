@@ -173,11 +173,10 @@ function createDatasets() {
   // bounding box
   var polygons1 = [];
   var p11 = new Polygon();
-  // p11.addPoint(vec3(0.58, 0.927, 0));
-  p11.addPoint(vec3(0.602, 0.927, 0));
-  p11.addPoint(vec3(0.8235, -0.427, 0));
-  p11.addPoint(vec3(0.001, -0.956, 0));
-  p11.addPoint(vec3(0.443, 0.487, 0));
+  p11.addPoint(vec3(0.002, 2.71, 0));
+  p11.addPoint(vec3(2.8235, -0.0051, 0));
+  p11.addPoint(vec3(-0.001, -2.656, 0));
+  p11.addPoint(vec3(-2.443, 0.007, 0));
   p11.createSegment(0,1);
   p11.createSegment(1,2);
   p11.createSegment(2,3);

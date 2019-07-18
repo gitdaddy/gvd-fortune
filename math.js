@@ -522,56 +522,59 @@ function bisectPoints(p1, p2) {
 //------------------------------------------------------------
 function bisectSegments4(s1, s2, s3) {
   var lines = [];
+  lines.push(bisectSegments(s1, s2));
+  lines.push(bisectSegments(s2, s3));
+  return lines;
 
   // if fully connected segments
-  if (connected(s1, s2) && connected(s2, s3)){
-    lines.push(bisectSegments(s1, s2));
-    lines.push(bisectSegments(s2, s3));
-    return lines;
-  } else if (connected(s1, s3) && connected(s2, s3)) {
-    lines.push(bisectSegments(s1, s3));
-    lines.push(bisectSegments(s2, s3));
-    return lines;
-  } else if (connected(s1, s3) && connected(s1, s2)) {
-    lines.push(bisectSegments(s1, s3));
-    lines.push(bisectSegments(s1, s2));
-    return lines;
-  }
+  // if (connected(s1, s2) && connected(s2, s3)){
+  //   lines.push(bisectSegments(s1, s2));
+  //   lines.push(bisectSegments(s2, s3));
+  //   return lines;
+  // } else if (connected(s1, s3) && connected(s2, s3)) {
+  //   lines.push(bisectSegments(s1, s3));
+  //   lines.push(bisectSegments(s2, s3));
+  //   return lines;
+  // } else if (connected(s1, s3) && connected(s1, s2)) {
+  //   lines.push(bisectSegments(s1, s3));
+  //   lines.push(bisectSegments(s1, s2));
+  //   return lines;
+  // }
 
-  if (connected(s1, s2)){
-    var r1 = bisectSegments(s1, s2);
-    lines.push(r1);
-    var r2 = bisectSegments2(s1, s3);
-    lines.push(r2.b1);
-    if (r2.b2)
-      lines.push(r2.b2);
-    return lines;
-  } else if (connected(s1, s3)){
-    var r1 = bisectSegments(s1, s3);
-    lines.push(r1);
-    var r2 = bisectSegments2(s1, s2);
-    lines.push(r2.b1);
-    if (r2.b2)
-      lines.push(r2.b2);
-    return lines;
-  } else if (connected(s2, s3)) {
-    var r1 = bisectSegments(s2, s3);
-    lines.push(r1);
-    var r2 = bisectSegments2(s1, s2);
-    lines.push(r2.b1);
-    if (r2.b2)
-      lines.push(r2.b2);
-    return lines;
-  }
-  var r1 = bisectSegments2(s1, s2);
-  lines.push(r1.b1);
-  if (r1.b2)
-    lines.push(r1.b2);
-  var r2 = bisectSegments2(s2, s3);
-  lines.push(r2.b1);
-  if (r2.b2)
-    lines.push(r2.b2);
-  return lines;
+  // if (connected(s1, s2)){
+  //   var r1 = bisectSegments(s1, s2);
+  //   lines.push(r1);
+  //   var r2 = bisectSegments2(s1, s3);
+  //   lines.push(r2.b1);
+  //   if (r2.b2)
+  //     lines.push(r2.b2);
+  //   return lines;
+  // } else if (connected(s1, s3)){
+  //   var r1 = bisectSegments(s1, s3);
+  //   lines.push(r1);
+  //   var r2 = bisectSegments2(s1, s2);
+  //   lines.push(r2.b1);
+  //   if (r2.b2)
+  //     lines.push(r2.b2);
+  //   return lines;
+  // } else if (connected(s2, s3)) {
+  //   var r1 = bisectSegments(s2, s3);
+  //   lines.push(r1);
+  //   var r2 = bisectSegments2(s1, s2);
+  //   lines.push(r2.b1);
+  //   if (r2.b2)
+  //     lines.push(r2.b2);
+  //   return lines;
+  // }
+  // var r1 = bisectSegments2(s1, s2);
+  // lines.push(r1.b1);
+  // if (r1.b2)
+  //   lines.push(r1.b2);
+  // var r2 = bisectSegments2(s2, s3);
+  // lines.push(r2.b1);
+  // if (r2.b2)
+  //   lines.push(r2.b2);
+  // return lines;
 }
 
 //------------------------------------------------------------

@@ -215,7 +215,7 @@ function createCloseEvent(arcNode, directrix) {
   if (left == null || right == null) return null;
   var closePoint;
 
-  // if (left.id === 12 && arcNode.id === 19 && right.id == 30) {
+  // if (left.id === 1 && arcNode.id === 2 && right.id == 12) {
   //   g_addDebug = true;
   //   // debugger;
   // } else {
