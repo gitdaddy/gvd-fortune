@@ -143,23 +143,24 @@ Parabola.prototype.prepDraw = function (nodeid, label, x0, x1) {
 //   |                              |
 //   |______________________________|
 Parabola.prototype.setDrawBounds = function (x0, x1) {
-  if (x0 > 1 || x1 < -1) {
-    this.x0 = -1;
-    this.x1 = -1;
+  var BOUND = 5;
+  if (x0 > BOUND || x1 < -BOUND) {
+    this.x0 = -BOUND;
+    this.x1 = -BOUND;
   } else {
     // Optimize the boundaries for a smooth draw
-    x0 = Math.max(x0, -1);
-    x1 = Math.min(x1, 1);
-    if (this.f(x0) > 1) {
-      var xvalues = this.f_(1);
+    x0 = Math.max(x0, -BOUND);
+    x1 = Math.min(x1, BOUND);
+    if (this.f(x0) > BOUND) {
+      var xvalues = this.f_(BOUND);
       if (xvalues.length > 0) {
         x0 = xvalues.reduce(function (a, b) {
           return Math.max(x0, Math.min(a, b));
         });
       }
     }
-    if (this.f(x1) > 1) {
-      var xvalues = this.f_(1);
+    if (this.f(x1) > BOUND) {
+      var xvalues = this.f_(BOUND);
       if (xvalues.length > 0) {
         x1 = xvalues.reduce(function (a, b) {
           return Math.min(x1, Math.max(a, b));

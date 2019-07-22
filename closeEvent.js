@@ -215,7 +215,8 @@ function createCloseEvent(arcNode, directrix) {
   if (left == null || right == null) return null;
   var closePoint;
 
-  // if (left.id === 1 && arcNode.id === 2 && right.id == 12) {
+  // debugging only TODO fix dataset 4
+  // if (left.id === 4 && arcNode.id === 7 && right.id == 17) {
   //   g_addDebug = true;
   //   // debugger;
   // } else {

@@ -9,6 +9,7 @@
 
 var g_id = 0;
 var g_label = 1;
+let g_boundingBox;
 
 var NODE_RELATION = {
   TOP: 1,
@@ -172,16 +173,16 @@ function findNeighborSegments(node) {
 function createDatasets() {
   // bounding box
   var polygons1 = [];
-  var p11 = new Polygon();
-  p11.addPoint(vec3(0.002, 2.71, 0));
-  p11.addPoint(vec3(2.8235, -0.0051, 0));
-  p11.addPoint(vec3(-0.001, -2.656, 0));
-  p11.addPoint(vec3(-2.443, 0.007, 0));
-  p11.createSegment(0,1);
-  p11.createSegment(1,2);
-  p11.createSegment(2,3);
-  p11.createSegment(3,0);
-  polygons1.push(p11);
+  var g_boundingBox = new Polygon();
+  g_boundingBox.addPoint(vec3(0.002, 2.71, 0));
+  g_boundingBox.addPoint(vec3(2.8235, -0.0051, 0));
+  g_boundingBox.addPoint(vec3(-0.001, -2.656, 0));
+  g_boundingBox.addPoint(vec3(-2.443, 0.007, 0));
+  g_boundingBox.createSegment(0,1);
+  g_boundingBox.createSegment(1,2);
+  g_boundingBox.createSegment(2,3);
+  g_boundingBox.createSegment(3,0);
+  polygons1.push(g_boundingBox);
 
   var polygons2 = [];
   var p21 = new Polygon();
@@ -210,6 +211,7 @@ function createDatasets() {
   p21.createSegment(10,11);
   p21.createSegment(11,0);
   polygons2.push(p21);
+  polygons2.push(g_boundingBox);
 
   var polygons3 = [];
   var p31 = new Polygon();
@@ -220,6 +222,7 @@ function createDatasets() {
   }
   p31.createSegment(3,4);
   polygons3.push(p31);
+  polygons3.push(g_boundingBox);
 
   var polygons4 = [];
   var p41 = new Polygon();
@@ -244,6 +247,7 @@ function createDatasets() {
   p42.createSegment(1, 2);
   p42.createSegment(2, 0);
   polygons4.push(p42);
+  polygons4.push(g_boundingBox);
 
   Math.seedrandom('3');
   var numRandom2 = 100;
@@ -253,6 +257,7 @@ function createDatasets() {
   	p.addPoint(vec3(Math.random()*2-1, Math.random()*2-1, 0));
   	polygons5.push(p);
   }
+  polygons5.push(g_boundingBox);
 
   g_datasets = {
     'dataset1' : polygons1,

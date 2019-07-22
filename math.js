@@ -132,7 +132,7 @@ function inteceptCircleSeg(circle, line){
   // if the points are too close return the tanget point
   if (ret.length == 2) {
     var diff = dist(new vec3(ret[0].x, ret[0].y,0), new vec3(ret[1].x, ret[1].y,0));
-    if (diff < 1e-7) return [ret[0]];
+    if (diff < 1e-6) return [ret[0]];
   }
   return ret;
 }
@@ -160,6 +160,24 @@ function intersectLines(p1, p2, p3, p4) {
   var x = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4))/denom;
   var y = ((x1*y2-y1*x2)*(y3-y4) - (y1-y2)*(x3*y4-y3*x4))/denom;
   return vec3(x, y, 0);
+}
+
+function intersectLeftRightLines(leftLines, rightLines) {
+  if (g_addDebug) {
+    _.forEach(leftLines, function(l) {
+      g_debugObjs.push(l);
+    });
+    _.forEach(rightLines, function(l) {
+      g_debugObjs.push(l);
+    });
+  }
+  var rslts = [];
+  _.forEach(leftLines, function(l1) {
+    _.forEach(rightLines, function(l2) {
+        rslts.push(intersectLines(l1.p1, l1.p2, l2.p1, l2.p2));
+    });  
+  });  
+  return rslts;
 }
 
 //------------------------------------------------------------
@@ -240,18 +258,6 @@ function ppIntersect(h1, k1, p1, h2, k2, p2) {
 //------------------------------------------------------------
 PointSegmentBisector = function(p, s) {
   p = vec3(p);
-  // let v = subtract(s[1], s[0]);
-  // let v_unit = normalize(v);
-  // let w = subtract(p, s[0]);
-  // let d = dot(w, v_unit);
-  // if (d < length(v)) {
-  //   // In the shadow, so fully parabolic
-  //   this.para = createGeneralParabola(p, s);
-  //   this.para.prepDraw(100, add(p, vec3(-1, -1, 0)), add(p, vec3(1,1,0)));
-  // }
-  // else {
-  //   throw "PointSegmentBisector not implemented";
-  // }
   this.para = createGeneralParabola(p, s);
   this.para.prepDraw(100, add(p, vec3(-1, -1, 0)), add(p, vec3(1,1,0)));
 }
@@ -516,109 +522,97 @@ function bisectPoints(p1, p2) {
 }
 
 //------------------------------------------------------------
-// bisectSegments3
+// bisectSegments4
 // Return up two 4 bisecting lines
 // NOTE: this bisects LINES not SEGMENTS.
 //------------------------------------------------------------
 function bisectSegments4(s1, s2, s3) {
-  var lines = [];
-  lines.push(bisectSegments(s1, s2));
-  lines.push(bisectSegments(s2, s3));
-  return lines;
-
-  // if fully connected segments
-  // if (connected(s1, s2) && connected(s2, s3)){
-  //   lines.push(bisectSegments(s1, s2));
-  //   lines.push(bisectSegments(s2, s3));
-  //   return lines;
-  // } else if (connected(s1, s3) && connected(s2, s3)) {
-  //   lines.push(bisectSegments(s1, s3));
-  //   lines.push(bisectSegments(s2, s3));
-  //   return lines;
-  // } else if (connected(s1, s3) && connected(s1, s2)) {
-  //   lines.push(bisectSegments(s1, s3));
-  //   lines.push(bisectSegments(s1, s2));
-  //   return lines;
-  // }
-
-  // if (connected(s1, s2)){
-  //   var r1 = bisectSegments(s1, s2);
-  //   lines.push(r1);
-  //   var r2 = bisectSegments2(s1, s3);
-  //   lines.push(r2.b1);
-  //   if (r2.b2)
-  //     lines.push(r2.b2);
-  //   return lines;
-  // } else if (connected(s1, s3)){
-  //   var r1 = bisectSegments(s1, s3);
-  //   lines.push(r1);
-  //   var r2 = bisectSegments2(s1, s2);
-  //   lines.push(r2.b1);
-  //   if (r2.b2)
-  //     lines.push(r2.b2);
-  //   return lines;
-  // } else if (connected(s2, s3)) {
-  //   var r1 = bisectSegments(s2, s3);
-  //   lines.push(r1);
-  //   var r2 = bisectSegments2(s1, s2);
-  //   lines.push(r2.b1);
-  //   if (r2.b2)
-  //     lines.push(r2.b2);
-  //   return lines;
-  // }
-  // var r1 = bisectSegments2(s1, s2);
-  // lines.push(r1.b1);
-  // if (r1.b2)
-  //   lines.push(r1.b2);
-  // var r2 = bisectSegments2(s2, s3);
-  // lines.push(r2.b1);
-  // if (r2.b2)
-  //   lines.push(r2.b2);
-  // return lines;
+  var l = [];
+  var r = [];
+  l.push(bisectSegments2(s1, s2));
+  r.push(bisectSegments2(s2, s3));
+  return {
+    left: _.flatten(l),
+    right: _.flatten(r)
+  };
 }
 
 //------------------------------------------------------------
 // bisectSegments2
-// Return the lines bisecting two lines. Possible 2 bisectors
+// Return the lines bisecting two segments using large and small angles. 
+// Possible 2 bisectors
+// If the segments are connected then the only true bisector is returned
 // NOTE: this bisects LINES not SEGMENTS.
 //------------------------------------------------------------
 function bisectSegments2(s1, s2) {
+  // if connected segments
+  if (connected(s1, s2)){
+    return [smallAngleBisectSegments(s1, s2)];
+  }
+ 
+  // return [largeAngleBisectSegments(s1, s2)];
+  // return [smallAngleBisectSegments(s1, s2)];
+  return [smallAngleBisectSegments(s1, s2), largeAngleBisectSegments(s1, s2)];
+}
+
+//------------------------------------------------------------
+// bisectSegments
+// Return the line bisecting two lines. For the smallest angle 
+// Returns two points [q1,q2] defining
+// the line. The vector v=q2-q1 will be oriented in the negative y direction.
+// TODO parallel test?
+// NOTE: this bisects LINES not SEGMENTS.
+//------------------------------------------------------------
+function smallAngleBisectSegments(s1, s2) {
   // get the closest points
   var d1 = dist(s1.a, s2.a);
   var d2 = dist(s1.a, s2.b);
   var d3 = dist(s1.b, s2.a);
   var d4 = dist(s1.b, s2.b);
-
   if (d1 < d2 && d1 < d3 && d1 < d4) {
-    // TODO is this correct?
-    // s1Prime = s1;
-    s2Prime = s2;
-    s1Prime = makeSegment(s1.b, s1.a, true);
-    // s2Prime = makeSegment(s2.b, s2.a, true);
   } else if (d2 < d1 && d2 < d3 && d2 < d4) {
-    s1Prime = s1;
-    s2Prime = s2;
     s2 = makeSegment(s2.b, s2.a, true);
   } else if (d3 < d1 && d3 < d2 && d3 < d4) {
-    s1Prime = s1;
-    s2Prime = s2;
     s1 = makeSegment(s1.b, s1.a, true);
-  } else {
-    // TODO is this correct?
-    // s1Prime = s1;
-    s2Prime = s2;
+  } else if (d4 < d1 && d4 < d2 && d4 < d3) {
     s1 = makeSegment(s1.b, s1.a, true);
-    s1Prime = s1;
     s2 = makeSegment(s2.b, s2.a, true);
   }
-  var beta1 = getSegmentsBisector(s1, s2, false);
-  var v1 = new vec3(Math.cos(beta1), Math.sin(beta1), 0);
-  var p1 = intersectLines(s1.a, s1.b, s2.a, s2.b);
-  var l1 = new Line(p1, add(p1, v1));
-  var beta2 = getSegmentsBisector(s1Prime, s2Prime, false);
-  var v2 = new vec3(Math.cos(beta2), Math.sin(beta2), 0);
-  var l2 = new Line(p1, add(p1, v2));
-  return {b1:l1, b2:l2};
+
+  var beta = getSegmentsBisector(s1, s2, false);
+  var v = new vec3(Math.cos(beta), Math.sin(beta), 0);
+  var p = intersectLines(s1.a, s1.b, s2.a, s2.b);
+  var l = new Line(p, add(p, v));
+  return l;
+}
+
+//------------------------------------------------------------
+// bisectSegments returning the bisector between the largest angle
+// Return the line bisecting two lines. Returns two points [q1,q2] defining
+// the line. The vector v=q2-q1 will be oriented in the negative y direction.
+// TODO parallel test?
+// NOTE: this bisects LINES not SEGMENTS.
+//------------------------------------------------------------
+function largeAngleBisectSegments(s1, s2) {
+  // console.log("largest angle");
+  // get the closest points
+  var d1 = dist(s1.a, s2.a);
+  var d2 = dist(s1.a, s2.b);
+  var d3 = dist(s1.b, s2.a);
+  var d4 = dist(s1.b, s2.b);
+  if (d1 < d2 && d1 < d3 && d1 < d4) {
+    s2 = makeSegment(s2.b, s2.a, true);
+  } 
+  // else if (d2 < d1 && d2 < d3 && d2 < d4) {
+  // } else if (d3 < d1 && d3 < d2 && d3 < d4) {
+  // } else if (d4 < d1 && d4 < d2 && d4 < d3) {
+  // }
+
+  var beta = getSegmentsBisector(s1, s2, false);
+  var v = new vec3(Math.cos(beta), Math.sin(beta), 0);
+  var p = intersectLines(s1.a, s1.b, s2.a, s2.b);
+  var l = new Line(p, add(p, v));
+  return l;
 }
 
 //------------------------------------------------------------
@@ -627,7 +621,10 @@ function bisectSegments2(s1, s2) {
 // the line. The vector v=q2-q1 will be oriented in the negative y direction.
 // NOTE: this bisects LINES not SEGMENTS.
 //------------------------------------------------------------
-function bisectSegments(s1, s2, pointHint) {
+function bisectSegmentsWithHint(s1, s2, pointHint) {
+  if (!pointHint) {
+    throw "using segment bisector with invalid hint - use bisectSegments4 instead";
+  }
   // get the closest points
   var d1 = dist(s1.a, s2.a);
   var d2 = dist(s1.a, s2.b);
@@ -636,14 +633,14 @@ function bisectSegments(s1, s2, pointHint) {
   if (d1 < d2 && d1 < d3 && d1 < d4) {
   } else if (d2 < d1 && d2 < d3 && d2 < d4) {
     var useLargeAngle = false;
-    if (pointHint && !connected(s1, s2)){
+    if (!connected(s1, s2)){
       useLargeAngle = chooseLargestAngle(s1, s2, pointHint);
     }
     if (!useLargeAngle)
       s2 = makeSegment(s2.b, s2.a, true);
   } else if (d3 < d1 && d3 < d2 && d3 < d4) {
     var useLargeAngle = false;
-    if (pointHint && !connected(s1, s2)){
+    if (!connected(s1, s2)){
       useLargeAngle = chooseLargestAngle(s1, s2, pointHint);
     }
     if (!useLargeAngle)
@@ -682,7 +679,8 @@ function bisect(a, b, pointHint = null) {
   } else if (b.type == 'vec') {
     bisector = bisectPointSegment(b, a);
   } else {
-    bisector = bisectSegments(a, b, pointHint);
+    // TODO this may not be enough
+    bisector = bisectSegmentsWithHint(a, b, pointHint);
   }
   return bisector;
 }
@@ -705,7 +703,6 @@ function intersect(a, b) {
     // general parabola and line
     intersection = a.intersect(b);
   } else {
-    // Handle for parametric intersections - get the first - check that this is correct
     intersection = a.intersect(b);
   }
   return intersection;
@@ -748,59 +745,8 @@ function equidistant(left, arc, right) {
     }
   } else if (segments.length == 3) {
     var blines = bisectSegments4(left, arc, right);
-    if (blines.length < 2) return null;
-    var rslt = [];
-    // compute n choose 2 intersections for n lines (2-4) lines
-    if (blines.length == 2) {
-      if (g_addDebug) {
-        g_debugObjs.push(blines[0]);
-        g_debugObjs.push(blines[1]);
-      }
-      return [intersect(blines[0], blines[1])];
-    } else if (blines.length == 3) {
-      // (ab, ac, bc)
-      var ab = intersect(blines[0], blines[1]);
-      if (ab)
-        rslt.push(ab);
-      var ac = intersect(blines[0], blines[2]);
-      if (ac)
-        rslt.push(ac);
-      var bc = intersect(blines[1], blines[2]);
-      if (bc)
-        rslt.push(bc);
-      if (g_addDebug) {
-        g_debugObjs.push(blines[0]);
-        g_debugObjs.push(blines[1]);
-        g_debugObjs.push(blines[2]);
-      }
-    } else if (blines.length == 4) {
-      // (ab, ac, ad, bc, bd, cd)
-      var ab = intersect(blines[0], blines[1]);
-      if (ab)
-        rslt.push(ab);
-      var ac = intersect(blines[0], blines[2]);
-      if (ac)
-      rslt.push(ac);
-      var ad = intersect(blines[0], blines[3]);
-      if (ad)
-        rslt.push(ad);
-      var bc = intersect(blines[1], blines[2]);
-      if (bc)
-        rslt.push(bc);
-      var bd = intersect(blines[1], blines[3]);
-      if (bd)
-        rslt.push(bd);
-      var cd = intersect(blines[2], blines[3]);
-      if (cd)
-        rslt.push(cd);
-      if (g_addDebug) {
-        g_debugObjs.push(blines[0]);
-        g_debugObjs.push(blines[1]);
-        g_debugObjs.push(blines[2]);
-        g_debugObjs.push(blines[3]);
-      }
-    }
-    return rslt;
+    if (blines.left.length === 0 || blines.right.length === 0) return null;
+    return intersectLeftRightLines(blines.left, blines.right);
   } else {
     b1 = bisect(left, arc);
     b2 = bisect(arc, right);

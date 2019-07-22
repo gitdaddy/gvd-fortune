@@ -80,7 +80,7 @@ V.prototype.intersect = function(obj) {
         return [this.p];
       }
       // choose this v left or right based on zArea
-      var bisector = bisectSegments(s1, s2);
+      var bisector = smallAngleBisectSegments(s1, s2);
 
       // if (g_addDebug) {
       //   g_debugObjs.push(bisector);

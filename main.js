@@ -391,7 +391,7 @@ function toggleFS() {
     var w2 = window.innerWidth/2;
     d3.select("#gvd")
       .attr("transform",
-      "translate(" + w2 + "," + h2 + ") scale(" + width/2.0 + "," + -1*height/2.0 + ")");
+      "translate(" + w2 + "," + h2 + ") scale(" + width/4.0 + "," + -1*height/4.0 + ")");
     document.getElementById("mainView").className = "fullscreen";
   } else {
     d3.select(".tree")
