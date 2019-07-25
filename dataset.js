@@ -126,18 +126,24 @@ function parseInputJSON(jsonStr) {
   var result = [];
   _.forEach(data.polygons, function(polygon) {
     var poly = new Polygon();
-    for(var i = 0; i < polygon.points.length; i++) {
-      if (i !== polygon.points.length - 1) {
-        var point = new vec3(polygon.points[i].x,  polygon.points[i].y, 0);
-        poly.addPoint(point);
-        if (i !== 0) {
-          // if not the first point in the polygon
-           poly.createSegment(i-1, i);
+    if (polygon.points.length > 1) {
+      for(var i = 0; i < polygon.points.length; i++) {
+        if (i !== polygon.points.length - 1) {
+          var point = new vec3(polygon.points[i].x,  polygon.points[i].y, 0);
+          poly.addPoint(point);
+          if (i !== 0) {
+            // if not the first point in the polygon
+             poly.createSegment(i-1, i);
+          }
+        } else {
+          // last segment in the polygon (end, start)
+          poly.createSegment(i-1, 0);
         }
-      } else {
-        // last segment in the polygon (end, start)
-        poly.createSegment(i-1, 0);
       }
+    } else {
+      // only a single point
+      var point = new vec3(polygon.points[0].x,  polygon.points[0].y, 0);
+      poly.addPoint(point);
     }
     result.push(poly);
   });
@@ -173,7 +179,7 @@ function findNeighborSegments(node) {
 function createDatasets() {
   // bounding box
   var polygons1 = [];
-  var g_boundingBox = new Polygon();
+  g_boundingBox = new Polygon();
   g_boundingBox.addPoint(vec3(0.002, 2.71, 0));
   g_boundingBox.addPoint(vec3(2.8235, -0.0051, 0));
   g_boundingBox.addPoint(vec3(-0.001, -2.656, 0));

@@ -31,6 +31,7 @@ Object.defineProperty(CloseEvent.prototype, "y", {
 ///////////////////// Utility Functions ///////////////////////////////////
 
 function validDiff(diff, id) {
+  // WATCH VALUE
   var MAX_DIFF = 1e-2;
   if (diff > MAX_DIFF){
     // console.log("Max diff exceeded when closing node:" + id + " value:" + diff);
@@ -232,7 +233,7 @@ function createCloseEvent(arcNode, directrix) {
   var closePoint;
 
   // debugging only
-  // if (left.id === 23 && arcNode.id === 30 && right.id == 26) {
+  // if (left.id === 21 && arcNode.id === 22 && right.id == 10) {
   //   g_addDebug = true;
   //   // debugger;
   // } else {

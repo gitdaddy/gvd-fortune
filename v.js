@@ -37,7 +37,10 @@ V = function(line, directrix, id) {
 }
 
 function filterOutPointsLowerThan(points, valY){
-  return _.filter(points, function(p) {return p.y >= valY;});
+  return _.filter(points, function(p) {
+    if (!p) return false;
+    return p.y >= valY;
+  });
 }
 
 // Intersect the V with a parabola.
@@ -132,6 +135,7 @@ V.prototype.intersect = function(obj) {
         g_debugObjs.push(new Line(p1, p2v1));
       }
 
+      // TODO FIX when really precise p1 and p2v0 are the same??!?!?
       var i0 = intersectLines(p1, p2v0, p3, p4);
       var i1 = intersectLines(p1, p2v1, p3, p4);
       var validPoints = filterOutPointsLowerThan([i0, i1], p3.y);

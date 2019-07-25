@@ -50,6 +50,7 @@ Beachline.prototype.add = function (site) {
   // so we can still process arc intersections
   if (site.type == "segment") {
     // we need to move the smallest amount possible
+    // WATCH VALUE
      directrix -= 1e-7;
   }
 

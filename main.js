@@ -240,6 +240,7 @@ function datasetChange(value) {
     if (g_datasets[value].length == 0) {
       $.get("/data").then(function (json) {
         var polygons = parseInputJSON(json);
+        polygons.push(g_boundingBox);
         g_datasets[value] = polygons;
         g_polygons = polygons;
         processNewDataset();

@@ -10,6 +10,7 @@ const port = 8080;
 
 function getRandomAdjustment() {
   var value = Math.random() * .001;
+  if (value === 0.0) {return 0.0001;}
   return Math.random() < 0.5 ? -value : value;
 }
 
@@ -36,31 +37,29 @@ function getDatasetJson() {
   // read in the files
   var json = {};
   var polygons = [];
-  // var files = fs.readFileSync('./data/testFiles.txt', 'utf-8').split('\n');
+  var files = fs.readFileSync('./data/testFiles.txt', 'utf-8').split('\n');
   // Load the whole dataset
-  var files = fs.readFileSync('./data/maze/files.txt', 'utf-8').split('\n');
+  // var files = fs.readFileSync('./data/maze/files.txt', 'utf-8').split('\n');
   files.forEach(file => {
     var inputPoints = fs.readFileSync(file, 'utf-8').split('\n');
     var dataPoints = [];
-    inputPoints.forEach(input => {
-      if (input !== "") {
-        var p = input.split(" ");
-        if (p.length != 2)
-          throw "Invalid input data line:" + input;
-
-        var newElem = {x: parseFloat(p[0]), y: parseFloat(p[1])};
-        if (dataPoints.length > 0){
-          var previousElem = dataPoints[dataPoints.length - 1];
-
-          // move the new element down slightly so we don't process the horizontal line
-          if (previousElem.y == newElem.y) {
-            newElem.y -= getRandomAdjustment();
-          }
+    inputPoints = _.compact(inputPoints);
+    if (inputPoints.length === 2) {
+      var p = inputPoints[0].split(" ");
+      var newElem = {x: parseFloat(p[0]), y: parseFloat(p[1])};
+      dataPoints.push(newElem)
+    } else {
+      inputPoints.forEach(input => {
+        if (input !== "") {
+          var p = input.split(" ");
+          if (p.length != 2)
+            throw "Invalid input data line:" + input;
+          var newElem = {x: parseFloat(p[0]), y: parseFloat(p[1])};
+          dataPoints.push(newElem);
+          sanitizeData(dataPoints);
         }
-        dataPoints.push(newElem);
-        sanitizeData(dataPoints);
-      }
-    });
+      });
+    }
     // one file per polygon
     polygons.push({points: dataPoints});
   });

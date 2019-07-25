@@ -141,7 +141,7 @@ function nodeInsert(parent, child, arcNode, side, dcel) {
       } else {
         var sRight = child.nextArc();
         if (sRight && sRight.isV && equal(sRight.site.a, arcNode.site.a)) {
-          siblingV = child;
+          siblingV = sRight;
         } else {
           siblingV = child.prevArc();
         }

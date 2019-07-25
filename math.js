@@ -129,10 +129,11 @@ function inteceptCircleSeg(circle, line){
       retP2.y = line.p1.y + v1.y * u2;
       ret[ret.length] = retP2;
   }
-  // if the points are too close return the tanget point
+  // if the points are too close return the tangent point
   if (ret.length == 2) {
     var diff = dist(new vec3(ret[0].x, ret[0].y,0), new vec3(ret[1].x, ret[1].y,0));
-    if (diff < 1e-6) return [ret[0]];
+    // WATCH VALUE
+    if (diff < 5e-6) return [ret[0]];
   }
   return ret;
 }
