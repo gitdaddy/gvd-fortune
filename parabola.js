@@ -19,20 +19,21 @@ function parabola_f(x, h, k, p) {
 // directrix is at k-p
 // focus is at k+p
 // y = (x-h)^2/(4p) + k
-Parabola = function (focus, h, k, p) {//, theta, offset) {
+Parabola = function (focus, h, k, p, id) {//, theta, offset) {
   this.focus = focus;
   this.h = h;
   this.k = k;
   this.p = p;
   this.miny = k;
+  this.id = id;
 }
 
 // The directrix is assumed to be horizontal and is given as a y-value.
-function createParabola(focus, directrix) {
+function createParabola(focus, directrix, id) {
   var h = focus.x;
   var k = (directrix + focus.y) / 2;
   var p = (focus.y - directrix) / 2;
-  return new Parabola(focus, h, k, p);
+  return new Parabola(focus, h, k, p, id);
 }
 
 Parabola.prototype.intersect = function (object) {

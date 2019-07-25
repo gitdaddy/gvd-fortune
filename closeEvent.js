@@ -30,6 +30,30 @@ Object.defineProperty(CloseEvent.prototype, "y", {
 
 ///////////////////// Utility Functions ///////////////////////////////////
 
+function validDiff(diff, id) {
+  var MAX_DIFF = 1e-2;
+  if (diff > MAX_DIFF){
+    // console.log("Max diff exceeded when closing node:" + id + " value:" + diff);
+    return false;
+  }
+  return true;
+}
+
+function getDiff(left, node, right, p, directrix) {
+  var radius = getRadius(p, left, node, right);
+  var newY = p.y - radius;
+  // rule out points too far above the directrix
+  if (newY > directrix) return 1e10;
+
+  // Option: or test that left and right intersection
+  var i0 = getIntercpt(left, node, newY);
+  var i1 = getIntercpt(node, right, newY);
+  if (!i0 || !i1) return 1e10;
+  var diffX = Math.abs(i0.x - i1.x);
+  var diffY = Math.abs(i0.y - i1.y);
+  return diffX + diffY;
+}
+
 // This test states that each segment must have the close point in
 // it's sight or else the test fails
 function sightTest(left, node, right, closePoint) {
@@ -116,28 +140,28 @@ function circleTest(left, node, right, r, closePoint) {
 */
 function canClose(left, arcNode, right, equi) {
   if (arcNode.isV) {
+    var can = true;
     // if the V is arcing with the top parabola then both sites must coincide
     if (left.isParabola && right.isParabola && equal(arcNode.site.a, left.site)) {
       // the right site should be on the left of the segment
       var v1 = subtract(arcNode.site.a, arcNode.site.b);
       var v2 = subtract(right.site, arcNode.site.b);
-      return cross(v1, v2).z > 0;
+      can = cross(v1, v2).z > 0;
     } else if (right.isParabola && left.isParabola && equal(arcNode.site.a, right.site)) {
       // the left site should be on the right of the segment
       var v1 = subtract(arcNode.site.a, arcNode.site.b);
       var v2 = subtract(left.site, arcNode.site.b);
-      return cross(v1, v2).z < 0;
+      can = cross(v1, v2).z < 0;
     }
 
-    return true;
+    return can;
   } else {
 
     // half plane test
     var hpTest;
-    // TODO if flipped?
-    if (left.isV && belongsToSegment(arcNode, left)) {
+    if (left.isV && equal(arcNode.site, left.site.a)) {
       hpTest = isRightOfLine(left.site.a, left.site.b, equi);
-    } else if (right.isV && belongsToSegment(arcNode, right)) {
+    } else if (right.isV && equal(arcNode.site, right.site.a)) {
       hpTest = !isRightOfLine(right.site.a, right.site.b, equi);
     } else {
       return circleTest(left, arcNode, right, dist(arcNode.site, equi), equi);
@@ -184,24 +208,16 @@ function getIntercpt(left, right, directrix) {
 // based on arc size @ point
 function chooseClosePoint(left, node, right, points, directrix) {
   if (points.length === 1) return points[0];
+  var leastDiff = 10000;
   // length test - the length of node's arc should be close to 0
   // for the correct point
   var validPoints = _.sortBy(points, function (p) {
-    var radius = getRadius(p, left, node, right);
-    var newY = p.y - radius;
-    // rule out points too far above the directrix
-    if (newY > directrix) return 1e10;
-
-    // Option: or test that left and right int. is point?
-    var i0 = getIntercpt(left, node, newY);
-    var i1 = getIntercpt(node, right, newY); // fails between certain sites?
-    if (!i0 || !i1) return 1e10;
-    var diffX = Math.abs(i0.x - i1.x);
-    var diffY = Math.abs(i0.y - i1.y);
-    return diffX + diffY;
+    var diff = getDiff(left, node, right, p, directrix);
+    if (diff < leastDiff)
+     leastDiff = diff;
+    return diff;
   });
-  if (_.isEmpty(validPoints)) return null;
-
+  if (_.isEmpty(validPoints) || !validDiff(leastDiff)) return null;
   return validPoints[0];
 }
 
@@ -215,8 +231,8 @@ function createCloseEvent(arcNode, directrix) {
   if (left == null || right == null) return null;
   var closePoint;
 
-  // debugging only TODO fix dataset 4
-  // if (left.id === 4 && arcNode.id === 7 && right.id == 17) {
+  // debugging only
+  // if (left.id === 23 && arcNode.id === 30 && right.id == 26) {
   //   g_addDebug = true;
   //   // debugger;
   // } else {
@@ -257,8 +273,12 @@ function createCloseEvent(arcNode, directrix) {
   if (equi == null || equi.length == 0) return null;
   if (equi.length == 1) {
     closePoint = equi[0];
+    var diff = getDiff(left, arcNode, right, closePoint, directrix);
+    if (!validDiff(diff)) return null;
   } else if (equi.type && equi.type == "vec") {
     closePoint = equi;
+    var diff = getDiff(left, arcNode, right, closePoint, directrix);
+    if (!validDiff(diff)) return null;
   } else {
     var p = chooseClosePoint(left, arcNode, right, equi, directrix);
     if (!p) return null;

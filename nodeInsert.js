@@ -116,9 +116,9 @@ function splitArcNode(toSplit, node, dcel) {
     var x = node.site.x;
     var y;
     if (toSplit.isParabola) {
-      y = createParabola(toSplit.site, node.site.y).f(x);
+      y = createParabola(toSplit.site, node.site.y, toSplit.id).f(x);
     } else {
-      y = new V(toSplit.site, node.site.y).f(x);
+      y = new V(toSplit.site, node.site.y, toSplit.id).f(x);
     }
     vertex = vec3(x, y, 0);
   }

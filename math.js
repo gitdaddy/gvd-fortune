@@ -175,8 +175,8 @@ function intersectLeftRightLines(leftLines, rightLines) {
   _.forEach(leftLines, function(l1) {
     _.forEach(rightLines, function(l2) {
         rslts.push(intersectLines(l1.p1, l1.p2, l2.p1, l2.p2));
-    });  
-  });  
+    });
+  });
   return rslts;
 }
 
@@ -539,7 +539,7 @@ function bisectSegments4(s1, s2, s3) {
 
 //------------------------------------------------------------
 // bisectSegments2
-// Return the lines bisecting two segments using large and small angles. 
+// Return the lines bisecting two segments using large and small angles.
 // Possible 2 bisectors
 // If the segments are connected then the only true bisector is returned
 // NOTE: this bisects LINES not SEGMENTS.
@@ -549,7 +549,7 @@ function bisectSegments2(s1, s2) {
   if (connected(s1, s2)){
     return [smallAngleBisectSegments(s1, s2)];
   }
- 
+
   // return [largeAngleBisectSegments(s1, s2)];
   // return [smallAngleBisectSegments(s1, s2)];
   return [smallAngleBisectSegments(s1, s2), largeAngleBisectSegments(s1, s2)];
@@ -557,7 +557,7 @@ function bisectSegments2(s1, s2) {
 
 //------------------------------------------------------------
 // bisectSegments
-// Return the line bisecting two lines. For the smallest angle 
+// Return the line bisecting two lines. For the smallest angle
 // Returns two points [q1,q2] defining
 // the line. The vector v=q2-q1 will be oriented in the negative y direction.
 // TODO parallel test?
@@ -602,7 +602,7 @@ function largeAngleBisectSegments(s1, s2) {
   var d4 = dist(s1.b, s2.b);
   if (d1 < d2 && d1 < d3 && d1 < d4) {
     s2 = makeSegment(s2.b, s2.a, true);
-  } 
+  }
   // else if (d2 < d1 && d2 < d3 && d2 < d4) {
   // } else if (d3 < d1 && d3 < d2 && d3 < d4) {
   // } else if (d4 < d1 && d4 < d2 && d4 < d3) {

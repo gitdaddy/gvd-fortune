@@ -31,12 +31,12 @@ ArcNode.prototype.toString = function () {
 ArcNode.prototype.createDrawElement = function (leftx, rightx, directrix) {
   let element = null;
   if (this.isParabola) {
-    let para = createParabola(this.site, directrix);
+    let para = createParabola(this.site, directrix, this.id);
     para.prepDraw(this.id, this.site.label, leftx, rightx);
     element = para;
     element.type = "parabola";
   } else if (this.isV) {
-    var v = new V(this.site, directrix);
+    var v = new V(this.site, directrix, this.id);
     v.prepDraw(this.id, this.site.label, leftx, rightx);
     element = v;
     element.type = "v";
@@ -309,8 +309,8 @@ EdgeNode.prototype.intersection = function (directrix) {
 
 // Does not support horizontal arcs
 function intersectStraightArcs(left, right, directrix){
-  let pleft = createBeachlineSegment(left.site, directrix);
-  let pright = createBeachlineSegment(right.site, directrix);
+  let pleft = createBeachlineSegment(left.site, directrix, left.id);
+  let pright = createBeachlineSegment(right.site, directrix, right.id);
   let intersections = pleft.intersect(pright);
   if (intersections.length == 0 || !intersections[0]) {
     throw "error number of intersections is 0 between node id: " + left.id + " and node: " + right.id;
@@ -351,8 +351,8 @@ function intersectStraightArcs(left, right, directrix){
 
 // Function supports the intersection of a parabolic arc to any other arc type
 function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, directrix){
-  var pleft = createBeachlineSegment(left.site, directrix);
-  var pright = createBeachlineSegment(right.site, directrix);
+  var pleft = createBeachlineSegment(left.site, directrix, left.id);
+  var pright = createBeachlineSegment(right.site, directrix, right.id);
 
   // if (leftArcNode.id === 9 && rightArcNode.id === 6) {
   //   g_addDebug = true;
@@ -445,8 +445,8 @@ function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, dire
 
 // Function supports the intersection of a parabolic arc to any other arc type
 function intersectParabolicArcs(left, right, directrix){
-  let pleft = createBeachlineSegment(left.site, directrix);
-  let pright = createBeachlineSegment(right.site, directrix);
+  let pleft = createBeachlineSegment(left.site, directrix, left.id);
+  let pright = createBeachlineSegment(right.site, directrix, right.id);
   let intersections = pleft.intersect(pright);
 
   if (intersections.length == 0 || !intersections[0]) {

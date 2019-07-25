@@ -17,16 +17,12 @@ var Beachline = function (dcel) {
 // Utility functions
 //
 
-function createBeachlineSegment(site, directrix) {
+function createBeachlineSegment(site, directrix, id) {
   if (isSegment(site)) {
-    return new V(site, directrix);
+    return new V(site, directrix, id);
   }
-  return createParabola(site, directrix);
+  return createParabola(site, directrix, id);
 }
-
-// function existSiblingSite(arc, next) {
-//   return next && next.isV && equal(next.site.a, arc.site.a)
-// }
 
 function shareVClosing(arcNode, sibling) {
   if (!arcNode.isV || !sibling.isV) return false;

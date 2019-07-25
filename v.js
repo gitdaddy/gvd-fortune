@@ -14,7 +14,7 @@
 var tolerance = 0.00001;
 // line is given as a pair of points through which the line passes.
 // The sweepline is assumed to be horizontal and is given as a y-value.
-V = function(line, directrix) {
+V = function(line, directrix, id) {
   lineSegment = _.sortBy(line, [function(i) { return i.y; }]);
   this.y1 = lineSegment[1];
   this.y0 = lineSegment[0];
@@ -33,18 +33,23 @@ V = function(line, directrix) {
   });
   this.vectors = vectors;
   this.miny = directrix > Math.min(this.y0.y, this.y1.y) ? directrix : Math.min(this.y0.y, this.y1.y);
+  this.id = id;
 }
 
-function getJoint(ay0, ay1, by0, by1) {
-  if (equal(ay0, by0)) return {point: ay0, relation: ay0.relation};
-  if (equal(ay1, by0)) return {point: ay1, relation: ay1.relation};
-  if (equal(ay0, by1)) return {point: ay0, relation: ay0.relation};
-  if (equal(ay1, by1)) return {point: ay1, relation: ay1.relation};
-  return null;
+function filterOutPointsLowerThan(points, valY){
+  return _.filter(points, function(p) {return p.y >= valY;});
 }
 
 // Intersect the V with a parabola.
 V.prototype.intersect = function(obj) {
+
+  // if (this.id === 23 && obj.id === 30) {
+  //   g_addDebug = true;
+  //   // debugger;
+  // } else {
+  //   g_addDebug = false;
+  // }
+
   if (obj instanceof Parabola) {
     ret = [];
     var p = this.p;
@@ -82,9 +87,9 @@ V.prototype.intersect = function(obj) {
       // choose this v left or right based on zArea
       var bisector = smallAngleBisectSegments(s1, s2);
 
-      // if (g_addDebug) {
-      //   g_debugObjs.push(bisector);
-      // }
+      if (g_addDebug) {
+        g_debugObjs.push(bisector);
+      }
 
       // often P is too close to p2 increment the height by a 0.01 to get a better width for each vector
       if (zArea < 0) {
@@ -120,7 +125,21 @@ V.prototype.intersect = function(obj) {
         // left of upper
         p4 = vec3(upperV.f_(upperV.y1.y)[0], upperV.y1.y, 0);
       }
-      return _.sortBy([intersectLines(p1, p2v0, p3, p4), intersectLines(p1, p2v1, p3, p4)], 'x');
+
+      if (g_addDebug) {
+        g_debugObjs.push(new Line(p3, p4));
+        g_debugObjs.push(new Line(p1, p2v0));
+        g_debugObjs.push(new Line(p1, p2v1));
+      }
+
+      var i0 = intersectLines(p1, p2v0, p3, p4);
+      var i1 = intersectLines(p1, p2v1, p3, p4);
+      var validPoints = filterOutPointsLowerThan([i0, i1], p3.y);
+      if (validPoints.length == 0) {
+        console.error("invalid intersection between id:" + this.id + " and arc id:" + obj.id);
+        return [];
+      }
+      return _.sortBy(validPoints, 'x');
     }
   }
   throw "intersection type not implemented";
