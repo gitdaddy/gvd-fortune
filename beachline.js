@@ -39,12 +39,12 @@ Beachline.prototype.add = function (site) {
   var directrix = site.y;
 
   // debugging only
-  // if (arcNode.id === 9) {
-  //   g_addDebug = true;
-  //   // debugger;
-  // } else {
-  //   g_addDebug = false;
-  // }
+  if (arcNode.id === 13) {
+    g_addDebug = true;
+    // debugger;
+  } else {
+    g_addDebug = false;
+  }
 
   // move the directrix slightly downward for segments
   // so we can still process arc intersections

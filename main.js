@@ -4,6 +4,7 @@ var sweepline = 0.1;
 
 let g_datasets = {};
 let g_polygons = [];
+let g_queue = {};
 
 var sweepLine;
 var program;
@@ -44,49 +45,8 @@ function processNewDataset() {
   drawSites(points);
   drawSegments(segments);
 
-  //------------------------------
-  // Check for identical y values.
-  //------------------------------
-  // var yvalues = [];
-  // points.forEach(function (p) {
-  //   yvalues.push(p.y);
-  // });
-  // yvalues.sort();
-  // for (var i = 1; i < yvalues.length; ++i) {
-  //   if (yvalues[i] == yvalues[i - 1]) {
-  //     console.log("WARNING: sites with identical y values of " + yvalues[i]);
-  //   }
-  // }
-
-  // //------------------------------
-  // // Check for identical x values.
-  // //------------------------------
-  // var xvalues = [];
-  // points.forEach(function (p) {
-  //   xvalues.push(p.x);
-  // });
-  // xvalues.sort();
-  // for (var i = 1; i < xvalues.length; ++i) {
-  //   if (xvalues[i] == xvalues[i - 1]) {
-  //     console.log("WARNING: sites with identical x values of " + xvalues[i]);
-  //   }
-  // }
-
-  events = [];
-  // Add points as events
-  points.forEach(function (p) {
-    events.push(p);
-  });
-  // Add segments as events
-  segments.forEach(function (s) {
-    events.push(s);
-  });
   render();
 }
-
-var events = new TinyQueue([], function (a, b) {
-  return a.y > b.y ? -1 : a.y < b.y ? 1 : 0;
-});
 
 var reverseEvents = [];
 
@@ -119,7 +79,7 @@ function keydown(event) {
   if (x == 40 || key == "j" || key == "J") {
     // Down arrow
     if (event.shiftKey) {
-      incSweepline(-inc * 0.1);
+      incSweepline(-inc * 0.01);
     } else if (event.ctrlKey) {
       incSweepline(-inc * 10);
     } else {
@@ -129,29 +89,29 @@ function keydown(event) {
   } else if (x == 38 || key == "k" || key == "K") {
     // Up arrow
     if (event.shiftKey) {
-      incSweepline(inc * 0.1);
+      incSweepline(inc * 0.01);
     } else if (event.ctrlKey) {
       incSweepline(inc * 10);
     } else {
       incSweepline(inc);
     }
     changed = true;
-  } else if (x == 39) {
-    // Right arrow
-    if (events.length > 0) {
-      var p = events.pop();
-      reverseEvents.push(p);
-      setSweepline(p[1]);
-      changed = true;
-    }
-  } else if (x == 37) {
-    // Left arrow
-    if (reverseEvents.length > 0) {
-      var p = reverseEvents.pop();
-      events.push(p);
-      setSweepline(p[1]);
-      changed = true;
-    }
+  // } else if (x == 39) {
+  //   // Right arrow
+  //   if (events.length > 0) {
+  //     var p = events.pop();
+  //     reverseEvents.push(p);
+  //     setSweepline(p[1]);
+  //     changed = true;
+  //   }
+  // } else if (x == 37) {
+  //   // Left arrow
+  //   if (reverseEvents.length > 0) {
+  //     var p = reverseEvents.pop();
+  //     events.push(p);
+  //     setSweepline(p[1]);
+  //     changed = true;
+  //   }
   } else if (key == "d") {
     // Print the sweepline value
     console.log("sweepline = " + sweepline);
@@ -255,50 +215,77 @@ function datasetChange(value) {
   }
 }
 
-function fortune() {
-  nodeId = 1;
+function sortedInsertion(queue, newEvent) {
+  var yVal = newEvent.y;
+  var idx = _.findIndex(queue, function(event) { return event.y > yVal; });
+  // insert the new event in order or on top
+  if (idx === -1) {
+    queue.push(newEvent);
+  } else {
+    // PERFORMANCE - optional boost using pop/shift instead
+    queue.splice(idx, 0, newEvent);
+  }
+}
+
+// Create the queue for the current dataset
+function createDataQueue(reorder){
+  if (!reorder) {
+    if (g_queue[localStorage.g_dataset]) return [...g_queue[localStorage.g_dataset]];
+  }
+  var rslt = [];
   var points = [];
   var segments = [];
   g_polygons.forEach(function(poly) {
     points = points.concat(poly.points);
     segments = segments.concat(poly.segments);
   });
+  var sortedPoints = _.sortBy(points, 'y');
+
+  _.forEach(sortedPoints, function(p) {
+    var segs = _.remove(segments, function(s) {
+      return equal(s.a, p);
+    });
+    if (!_.isEmpty(segs)) {
+      var ss = _.sortBy(segs, function(seg) {
+        return seg.b.x;
+      });
+      _.forEach(ss, function (s) {
+        rslt.push(s);
+      });
+    }
+    rslt.push(p);
+  });
+
+  // create a clone of the result to access again
+  g_queue[localStorage.g_dataset] = [...rslt];
+  return rslt;
+}
+
+function fortune(reorder) {
+  nodeId = 1;
+  var queue = createDataQueue(reorder);
   dcel = new DCEL();
   var beachline = new Beachline(dcel);
-  var pointsCopy = points.slice();
-  _.forEach(segments, function (seg) { seg.ordered = false; });
-  var segmentsCopy = segments.slice();
-  var events = new TinyQueue(pointsCopy.concat(segmentsCopy), function (a, b) {
-    return a.y > b.y ? -1 : a.y < b.y ? 1 : 0;
-  });
   closeEventPoints = [];
-  while (events.length > 0 && events.peek().y > sweepline) {
-    var e = events.pop();
-    /* process segment end points first before the segments
-                * A      In the Queue order: BCA
-              /  \       Processing order ABC
-          B  /    \ C
-     */
-    while (e.type == "segment" && !e.ordered) {
-      e.ordered = true;
-      events.push(e);
-      e = events.pop();
-    }
-    if (e.isCloseEvent) {
-      if (e.live && e.arcNode.closeEvent.live) {
-        var destPrev = e.arcNode.prevEdge().dcelEdge.dest;
-        var destNext = e.arcNode.nextEdge().dcelEdge.dest;
+  if (queue.length < 1) return beachline;
+  var nextY = queue[queue.length - 1].y;
+  while (queue.length > 0 && nextY > sweepline) {
+    var event = queue.pop();
+    if (event.isCloseEvent) {
+      if (event.live && event.arcNode.closeEvent.live) {
+        var destPrev = event.arcNode.prevEdge().dcelEdge.dest;
+        var destNext = event.arcNode.nextEdge().dcelEdge.dest;
         // only set if not overridden
         if (!destPrev.overridden) {
-          destPrev.point = e.point;
+          destPrev.point = event.point;
         }
         if (!destNext.overridden) {
-          destNext.point = e.point;
+          destNext.point = event.point;
         }
-        var newEvents = beachline.remove(e.arcNode, e.point, e.y);
+        var newEvents = beachline.remove(event.arcNode, event.point, event.y);
         newEvents.forEach(function (ev) {
-          if (ev.y < e.y - 0.000001) {
-            events.push(ev);
+          if (ev.y < event.y - 0.000001) {
+            sortedInsertion(queue, ev);
             if (ev.isCloseEvent) {
               closeEventPoints.push(ev);
             }
@@ -308,28 +295,32 @@ function fortune() {
       }
     } else {
       // Site event
-      var newEvents = beachline.add(e);
+      var newEvents = beachline.add(event);
       newEvents.forEach(function (ev) {
-        if (ev.y < e.y - 0.000001) {
-          events.push(ev);
+        if (ev.y < event.y - 0.000001) {
+          sortedInsertion(queue, ev);
           if (ev.isCloseEvent) {
             closeEventPoints.push(ev);
           }
         }
       });
     }
+    if (queue.length > 0)
+      nextY = queue[queue.length - 1].y;
   }
 
   var ev = '';
-  while (events.length > 0) {
-    var e = events.pop();
+  while (queue.length > 0) {
+    var e = queue.pop();
+    var at = "(y)@:" + e.y + " ";
     var data;
     if (e.type == "segment") {
-      data = 'a(' + e.a.x + ',' + e.a.y + ') - b(' + e.b.x + ',' + e.b.y + ')';
+      data = at + 'a(' + e.a.x + ',' + e.a.y + ') - b(' + e.b.x + ',' + e.b.y + ')';
     } else if (e.isCloseEvent) {
-      data = 'Close:' + e.id + ' -point(' + e.point.x + ',' + e.point.y + ')';
+      var live = e.live && e.arcNode.closeEvent.live ? "(Live)" : "(Dead)";
+      data = at + 'Close:' + e.id + " " + live + ' -point(' + e.point.x + ',' + e.point.y + ')';
     } else {
-      data = 'point(' + e.x + ',' + e.y + ')';
+      data = at + 'point(' + e.x + ',' + e.y + ')';
     }
     if (e.isCloseEvent) {
       ev += data;
@@ -342,11 +333,14 @@ function fortune() {
   return beachline;
 }
 
-function render() {
+function render(reorder = false) {
   g_debugObjs = [];
   var t0 = performance.now();
-  var beachline = fortune();
+  var beachline = fortune(reorder);
   var t1 = performance.now();
+
+  var t = t1 - t0;
+  console.log("Time to process:" + t);
 
   drawBeachline(beachline, sweepline, showEvents);
   drawCloseEvents(closeEventPoints);
@@ -364,7 +358,8 @@ function onSiteDrag() {
     segments = segments.concat(poly.segments);
   });
   drawSegments(segments);
-  render();
+  // the drag could have changed the queue order
+  render(true);
 }
 
 /// Code For Debugging the GVD
