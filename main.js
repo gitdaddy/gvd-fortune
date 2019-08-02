@@ -340,7 +340,7 @@ function render(reorder = false) {
   var t1 = performance.now();
 
   var t = t1 - t0;
-  console.log("Time to process:" + t);
+  // console.log("Time to process:" + t);
 
   drawBeachline(beachline, sweepline, showEvents);
   drawCloseEvents(closeEventPoints);

@@ -51,6 +51,17 @@ function midPoint(p1, p2) {
   return new vec3((p1.x + p2.x)/2.0, (p1.y + p2.y)/2.0, 0);
 }
 
+
+function dividesRightOfLine(a1, b1, a2, b2) {
+  return isRightOfLine(a1, b1, a2) && isRightOfLine(a1, b1, b2)
+}
+
+function isRightOfLine(upper, lower, p) {
+  var v1 = subtract(upper, lower);
+  var v2 = subtract(p, lower);
+  return cross(v1, v2).z < 0;
+}
+
 //------------------------------------------------------------
 // Line class
 //------------------------------------------------------------
@@ -553,7 +564,9 @@ function bisectSegments2(s1, s2) {
 
   // return [largeAngleBisectSegments(s1, s2)];
   // return [smallAngleBisectSegments(s1, s2)];
-  return [smallAngleBisectSegments(s1, s2), largeAngleBisectSegments(s1, s2)];
+  var s = smallAngleBisectSegments(s1, s2);
+  var l = largeAngleBisectSegments(s1, s2);
+  return [s, l];
 }
 
 //------------------------------------------------------------

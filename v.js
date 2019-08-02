@@ -43,15 +43,70 @@ function filterOutPointsLowerThan(points, valY){
   });
 }
 
+function intersectsTarget(line, t){
+  // if the intersection is on the line of the target
+  var i = intersectLines(line.y1, line.y0 , t.y1, t.y0);
+  // if the intersection is within the y bounds
+  // only works for non-horizontal lines
+  return i.y <= t.y1.y && i.y >= t.y0.y;
+}
+
+// get right and left lines
+// at most 3 are returned
+function getLines(l, r){
+  var lines = {
+    left: [],
+    right: []
+  };
+  // 3 cases: 1 l divides r, r divides l, neither divide
+  var t1 = intersectsTarget(l, r);
+  var t2 = intersectsTarget(r, l);
+  if (t1 && t2) throw "Error invalid input data";
+  if (!t1 && !t2) {
+    if (dividesRightOfLine(l.y1, l.y0, r.y1, r.y0)) {
+      lines.left.push(new Line(l.p, add(l.vectors[1], l.p)));
+      lines.right.push(new Line (r.p, add(r.vectors[0], r.p)));
+    } else {
+      lines.left.push(new Line(l.p, add(l.vectors[0], l.p)));
+      lines.right.push(new Line (r.p, add(r.vectors[1], r.p)));
+    }
+  } else if (t1) {
+    lines.left.push(new Line(l.p, add(l.vectors[1], l.p)));
+    lines.left.push(new Line(l.p, add(l.vectors[0], l.p)));
+    if (dividesRightOfLine(r.y1, r.y0, l.y1, l.y0)) {
+      lines.right.push(new Line (r.p, add(r.vectors[1], r.p)));
+    } else {
+      lines.right.push(new Line (r.p, add(r.vectors[0], r.p)));
+    }
+  } else { // r intersects l
+    lines.right.push(new Line (r.p, add(r.vectors[1], r.p)));
+    lines.right.push(new Line (r.p, add(r.vectors[0], r.p)));
+    if (dividesRightOfLine(l.y1, l.y0, r.y1, r.y0)) {
+      lines.left.push(new Line(l.p, add(l.vectors[1], l.p)));
+    } else {
+      lines.left.push(new Line(l.p, add(l.vectors[0], l.p)));
+    }
+  }
+
+  // _.forEach(lefts, function(p) {
+  //   lines.left.push(new Line(l.p, p));
+  // });
+
+  // _.forEach(rights, function(p) {
+  //   lines.right.push(new Line(r.p, p));
+  // });
+
+  return lines;
+}
+
 // Intersect the V with a parabola.
 V.prototype.intersect = function(obj) {
-
-  // if (this.id === 23 && obj.id === 30) {
-  //   g_addDebug = true;
-  //   // debugger;
-  // } else {
-  //   g_addDebug = false;
-  // }
+  if (this.id === 4 && obj.id === 7) {
+    g_addDebug = true;
+    // debugger;
+  } else {
+    g_addDebug = false;
+  }
 
   if (obj instanceof Parabola) {
     ret = [];
@@ -105,42 +160,25 @@ V.prototype.intersect = function(obj) {
         return [intersectLines(this.p, pPrime, bisector.p1, bisector.p2)];
       }
     } else {
-      // The lower V should never have to worry about intersecting with the
-      // the upper V's 'hidden' arc
-      var upperV = this.y1.y > obj.y1.y ? this : obj;
-      var lowerV = this.y1.y > obj.y1.y ? obj : this;
-      // the lower V must be to one side of the upper V
-      // use the zArea to determine which side
-      var y0_y1 = subtract(upperV.y1, upperV.y0);
-      var y0_Ly0 = subtract(lowerV.y0, upperV.y0);
-      var y0_Ly1 = subtract(lowerV.y1, upperV.y0);
-      // z area between this and obj
-      var zArea = cross(y0_y1, y0_Ly0).z + cross(y0_y1, y0_Ly1).z;
-      var p1,p2v0,p2v1,p3,p4;
-      p1 = lowerV.p;
-      p2v0 = vec3(lowerV.f_(lowerV.y1.y)[0], lowerV.y1.y, 0);
-      p2v1 = vec3(lowerV.f_(lowerV.y1.y)[1], lowerV.y1.y, 0);
-      p3 = upperV.p;
-      if (zArea < 0) {
-        // right of upper
-        p4 = vec3(upperV.f_(upperV.y1.y)[1], upperV.y1.y, 0);
-      } else {
-        // left of upper
-        p4 = vec3(upperV.f_(upperV.y1.y)[0], upperV.y1.y, 0);
-      }
-
+      var lines = getLines(this, obj);
       if (g_addDebug) {
-        g_debugObjs.push(new Line(p3, p4));
-        g_debugObjs.push(new Line(p1, p2v0));
-        g_debugObjs.push(new Line(p1, p2v1));
+        _.forEach(lines.left, function(l) {
+          g_debugObjs.push(l);
+        });
+        _.forEach(lines.right, function(l) {
+          g_debugObjs.push(l);
+        });
       }
+      var intersects = [];
+      _.forEach(lines.left, function(l) {
+        _.forEach(lines.right, function(r) {
+          intersects.push(intersectLines(l.p1, l.p2, r.p1, r.p2));
+        });
+      });
 
-      // TODO FIX when really precise p1 and p2v0 are the same??!?!?
-      var i0 = intersectLines(p1, p2v0, p3, p4);
-      var i1 = intersectLines(p1, p2v1, p3, p4);
-      var validPoints = filterOutPointsLowerThan([i0, i1], p3.y);
+      var validPoints = filterOutPointsLowerThan(intersects, this.p.y);
       if (validPoints.length == 0) {
-        console.error("invalid intersection between id:" + this.id + " and arc id:" + obj.id);
+        // console.error("invalid intersection between id:" + this.id + " and arc id:" + obj.id);
         return [];
       }
       return _.sortBy(validPoints, 'x');

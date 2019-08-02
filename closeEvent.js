@@ -97,12 +97,6 @@ function radiusTest(left, node, right, closePoint) {
   return pass;
 }
 
-function isRightOfLine(upper, lower, p) {
-  var v1 = subtract(upper, lower);
-  var v2 = subtract(p, lower);
-  return cross(v1, v2).z < 0;
-}
-
 // return true if the circle test passes false otherwise
 function circleTest(left, node, right, r, closePoint) {
   // include all associated sites such as segment sites
@@ -202,6 +196,7 @@ function getIntercpt(left, right, directrix) {
   } else {
     obj = intersectParabolicArcs(left, right, directrix);
   }
+  if (!obj) return null;
   return obj.results[obj.resultIdx];
 }
 
@@ -233,7 +228,7 @@ function createCloseEvent(arcNode, directrix) {
   var closePoint;
 
   // debugging only
-  // if (left.id === 21 && arcNode.id === 22 && right.id == 10) {
+  // if (left.id === 9 && arcNode.id === 15 && right.id == 29) {
   //   g_addDebug = true;
   //   // debugger;
   // } else {

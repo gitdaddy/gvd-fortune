@@ -288,7 +288,7 @@ EdgeNode.prototype.intersection = function (directrix) {
   // This is inefficient. We should be storing sites in edge nodes.
   let leftArcNode = this.prevArc();
   let rightArcNode = this.nextArc();
-  // if (leftArcNode.id == 12 && rightArcNode.id == 11) {
+  // if (leftArcNode.id == 15 && rightArcNode.id == 29) {
   //   g_addDebug = true;
   //   // debugger;
   // } else {
@@ -313,7 +313,8 @@ function intersectStraightArcs(left, right, directrix){
   let pright = createBeachlineSegment(right.site, directrix, right.id);
   let intersections = pleft.intersect(pright);
   if (intersections.length == 0 || !intersections[0]) {
-    throw "error number of intersections is 0 between node id: " + left.id + " and node: " + right.id;
+    // console.log("number of intersections is 0 between node id: " + left.id + " and node: " + right.id);
+    return null;
   }
 
   if (intersections.length == 1) {
@@ -363,10 +364,6 @@ function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, dire
 
   var intersections = pleft.intersect(pright);
 
-  // _.remove(intersections, function (i) {
-  //   return _.isUndefined(i) || i.x <= leftx;
-  // });
-
   _.remove(intersections, function (i) {
     return _.isUndefined(i);
   });
@@ -380,8 +377,10 @@ function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, dire
       var backupLine = new Line(vec3(-1, para.focus.y, 0), vec3(1, para.focus.y, 0));
       intersections = V.intersect(backupLine);
     }
-    if (intersections.length == 0 || !intersections[0])
-    throw "error number of intersections is 0 between node id: " + left.id + " and node: " + right.id;
+    if (intersections.length == 0 || !intersections[0]) {
+      console.log("number of intersections is 0 between node id: " + left.id + " and node: " + right.id);
+      return null;
+    }
   }
 
   if (intersections.length == 1) {
