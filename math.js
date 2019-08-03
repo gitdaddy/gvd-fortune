@@ -562,10 +562,15 @@ function bisectSegments2(s1, s2) {
     return [smallAngleBisectSegments(s1, s2)];
   }
 
-  // return [largeAngleBisectSegments(s1, s2)];
-  // return [smallAngleBisectSegments(s1, s2)];
   var s = smallAngleBisectSegments(s1, s2);
-  var l = largeAngleBisectSegments(s1, s2);
+  // the line for the large angle is perpendicular to the
+  // small angle bisector
+  var sorted = _.sortBy([s.p1, s.p2], 'y');
+  var AB = subtract(sorted[0], sorted[1]);
+  var v1Clockwise = new vec3(AB.y, -AB.x, 0); // 90 degrees perpendicular
+  var v1CounterClockwise = new vec3(-AB.y, AB.x, 0);
+  var intersect = intersectLines(s1.a, s1.b, s2.a, s2.b);
+  var l = new Line(add(v1Clockwise, intersect), add(v1CounterClockwise, intersect));
   return [s, l];
 }
 
@@ -592,35 +597,6 @@ function smallAngleBisectSegments(s1, s2) {
     s1 = makeSegment(s1.b, s1.a, true);
     s2 = makeSegment(s2.b, s2.a, true);
   }
-
-  var beta = getSegmentsBisector(s1, s2, false);
-  var v = new vec3(Math.cos(beta), Math.sin(beta), 0);
-  var p = intersectLines(s1.a, s1.b, s2.a, s2.b);
-  var l = new Line(p, add(p, v));
-  return l;
-}
-
-//------------------------------------------------------------
-// bisectSegments returning the bisector between the largest angle
-// Return the line bisecting two lines. Returns two points [q1,q2] defining
-// the line. The vector v=q2-q1 will be oriented in the negative y direction.
-// TODO parallel test?
-// NOTE: this bisects LINES not SEGMENTS.
-//------------------------------------------------------------
-function largeAngleBisectSegments(s1, s2) {
-  // console.log("largest angle");
-  // get the closest points
-  var d1 = dist(s1.a, s2.a);
-  var d2 = dist(s1.a, s2.b);
-  var d3 = dist(s1.b, s2.a);
-  var d4 = dist(s1.b, s2.b);
-  if (d1 < d2 && d1 < d3 && d1 < d4) {
-    s2 = makeSegment(s2.b, s2.a, true);
-  }
-  // else if (d2 < d1 && d2 < d3 && d2 < d4) {
-  // } else if (d3 < d1 && d3 < d2 && d3 < d4) {
-  // } else if (d4 < d1 && d4 < d2 && d4 < d3) {
-  // }
 
   var beta = getSegmentsBisector(s1, s2, false);
   var v = new vec3(Math.cos(beta), Math.sin(beta), 0);
