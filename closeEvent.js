@@ -41,6 +41,10 @@ function validDiff(diff, id) {
 }
 
 function getDiff(left, node, right, p, directrix) {
+  if (!p) {
+    console.error("Diff point invalid");
+    return 1e10;
+  }
   var radius = getRadius(p, left, node, right);
   var newY = p.y - radius;
   // rule out points too far above the directrix

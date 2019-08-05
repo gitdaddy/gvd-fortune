@@ -48,7 +48,16 @@ Parabola.prototype.intersect = function (object) {
 // be returned in order of t value.
 // The ray is given in parametric form p(t) = p + tv
 Parabola.prototype.intersectRay = function (p, v) {
+
+  if (this.p === 0) {
+    console.error("P value === 0");
+    this.p = 1e-10;
+  }
+
   var tvals = lpIntersect(this.h, this.k, this.p, p, v);
+
+  if (!tvals || _.isNaN(tvals[0]))
+  console.error("Intersect Ray Tvals Invalid");
   // Sort tvals in increasing order
   if (tvals.length == 2 && tvals[1] < tvals[0]) {
     tvals = [tvals[1], tvals[0]];
@@ -57,6 +66,10 @@ Parabola.prototype.intersectRay = function (p, v) {
   var ret = [];
   tvals.forEach(function (t) {
     var q = add(p, mult(v, t));
+
+    if (!q[0] || _.isNaN(q[0]))
+    console.error("Intersect Ray result Invalid");
+
     ret.push(q);
     // Taking this guard out allows computing close points with negative tvals
     // if (t >= 0) {

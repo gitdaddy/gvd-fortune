@@ -601,6 +601,10 @@ function smallAngleBisectSegments(s1, s2) {
   var beta = getSegmentsBisector(s1, s2, false);
   var v = new vec3(Math.cos(beta), Math.sin(beta), 0);
   var p = intersectLines(s1.a, s1.b, s2.a, s2.b);
+  if (!p || !l) {
+    // if lines are parallel?
+    console.error("Invalid value p or v");
+  }
   var l = new Line(p, add(p, v));
   return l;
 }

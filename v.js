@@ -48,6 +48,10 @@ function intersectsTarget(line, t){
   var i = intersectLines(line.y1, line.y0 , t.y1, t.y0);
   // if the intersection is within the y bounds
   // only works for non-horizontal lines
+  if (!i) {
+    console.error("Intersection invalid");
+    return false;
+  }
   return i.y <= t.y1.y && i.y >= t.y0.y;
 }
 
@@ -62,14 +66,20 @@ function getLines(l, r){
   var t1 = intersectsTarget(l, r);
   var t2 = intersectsTarget(r, l);
   if (t1 && t2) throw "Error invalid input data";
-  if (!t1 && !t2) {
+  if (!t1 && !t2) { // neither divide
+    // all combinations possible 11, 10, 01, 00
     if (dividesRightOfLine(l.y1, l.y0, r.y1, r.y0)) {
       lines.left.push(new Line(l.p, add(l.vectors[1], l.p)));
-      lines.right.push(new Line (r.p, add(r.vectors[0], r.p)));
     } else {
       lines.left.push(new Line(l.p, add(l.vectors[0], l.p)));
-      lines.right.push(new Line (r.p, add(r.vectors[1], r.p)));
     }
+
+    if (dividesRightOfLine(r.y1, r.y0, l.y1, l.y0)) {
+      lines.right.push(new Line (r.p, add(r.vectors[1], r.p)));
+    } else {
+      lines.right.push(new Line (r.p, add(r.vectors[0], r.p)));
+    }
+
   } else if (t1) {
     lines.left.push(new Line(l.p, add(l.vectors[1], l.p)));
     lines.left.push(new Line(l.p, add(l.vectors[0], l.p)));
@@ -87,26 +97,17 @@ function getLines(l, r){
       lines.left.push(new Line(l.p, add(l.vectors[0], l.p)));
     }
   }
-
-  // _.forEach(lefts, function(p) {
-  //   lines.left.push(new Line(l.p, p));
-  // });
-
-  // _.forEach(rights, function(p) {
-  //   lines.right.push(new Line(r.p, p));
-  // });
-
   return lines;
 }
 
 // Intersect the V with a parabola.
 V.prototype.intersect = function(obj) {
-  if (this.id === 4 && obj.id === 7) {
-    g_addDebug = true;
-    // debugger;
-  } else {
-    g_addDebug = false;
-  }
+  // if (this.id === 4 && obj.id === 16) {
+  //   g_addDebug = true;
+  //   // debugger;
+  // } else {
+  //   g_addDebug = false;
+  // }
 
   if (obj instanceof Parabola) {
     ret = [];
@@ -124,6 +125,8 @@ V.prototype.intersect = function(obj) {
     this.vectors.forEach(function(v) {
       ret.push(intersectLines(p, v, obj.p1, obj.p2));
     });
+    if (!ret[0] || _.isNaN(ret[0][0]))
+      console.error("V - Para result Invalid between arc:" + this.id + " and arc:" + obj.id);
     // sort by xvalues if x0 < x1 [x0, x1]
     ret = _.sortBy(ret, [function(i) { return i.x; }]);
     return ret;

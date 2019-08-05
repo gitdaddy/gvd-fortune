@@ -302,6 +302,10 @@ EdgeNode.prototype.intersection = function (directrix) {
   } else {
     obj = intersectParabolicArcs(leftArcNode, rightArcNode, directrix);
   }
+  if (!obj) {
+    console.error("Invalid intersection between arc node:" + leftArcNode.id + " and node:" + rightArcNode.id);
+    return null;
+  }
   this.intersections = obj.results;
   this.selectedIntersection =  obj.results[obj.resultIdx];
   return obj.results[obj.resultIdx];
@@ -355,7 +359,7 @@ function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, dire
   var pleft = createBeachlineSegment(left.site, directrix, left.id);
   var pright = createBeachlineSegment(right.site, directrix, right.id);
 
-  // if (leftArcNode.id === 9 && rightArcNode.id === 6) {
+  // if (left.id === 4 && right.id === 16) {
   //   g_addDebug = true;
   //   // debugger;
   // } else {
