@@ -260,12 +260,6 @@ function createGeneralParabola(focus, directrix) {
   return new GeneralParabola(focus, h, k, p, theta, 0, splitSite);
 }
 
-// GeneralParabola.prototype.getTransformedParabola() {
-
-//   var parabola = new Parabola(focus, h, k, p);
-//   // TODO
-// }
-
 GeneralParabola.prototype.transformPoint = function (p) {
   if (this.theta == 0) return p;
 
@@ -322,6 +316,11 @@ GeneralParabola.prototype.intersectRay = function (p, v) {
   p = this.transformPoint(p);
   v = this.transformVector(v);
 
+  if (v.x === 0) {
+    console.error("Horizontal vector detected");
+    return [];
+  }
+
   var tvals = lpIntersect(this.parabola.h, this.parabola.k, this.parabola.p, p, v);
   // Sort tvals in increasing order
   if (tvals.length == 2 && tvals[1] < tvals[0]) {
@@ -336,6 +335,9 @@ GeneralParabola.prototype.intersectRay = function (p, v) {
     ret.push(q);
     // Taking this guard out allows computing close points with negative tvals
     // if (t >= 0) {
+    //   var q = add(p, mult(v, t));
+    //   q = pthis.untransformPoint(q);
+    //   ret.push(q);
     // }
   });
   return ret.length == 1 ? ret[0] : ret;

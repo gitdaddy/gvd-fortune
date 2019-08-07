@@ -49,7 +49,7 @@ function intersectsTarget(line, t){
   // if the intersection is within the y bounds
   // only works for non-horizontal lines
   if (!i) {
-    console.error("Intersection invalid");
+    // most likely the lines are parallel
     return false;
   }
   return i.y <= t.y1.y && i.y >= t.y0.y;
@@ -102,12 +102,12 @@ function getLines(l, r){
 
 // Intersect the V with a parabola.
 V.prototype.intersect = function(obj) {
-  // if (this.id === 4 && obj.id === 16) {
-  //   g_addDebug = true;
-  //   // debugger;
-  // } else {
-  //   g_addDebug = false;
-  // }
+  // debugging only
+  if (this.id === g_debugIdLeft && obj.id === g_debugIdRight) {
+    g_addDebug = true;
+  } else {
+    g_addDebug = false;
+  }
 
   if (obj instanceof Parabola) {
     ret = [];

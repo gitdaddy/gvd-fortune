@@ -147,26 +147,6 @@ ArcNode.prototype.nextArc = function () {
   return node.nextArc();
 }
 
-ArcNode.prototype.getHorizontalBounds = function (directrix) {
-  var left = this.prevArc();
-  var right = this.nextArc();
-  var lI, rI;
-  if (left.parent.hasId(this.id)) {
-    lI = left.parent.intersection(directrix);
-  } else {
-    lI = this.parent.intersection(directrix);
-  }
-
-  if (right.parent.hasId(this.id)) {
-    rI = right.parent.intersection(directrix);
-  } else {
-    rI = this.parent.intersection(directrix);
-  }
-
-  // var rightI = this.parent.intersection(directrix);
-  return {x0: lI.x, x1: rI.x};
-}
-
 //---------------------------------------------------------------------------
 // EdgeNode
 //---------------------------------------------------------------------------
@@ -288,12 +268,14 @@ EdgeNode.prototype.intersection = function (directrix) {
   // This is inefficient. We should be storing sites in edge nodes.
   let leftArcNode = this.prevArc();
   let rightArcNode = this.nextArc();
-  // if (leftArcNode.id == 15 && rightArcNode.id == 29) {
-  //   g_addDebug = true;
-  //   // debugger;
-  // } else {
-  //   g_addDebug = false;
-  // }
+
+  // debugging only
+  if (leftArcNode.id === g_debugIdLeft && rightArcNode.id === g_debugIdRight) {
+    g_addDebug = true;
+  } else {
+    g_addDebug = false;
+  }
+
   var obj = {};
   if (leftArcNode.isV && rightArcNode.isV) {
     obj = intersectStraightArcs(leftArcNode, rightArcNode, directrix);
@@ -358,13 +340,6 @@ function intersectStraightArcs(left, right, directrix){
 function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, directrix){
   var pleft = createBeachlineSegment(left.site, directrix, left.id);
   var pright = createBeachlineSegment(right.site, directrix, right.id);
-
-  // if (left.id === 4 && right.id === 16) {
-  //   g_addDebug = true;
-  //   // debugger;
-  // } else {
-  //   g_addDebug = false;
-  // }
 
   var intersections = pleft.intersect(pright);
 

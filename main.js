@@ -16,6 +16,15 @@ var dcel;
 
 var g_debugObjs = [];
 var g_addDebug = false;
+var g_debugIdLeft = undefined;
+var g_debugIdMiddle = undefined;
+var g_debugIdRight = undefined;
+
+function changeNodeIds() {
+  g_debugIdLeft = document.getElementsByName("leftId")[0].valueAsNumber;
+  g_debugIdMiddle = document.getElementsByName("middleId")[0].valueAsNumber;
+  g_debugIdRight = document.getElementsByName("rightId")[0].valueAsNumber;
+}
 
 let showEvents = false;
 let showDebugObjs = false;

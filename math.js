@@ -186,7 +186,11 @@ function intersectLeftRightLines(leftLines, rightLines) {
   var rslts = [];
   _.forEach(leftLines, function(l1) {
     _.forEach(rightLines, function(l2) {
-        rslts.push(intersectLines(l1.p1, l1.p2, l2.p1, l2.p2));
+        var newInt = intersectLines(l1.p1, l1.p2, l2.p1, l2.p2);
+        // intersections can come back as null meaning
+        // the lines are nearly parallel
+        if (newInt)
+          rslts.push(newInt);
     });
   });
   return rslts;
@@ -570,8 +574,26 @@ function bisectSegments2(s1, s2) {
   var v1Clockwise = new vec3(AB.y, -AB.x, 0); // 90 degrees perpendicular
   var v1CounterClockwise = new vec3(-AB.y, AB.x, 0);
   var intersect = intersectLines(s1.a, s1.b, s2.a, s2.b);
+  if (!intersect) {
+    return [s];
+  }
   var l = new Line(add(v1Clockwise, intersect), add(v1CounterClockwise, intersect));
   return [s, l];
+}
+
+function parallelTest(s1, s2) {
+  var l1 = new Line(s1.a, s1.b);
+  var l2 = new Line(s2.a, s2.b);
+  // each line has a normalized vector
+  // if the vector of each segment is equal then they lines are parallel
+  return equal(l1.v, l2.v);
+}
+
+function getAverage(s1, s2) {
+  // TODO fix
+  var p1 = vec3((s1.a.x + s2.a.x / 2.0), (s1.a.y + s2.a.y / 2.0), 0);
+  var p2 = vec3((s1.b.x + s2.b.x / 2.0), (s1.b.y + s2.b.y / 2.0), 0);
+  return new Line(p1, p2);
 }
 
 //------------------------------------------------------------
@@ -579,10 +601,10 @@ function bisectSegments2(s1, s2) {
 // Return the line bisecting two lines. For the smallest angle
 // Returns two points [q1,q2] defining
 // the line. The vector v=q2-q1 will be oriented in the negative y direction.
-// TODO parallel test?
 // NOTE: this bisects LINES not SEGMENTS.
 //------------------------------------------------------------
 function smallAngleBisectSegments(s1, s2) {
+  if (parallelTest(s1, s2)) return getAverage(s1, s2);
   // get the closest points
   var d1 = dist(s1.a, s2.a);
   var d2 = dist(s1.a, s2.b);
@@ -601,10 +623,7 @@ function smallAngleBisectSegments(s1, s2) {
   var beta = getSegmentsBisector(s1, s2, false);
   var v = new vec3(Math.cos(beta), Math.sin(beta), 0);
   var p = intersectLines(s1.a, s1.b, s2.a, s2.b);
-  if (!p || !l) {
-    // if lines are parallel?
-    console.error("Invalid value p or v");
-  }
+  if (!p) return getAverage(s1, s2);
   var l = new Line(p, add(p, v));
   return l;
 }
@@ -647,6 +666,12 @@ function bisectSegmentsWithHint(s1, s2, pointHint) {
   var beta = getSegmentsBisector(s1, s2, false);
   var v = new vec3(Math.cos(beta), Math.sin(beta), 0);
   var p = intersectLines(s1.a, s1.b, s2.a, s2.b);
+  if (!p) {
+    // return the line in the center parallel to s1 and s2 or the average of both lines
+    var p1 = vec3((s1.a.x + s2.a.x / 2.0), (s1.a.y + s2.a.y / 2.0), 0);
+    var p2 = vec3((s1.b.x + s2.b.x / 2.0), (s1.b.y + s2.b.y / 2.0), 0);
+    return new Line(p1, p2);
+  }
   var l = new Line(p, add(p, v));
   return l;
 }
@@ -714,17 +739,21 @@ function equidistant(left, arc, right) {
   var b1, b2;
   // Bisecting types can be either lines or parabolas - lines are preferred
   if (points.length == 1) {
-    // b1 = bisect(segments[0], points[0]);
-    // b2 = bisect(points[0], segments[1]);
-    if (points[0] == segments[0].a || points[0] == segments[0].b) {
-      b1 = bisect(segments[0], points[0]);
-      b2 = bisect(points[0], segments[1]);
-    } else if (points[0] == segments[1].a || points[0] == segments[1].b) {
-      b1 = bisect(segments[1], points[0]);
-      b2 = bisect(points[0], segments[0]);
+    if (parallelTest(segments[0], segments[1])) {
+      console.log("parallel sites");
+      b1 = getAverage(segments[0], segments[1]);
+      b2 = bisect(segments[0], points[0]);
     } else {
-      b1 = bisect(segments[0], points[0]);
-      b2 = bisect(segments[0], segments[1], points[0]);
+      if (points[0] == segments[0].a || points[0] == segments[0].b) {
+        b1 = bisect(segments[0], points[0]);
+        b2 = bisect(points[0], segments[1]);
+      } else if (points[0] == segments[1].a || points[0] == segments[1].b) {
+        b1 = bisect(segments[1], points[0]);
+        b2 = bisect(points[0], segments[0]);
+      } else {
+        b1 = bisect(segments[0], points[0]);
+        b2 = bisect(segments[0], segments[1], points[0]);
+      }
     }
   } else if (segments.length == 1) {
     if (points[0] == segments[0].a || points[0] == segments[0].b) {

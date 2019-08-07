@@ -86,7 +86,7 @@ function vec2()
   case 0: result.push( 0.0 );
   case 1: result.push( 0.0 );
   }
-  
+
   result = result.splice( 0, 2 );
   return vecn(result);
 }
@@ -214,7 +214,7 @@ function mat4()
     m.push(c[2].slice(0));
     m.push(c[3].slice(0));
   }
-  
+
   m.matrix = true;
 
   return m;
@@ -466,9 +466,10 @@ function rotate( angle, axis )
   var y = v[1];
   var z = v[2];
 
-  var c = Math.cos( radians(angle) );
+  var rad = radians(angle);
+  var c = Math.cos( rad );
   var omc = 1.0 - c;
-  var s = Math.sin( radians(angle) );
+  var s = Math.sin( rad );
 
   var result = mat4(
     vec4( x*x*omc + c,   x*y*omc - z*s, x*z*omc + y*s, 0.0 ),
@@ -481,8 +482,9 @@ function rotate( angle, axis )
 }
 
 function rotateX(theta) {
-  var c = Math.cos( radians(theta) );
-  var s = Math.sin( radians(theta) );
+  var rad = radians(theta);
+  var c = Math.cos( rad );
+  var s = Math.sin( rad );
   var rx = mat4( 1.0,  0.0,  0.0, 0.0,
 		 0.0,  c,  -s, 0.0,
 		 0.0, s,  c, 0.0,
@@ -490,8 +492,9 @@ function rotateX(theta) {
   return rx;
 }
 function rotateY(theta) {
-  var c = Math.cos( radians(theta) );
-  var s = Math.sin( radians(theta) );
+  var rad = radians(theta);
+  var c = Math.cos( rad );
+  var s = Math.sin( rad );
   var ry = mat4( c, 0.0, s, 0.0,
 		 0.0, 1.0,  0.0, 0.0,
 		 -s, 0.0,  c, 0.0,
@@ -499,8 +502,15 @@ function rotateY(theta) {
   return ry;
 }
 function rotateZ(theta) {
-  var c = Math.cos( radians(theta) );
-  var s = Math.sin( radians(theta) );
+  var rad = radians(theta);
+  // var c = Math.cos( rad );
+  var c;
+  if (Math.abs(theta) === 90) {
+    c = 0.0;
+  } else {
+    c = Math.cos( rad );
+  }
+  var s = Math.sin( rad );
   var rz = mat4( c, -s, 0.0, 0.0,
 		 s,  c, 0.0, 0.0,
 		 0.0,  0.0, 1.0, 0.0,

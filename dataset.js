@@ -188,6 +188,18 @@ function createDatasets() {
   g_boundingBox.createSegment(1,2);
   g_boundingBox.createSegment(2,3);
   g_boundingBox.createSegment(3,0);
+
+  var p11 = new Polygon();
+  p11.addPoint(vec3(-0.572, 0.342, 0));
+  p11.addPoint(vec3(0.22, 0.42, 0));
+  p11.addPoint(vec3(-0.572, -0.31, 0));
+  p11.addPoint(vec3(0.22, -0.61, 0));
+
+  p11.createSegment(0, 1);
+  p11.createSegment(2, 0);
+  p11.createSegment(3, 1);
+
+  polygons1.push(p11);
   polygons1.push(g_boundingBox);
 
   var polygons2 = [];

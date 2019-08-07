@@ -166,11 +166,6 @@ function canClose(left, arcNode, right, equi) {
       return circleTest(left, arcNode, right, dist(arcNode.site, equi), equi);
     }
 
-    // let segV = createBeachlineSegment(seg, directrix);
-    // // use the outer bounds
-    // var b1 = arcNode.getHorizontalBounds(directrix);
-    // var hpTest = b1.x0 < segV.p.x && equi.x < segV.p.x || b1.x1 > segV.p.x && equi.x > segV.p.x;
-
     // If the circle created intersects the segment site that is a part
     // of the current, left or right arcs then it cannot be on the gvd
     return hpTest && circleTest(left, arcNode, right, dist(arcNode.site, equi), equi);
@@ -232,12 +227,12 @@ function createCloseEvent(arcNode, directrix) {
   var closePoint;
 
   // debugging only
-  // if (left.id === 9 && arcNode.id === 15 && right.id == 29) {
-  //   g_addDebug = true;
-  //   // debugger;
-  // } else {
-  //   g_addDebug = false;
-  // }
+  if (left.id === g_debugIdLeft && arcNode.id === g_debugIdMiddle
+    && right.id === g_debugIdRight) {
+    g_addDebug = true;
+  } else {
+    g_addDebug = false;
+  }
 
   if (arcNode.isParabola && left.isParabola && right.isParabola) {
     // All three are points

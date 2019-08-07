@@ -49,16 +49,26 @@
       Press 'v' to draw bisecting lines and parabolas
     </div>
     <br>
-    <div class="debug">
-      d=<label id="sweeplineLabel"></label>
-      <br>
-      X:<label id="mouseX"></label>
-      Y:<label id="mouseY"></label>
-      <br>
-      <label>Events:</label>
-      <br>
-      <textarea class="events-box" id="events"></textarea>
-      <div id="debug"></div>
+    <div class="debug row">
+      <div class="column">
+        d=<label id="sweeplineLabel"></label>
+        <br>
+        X:<label id="mouseX"></label>
+        Y:<label id="mouseY"></label>
+        <br>
+        <label>Events:</label>
+        <br>
+        <textarea class="events-box" id="events"></textarea>
+      </div>
+      <div class="column">
+        <span>Node Debugging:</span><br>
+        Left Id:___<input type="number" name="leftId"><br>
+        Middle Id:_<input type="number" name="middleId"><br>
+        Right Id:__<input type="number" name="rightId"><br>
+        <button onclick="changeNodeIds()">Update</button>
+        <div id="debug">
+        </div>
+      </div>
     </div>
   </div>
   </body>

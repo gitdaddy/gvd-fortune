@@ -44,7 +44,7 @@ function highlight(d) {
     if (!arc.empty() && arc.attr('leftx')) {
       let x0 = (+arc.attr('leftx')).toFixed(1);
       let x1 = (+arc.attr('rightx')).toFixed(1);
-      setDebug(`x0=${x0} x1=${x1}`);
+      setDebug(`x0=${x0} x1=${x1} id=${d.data.id}`);
     }
   } else {
     let edge = d.data;

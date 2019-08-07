@@ -39,9 +39,8 @@ Beachline.prototype.add = function (site) {
   var directrix = site.y;
 
   // debugging only
-  if (arcNode.id === 13) {
+  if (arcNode.id === g_debugIdMiddle) {
     g_addDebug = true;
-    // debugger;
   } else {
     g_addDebug = false;
   }
