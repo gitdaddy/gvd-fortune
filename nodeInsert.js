@@ -12,6 +12,12 @@ function createNewEdge(left, right, vertex, dcel) {
   return new EdgeNode(left, right, vertex, dcel);
 }
 
+function shallowSite(site) {
+  if (!site.type || site.type !== "segment") return false;
+  // WATCH VALUE
+  return Math.abs(site.a.y - site.b.y) < 1e-4;
+}
+
 //------------------------------------------------------------
 // Utility function right joint split
 //  is an arc node. node is also an arc node.
@@ -69,13 +75,28 @@ function splitArcNode(toSplit, node, dcel, optNodesToClose) {
       left, new EdgeNode(node, right, vertex, dcel), vertex, dcel);
 }
 
-function insertEdge(toSplit, edge, vertex, dcel, optNodesToClose) {
+function insertEdge(toSplit, edge, vertex, dcel, leftSite, rightSite, optNodesToClose) {
   if (toSplit.closeEvent) {
     toSplit.closeEvent.live = false;
   }
 
   var left = toSplit;
   var right = new ArcNode(toSplit.site);
+
+  // var sl = shallowSite(leftSite);
+  // var sr = shallowSite(rightSite);
+  // if (sl && sr) {
+  //   return edge;
+  // } else if (sl) {
+  //   if (optNodesToClose)
+  //     optNodesToClose.push(right);
+  //   return new EdgeNode(edge, right, vertex, dcel);
+  // } else if (sr) {
+  //   if (optNodesToClose)
+  //     optNodesToClose.push(left);
+  //   return new EdgeNode(left, edge, vertex, dcel);
+  // }
+
   if (optNodesToClose) {
     optNodesToClose.push(left);
     optNodesToClose.push(right);
@@ -150,12 +171,12 @@ function generateSubTree(eventPacket, arcNode, dcel, optChild) {
     if (optChild) {
       tree = splitArcNode(optChild, arcNode, dcel, nodesToClose);
       var parent = arcNode.parent;
-      var newEdge =
-          insertEdge(arcNode, newEdge, arcNode.site, dcel, nodesToClose);
-      parent.setChild(newEdge, LEFT_CHILD);
+      var childEdge =
+          insertEdge(arcNode, newEdge, arcNode.site, dcel, eventPacket.leftChild, eventPacket.rightChild, nodesToClose);
+      parent.setChild(childEdge, LEFT_CHILD);
     }
     else {
-      tree = insertEdge(arcNode, newEdge, arcNode.site, dcel);
+      tree = insertEdge(arcNode, newEdge, arcNode.site, dcel, eventPacket.leftChild, eventPacket.rightChild,);
     }
   } else if (eventPacket.type === PACKET_TYPE.PARENT) {
     if (!optChild) throw 'Invalid insert operation';
@@ -166,6 +187,21 @@ function generateSubTree(eventPacket, arcNode, dcel, optChild) {
     parent.setChild(newEdge, LEFT_CHILD);
     // This node shouldn't need to be added - test
     // nodesToClose.push(arcNode);
+    // if (shallowSite(optChild.site)) {
+    //   var newEdge = VRegularInsert(arcNode, childArcNode, dcel, nodesToClose);
+    //   if (optChild.site.a.x < optChild.site.b.x) {
+    //     tree = new EdgeNode(optChild, newEdge, arcNode.site, dcel);
+    //   } else {
+    //     tree = new EdgeNode(newEdge, optChild, arcNode.site, dcel);
+    //   }
+    // } else {
+    //   tree = splitArcNode(optChild, arcNode, dcel, nodesToClose);
+    //   var parent = arcNode.parent;
+    //   var newEdge = VRegularInsert(arcNode, childArcNode, dcel, nodesToClose);
+    //   parent.setChild(newEdge, LEFT_CHILD);
+    //   // This node shouldn't need to be added - test
+    //   // nodesToClose.push(arcNode);
+    // }
   } else {
     if (optChild) {
       tree = ParaInsert(optChild, arcNode, dcel, nodesToClose);

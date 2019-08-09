@@ -144,6 +144,7 @@ function datasetChange(value) {
 
 function fortune(reorder) {
   nodeId = 1;
+  var eventThresh = 0.000001;
   var queue = createDataQueue(reorder);
   dcel = new DCEL();
   var beachline = new Beachline(dcel);
@@ -165,7 +166,7 @@ function fortune(reorder) {
         }
         var newEvents = beachline.remove(event.arcNode, event.point, event.y);
         newEvents.forEach(function (ev) {
-          if (ev.y < event.y - 0.000001) {
+          if (Math.abs(ev.y - event.y) < eventThresh) {
             sortedInsertion(queue, ev);
             if (ev.isCloseEvent) {
               closeEventPoints.push(ev);
@@ -179,7 +180,7 @@ function fortune(reorder) {
       var packet = getEventPacket(event, queue);
       var newEvents = beachline.add(packet);
       newEvents.forEach(function (ev) {
-        if (ev.y < event.y - 0.000001) {
+        if (Math.abs(ev.y - event.y) < eventThresh) {
           sortedInsertion(queue, ev);
           if (ev.isCloseEvent) {
             closeEventPoints.push(ev);

@@ -45,6 +45,13 @@ function getDiff(left, node, right, p, directrix) {
     console.error("Diff point invalid");
     return 1e10;
   }
+
+  // if (shallowSite(node.site)) {
+  //   var radius = getRadius(p, left, node, right);
+  //   var newY = p.y - radius;
+  //   return Math.abs(newY - directrix);
+  // }
+
   var radius = getRadius(p, left, node, right);
   var newY = p.y - radius;
   // rule out points too far above the directrix
@@ -203,6 +210,7 @@ function getIntercpt(left, right, directrix) {
 // return the most viable close points out of a list of close points
 // based on arc size @ point
 function chooseClosePoint(left, node, right, points, directrix) {
+  if (_.isEmpty(points)) return null;
   if (points.length === 1) return points[0];
   var leastDiff = 10000;
   // length test - the length of node's arc should be close to 0
@@ -213,7 +221,8 @@ function chooseClosePoint(left, node, right, points, directrix) {
      leastDiff = diff;
     return diff;
   });
-  if (_.isEmpty(validPoints) || !validDiff(leastDiff)) return null;
+  if (shallowSite(left.site) || shallowSite(right.site)) return validPoints[0];
+  if (!validDiff(leastDiff)) return null;
   return validPoints[0];
 }
 
