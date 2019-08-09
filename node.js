@@ -86,8 +86,6 @@ function consolidate(intersections, pivotX) {
   var right = _.filter(intersections, function(i) {
     return i.x > pivotX;
   });
-  if ((left.length + right.length) !== intersections.length)
-    throw "invalid intersections";
   if (left.length === 2) {
     var d = dist(left[0], left[1]);
     if (d < thresh) {

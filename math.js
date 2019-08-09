@@ -590,9 +590,8 @@ function parallelTest(s1, s2) {
 }
 
 function getAverage(s1, s2) {
-  // TODO fix
-  var p1 = vec3((s1.a.x + s2.a.x / 2.0), (s1.a.y + s2.a.y / 2.0), 0);
-  var p2 = vec3((s1.b.x + s2.b.x / 2.0), (s1.b.y + s2.b.y / 2.0), 0);
+  var p1 = vec3(((s1.a.x + s2.a.x) / 2.0), ((s1.a.y + s2.a.y) / 2.0), 0);
+  var p2 = vec3(((s1.b.x + s2.b.x) / 2.0), ((s1.b.y + s2.b.y) / 2.0), 0);
   return new Line(p1, p2);
 }
 

@@ -70,6 +70,7 @@ function sightTest(left, node, right, closePoint) {
 }
 
 function radiusTest(left, node, right, closePoint) {
+  // WATCH VALUE
   var thresh = 1e-8;
   if (left.isV && node.isV && right.isV) return true;
   var segments = _.filter([left, node, right], { isV: true });
@@ -251,8 +252,6 @@ function createCloseEvent(arcNode, directrix) {
   }
 
   if (arcNode.isV) {
-    // for same site nan parabola error - must test
-    directrix -= 1e-10;
 
     if (arcNode.site.a == left.site && arcNode.site.b == right.site
       || arcNode.site.b == left.site && arcNode.site.a == right.site) return null;
@@ -313,18 +312,20 @@ function addCloseEvent(events, newEvent) {
   }
 }
 
-function processCloseEvents(arcNode, directrix) {
+function processCloseEvents(closingNodes, directrix) {
   // Create close events
   var closeEvents = [];
-  if (arcNode.isParabola &&
-    _.get(arcNode, "site.relation") == NODE_RELATION.CHILD_LEFT_HULL) {
-    addCloseEvent(closeEvents, createCloseEvent(arcNode.prevArc(), directrix));
-  } else if (arcNode.isParabola &&
-      _.get(arcNode, "site.relation") == NODE_RELATION.CHILD_RIGHT_HULL) {
-    addCloseEvent(closeEvents, createCloseEvent(arcNode.nextArc(), directrix));
-  } else {
-    addCloseEvent(closeEvents, createCloseEvent(arcNode.prevArc(), directrix));
-    addCloseEvent(closeEvents, createCloseEvent(arcNode.nextArc(), directrix));
-  }
+  _.forEach(closingNodes, function(node) {
+    addCloseEvent(closeEvents, createCloseEvent(node, directrix));
+  });
+  // if (arcNode.isParabola &&
+  //   _.get(arcNode, "site.relation") == NODE_RELATION.CHILD_LEFT_HULL) {
+  // } else if (arcNode.isParabola &&
+  //     _.get(arcNode, "site.relation") == NODE_RELATION.CHILD_RIGHT_HULL) {
+  //   addCloseEvent(closeEvents, createCloseEvent(arcNode.nextArc(), directrix));
+  // } else {
+  //   addCloseEvent(closeEvents, createCloseEvent(arcNode.prevArc(), directrix));
+  //   addCloseEvent(closeEvents, createCloseEvent(arcNode.nextArc(), directrix));
+  // }
   return closeEvents;
 }

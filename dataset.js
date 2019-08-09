@@ -190,7 +190,7 @@ function createDatasets() {
   g_boundingBox.createSegment(3,0);
 
   var p11 = new Polygon();
-  p11.addPoint(vec3(-0.572, 0.342, 0));
+  p11.addPoint(vec3(-0.572, 0.320001, 0));
   p11.addPoint(vec3(0.22, 0.42, 0));
   p11.addPoint(vec3(-0.572, -0.31, 0));
   p11.addPoint(vec3(0.22, -0.61, 0));

@@ -9,8 +9,8 @@ const hostname = 'localhost';
 const port = 8080;
 
 function getRandomAdjustment() {
-  var value = Math.random() * .001;
-  if (value === 0.0) {return 0.0001;}
+  var value = Math.random() * 1e-6;
+  if (value === 0.0) {return 1e-6;}
   return Math.random() < 0.5 ? -value : value;
 }
 

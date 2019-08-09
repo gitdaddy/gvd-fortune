@@ -1,3 +1,11 @@
+
+// PACKET TYPE
+var PACKET_TYPE = {
+  MULTI_CHILD_PARENT: 1,
+  PARENT: 2,
+  CHILD: 3,
+}
+
 //------------------------------------------------------------
 // Beachline
 //------------------------------------------------------------
@@ -7,6 +15,7 @@
 const LEFT_CHILD = 0;
 const RIGHT_CHILD = 1;
 const UNDEFINED_SIDE = 2;
+
 
 var Beachline = function (dcel) {
   this.root = null;
@@ -34,9 +43,9 @@ function shareVClosing(arcNode, sibling) {
 //------------------------------------------------------------
 // add
 //------------------------------------------------------------
-Beachline.prototype.add = function (site) {
-  var arcNode = new ArcNode(site);
-  var directrix = site.y;
+Beachline.prototype.add = function (eventPacket) {
+  var arcNode = new ArcNode(eventPacket.site);
+  var directrix = eventPacket.site.y;
 
   // debugging only
   if (arcNode.id === g_debugIdMiddle) {
@@ -45,22 +54,15 @@ Beachline.prototype.add = function (site) {
     g_addDebug = false;
   }
 
-  // move the directrix slightly downward for segments
-  // so we can still process arc intersections
-  if (site.type == "segment") {
-    // we need to move the smallest amount possible
-    // WATCH VALUE
-     directrix -= 1e-7;
-  }
-
   if (this.root == null) {
-    this.root = arcNode;
-    return processCloseEvents(arcNode, directrix);
+    var subTreeData = generateSubTree(eventPacket, arcNode, this.dcel);
+    this.root = subTreeData.root;
+    return [];
   }
 
   if (this.root.isArc) {
-    this.root = splitArcNode(this.root, arcNode, this.dcel);
-    return processCloseEvents(arcNode, directrix);
+    // TODO handle this case
+    throw "Root should not be an arc";
   }
 
   var parent = this.root;
@@ -68,20 +70,21 @@ Beachline.prototype.add = function (site) {
   // Do a binary search to find the arc node that the new
   // site intersects with
   var x = parent.intersection(directrix).x;
-  side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
+  side = (eventPacket.site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
   child = parent.getChild(side);
   while (child.isEdge) {
     parent = child;
     x = parent.intersection(directrix).x;
-    if (site.x == x) {
+    if (eventPacket.site.x == x) {
       console.log("Site and intersect values equal:" + x + " for intersection: " + parent.id);
     }
-    side = (site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
+    side = (eventPacket.site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
     child = parent.getChild(side);
   }
 
-  nodeInsert(parent, child, arcNode, side, dcel);
-  return processCloseEvents(arcNode, directrix);
+  var subTreeData = generateSubTree(eventPacket, arcNode, dcel, child);
+  parent.setChild(subTreeData.root, side);
+  return processCloseEvents(subTreeData.closingNodes, directrix);
 }
 
 //------------------------------------------------------------
@@ -89,6 +92,13 @@ Beachline.prototype.add = function (site) {
 //------------------------------------------------------------
 Beachline.prototype.remove = function (arcNode, point, directrix) {
   if (!arcNode.isArc) throw "Unexpected edge in remove";
+
+  // debugging only
+  if (arcNode.id === g_debugIdMiddle) {
+    g_addDebug = true;
+  } else {
+    g_addDebug = false;
+  }
 
   var parent = arcNode.parent;
   var grandparent = parent.parent;
