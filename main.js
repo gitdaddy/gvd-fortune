@@ -166,7 +166,7 @@ function fortune(reorder) {
         }
         var newEvents = beachline.remove(event.arcNode, event.point, event.y);
         newEvents.forEach(function (ev) {
-          if (Math.abs(ev.y - event.y) < eventThresh) {
+          if (ev.y < event.y - 0.000001 || Math.abs(ev.y - event.y) < eventThresh) {
             sortedInsertion(queue, ev);
             if (ev.isCloseEvent) {
               closeEventPoints.push(ev);
@@ -180,7 +180,7 @@ function fortune(reorder) {
       var packet = getEventPacket(event, queue);
       var newEvents = beachline.add(packet);
       newEvents.forEach(function (ev) {
-        if (Math.abs(ev.y - event.y) < eventThresh) {
+        if (ev.y < event.y - 0.000001 || Math.abs(ev.y - event.y) < eventThresh) {
           sortedInsertion(queue, ev);
           if (ev.isCloseEvent) {
             closeEventPoints.push(ev);

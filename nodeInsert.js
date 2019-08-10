@@ -140,7 +140,6 @@ function ParaInsert(child, arcNode, dcel, nodesToClose) {
       updateEdge.dcelEdge.dest.point = arcNode.site;
     }
     nodesToClose.push(child);
-    nodesToClose.push(arcNode);
     if (_.get(child, 'site.b.relation') == NODE_RELATION.CLOSING &&
         _.get(sRight, 'site.b.relation') == NODE_RELATION.CLOSING &&
         equal(child.site.b, sRight.site.b)) {
@@ -153,7 +152,7 @@ function ParaInsert(child, arcNode, dcel, nodesToClose) {
   } else {
     // regular split
     newChild = splitArcNode(child, arcNode, dcel);
-    nodesToClose.push(arcNode);
+    // nodesToClose.push(arcNode);
     nodesToClose.push(arcNode.nextArc());
     nodesToClose.push(arcNode.prevArc());
   }
