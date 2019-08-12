@@ -80,13 +80,15 @@ Line = function(p1, p2) {
 // ax^2 + bx + c = 0
 //------------------------------------------------------------
 function quadratic(a, b, c) {
+  // WATCH VALUE
+  var thresh = 1e-4;
   if (a == 0) return [];
   // var disc = Math.sqrt(b*b-4*a*c);
   var disc = b*b-4*a*c;
-  if (disc < -0.0000001) {
+  if (disc < -thresh) {
     return [];
   }
-  if (Math.abs(disc) < 0.0000001) {
+  if (Math.abs(disc) < thresh) {
     return [(-b)/(2*a)];
   }
   var sdisc = Math.sqrt(disc);

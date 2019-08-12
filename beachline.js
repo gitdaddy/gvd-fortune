@@ -82,7 +82,7 @@ Beachline.prototype.add = function (eventPacket) {
     child = parent.getChild(side);
   }
 
-  var subTreeData = generateSubTree(eventPacket, arcNode, dcel, child);
+  var subTreeData = generateSubTree(eventPacket, arcNode, dcel, child, parent, side);
   parent.setChild(subTreeData.root, side);
   return processCloseEvents(subTreeData.closingNodes, directrix);
 }

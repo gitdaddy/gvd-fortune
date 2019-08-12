@@ -186,21 +186,6 @@ function generateSubTree(eventPacket, arcNode, dcel, optChild) {
     parent.setChild(newEdge, LEFT_CHILD);
     // This node shouldn't need to be added - test
     // nodesToClose.push(arcNode);
-    // if (shallowSite(optChild.site)) {
-    //   var newEdge = VRegularInsert(arcNode, childArcNode, dcel, nodesToClose);
-    //   if (optChild.site.a.x < optChild.site.b.x) {
-    //     tree = new EdgeNode(optChild, newEdge, arcNode.site, dcel);
-    //   } else {
-    //     tree = new EdgeNode(newEdge, optChild, arcNode.site, dcel);
-    //   }
-    // } else {
-    //   tree = splitArcNode(optChild, arcNode, dcel, nodesToClose);
-    //   var parent = arcNode.parent;
-    //   var newEdge = VRegularInsert(arcNode, childArcNode, dcel, nodesToClose);
-    //   parent.setChild(newEdge, LEFT_CHILD);
-    //   // This node shouldn't need to be added - test
-    //   // nodesToClose.push(arcNode);
-    // }
   } else {
     if (optChild) {
       tree = ParaInsert(optChild, arcNode, dcel, nodesToClose);

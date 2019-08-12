@@ -24,7 +24,7 @@ function getInfo(d) {
     var arcNode = d.data;
     var prev = arcNode.prevArc();
     var next = arcNode.nextArc();
-    return arcNode.closeEvent.y.toFixed(3) + " " + prev.id + " " +
+    return arcNode.closeEvent.y.toFixed(10) + " " + prev.id + " " +
       next.id;
   }
   return '';

@@ -88,7 +88,7 @@ function keydown(event) {
     var t1 = performance.now();
     // console.log("Call to render took " + (t1 - t0) + " milliseconds.")
 
-    document.getElementById("sweeplineLabel").innerHTML = sweepline.toFixed(3);
+    document.getElementById("sweeplineLabel").innerHTML = sweepline.toFixed(10);
   }
 }
 
@@ -103,7 +103,7 @@ function init() {
   document.getElementById("gvdsvg").onclick = mouseclick;
   document.getElementById("fullscreenToggle").onclick = toggleFS;
   document.getElementById("hideInfo").onclick = toggleHideInfo;
-  document.getElementById("sweeplineLabel").innerHTML = sweepline.toFixed(3);
+  document.getElementById("sweeplineLabel").innerHTML = sweepline.toFixed(10);
 
   createDatasets();
   for (let key in g_datasets) {
