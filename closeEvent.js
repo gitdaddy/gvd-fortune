@@ -32,7 +32,7 @@ Object.defineProperty(CloseEvent.prototype, "y", {
 
 function validDiff(diff, id) {
   // WATCH VALUE
-  var MAX_DIFF = 1e-2;
+  var MAX_DIFF = 2e-2;
   if (diff > MAX_DIFF){
     // console.log("Max diff exceeded when closing node:" + id + " value:" + diff);
     return false;
@@ -58,27 +58,17 @@ function getDiff(left, node, right, p, directrix) {
   if (newY > directrix) return 1e10;
 
   // Option: or test that left and right intersection
-  var i0 = getIntercpt(left, node, newY);
-  var i1 = getIntercpt(node, right, newY);
+  var i0 = getIntercept(left, node, newY);
+  var i1 = getIntercept(node, right, newY);
   if (!i0 || !i1) return 1e10;
   var diffX = Math.abs(i0.x - i1.x);
   var diffY = Math.abs(i0.y - i1.y);
   return diffX + diffY;
 }
 
-// This test states that each segment must have the close point in
-// it's sight or else the test fails
-function sightTest(left, node, right, closePoint) {
-  var pass = true;
-  _.forEach([left, node, right], function(i) {
-    if (i.isV && !fallsInBoundary(i.site, closePoint)) pass = false;
-  });
-  return pass;
-}
-
 function radiusTest(left, node, right, closePoint) {
   // WATCH VALUE
-  var thresh = 1e-8;
+  var thresh = 1e-5;
   if (left.isV && node.isV && right.isV) return true;
   var segments = _.filter([left, node, right], { isV: true });
   var points = _.filter([left, node, right], { isParabola: true });
@@ -192,7 +182,7 @@ function getRadius(point, left, node, right) {
    }
 }
 
-function getIntercpt(left, right, directrix) {
+function getIntercept(left, right, directrix) {
   if (left.id === g_debugIdLeft && right.id === g_debugIdRight) {
     g_addDebug = true;
   } else {
@@ -242,8 +232,7 @@ function createCloseEvent(arcNode, directrix) {
   var closePoint;
 
   // debugging only
-  if (left.id === g_debugIdLeft && arcNode.id === g_debugIdMiddle
-    && right.id === g_debugIdRight) {
+  if (left.id === g_debugIdLeft && right.id === g_debugIdRight) {
     g_addDebug = true;
   } else {
     g_addDebug = false;
@@ -266,10 +255,8 @@ function createCloseEvent(arcNode, directrix) {
   }
 
   if (arcNode.isV) {
-
     if (arcNode.site.a == left.site && arcNode.site.b == right.site
       || arcNode.site.b == left.site && arcNode.site.a == right.site) return null;
-
     // If siblings reference the same closing node don't let them close until
     // the closing node is processed
     if (shareVClosing(arcNode, left) || shareVClosing(arcNode, right)) return null;
@@ -277,7 +264,8 @@ function createCloseEvent(arcNode, directrix) {
 
   var radius = null;
   // can compute up to 6 equi points
-  var equi = equidistant(left.site, arcNode.site, right.site);
+  var equi = arcNode.isV ? filterVisiblePoints(arcNode.site, equidistant(left.site, arcNode.site, right.site)):
+                           equidistant(left.site, arcNode.site, right.site);
   if (equi == null || equi.length == 0) return null;
   if (equi.length == 1) {
     closePoint = equi[0];
@@ -295,7 +283,6 @@ function createCloseEvent(arcNode, directrix) {
 
   closePoint = convertToVec3(closePoint);
   if (!radiusTest(left, arcNode, right, closePoint)) return null;
-  // if (!sightTest(left, arcNode, right, closePoint)) return null;
 
   radius = getRadius(closePoint, left, arcNode, right);
   if (_.isUndefined(radius)) throw "invalid radius";

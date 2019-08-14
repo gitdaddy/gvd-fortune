@@ -81,7 +81,7 @@ Line = function(p1, p2) {
 //------------------------------------------------------------
 function quadratic(a, b, c) {
   // WATCH VALUE
-  var thresh = 1e-4;
+  var thresh = 1e-3;
   if (a == 0) return [];
   // var disc = Math.sqrt(b*b-4*a*c);
   var disc = b*b-4*a*c;
@@ -296,28 +296,46 @@ PointSegmentBisector.prototype.intersect = function(obj) {
 //------------------------------------------------------------
 //------------------------------------------------------------
 
-// Test if a point falls into the boundary of the sight of the segment line
-function fallsInBoundary(s, point) {
-  if (s.a.x === s.b.x) {
-    return point.y < s.a.y && point.y > s.b.y;
+function filterVisiblePoints(site, points) {
+  if (points.type && points.type === "vec") {
+    points = [points];
   }
-  var positiveSlope = s.a.x > s.b.x ? true : false;
-  var AB = subtract(s.b, s.a);
-  var BA = subtract(s.a, s.b);
+  if (!site.type || site.type !== "segment") return points;
+  // WATCH VALUE
+  // Some equi points can have a certain degree of error
+  // account for that error using a tolerance vector
+  var tolerance = 1.000001;
+  // new updated vector = (a-b) * scale + a
+  var A = add(mult(subtract(site.a, site.b), tolerance), site.b);
+  var B = add(mult(subtract(site.b, site.a), tolerance), site.a);
+  return _.filter(points, function (p) {
+    p = convertToVec3(p);
+    return fallsInBoundary(A, B, p);
+  });
+}
+
+// Test if a point falls into the boundary of the sight of the segment line
+function fallsInBoundary(A, B, point) {
+  if (A.x === B.x) {
+    return point.y < A.y && point.y > B.y;
+  }
+  var positiveSlope = A.x > B.x ? true : false;
+  var AB = subtract(B, A);
+  var BA = subtract(A, B);
   var v1Clockwise = new vec3(AB.y, -AB.x, 0); // 90 degrees perpendicular
   var v1CounterClockwise = new vec3(-AB.y, AB.x, 0);
   var v2Clockwise = new vec3(BA.y, -BA.x, 0);
   var v2CounterClockwise = new vec3(-BA.y, BA.x, 0);
   // define the boundary endpoints - add end point values
-  var p1a = add(v1Clockwise, s.a);
-  var p2a = add(v1CounterClockwise, s.a);
+  var p1a = add(v1Clockwise, A);
+  var p2a = add(v1CounterClockwise, A);
   var lineA = _.sortBy([p1a, p2a], 'y');
   var va = subtract(lineA[1], lineA[0]); // vector from lower to upper
   var vap = subtract(point, lineA[0]);
   var z1 = cross(va, vap).z;
 
-  var p1b = add(v2Clockwise, s.b);
-  var p2b = add(v2CounterClockwise, s.b);
+  var p1b = add(v2Clockwise, B);
+  var p2b = add(v2CounterClockwise, B);
   var lineB = _.sortBy([p1b, p2b], 'y');
   var vb = subtract(lineB[1], lineB[0]); // vector from lower to upper
   var vbp = subtract(point, lineB[0]);
@@ -359,7 +377,7 @@ function dist(obj1, obj2) {
     return;
   }
 
-  if (fallsInBoundary(seg, point)) {
+  if (fallsInBoundary(seg.a, seg.b, point)) {
     // get the equation of the line from the segment ax + by + c = 0
     // (y1 - y2)x + (x2 - x1)y + (x1y2 - x2y1) = 0
     var a = seg[0].y - seg[1].y;

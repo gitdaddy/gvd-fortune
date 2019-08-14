@@ -45,7 +45,7 @@ function keydown(event) {
   if (x == 40 || key == "j" || key == "J") {
     // Down arrow
     if (event.shiftKey) {
-      incSweepline(-inc * 0.01);
+      incSweepline(-inc * 0.1);
     } else if (event.ctrlKey) {
       incSweepline(-inc * 10);
     } else {
@@ -55,7 +55,7 @@ function keydown(event) {
   } else if (x == 38 || key == "k" || key == "K") {
     // Up arrow
     if (event.shiftKey) {
-      incSweepline(inc * 0.01);
+      incSweepline(inc * 0.1);
     } else if (event.ctrlKey) {
       incSweepline(inc * 10);
     } else {
@@ -92,6 +92,10 @@ function keydown(event) {
   }
 }
 
+/* TODO LIST
+specify sweep line input
+scope test for equi on any V/Seg
+*/
 
 function init() {
   if (localStorage.sweepline) {

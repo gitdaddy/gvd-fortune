@@ -17,18 +17,18 @@ function nodeColor(node) {
   // return color;
 }
 
-function getInfo(d) {
-  if (d.data.isEdge)
-    return d.data.dcelEdge.a + "-" + d.data.dcelEdge.b;
-  if (d.data.closeEvent) {
-    var arcNode = d.data;
-    var prev = arcNode.prevArc();
-    var next = arcNode.nextArc();
-    return arcNode.closeEvent.y.toFixed(10) + " " + prev.id + " " +
-      next.id;
-  }
-  return '';
-}
+// function getInfo(d) {
+//   if (d.data.isEdge)
+//     return d.data.dcelEdge.a + "-" + d.data.dcelEdge.b;
+//   if (d.data.closeEvent) {
+//     var arcNode = d.data;
+//     var prev = arcNode.prevArc();
+//     var next = arcNode.nextArc();
+//     return arcNode.closeEvent.y.toFixed(10) + " " + prev.id + " " +
+//       next.id;
+//   }
+//   return '';
+// }
 
 function highlight(d) {
   // Highlight the arc
@@ -56,6 +56,7 @@ function highlight(d) {
     msg = msg + '<br>selected intersection: ';
     let i = edge.selectedIntersection;
     msg = msg + ` (${i.x.toFixed(1)}, ${i.y.toFixed(1)})`;
+    msg = msg + ` id=${edge.id}`;
     setDebug(msg);
   }
 }
@@ -147,18 +148,18 @@ function showTree(treeData) {
 ;
 
   // adds the text to the arcNode
-  node.append("text")
-    .attr("dy", ".35em")
-    .attr("x", function(d) { return (10 + 4) * -1 })
-    .style("text-anchor", function(d) { return "end"; })
-    .text(function(d) {
-      var star = "";
-      // if (d.data.closeEvent && d.data.closeEvent.live) {
-      //   star = "*";
-      // }
-      if (d.data.id) {
-        return d.data.id + star;
-      }
-      return "abc";
-    });
+  // node.append("text")
+  //   .attr("dy", ".35em")
+  //   .attr("x", function(d) { return (10 + 4) * -1 })
+  //   .style("text-anchor", function(d) { return "end"; })
+  //   .text(function(d) {
+  //     var star = "";
+  //     // if (d.data.closeEvent && d.data.closeEvent.live) {
+  //     //   star = "*";
+  //     // }
+  //     if (d.data.id) {
+  //       return d.data.id + star;
+  //     }
+  //     return "abc";
+  //   });
 }
