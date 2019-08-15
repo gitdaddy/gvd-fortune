@@ -90,6 +90,9 @@ Beachline.prototype.add = function (eventPacket) {
 
   var subTreeData = generateSubTree(eventPacket, arcNode, dcel, child, parent, side);
   parent.setChild(subTreeData.root, side);
+  // if (subTreeData.optRemoveNode) {
+  //   this.remove(subTreeData.optRemoveNode, subTreeData.optRemovePoint, directrix);
+  // }
   return processCloseEvents(subTreeData.closingNodes, directrix);
 }
 
@@ -122,7 +125,8 @@ Beachline.prototype.remove = function (arcNode, point, directrix) {
   sibling.parent = grandparent;
 
   newEdge.updateEdge(point, this.dcel);
-  arcNode.closeEvent.live = false;
+  if(arcNode.closeEvent)
+    arcNode.closeEvent.live = false;
 
   // Cancel the close event for this arc and adjoining arcs.
   // Add new close events for adjoining arcs.

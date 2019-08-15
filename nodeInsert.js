@@ -162,6 +162,8 @@ function ParaInsert(child, arcNode, dcel, nodesToClose) {
 function generateSubTree(eventPacket, arcNode, dcel, optChild) {
   var tree;
   var nodesToClose = [];
+  var removeNode = undefined;
+  var removePoint = undefined;
   if (eventPacket.type === PACKET_TYPE.MULTI_CHILD_PARENT) {
     leftArcNode = new ArcNode(eventPacket.leftChild);
     rightArcNode = new ArcNode(eventPacket.rightChild);
@@ -179,13 +181,26 @@ function generateSubTree(eventPacket, arcNode, dcel, optChild) {
     }
   } else if (eventPacket.type === PACKET_TYPE.PARENT) {
     if (!optChild) throw 'Invalid insert operation';
+    var ls = optChild.prevArc();
+    var rs = optChild.nextArc();
     childArcNode = new ArcNode(eventPacket.child);
     tree = splitArcNode(optChild, arcNode, dcel, nodesToClose);
     var parent = arcNode.parent;
     var newEdge = VRegularInsert(arcNode, childArcNode, dcel, nodesToClose);
     parent.setChild(newEdge, LEFT_CHILD);
-    // This node shouldn't need to be added - test
-    // nodesToClose.push(arcNode);
+
+    // if (shallowSite(optChild.site)) {
+    //   if (optChild.site.a.x > optChild.site.b.x) {
+    //     removeNode = optChild;
+    //     removePoint = getIntercept(ls, removeNode, arcNode.site.y);  
+    //   } else {
+    //     removeNode = parent.nextArc();
+    //     removePoint = getIntercept(removeNode, rs, arcNode.site.y);  
+    //   }
+    //   _.remove(nodesToClose, function(node) {
+    //     return node.id === removeNode.id;
+    //   });
+    // }
   } else {
     if (optChild) {
       tree = ParaInsert(optChild, arcNode, dcel, nodesToClose);
@@ -194,5 +209,5 @@ function generateSubTree(eventPacket, arcNode, dcel, optChild) {
     }
   }
 
-  return {root: tree, closingNodes: nodesToClose};
+  return {root: tree, closingNodes: nodesToClose, optRemoveNode: removeNode, optRemovePoint: removePoint};
 }
