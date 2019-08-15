@@ -467,8 +467,12 @@ function chooseLargestAngle(s1, s2, pointHint) {
 }
 
 function connected(s1, s2) {
-  return equal(s1.a, s2.a) || equal(s1.a, s2.b) ||
-  equal(s1.b, s2.a) || equal(s1.b, s2.b);
+  if (equal(s1.a, s2.a) || equal(s1.a, s2.b)) {
+    return s1.a;
+  } else if (equal(s1.b, s2.a) || equal(s1.b, s2.b)) {
+    return s1.b;
+  }
+  return null;
 }
 
 //------------------------------------------------------------
@@ -622,7 +626,7 @@ function getAverage(s1, s2) {
 // the line. The vector v=q2-q1 will be oriented in the negative y direction.
 // NOTE: this bisects LINES not SEGMENTS.
 //------------------------------------------------------------
-function smallAngleBisectSegments(s1, s2) {
+function smallAngleBisectSegments(s1, s2, optIntersect) {
   if (parallelTest(s1, s2)) return getAverage(s1, s2);
   // get the closest points
   var d1 = dist(s1.a, s2.a);
@@ -641,7 +645,7 @@ function smallAngleBisectSegments(s1, s2) {
 
   var beta = getSegmentsBisector(s1, s2, false);
   var v = new vec3(Math.cos(beta), Math.sin(beta), 0);
-  var p = intersectLines(s1.a, s1.b, s2.a, s2.b);
+  var p = optIntersect ? optIntersect : intersectLines(s1.a, s1.b, s2.a, s2.b);
   if (!p) return getAverage(s1, s2);
   var l = new Line(p, add(p, v));
   return l;
@@ -759,7 +763,7 @@ function equidistant(left, arc, right) {
   // Bisecting types can be either lines or parabolas - lines are preferred
   if (points.length == 1) {
     if (parallelTest(segments[0], segments[1])) {
-      console.log("parallel sites");
+      // console.log("parallel sites");
       b1 = getAverage(segments[0], segments[1]);
       b2 = bisect(segments[0], points[0]);
     } else {

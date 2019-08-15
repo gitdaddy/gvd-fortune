@@ -90,9 +90,10 @@ Beachline.prototype.add = function (eventPacket) {
 
   var subTreeData = generateSubTree(eventPacket, arcNode, dcel, child, parent, side);
   parent.setChild(subTreeData.root, side);
-  // if (subTreeData.optRemoveNode) {
-  //   this.remove(subTreeData.optRemoveNode, subTreeData.optRemovePoint, directrix);
-  // }
+  if (subTreeData.optRemoveNode) {
+    var newEvents = this.remove(subTreeData.optRemoveNode, subTreeData.optRemovePoint, directrix);
+    return newEvents.concat(processCloseEvents(subTreeData.closingNodes, directrix));
+  }
   return processCloseEvents(subTreeData.closingNodes, directrix);
 }
 

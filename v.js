@@ -134,7 +134,8 @@ V.prototype.intersect = function(obj) {
     var s1 = makeSegment(this.y0, this.y1);
     var s2 = makeSegment(obj.y0, obj.y1)
 
-    if (connected(s1, s2)) {
+    var optConnection = connected(s1, s2);
+    if (optConnection) {
       var y0_y1 = subtract(this.y1, this.y0);
       var y0_Oy0 = subtract(obj.y0, this.y0);
       var y0_Oy1 = subtract(obj.y1, this.y0);
@@ -146,7 +147,7 @@ V.prototype.intersect = function(obj) {
         return [this.p];
       }
       // choose this v left or right based on zArea
-      var bisector = smallAngleBisectSegments(s1, s2);
+      var bisector = smallAngleBisectSegments(s1, s2, optConnection);
 
       if (g_addDebug) {
         g_debugObjs.push(bisector);

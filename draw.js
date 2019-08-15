@@ -194,7 +194,7 @@ function drawSites(points) {
       .attr("fill", (d,i) => siteColorSvg(d.label))
       .attr("id", d => `site${d.id}`)
       .attr("href", "#gvd")
-      .append("title").html(d => d.id + " r: " + d.relation)
+      .append("title").html(d => d.id + " r: " + d.relation + " p(" + d.x + ", " + d.y + ")")
     ;
   }
 }
@@ -232,7 +232,7 @@ function drawSweepline(sweepline) {
 }
 
 function getSurfaceWidth(bold) {
-  return bold ? g_isoEdgeWidth * 5 : g_isoEdgeWidth;
+  return bold ? g_isoEdgeWidth * 2 : g_isoEdgeWidth;
 }
 
 function drawSurface(dcel) {
@@ -273,8 +273,7 @@ function drawSurface(dcel) {
   let line = d3.line()
   .x(function (d) {return d.x;})
   .y(function (d) {return d.y;})
-  .curve(d3.curveLinear)
-  ;
+  .curve(d3.curveLinear);
   let d3generalEdges = d3.select('#gvd')
     .selectAll('.gvd-surface-parabola')
     .data(generalEdges)

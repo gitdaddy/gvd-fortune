@@ -92,11 +92,6 @@ function keydown(event) {
   }
 }
 
-/* TODO LIST
-specify sweep line input
-scope test for equi on any V/Seg
-*/
-
 function init() {
   if (localStorage.sweepline) {
     sweepline = parseFloat(localStorage.sweepline);

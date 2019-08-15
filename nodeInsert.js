@@ -75,27 +75,13 @@ function splitArcNode(toSplit, node, dcel, optNodesToClose) {
       left, new EdgeNode(node, right, vertex, dcel), vertex, dcel);
 }
 
-function insertEdge(toSplit, edge, vertex, dcel, leftSite, rightSite, optNodesToClose) {
+function insertEdge(toSplit, edge, vertex, dcel, optNodesToClose) {
   if (toSplit.closeEvent) {
     toSplit.closeEvent.live = false;
   }
 
   var left = toSplit;
   var right = new ArcNode(toSplit.site);
-
-  // var sl = shallowSite(leftSite);
-  // var sr = shallowSite(rightSite);
-  // if (sl && sr) {
-  //   return edge;
-  // } else if (sl) {
-  //   if (optNodesToClose)
-  //     optNodesToClose.push(right);
-  //   return new EdgeNode(edge, right, vertex, dcel);
-  // } else if (sr) {
-  //   if (optNodesToClose)
-  //     optNodesToClose.push(left);
-  //   return new EdgeNode(left, edge, vertex, dcel);
-  // }
 
   if (optNodesToClose) {
     optNodesToClose.push(left);
@@ -173,11 +159,11 @@ function generateSubTree(eventPacket, arcNode, dcel, optChild) {
       tree = splitArcNode(optChild, arcNode, dcel, nodesToClose);
       var parent = arcNode.parent;
       var childEdge =
-          insertEdge(arcNode, newEdge, arcNode.site, dcel, eventPacket.leftChild, eventPacket.rightChild, nodesToClose);
+          insertEdge(arcNode, newEdge, arcNode.site, dcel, nodesToClose);
       parent.setChild(childEdge, LEFT_CHILD);
     }
     else {
-      tree = insertEdge(arcNode, newEdge, arcNode.site, dcel, eventPacket.leftChild, eventPacket.rightChild,);
+      tree = insertEdge(arcNode, newEdge, arcNode.site, dcel);
     }
   } else if (eventPacket.type === PACKET_TYPE.PARENT) {
     if (!optChild) throw 'Invalid insert operation';
@@ -189,18 +175,27 @@ function generateSubTree(eventPacket, arcNode, dcel, optChild) {
     var newEdge = VRegularInsert(arcNode, childArcNode, dcel, nodesToClose);
     parent.setChild(newEdge, LEFT_CHILD);
 
-    // if (shallowSite(optChild.site)) {
-    //   if (optChild.site.a.x > optChild.site.b.x) {
-    //     removeNode = optChild;
-    //     removePoint = getIntercept(ls, removeNode, arcNode.site.y);  
-    //   } else {
-    //     removeNode = parent.nextArc();
-    //     removePoint = getIntercept(removeNode, rs, arcNode.site.y);  
-    //   }
-    //   _.remove(nodesToClose, function(node) {
-    //     return node.id === removeNode.id;
-    //   });
-    // }
+    if (shallowSite(optChild.site)) {
+      if (optChild.site.a.x > optChild.site.b.x) {
+        removeNode = optChild;
+        removePoint = getIntercept(ls, removeNode, arcNode.site.y);
+        var edge = ls.parent;
+        edge.dcelEdge.dest = removePoint;
+        edge.dcelEdge.dest.overridden = true;
+        edge.dcelEdge.dest.point = removePoint;
+      } else {
+        removeNode = parent.nextArc();
+        removePoint = getIntercept(removeNode, rs, arcNode.site.y);
+        var edge = rs.parent;
+        edge.dcelEdge.dest = removePoint;
+        edge.dcelEdge.dest.overridden = true;
+        edge.dcelEdge.dest.point = removePoint;
+      }
+
+      _.remove(nodesToClose, function(node) {
+        return node.id === removeNode.id;
+      });
+    }
   } else {
     if (optChild) {
       tree = ParaInsert(optChild, arcNode, dcel, nodesToClose);

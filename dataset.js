@@ -127,6 +127,7 @@ function parseInputJSON(jsonStr) {
   _.forEach(data.polygons, function(polygon) {
     var poly = new Polygon();
     if (polygon.points.length > 1) {
+      removeCAS(polygon.points);
       for(var i = 0; i < polygon.points.length; i++) {
         if (i !== polygon.points.length - 1) {
           var point = new vec3(polygon.points[i].x,  polygon.points[i].y, 0);
@@ -176,6 +177,49 @@ function findNeighborSegments(node) {
   return segs;
 }
 
+function isColinear(p1, p2, p3) {
+  p1 = new vec3(p1.x, p1.y, 0);
+  p2 = new vec3(p2.x, p2.y, 0);
+  p3 = new vec3(p3.x, p3.y, 0);
+  var v1 = subtract(p2, p1);
+  var v2 = subtract(p3, p1);
+  return Math.abs(cross(v1, v2).z) === 0;
+}
+
+// Input is ordered by segment creation 0 -> 1 -> 2 -> 0
+function removeColinearAttachedSegments(orderedPoints) {
+  var removed = false;
+  if (orderedPoints.length < 3) return removed;
+  var p1 = orderedPoints[0];
+  var p2 = orderedPoints[1];
+  var p3 = orderedPoints[2];
+  var toRemove = [];
+  for (var i = 3; i < orderedPoints.length; i++) {
+    if (isColinear(p1, p2, p3)) {
+      console.log("Removing point(" + p2.x + ", " + p2.y + ")");
+      toRemove.push(p2);
+    }
+    // advance
+    p1 = p2;
+    p2 = p3;
+    p3 = orderedPoints[i];
+  }
+
+  if (toRemove.length > 0) {
+    _.forEach(toRemove, function(p) {
+      _.remove(orderedPoints, function (orderedPoint) {
+        return orderedPoint.x === p.x && orderedPoint.y === p.y;
+      });
+    });
+    removed = true;
+  }
+  return removed;
+}
+
+function removeCAS(points) {
+  while(removeColinearAttachedSegments(points));
+}
+
 function createDatasets() {
   // bounding box
   var polygons1 = [];
@@ -190,16 +234,18 @@ function createDatasets() {
   g_boundingBox.createSegment(3,0);
 
   var p11 = new Polygon();
+  p11.addPoint(vec3(-0.572, -0.61, 0)); // colinear test
   p11.addPoint(vec3(-0.572, -0.31, 0));
-  p11.addPoint(vec3(-0.572, 0.42, 0));
+  p11.addPoint(vec3(-0.572, 0.42000009, 0));
   // p11.addPoint(vec3(-0.272, 0.420001, 0));
-  p11.addPoint(vec3(0.42, 0.420001, 0));
+  p11.addPoint(vec3(0.42, 0.42, 0)); // +1e-7
   p11.addPoint(vec3(0.42, -0.61, 0));
+
+  removeCAS(p11.points);
 
   p11.createSegment(0, 1);
   p11.createSegment(1, 2);
   p11.createSegment(2, 3);
-  // p11.createSegment(3, 4);
 
   polygons1.push(p11);
   polygons1.push(g_boundingBox);

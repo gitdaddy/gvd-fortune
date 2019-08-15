@@ -9,9 +9,11 @@ const hostname = 'localhost';
 const port = 8080;
 
 function getRandomAdjustment() {
-  var value = Math.random() * 2e-6;
-  if (value === 0.0) {return 2e-6;}
-  return Math.random() < 0.5 ? -value : value;
+  var value = Math.random() * 1e-6;
+  if (value === 0.0) {return 1e-6;}
+  var rslt = Math.random() < 0.5 ? -value : value;
+  // console.log("Returning adjustment:" + rslt);
+  return rslt;
 }
 
 function getMatch(sortedY) {
