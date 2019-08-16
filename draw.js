@@ -194,7 +194,7 @@ function drawSites(points) {
       .attr("fill", (d,i) => siteColorSvg(d.label))
       .attr("id", d => `site${d.id}`)
       .attr("href", "#gvd")
-      .append("title").html(d => d.id + " r: " + d.relation + " p(" + d.x + ", " + d.y + ")")
+      .append("title").html(d => d.id + " r: " + d.relation + " p(" + d.x + ", " + d.y + ")" + " file:" + d.fileId)
     ;
   }
 }

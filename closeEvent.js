@@ -264,8 +264,14 @@ function createCloseEvent(arcNode, directrix) {
 
   var radius = null;
   // can compute up to 6 equi points
-  var equi = arcNode.isV ? filterVisiblePoints(arcNode.site, equidistant(left.site, arcNode.site, right.site)):
-                           equidistant(left.site, arcNode.site, right.site);
+  var equi = equidistant(left.site, arcNode.site, right.site);
+
+  if (arcNode.isV) {
+    equi = filterVisiblePoints(arcNode.site, equi);
+    equi = left.isV ? filterVisiblePoints(left.site, equi) : equi;
+    equi = right.isV ? filterVisiblePoints(right.site, equi) : equi;
+  }
+
   if (equi == null || equi.length == 0) return null;
   if (equi.length == 1) {
     closePoint = equi[0];

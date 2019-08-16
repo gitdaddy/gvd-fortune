@@ -297,9 +297,11 @@ PointSegmentBisector.prototype.intersect = function(obj) {
 //------------------------------------------------------------
 
 function filterVisiblePoints(site, points) {
+  if (!points || points.length === 0) return null;
   if (points.type && points.type === "vec") {
     points = [points];
   }
+
   if (!site.type || site.type !== "segment") return points;
   // WATCH VALUE
   // Some equi points can have a certain degree of error
@@ -661,6 +663,9 @@ function bisectSegmentsWithHint(s1, s2, pointHint) {
   if (!pointHint) {
     throw "using segment bisector with invalid hint - use bisectSegments4 instead";
   }
+  if (parallelTest(s1, s2)) return getAverage(s1, s2);
+  var optConnection = connected(s1, s2);
+
   // get the closest points
   var d1 = dist(s1.a, s2.a);
   var d2 = dist(s1.a, s2.b);
@@ -669,14 +674,14 @@ function bisectSegmentsWithHint(s1, s2, pointHint) {
   if (d1 < d2 && d1 < d3 && d1 < d4) {
   } else if (d2 < d1 && d2 < d3 && d2 < d4) {
     var useLargeAngle = false;
-    if (!connected(s1, s2)){
+    if (!optConnection){
       useLargeAngle = chooseLargestAngle(s1, s2, pointHint);
     }
     if (!useLargeAngle)
       s2 = makeSegment(s2.b, s2.a, true);
   } else if (d3 < d1 && d3 < d2 && d3 < d4) {
     var useLargeAngle = false;
-    if (!connected(s1, s2)){
+    if (!optConnection){
       useLargeAngle = chooseLargestAngle(s1, s2, pointHint);
     }
     if (!useLargeAngle)
@@ -688,12 +693,9 @@ function bisectSegmentsWithHint(s1, s2, pointHint) {
 
   var beta = getSegmentsBisector(s1, s2, false);
   var v = new vec3(Math.cos(beta), Math.sin(beta), 0);
-  var p = intersectLines(s1.a, s1.b, s2.a, s2.b);
+  var p = optConnection ? optConnection : intersectLines(s1.a, s1.b, s2.a, s2.b);
   if (!p) {
-    // return the line in the center parallel to s1 and s2 or the average of both lines
-    var p1 = vec3((s1.a.x + s2.a.x / 2.0), (s1.a.y + s2.a.y / 2.0), 0);
-    var p2 = vec3((s1.b.x + s2.b.x / 2.0), (s1.b.y + s2.b.y / 2.0), 0);
-    return new Line(p1, p2);
+    throw "Unable to intersect lines";
   }
   var l = new Line(p, add(p, v));
   return l;
@@ -721,7 +723,6 @@ function bisect(a, b, pointHint = null) {
   } else if (b.type == 'vec') {
     bisector = bisectPointSegment(b, a);
   } else {
-    // TODO this may not be enough
     bisector = bisectSegmentsWithHint(a, b, pointHint);
   }
   return bisector;

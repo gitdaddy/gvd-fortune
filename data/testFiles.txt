@@ -1,1 +1,3 @@
-./data/maze/poly51.dat
+./data/maze/poly441.dat
+./data/maze/poly429.dat
+./data/maze/poly212.dat

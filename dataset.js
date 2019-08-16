@@ -23,6 +23,7 @@ var Polygon = function () {
   this.points = [];
   this.segments = [];
   this.label = g_label++;
+  this.fileId = "";
 }
 
 Polygon.prototype.addPoint = function (point) {
@@ -131,6 +132,7 @@ function parseInputJSON(jsonStr) {
       for(var i = 0; i < polygon.points.length; i++) {
         if (i !== polygon.points.length - 1) {
           var point = new vec3(polygon.points[i].x,  polygon.points[i].y, 0);
+          point.fileId = polygon.fileId;
           poly.addPoint(point);
           if (i !== 0) {
             // if not the first point in the polygon
@@ -144,6 +146,7 @@ function parseInputJSON(jsonStr) {
     } else {
       // only a single point
       var point = new vec3(polygon.points[0].x,  polygon.points[0].y, 0);
+      point.fileId = polygon.fileId;
       poly.addPoint(point);
     }
     result.push(poly);

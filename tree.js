@@ -44,7 +44,8 @@ function highlight(d) {
     if (!arc.empty() && arc.attr('leftx')) {
       let x0 = (+arc.attr('leftx')).toFixed(1);
       let x1 = (+arc.attr('rightx')).toFixed(1);
-      setDebug(`x0=${x0} x1=${x1} id=${d.data.id}`);
+      var type = d.data.isV ? "V" : "Parabola";
+      setDebug(`x0=${x0} x1=${x1} id=${d.data.id} type=${type}`);
     }
   } else {
     let edge = d.data;
