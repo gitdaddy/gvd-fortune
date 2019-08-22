@@ -216,7 +216,7 @@ function chooseClosePoint(left, node, right, points, directrix) {
      leastDiff = diff;
     return diff;
   });
-  if (shallowSite(left.site) || shallowSite(right.site)) return validPoints[0];
+  // if (shallowSite(left.site) || shallowSite(right.site)) return validPoints[0];
   if (!validDiff(leastDiff)) return null;
   return validPoints[0];
 }

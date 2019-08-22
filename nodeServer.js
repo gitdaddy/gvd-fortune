@@ -10,7 +10,7 @@ const port = 8080;
 
 function getRandomAdjustment(dataPoints, match) {
   var xDiff = Math.abs(dataPoints[match.s1Idx].x - dataPoints[match.s2Idx].x);
-  var value = xDiff * 0.1;
+  var value = xDiff * 0.01;
   // var value = Math.random() * 1e-6;
   if (value === 0.0) {return 1e-6;}
   var rslt = Math.random() < 0.5 ? -value : value;
@@ -42,9 +42,9 @@ function getDatasetJson() {
   // read in the files
   var json = {};
   var polygons = [];
-  var files = fs.readFileSync('./data/testFiles.txt', 'utf-8').split('\n');
+  // var files = fs.readFileSync('./data/testFiles.txt', 'utf-8').split('\n');
   // Load the whole dataset
-  // var files = fs.readFileSync('./data/maze/files.txt', 'utf-8').split('\n');
+  var files = fs.readFileSync('./data/maze/files.txt', 'utf-8').split('\n');
   files.forEach(file => {
     var inputPoints = fs.readFileSync(file, 'utf-8').split('\n');
     var dataPoints = [];

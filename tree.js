@@ -4,6 +4,8 @@
   widthT = 660 - marginT.left - marginT.right,
   heightT = 512 - marginT.top - marginT.bottom;
 
+  let g_viewId = undefined;
+
 function nodeColor(node) {
   if (node.isEdge) {
     return "black";
@@ -62,6 +64,12 @@ function highlight(d) {
   }
 }
 
+function setView(data) {
+  if (data.id === g_viewId) {
+    data.view = !data.view;
+  }
+}
+
 function showTree(treeData) {
   if (treeData == null || fullScreen) return;
 
@@ -115,7 +123,25 @@ function showTree(treeData) {
         (d.children ? " arcNode--internal" : " arcNode--leaf"); })
     .attr("transform", function(d) {
       return "translate(" + d.x + "," + d.y + ")"; })
-    .on("click", function(d) { console.log("click"); })
+    .on("click", function(d) {
+      g_viewId = d.data.id;
+      // This is just to run
+      // each parabola and v
+      // through a function to set view
+      d3.select("#gvd")
+      .selectAll(".beach-parabola")
+      .attr("view", p => setView(p));
+
+      d3.select("#gvd")
+      .selectAll(".beach-v")
+      .attr("view", v => setView(v));
+
+      var msg = 'Node site id:';
+      if (d.data.site) {
+        msg += d.data.id;
+      }
+      console.log(msg);
+    })
   ;
 
   // adds the circle to the arcNode

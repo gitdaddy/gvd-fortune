@@ -482,11 +482,14 @@ function drawBeachline(beachline, directrix) {
   drawDebugObjs(g_debugObjs);
 }
 
+function getZoomedSize(node) {
+  return node.view ? g_isoEdgeWidth * 3: g_isoEdgeWidth;
+}
+
 function zoomed() {
   g_zoomScale = d3.event.transform.k;
   g_siteRadius = 0.01 / g_zoomScale;
   g_isoEdgeWidth = 1 / g_zoomScale;
-  // g_nonisoEdgeWidth = 5 / g_zoomScale;
   svg.attr("transform", "translate(" +  d3.event.transform.x + ","
   +  d3.event.transform.y + ") scale(" +  d3.event.transform.k + ")");
 
@@ -502,11 +505,11 @@ function zoomed() {
   // update beachline
   d3.select("#gvd")
   .selectAll(".beach-parabola")
-  .style("stroke-width", g_isoEdgeWidth);
+  .style("stroke-width", e => getZoomedSize(e));
 
   d3.select("#gvd")
   .selectAll(".beach-v")
-  .style("stroke-width", g_isoEdgeWidth);
+  .style("stroke-width", e => getZoomedSize(e));
 
   d3.select("#gvd")
   .selectAll("#sweepline")
@@ -517,9 +520,13 @@ function zoomed() {
   .selectAll(".close-event")
   .attr("r", g_siteRadius);
 
-  // d3.select('#gvd')
-  // .selectAll('.debug-parabola')
-  // .style("stroke-width", g_nonisoEdgeWidth);
+  d3.select('#gvd')
+  .selectAll('.debug-line')
+  .style("stroke-width", g_isoEdgeWidth);
+
+  d3.select('#gvd')
+  .selectAll('.debug-parabola')
+  .style("stroke-width", g_isoEdgeWidth);
 
   // update Edges
   d3.select("#gvd")

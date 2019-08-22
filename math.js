@@ -588,8 +588,9 @@ function bisectSegments4(s1, s2, s3) {
 //------------------------------------------------------------
 function bisectSegments2(s1, s2) {
   // if connected segments
-  if (connected(s1, s2)){
-    return [smallAngleBisectSegments(s1, s2)];
+  var optCon = connected(s1, s2);
+  if (optCon){
+    return [smallAngleBisectSegments(s1, s2, optCon)];
   }
 
   var s = smallAngleBisectSegments(s1, s2);
@@ -777,6 +778,15 @@ function equidistant(left, arc, right) {
       } else {
         b1 = bisect(segments[0], points[0]);
         b2 = bisect(segments[0], segments[1], points[0]);
+        // TODO test
+        // if (g_addDebug) g_debugObjs.push(b1);
+        // var blines = bisectSegments2(segments[0], segments[1]);
+        // var ii = [];
+        // _.forEach(blines, function(line) {
+        //   if (g_addDebug) g_debugObjs.push(line);
+        //   ii.push(intersect(line, b1));
+        // });
+        // return ii;
       }
     }
   } else if (segments.length == 1) {
