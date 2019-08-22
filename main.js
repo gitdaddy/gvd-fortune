@@ -1,6 +1,7 @@
 "use strict";
 
-var sweepline = 0.1;
+var g_sweepline = 0.1;
+var g_eventThresh = 1e-6;
 
 let g_datasets = {};
 let g_polygons = [];
@@ -17,24 +18,28 @@ var g_debugIdLeft = undefined;
 var g_debugIdMiddle = undefined;
 var g_debugIdRight = undefined;
 
+var g_sInc = 0.1;
+
 let showEvents = false;
 let showDebugObjs = false;
 let fullScreen = false;
 let hideInfo = false;
 
-function changeNodeIds() {
+function updateDebugVars() {
+  var i = document.getElementsByName("incVal")[0].valueAsNumber;
+  g_sInc = _.isNaN(i) ? g_sInc : i;
   g_debugIdLeft = document.getElementsByName("leftId")[0].valueAsNumber;
   g_debugIdMiddle = document.getElementsByName("middleId")[0].valueAsNumber;
   g_debugIdRight = document.getElementsByName("rightId")[0].valueAsNumber;
 }
 
 function setSweepline(d) {
-  sweepline = d;
+  g_sweepline = d;
   localStorage.sweepline = d;
 }
 
 function incSweepline(inc) {
-  setSweepline(sweepline + inc);
+  setSweepline(g_sweepline + inc);
 }
 
 function keydown(event) {
@@ -45,7 +50,7 @@ function keydown(event) {
   if (x == 40 || key == "j" || key == "J") {
     // Down arrow
     if (event.shiftKey) {
-      incSweepline(-inc * 0.1);
+      incSweepline(-inc * g_sInc);
     } else if (event.ctrlKey) {
       incSweepline(-inc * 10);
     } else {
@@ -55,7 +60,7 @@ function keydown(event) {
   } else if (x == 38 || key == "k" || key == "K") {
     // Up arrow
     if (event.shiftKey) {
-      incSweepline(inc * 0.1);
+      incSweepline(inc * g_sInc);
     } else if (event.ctrlKey) {
       incSweepline(inc * 10);
     } else {
@@ -64,7 +69,7 @@ function keydown(event) {
     changed = true;
   } else if (key == "d") {
     // Print the sweepline value
-    console.log("sweepline = " + sweepline);
+    console.log("sweepline = " + g_sweepline);
   } else if (key == "i") {
     isoEdgeWidth = isoEdgeWidth == 0 ? 1 : 0;
     changed = true;
@@ -88,13 +93,14 @@ function keydown(event) {
     var t1 = performance.now();
     // console.log("Call to render took " + (t1 - t0) + " milliseconds.")
 
-    document.getElementById("sweeplineLabel").innerHTML = sweepline.toFixed(10);
+    document.getElementById("sweeplineLabel").innerHTML = g_sweepline.toFixed(10);
   }
 }
 
 function init() {
-  if (localStorage.sweepline) {
-    sweepline = parseFloat(localStorage.sweepline);
+  if (localStorage.sweepline && !_.isNaN(localStorage.sweepline)
+  && localStorage.sweepline !== "NaN") {
+    g_sweepline = parseFloat(localStorage.sweepline);
   }
   drawInit();
 
@@ -102,7 +108,7 @@ function init() {
   document.getElementById("gvdsvg").onclick = mouseclick;
   document.getElementById("fullscreenToggle").onclick = toggleFS;
   document.getElementById("hideInfo").onclick = toggleHideInfo;
-  document.getElementById("sweeplineLabel").innerHTML = sweepline.toFixed(10);
+  document.getElementById("sweeplineLabel").innerHTML = g_sweepline.toFixed(10);
 
   createDatasets();
   for (let key in g_datasets) {
@@ -143,14 +149,13 @@ function datasetChange(value) {
 
 function fortune(reorder) {
   nodeId = 1;
-  var eventThresh = 0.000001;
   var queue = createDataQueue(reorder);
   dcel = new DCEL();
   var beachline = new Beachline(dcel);
   closeEventPoints = [];
   if (queue.length < 1) return beachline;
   var nextY = queue[queue.length - 1].y;
-  while (queue.length > 0 && nextY > sweepline) {
+  while (queue.length > 0 && nextY > g_sweepline) {
     var event = queue.pop();
     if (event.isCloseEvent) {
       if (event.live && event.arcNode.closeEvent.live) {
@@ -165,7 +170,7 @@ function fortune(reorder) {
         }
         var newEvents = beachline.remove(event.arcNode, event.point, event.y);
         newEvents.forEach(function (ev) {
-          if (ev.y < event.y - 0.000001 || Math.abs(ev.y - event.y) < eventThresh) {
+          if (ev.y < event.y - 0.000001 || Math.abs(ev.y - event.y) < g_eventThresh) {
             sortedInsertion(queue, ev);
             if (ev.isCloseEvent) {
               closeEventPoints.push(ev);
@@ -179,7 +184,7 @@ function fortune(reorder) {
       var packet = getEventPacket(event, queue);
       var newEvents = beachline.add(packet);
       newEvents.forEach(function (ev) {
-        if (ev.y < event.y - 0.000001 || Math.abs(ev.y - event.y) < eventThresh) {
+        if (ev.y < event.y - 0.000001 || Math.abs(ev.y - event.y) < g_eventThresh) {
           sortedInsertion(queue, ev);
           if (ev.isCloseEvent) {
             closeEventPoints.push(ev);
@@ -224,9 +229,9 @@ function render(reorder = false) {
   var t = t1 - t0;
   // console.log("Time to process:" + t);
 
-  drawBeachline(beachline, sweepline, showEvents);
+  drawBeachline(beachline, g_sweepline, showEvents);
   drawCloseEvents(closeEventPoints);
-  drawSweepline(sweepline);
+  drawSweepline(g_sweepline);
   drawSurface(dcel);
 
   showTree(beachline.root);

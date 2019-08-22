@@ -8,30 +8,33 @@ var _ = require('lodash');
 const hostname = 'localhost';
 const port = 8080;
 
-function getRandomAdjustment() {
-  var value = Math.random() * 1e-6;
+function getRandomAdjustment(dataPoints, match) {
+  var xDiff = Math.abs(dataPoints[match.s1Idx].x - dataPoints[match.s2Idx].x);
+  var value = xDiff * 0.1;
+  // var value = Math.random() * 1e-6;
   if (value === 0.0) {return 1e-6;}
   var rslt = Math.random() < 0.5 ? -value : value;
   // console.log("Returning adjustment:" + rslt);
   return rslt;
 }
 
-function getMatch(sortedY) {
-  for (var i = 0; i < sortedY.length; i++) {
-    if (i > 0) {
-      if (sortedY[i].y == sortedY[i-1].y)
-        return sortedY[i];
-    }
+function getMatch(dataPoints) {
+  for (var i = 1; i < dataPoints.length; i++) {
+    if (dataPoints[i].y == dataPoints[i-1].y)
+      return {
+        s1Idx :i-1,
+        s2Idx :i
+      }
   }
   return null;
 }
 
 function sanitizeData(dataPoints) {
-  var sortedY = _.sortBy(dataPoints, 'y');
-  var match = getMatch(sortedY);
+  // var sortedY = _.sortBy(dataPoints, 'y');
+  var match = getMatch(dataPoints);
   while(match) {
-    match.y -= getRandomAdjustment();
-    match = getMatch(sortedY);
+    dataPoints[match.s1Idx].y -= getRandomAdjustment(dataPoints, match);
+    match = getMatch(dataPoints);
   }
 }
 
@@ -80,11 +83,6 @@ router.get('/data', function(req, res) {
   res.type('json');
   res.json(getDatasetJson());
 });
-
-// router.get('/testData', function(req, res) {
-//   res.type('json');
-//   res.json(getTestDatasetJson());
-// });
 
 router.use(express.static(__dirname));
 
