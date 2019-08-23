@@ -239,7 +239,7 @@ function createDatasets() {
   var p11 = new Polygon();
   p11.addPoint(vec3(-0.572, -0.61, 0)); // colinear test
   p11.addPoint(vec3(-0.572, -0.31, 0));
-  p11.addPoint(vec3(-0.572, 0.42000009, 0));
+  p11.addPoint(vec3(-0.572, 0.4209, 0));
   // p11.addPoint(vec3(-0.272, 0.420001, 0));
   p11.addPoint(vec3(0.42, 0.42, 0)); // +1e-7
   p11.addPoint(vec3(0.42, -0.61, 0));

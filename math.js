@@ -426,6 +426,28 @@ function getAngle(s, consider_order=true) {
   return Math.atan2(p2[1]-p1[1], p2[0]-p1[0]);
 }
 
+function betweenValue(t, a, b) {
+  var sorted = [a,b].sort();
+  return sorted[0] <= t && t <= sorted[1];
+}
+
+//------------------------------------------------------------
+// intersectsTargetSegments
+// Does one segment intersect another along the length of the segment
+//-----
+function intersectsTargetSegments(s1, s2){
+  // if the intersection is on the line of the target
+  var i = intersectLines(s1.a, s1.b , s2.a, s2.b);
+  // if the intersection is within the y bounds
+  // only works for non-horizontal lines
+  if (!i) {
+    // most likely the lines are parallel
+    return false;
+  }
+  return betweenValue(i.y, s2.a.y, s2.b.y) && betweenValue(i.x, s2.a.x, s2.b.x)
+         || betweenValue(i.y, s1.a.y, s1.b.y) && betweenValue(i.x, s1.a.x, s1.b.x);
+}
+
 // Angle between two vectors theta = arccos(dot(v1,v2)/ |v1|* |v2|)
 // returns the angle in radians
 function getAngleBetweenTwoVec(v1, v2) {
@@ -437,36 +459,36 @@ function getAngleBetweenTwoVec(v1, v2) {
 
 // only return true if the point belongs on the quadrant
 // with the larger angle
-function chooseLargestAngle(s1, s2, pointHint) {
-  var sUpper, sLower;
-  if (s1.a.y < s2.a.y) {
-    sUpper = s2;
-    sLower = s1;
-  } else {
-    sUpper = s1;
-    sLower = s2;
-  }
+// function chooseLargestAngle(s1, s2, pointHint) {
+//   var sUpper, sLower;
+//   if (s1.a.y < s2.a.y) {
+//     sUpper = s2;
+//     sLower = s1;
+//   } else {
+//     sUpper = s1;
+//     sLower = s2;
+//   }
 
-  var sUAB = subtract(sUpper.b, sUpper.a);
-  var sUBA = subtract(sUpper.a, sUpper.b);
-  var sLAB = subtract(sLower.b, sLower.a);
-  var sLBA = subtract(sLower.a, sLower.b);
-  var BC = subtract(pointHint, sLower.b);
+//   var sUAB = subtract(sUpper.b, sUpper.a);
+//   var sUBA = subtract(sUpper.a, sUpper.b);
+//   var sLAB = subtract(sLower.b, sLower.a);
+//   var sLBA = subtract(sLower.a, sLower.b);
+//   var BC = subtract(pointHint, sLower.b);
 
-  var lowerAngle = getAngleBetweenTwoVec(sUAB, sLAB);
-  var upperAngle = getAngleBetweenTwoVec(sUBA, sLAB);
+//   var lowerAngle = getAngleBetweenTwoVec(sUAB, sLAB);
+//   var upperAngle = getAngleBetweenTwoVec(sUBA, sLAB);
 
-  var cLUA = cross(sLBA, sUBA).z;
-  var cLUB = cross(sLBA, sUAB).z;
-  var cLC = cross(sLBA, BC).z;
+//   var cLUA = cross(sLBA, sUBA).z;
+//   var cLUB = cross(sLBA, sUAB).z;
+//   var cLC = cross(sLBA, BC).z;
 
-  if (upperAngle > lowerAngle) {
-    return (cLC*cLUA > 0);
-  } else {
-    // lower angle is the largest
-    return (cLC*cLUB > 0);
-  }
-}
+//   if (upperAngle > lowerAngle) {
+//     return (cLC*cLUA > 0);
+//   } else {
+//     // lower angle is the largest
+//     return (cLC*cLUB > 0);
+//   }
+// }
 
 function connected(s1, s2) {
   if (equal(s1.a, s2.a) || equal(s1.a, s2.b)) {
@@ -589,7 +611,7 @@ function bisectSegments4(s1, s2, s3) {
 function bisectSegments2(s1, s2) {
   // if connected segments
   var optCon = connected(s1, s2);
-  if (optCon){
+  if (optCon){ // || !intersectsTargetSegments(s1, s2)){
     return [smallAngleBisectSegments(s1, s2, optCon)];
   }
 
@@ -660,47 +682,47 @@ function smallAngleBisectSegments(s1, s2, optIntersect) {
 // the line. The vector v=q2-q1 will be oriented in the negative y direction.
 // NOTE: this bisects LINES not SEGMENTS.
 //------------------------------------------------------------
-function bisectSegmentsWithHint(s1, s2, pointHint) {
-  if (!pointHint) {
-    throw "using segment bisector with invalid hint - use bisectSegments4 instead";
-  }
-  if (parallelTest(s1, s2)) return getAverage(s1, s2);
-  var optConnection = connected(s1, s2);
+// function bisectSegmentsWithHint(s1, s2, pointHint) {
+//   if (!pointHint) {
+//     throw "using segment bisector with invalid hint - use bisectSegments4 instead";
+//   }
+//   if (parallelTest(s1, s2)) return getAverage(s1, s2);
+//   var optConnection = connected(s1, s2);
 
-  // get the closest points
-  var d1 = dist(s1.a, s2.a);
-  var d2 = dist(s1.a, s2.b);
-  var d3 = dist(s1.b, s2.a);
-  var d4 = dist(s1.b, s2.b);
-  if (d1 < d2 && d1 < d3 && d1 < d4) {
-  } else if (d2 < d1 && d2 < d3 && d2 < d4) {
-    var useLargeAngle = false;
-    if (!optConnection){
-      useLargeAngle = chooseLargestAngle(s1, s2, pointHint);
-    }
-    if (!useLargeAngle)
-      s2 = makeSegment(s2.b, s2.a, true);
-  } else if (d3 < d1 && d3 < d2 && d3 < d4) {
-    var useLargeAngle = false;
-    if (!optConnection){
-      useLargeAngle = chooseLargestAngle(s1, s2, pointHint);
-    }
-    if (!useLargeAngle)
-      s1 = makeSegment(s1.b, s1.a, true);
-  } else if (d4 < d1 && d4 < d2 && d4 < d3) {
-    s1 = makeSegment(s1.b, s1.a, true);
-    s2 = makeSegment(s2.b, s2.a, true);
-  }
+//   // get the closest points
+//   var d1 = dist(s1.a, s2.a);
+//   var d2 = dist(s1.a, s2.b);
+//   var d3 = dist(s1.b, s2.a);
+//   var d4 = dist(s1.b, s2.b);
+//   if (d1 < d2 && d1 < d3 && d1 < d4) {
+//   } else if (d2 < d1 && d2 < d3 && d2 < d4) {
+//     var useLargeAngle = false;
+//     if (!optConnection){
+//       useLargeAngle = chooseLargestAngle(s1, s2, pointHint);
+//     }
+//     if (!useLargeAngle)
+//       s2 = makeSegment(s2.b, s2.a, true);
+//   } else if (d3 < d1 && d3 < d2 && d3 < d4) {
+//     var useLargeAngle = false;
+//     if (!optConnection){
+//       useLargeAngle = chooseLargestAngle(s1, s2, pointHint);
+//     }
+//     if (!useLargeAngle)
+//       s1 = makeSegment(s1.b, s1.a, true);
+//   } else if (d4 < d1 && d4 < d2 && d4 < d3) {
+//     s1 = makeSegment(s1.b, s1.a, true);
+//     s2 = makeSegment(s2.b, s2.a, true);
+//   }
 
-  var beta = getSegmentsBisector(s1, s2, false);
-  var v = new vec3(Math.cos(beta), Math.sin(beta), 0);
-  var p = optConnection ? optConnection : intersectLines(s1.a, s1.b, s2.a, s2.b);
-  if (!p) {
-    throw "Unable to intersect lines";
-  }
-  var l = new Line(p, add(p, v));
-  return l;
-}
+//   var beta = getSegmentsBisector(s1, s2, false);
+//   var v = new vec3(Math.cos(beta), Math.sin(beta), 0);
+//   var p = optConnection ? optConnection : intersectLines(s1.a, s1.b, s2.a, s2.b);
+//   if (!p) {
+//     throw "Unable to intersect lines";
+//   }
+//   var l = new Line(p, add(p, v));
+//   return l;
+// }
 
 //------------------------------------------------------------
 //------------------------------------------------------------
@@ -715,7 +737,7 @@ function bisectSegmentsWithHint(s1, s2, pointHint) {
 // segments or points.
 //------------------------------------------------------------
 function bisect(a, b, pointHint = null) {
-  let bisector;
+  var bisector = null;
   if (a.type == 'vec' && b.type == 'vec') {
     // Returns a line
     bisector = bisectPoints(a, b);
@@ -723,9 +745,10 @@ function bisect(a, b, pointHint = null) {
     bisector = bisectPointSegment(a, b);
   } else if (b.type == 'vec') {
     bisector = bisectPointSegment(b, a);
-  } else {
-    bisector = bisectSegmentsWithHint(a, b, pointHint);
   }
+  // } else {
+  //   // bisector = bisectSegmentsWithHint(a, b, pointHint);
+  // }
   return bisector;
 }
 
@@ -777,16 +800,16 @@ function equidistant(left, arc, right) {
         b2 = bisect(points[0], segments[0]);
       } else {
         b1 = bisect(segments[0], points[0]);
-        b2 = bisect(segments[0], segments[1], points[0]);
-        // TODO test
-        // if (g_addDebug) g_debugObjs.push(b1);
-        // var blines = bisectSegments2(segments[0], segments[1]);
-        // var ii = [];
-        // _.forEach(blines, function(line) {
-        //   if (g_addDebug) g_debugObjs.push(line);
-        //   ii.push(intersect(line, b1));
-        // });
-        // return ii;
+        // b2 = bisect(segments[0], segments[1], points[0]);
+        if (g_addDebug) g_debugObjs.push(b1);
+        var blines = bisectSegments2(segments[0], segments[1]);
+        var ii = [];
+        _.forEach(blines, function(line) {
+          if (g_addDebug) g_debugObjs.push(line);
+          var i = intersect(line, b1);
+          ii = _.concat(ii, i);
+        });
+        return ii;
       }
     }
   } else if (segments.length == 1) {

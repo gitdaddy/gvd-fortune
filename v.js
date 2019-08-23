@@ -53,6 +53,7 @@ function intersectsTarget(line, t){
     return false;
   }
   return i.y <= t.y1.y && i.y >= t.y0.y;
+  // return betweenValue(i.y, t.y1.y, t.y0.y) && betweenValue(i.x, t.y1.x, t.y0.x);
 }
 
 // get right and left lines

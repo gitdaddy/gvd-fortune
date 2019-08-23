@@ -117,6 +117,7 @@ function VRegularInsert(arcNode, childArcNode, dcel, nodesToClose) {
 function ParaInsert(child, arcNode, dcel, nodesToClose) {
   var newChild;
   if (_.get(arcNode, 'site.relation') == NODE_RELATION.CLOSING) {
+    if (!child.isV) throw "Invalid node insertion";
     var sRight = child.nextArc();
     var updateEdge = child.prevEdge();
     if (sRight.isV && child.isV && equal(child.site.b, sRight.site.b)) {
