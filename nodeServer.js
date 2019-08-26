@@ -3,7 +3,6 @@ const express = require('express');
 var router = express();
 var fs = require('fs');
 var _ = require('lodash');
-// var rl = require('readline-sync');
 
 const hostname = 'localhost';
 const port = 8080;
@@ -46,6 +45,7 @@ function getDatasetJson() {
   // Load the whole dataset
   var files = fs.readFileSync('./data/maze/files.txt', 'utf-8').split('\n');
   files.forEach(file => {
+    _.replace(file, "\\", "/");
     var inputPoints = fs.readFileSync(file, 'utf-8').split('\n');
     var dataPoints = [];
     inputPoints = _.compact(inputPoints);

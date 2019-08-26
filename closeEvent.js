@@ -300,39 +300,14 @@ function createCloseEvent(arcNode, directrix) {
   return null;
 }
 
-function addCloseEvent(events, newEvent) {
-  var search = function (event) {
-    var tolerance = 0.00001;
-    if (!newEvent.point) debugger;
-    return (Math.abs(newEvent.point.x - event.point.x) < tolerance
-      && Math.abs(newEvent.point.y - event.point.y) < tolerance);
-  };
-  if (newEvent == null) return;
-  var existing = _.filter(events, search);
-  if (_.isEmpty(existing)) {
-    events.push(newEvent);
-  } else {
-    var idx = _.findIndex(events, search);
-    if (idx == -1) return;
-    // replace the old event
-    events[idx] = newEvent;
-  }
-}
 
 function processCloseEvents(closingNodes, directrix) {
   // Create close events
   var closeEvents = [];
   _.forEach(closingNodes, function(node) {
-    addCloseEvent(closeEvents, createCloseEvent(node, directrix));
+    var e = createCloseEvent(node, directrix);
+    if (e)
+      closeEvents.push(e);
   });
-  // if (arcNode.isParabola &&
-  //   _.get(arcNode, "site.relation") == NODE_RELATION.CHILD_LEFT_HULL) {
-  // } else if (arcNode.isParabola &&
-  //     _.get(arcNode, "site.relation") == NODE_RELATION.CHILD_RIGHT_HULL) {
-  //   addCloseEvent(closeEvents, createCloseEvent(arcNode.nextArc(), directrix));
-  // } else {
-  //   addCloseEvent(closeEvents, createCloseEvent(arcNode.prevArc(), directrix));
-  //   addCloseEvent(closeEvents, createCloseEvent(arcNode.nextArc(), directrix));
-  // }
   return closeEvents;
 }
