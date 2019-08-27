@@ -205,9 +205,7 @@ Parabola.prototype.setDrawBounds = function (x0, x1) {
 //   |______________________________|
 Parabola.prototype.setDrawPoints = function () {
   let points = [];
-  // Hard-coded delta x
-  let xinc = 0.01;
-  for (var x = this.x0; x < this.x1; x += xinc) {
+  for (var x = this.x0; x < this.x1; x += g_xInc) {
     // points.push({x:x, y:this.f(x)});
     points.push(vec2(x, this.f(x)));
   }

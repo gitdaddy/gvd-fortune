@@ -12,13 +12,14 @@ var closeEventPoints = [];
 var dcel;
 
 // Debug options
-var g_debugObjs = [];
-var g_addDebug = false;
-var g_debugIdLeft = undefined;
-var g_debugIdMiddle = undefined;
-var g_debugIdRight = undefined;
+let g_debugObjs = [];
+let g_addDebug = false;
+let g_debugIdLeft = undefined;
+let g_debugIdMiddle = undefined;
+let g_debugIdRight = undefined;
 
-var g_sInc = 0.1;
+let g_sInc = 0.1;
+let g_xInc = 0.01;
 
 let showEvents = false;
 let showDebugObjs = false;
@@ -26,6 +27,8 @@ let fullScreen = false;
 let hideInfo = false;
 
 function updateDebugVars() {
+  var p = document.getElementsByName("xIncVal")[0].valueAsNumber;
+  g_xInc = _.isNaN(p) ? g_xInc : p;
   var i = document.getElementsByName("incVal")[0].valueAsNumber;
   g_sInc = _.isNaN(i) ? g_sInc : i;
   g_debugIdLeft = document.getElementsByName("leftId")[0].valueAsNumber;
@@ -102,6 +105,10 @@ function init() {
   && localStorage.sweepline !== "NaN") {
     g_sweepline = parseFloat(localStorage.sweepline);
   }
+
+  document.getElementsByName("xIncVal")[0].valueAsNumber = g_xInc;
+  document.getElementsByName("incVal")[0].valueAsNumber = g_sInc;
+
   drawInit();
 
   document.onkeydown = keydown;
