@@ -51,6 +51,17 @@ function midPoint(p1, p2) {
   return new vec3((p1.x + p2.x)/2.0, (p1.y + p2.y)/2.0, 0);
 }
 
+function getPointsRightOfLine(a, b, points) {
+  return _.filter(points, function (p) {
+    return isRightOfLine(a, b, convertToVec3(p));
+  });
+}
+
+function getPointsLeftOfLine(a, b, points) {
+  return _.filter(points, function (p) {
+    return !isRightOfLine(a, b, convertToVec3(p));
+  });
+}
 
 function dividesRightOfLine(a1, b1, a2, b2) {
   return isRightOfLine(a1, b1, a2) && isRightOfLine(a1, b1, b2)
@@ -59,7 +70,9 @@ function dividesRightOfLine(a1, b1, a2, b2) {
 function isRightOfLine(upper, lower, p) {
   var v1 = subtract(upper, lower);
   var v2 = subtract(p, lower);
-  return cross(v1, v2).z < 0;
+  var z = cross(v1, v2).z;
+  if (z === 0.0) console.log("Co-linear found when using isRightOfLine()");
+  return z < 0;
 }
 
 //------------------------------------------------------------
@@ -314,6 +327,44 @@ function filterVisiblePoints(site, points) {
     p = convertToVec3(p);
     return fallsInBoundary(A, B, p);
   });
+}
+
+function sharedSegment(s1, s2) {
+  if (s1.type === "vec" && s2.type === "segment") {
+    return equal(s1, s2.a) || equal(s1, s2.b) ? s2 : null;
+  } else if (s2.type === "vec" && s1.type === "segment") {
+    return equal(s1.a, s2) || equal(s1.b, s2) ? s1 : null;
+  }
+  return null;
+}
+
+function filterBySiteAssociation(left, node, right, points) {
+  // for each associated node
+  var s1 = left.site;
+  var s2 = node.site;
+  var s3 = right.site;
+  var sLeft = sharedSegment(s1, s2);
+  var sRight = sharedSegment(s2, s3);
+  if (sLeft && sRight) return points;
+  if (!sLeft && !sRight) return points;
+
+  if (sLeft) {
+    if (s2.type === "segment") {
+      return equal(s2.b, s1) ? getPointsRightOfLine(sLeft.a, sLeft.b, points)
+        : getPointsLeftOfLine(sLeft.a, sLeft.b, points);
+    } else {
+      return equal(s2, s1.a) ? getPointsRightOfLine(sLeft.a, sLeft.b, points)
+      : getPointsLeftOfLine(sLeft.a, sLeft.b, points);
+    }
+  }
+  // sRight otherwise
+  if (s2.type === "segment") {
+    return equal(s2.b, s3) ? getPointsLeftOfLine(sRight.a, sRight.b, points)
+      : getPointsRightOfLine(sRight.a, sRight.b, points);
+  } else {
+    return equal(s2, s3.a) ? getPointsLeftOfLine(sRight.a, sRight.b, points)
+    : getPointsRightOfLine(sRight.a, sRight.b, points);
+  }
 }
 
 // Test if a point falls into the boundary of the sight of the segment line
@@ -779,7 +830,7 @@ function intersect(a, b) {
 // equidistant
 //
 // Returns the point equidistant from points/segments c1, c2, and c3.
-// Function potentially return multiple points
+// Function returns an array of points
 //------------------------------------------------------------
 function equidistant(left, arc, right) {
   var segments = _.filter([left, arc, right], { type: "segment" });
@@ -836,5 +887,9 @@ function equidistant(left, arc, right) {
     g_debugObjs.push(b1);
     g_debugObjs.push(b2);
   }
-  return intersect(b1, b2);
+  // always return an array or nil
+  var i = intersect(b1, b2);
+  if (!i || i.length === 0) return null;
+  if (i.type && i.type === "vec") return [i];
+  return i;
 }

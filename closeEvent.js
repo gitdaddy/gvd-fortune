@@ -240,7 +240,7 @@ function createCloseEvent(arcNode, directrix) {
 
   if (arcNode.isParabola && left.isParabola && right.isParabola) {
     // All three are points
-    closePoint = equidistant(left.site, arcNode.site, right.site);
+    closePoint = equidistant(left.site, arcNode.site, right.site)[0];
     if (closePoint == null) return null;
     var u = subtract(left.site, arcNode.site);
     var v = subtract(left.site, right.site);
@@ -264,25 +264,23 @@ function createCloseEvent(arcNode, directrix) {
 
   var radius = null;
   // can compute up to 6 equi points
-  var equi = equidistant(left.site, arcNode.site, right.site);
+  var points = equidistant(left.site, arcNode.site, right.site);
 
-  if (arcNode.isV) {
-    equi = filterVisiblePoints(arcNode.site, equi);
-    equi = left.isV ? filterVisiblePoints(left.site, equi) : equi;
-    equi = right.isV ? filterVisiblePoints(right.site, equi) : equi;
-  }
+  // guilty by association
+  _.forEach([left, arcNode, right], function(node) {
+    points = node.isV ? filterVisiblePoints(node.site, points) : points;
+  });
 
-  if (equi == null || equi.length == 0) return null;
-  if (equi.length == 1) {
-    closePoint = equi[0];
-    var diff = getDiff(left, arcNode, right, closePoint, directrix);
-    if (!validDiff(diff)) return null;
-  } else if (equi.type && equi.type == "vec") {
-    closePoint = equi;
+  // filter by site association
+  points = filterBySiteAssociation(left, arcNode, right, points);
+
+  if (points == null || points.length == 0) return null;
+  if (points.length == 1) {
+    closePoint = points[0];
     var diff = getDiff(left, arcNode, right, closePoint, directrix);
     if (!validDiff(diff)) return null;
   } else {
-    var p = chooseClosePoint(left, arcNode, right, equi, directrix);
+    var p = chooseClosePoint(left, arcNode, right, points, directrix);
     if (!p) return null;
     closePoint = p;
   }
