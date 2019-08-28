@@ -436,7 +436,9 @@ function dist(obj1, obj2) {
     var a = seg[0].y - seg[1].y;
     var b = seg[1].x - seg[0].x;
     var c = seg[0].x * seg[1].y - seg[1].x * seg[0].y;
-    return Math.abs(a * point.x + b * point.y + c)/Math.sqrt(a*a + b*b);
+    var n = Math.abs(a * point.x + b * point.y + c);
+    var dn = Math.sqrt(a*a + b*b)
+    return n/dn;
   } else {
     return Math.min(dist(seg[0], point), dist(seg[1], point));
   }
@@ -686,7 +688,15 @@ function parallelTest(s1, s2) {
   var l2 = new Line(s2.a, s2.b);
   // each line has a normalized vector
   // if the vector of each segment is equal then they lines are parallel
-  return equal(l1.v, l2.v);
+  // To reduce floating point error we introduce a precision value
+  // used to round the floating point values
+  // WATCH VALUE
+  var precision = 10;
+  var x1 = l1.v.x.toFixed(precision);
+  var y1 = l1.v.y.toFixed(precision);
+  var x2 = l2.v.x.toFixed(precision);
+  var y2 = l2.v.y.toFixed(precision);
+  return x1 === x2 && y1 === y2;
 }
 
 function getAverage(s1, s2) {
@@ -787,7 +797,7 @@ function smallAngleBisectSegments(s1, s2, optIntersect) {
 // Returns a bisector of a and b. a and b must be either line
 // segments or points.
 //------------------------------------------------------------
-function bisect(a, b, pointHint = null) {
+function bisect(a, b) {
   var bisector = null;
   if (a.type == 'vec' && b.type == 'vec') {
     // Returns a line
