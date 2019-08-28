@@ -125,7 +125,7 @@ var seg = {
 
 point {x,y}
 ------------------------------------------------------------ */
-function inteceptCircleSeg(circle, line){
+function interceptCircleSeg(circle, line){
   var a, b, c, d, u1, u2, ret, retP1, retP2, v1, v2;
   v1 = {};
   v2 = {};
@@ -159,7 +159,7 @@ function inteceptCircleSeg(circle, line){
   if (ret.length == 2) {
     var diff = dist(new vec3(ret[0].x, ret[0].y,0), new vec3(ret[1].x, ret[1].y,0));
     // WATCH VALUE
-    if (diff < 5e-6) return [ret[0]];
+    if (diff < 5e-3) return [ret[0]];
   }
   return ret;
 }

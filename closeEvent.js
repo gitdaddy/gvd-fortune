@@ -109,11 +109,11 @@ function circleTest(left, node, right, r, closePoint) {
       // query for attached segs
       var segs = findNeighborSegments(node);
       _.forEach(segs, function (s) {
-        var intercept = inteceptCircleSeg({radius:r, center:closePoint}, {p1:s.a,p2:s.b});
+        var intercept = interceptCircleSeg({radius:r, center:closePoint}, {p1:s.a,p2:s.b});
         if (intercept.length == 2) return true;
       });
     } else {
-      var intercept = inteceptCircleSeg({radius:r, center:closePoint}, {p1:node.site.a,p2:node.site.b});
+      var intercept = interceptCircleSeg({radius:r, center:closePoint}, {p1:node.site.a,p2:node.site.b});
       if (intercept.length == 2) return true;
     }
     return false;

@@ -1,5 +1,3 @@
-./data/maze/poly266.dat
-./data/maze/poly366.dat
 ./data/maze/poly51.dat
 ./data/maze/poly22.dat
 ./data/maze/poly445.dat
