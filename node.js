@@ -79,6 +79,7 @@ function belongsToSegmentEndpoint(A, B) {
 
 function consolidate(intersections, pivotX) {
   var ret = [];
+  // WATCH VALUE
   var thresh = 0.000001;
   var left = _.filter(intersections, function(i) {
     return i.x < pivotX;

@@ -3,10 +3,18 @@
 var g_sweepline = 0.1;
 var g_eventThresh = 1e-6;
 
-let g_datasets = {};
+let g_datasets = {
+  'dataset1' : [], // file dataset loaded asynchronously
+  'dataset2' : [],
+  'dataset3' : [],
+  'dataset4' : [],
+  'dataset5' : [],
+};
+
 let g_polygons = [];
 let g_queue = {};
 
+let g_fileDatasets = ["dataset1", "dataset2", "dataset3", "dataset4", "dataset5"];
 
 var closeEventPoints = [];
 var dcel;
@@ -18,8 +26,8 @@ let g_debugIdLeft = undefined;
 let g_debugIdMiddle = undefined;
 let g_debugIdRight = undefined;
 
-let g_sInc = 0.1;
-let g_xInc = 0.01;
+let g_sInc = 0.01;
+let g_xInc = 0.001;
 
 let showEvents = false;
 let showDebugObjs = false;
@@ -44,6 +52,8 @@ function setSweepline(d) {
 function incSweepline(inc) {
   setSweepline(g_sweepline + inc);
 }
+
+// TODO left side pop-out for controls
 
 function keydown(event) {
   var x = event.keyCode;
@@ -90,12 +100,7 @@ function keydown(event) {
   if (changed) {
     // Prevent scroll
     event.preventDefault();
-
-    var t0 = performance.now();
     render();
-    var t1 = performance.now();
-    // console.log("Call to render took " + (t1 - t0) + " milliseconds.")
-
     document.getElementById("sweeplineLabel").innerHTML = g_sweepline.toFixed(10);
   }
 }
@@ -117,16 +122,17 @@ function init() {
   document.getElementById("hideInfo").onclick = toggleHideInfo;
   document.getElementById("sweeplineLabel").innerHTML = g_sweepline.toFixed(10);
 
-  createDatasets();
+  // createDatasets();
   for (let key in g_datasets) {
     var option = document.createElement("option");
     option.text = key;
     document.getElementById("g_dataset").add(option);
   }
 
-  if (localStorage.g_dataset) {
-    document.getElementById("g_dataset").value = localStorage.g_dataset;
-  }
+  // if (localStorage.g_dataset) {
+  //   document.getElementById("g_dataset").value = localStorage.g_dataset;
+  // }
+  document.getElementById("g_dataset").value = "dataset2";
   datasetChange(document.getElementById("g_dataset").value);
 }
 
@@ -135,11 +141,11 @@ function datasetChange(value) {
   localStorage.g_dataset = value;
   clearSurface();
 
-  if (value == 'dataset6') {
+  if (_.find(g_fileDatasets, function(f) { return f === value; })) {
     if (g_datasets[value].length == 0) {
-      $.get("/data").then(function (json) {
+      var query = '/data/?value=' + value;
+      $.get(query).then(function (json) {
         var polygons = parseInputJSON(json);
-        // polygons.push(g_boundingBox);
         g_datasets[value] = polygons;
         g_polygons = polygons;
         processNewDataset();
@@ -232,14 +238,17 @@ function render(reorder = false) {
   var t0 = performance.now();
   var beachline = fortune(reorder);
   var t1 = performance.now();
+  var processTime = t1 - t0;
+  console.log("Process Time:" + processTime);
 
-  var t = t1 - t0;
-  // console.log("Time to process:" + t);
-
+  var t2 = performance.now();
   drawBeachline(beachline, g_sweepline, showEvents);
   drawCloseEvents(closeEventPoints);
   drawSweepline(g_sweepline);
   drawSurface(dcel);
+  var t3 = performance.now();
+  var drawTime = t3 - t2;
+  console.log("Draw Time:" + drawTime);
 
   showTree(beachline.root);
 

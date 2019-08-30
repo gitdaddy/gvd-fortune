@@ -180,8 +180,8 @@ function intersectLines(p1, p2, p3, p4) {
   var y3 = p3.y;
   var y4 = p4.y;
   var denom = (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
-  // tolerance meet with denom of 3.19...e-8 - varify this is correct
-  if (Math.abs(denom) < 0.00000001){
+  // tolerance previous tolerance 1e-8
+  if (Math.abs(denom) < 1e-10){
     return null;
   }
   var x = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4))/denom;
@@ -665,17 +665,19 @@ function bisectSegments2(s1, s2) {
   // if connected segments
   var optCon = connected(s1, s2);
   if (optCon){ // || !intersectsTargetSegments(s1, s2)){
-    return [smallAngleBisectSegments(s1, s2, optCon)];
+    var bisectData = smallAngleBisectSegments(s1, s2, optCon);
+    return [bisectData.line];
   }
 
-  var s = smallAngleBisectSegments(s1, s2);
+  var bisectData = smallAngleBisectSegments(s1, s2);
+  var s = bisectData.line;
   // the line for the large angle is perpendicular to the
   // small angle bisector
   var sorted = _.sortBy([s.p1, s.p2], 'y');
   var AB = subtract(sorted[0], sorted[1]);
   var v1Clockwise = new vec3(AB.y, -AB.x, 0); // 90 degrees perpendicular
   var v1CounterClockwise = new vec3(-AB.y, AB.x, 0);
-  var intersect = intersectLines(s1.a, s1.b, s2.a, s2.b);
+  var intersect = bisectData.optPoint ? bisectData.optPoint : intersectLines(s1.a, s1.b, s2.a, s2.b);
   if (!intersect) {
     return [s];
   }
@@ -713,7 +715,14 @@ function getAverage(s1, s2) {
 // NOTE: this bisects LINES not SEGMENTS.
 //------------------------------------------------------------
 function smallAngleBisectSegments(s1, s2, optIntersect) {
-  if (parallelTest(s1, s2)) return getAverage(s1, s2);
+  if (parallelTest(s1, s2)) {
+    console.log("Parallel Sites:" + s1.a.fileId + " and " + s2.a.fileId
+     + " - using average");
+    return {
+      line: getAverage(s1, s2),
+      optPoint: null
+    };
+  }
   // get the closest points
   var d1 = dist(s1.a, s2.a);
   var d2 = dist(s1.a, s2.b);
@@ -732,9 +741,19 @@ function smallAngleBisectSegments(s1, s2, optIntersect) {
   var beta = getSegmentsBisector(s1, s2, false);
   var v = new vec3(Math.cos(beta), Math.sin(beta), 0);
   var p = optIntersect ? optIntersect : intersectLines(s1.a, s1.b, s2.a, s2.b);
-  if (!p) return getAverage(s1, s2);
+  if (!p) {
+    console.log("Unable to determine intersect between:" + s1.a.fileId + " and " + s2.a.fileId
+     + " - using average");
+    return {
+      line: getAverage(s1, s2),
+      optPoint: null
+    };
+  }
   var l = new Line(p, add(p, v));
-  return l;
+  return {
+    line: l,
+    optPoint: p
+  };
 }
 
 //------------------------------------------------------------

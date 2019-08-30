@@ -60,13 +60,20 @@ Beachline.prototype.add = function (eventPacket) {
     return [];
   }
 
-  if (this.root.isArc) {
-    // TODO handle this case
-    throw "Root should not be an arc";
-  }
-
   var parent = this.root;
   var side, child;
+
+  if (this.root.isArc) {
+    child = this.root;
+    var subTreeData = generateSubTree(eventPacket, arcNode, dcel, child);
+    this.root = subTreeData.root;
+    if (subTreeData.optRemoveNode) {
+      var newEvents = this.remove(subTreeData.optRemoveNode, subTreeData.optRemovePoint, directrix);
+      return newEvents.concat(processCloseEvents(subTreeData.closingNodes, directrix));
+    }
+    return processCloseEvents(subTreeData.closingNodes, directrix);
+  }
+
   // Do a binary search to find the arc node that the new
   // site intersects with
   var x = parent.intersection(directrix).x;
@@ -88,7 +95,7 @@ Beachline.prototype.add = function (eventPacket) {
     child = parent.getChild(side);
   }
 
-  var subTreeData = generateSubTree(eventPacket, arcNode, dcel, child, parent, side);
+  var subTreeData = generateSubTree(eventPacket, arcNode, dcel, child);
   parent.setChild(subTreeData.root, side);
   if (subTreeData.optRemoveNode) {
     var newEvents = this.remove(subTreeData.optRemoveNode, subTreeData.optRemovePoint, directrix);

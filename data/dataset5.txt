@@ -1,0 +1,3 @@
+# close site test
+./data/maze/poly145.dat
+./data/maze/poly148.dat

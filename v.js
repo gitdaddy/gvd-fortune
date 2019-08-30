@@ -151,18 +151,18 @@ V.prototype.intersect = function(obj) {
       var bisector = smallAngleBisectSegments(s1, s2, optConnection);
 
       if (g_addDebug) {
-        g_debugObjs.push(bisector);
+        g_debugObjs.push(bisector.line);
       }
 
       // often P is too close to p2 increment the height by a 0.01 to get a better width for each vector
       if (zArea < 0) {
         // segment right
         var pPrime = vec3(this.f_(this.y1.y + 0.01)[1], this.y1.y + 0.01, 0);
-        return [intersectLines(this.p, pPrime, bisector.p1, bisector.p2)];
+        return [intersectLines(this.p, pPrime, bisector.line.p1, bisector.line.p2)];
       } else {
         // segment left
         var pPrime = vec3(this.f_(this.y1.y + 0.01)[0], this.y1.y + 0.01, 0);
-        return [intersectLines(this.p, pPrime, bisector.p1, bisector.p2)];
+        return [intersectLines(this.p, pPrime, bisector.line.p1, bisector.line.p2)];
       }
     } else {
       var lines = getLines(this, obj);
@@ -203,7 +203,7 @@ V.prototype.intersectRay = function(p, v) {
 // y = f(x)
 V.prototype.f = function(x) {
   var v;
-  if (x < this.p.x && Math.abs(x - this.p.x) > tolerance) {
+  if (x < this.p.x) {
     v = this.vectors[0];
   } else {
     v = this.vectors[1];
@@ -213,7 +213,7 @@ V.prototype.f = function(x) {
 
 // Inverse of f. x = f_(y)
 V.prototype.f_ = function(y) {
-  if (y < this.p.y && Math.abs(y - this.p.y) > tolerance) return [this.p.x];
+  if (y < this.p.y) return [this.p.x];
   if (y == this.p.y) return [this.p.x];
   var ret = []
   var tY = this.p.y;

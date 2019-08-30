@@ -28,8 +28,8 @@ var yAxis = d3.axisRight(y)
     .tickPadding(8 - width);
 
 let zoom = d3.zoom()
-    .extent([[100000, 100000], [width, height]])
-    .scaleExtent([1, 100000])
+    .extent([[50000, 50000], [width, height]])
+    .scaleExtent([1, 9000])
     .translateExtent([[0, 0], [width, height]])
     .on("zoom", zoomed);
 
