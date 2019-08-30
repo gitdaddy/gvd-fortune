@@ -1,55 +1,53 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <link rel="stylesheet" href="style.css">
+<head>
+  <link rel="stylesheet" href="style.css">
 
-    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="./lodash.min.js"></script>
-    <script type="text/javascript" src="./math.js"></script>
-    <!-- Link d3 version 4 -->
-    <script src="https://d3js.org/d3.v5.min.js"></script>
-    <script type="text/javascript" src="./d3.min.js"></script>
-    <script type="text/javascript" src="./dcel.js"></script>
-    <script type="text/javascript" src="./common/MV.js"></script>
-    <script type="text/javascript" src="utils.js"></script>
-    <script type="text/javascript" src="test.js"></script>
-    <script type="text/javascript" src="parabola.js"></script>
-    <script type="text/javascript" src="v.js"></script>
-    <script type="text/javascript" src="node.js"></script>
-    <script type="text/javascript" src="nodeInsert.js"></script>
-    <script type="text/javascript" src="closeEvent.js"></script>
-    <script type="text/javascript" src="beachline.js"></script>
-    <script type="text/javascript" src="tree.js"></script>
-    <script type="text/javascript" src="seedrandom.js"></script>
-    <script type="text/javascript" src="draw.js"></script>
-    <script type="text/javascript" src="dataset.js"></script>
-    <script type="text/javascript" src="main.js"></script>
+  <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+  <script type="text/javascript" src="./lodash.min.js"></script>
+  <script type="text/javascript" src="./math.js"></script>
 
-  </head>
-  <body onload="init()">
-    <div>
-      Dataset: <select id="g_dataset" onchange="datasetChange(this.value)"></select>
-      <label for="fullscreenToggle">Toggle Fullscreen</label>
-      <input type="checkbox" id="fullscreenToggle"/>
-      <label for="hideInfo">Hide Info</label>
-      <input type="checkbox" id="hideInfo"/>
-    </div>
-    <div class="row">
-      <div id="mainView" class="column">
+  <!-- Link bootstrap -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+  </script>
+
+  <!-- Link d3 version 4 -->
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script type="text/javascript" src="./d3.min.js"></script>
+  <script type="text/javascript" src="./dcel.js"></script>
+  <script type="text/javascript" src="./common/MV.js"></script>
+  <script type="text/javascript" src="utils.js"></script>
+  <script type="text/javascript" src="test.js"></script>
+  <script type="text/javascript" src="parabola.js"></script>
+  <script type="text/javascript" src="v.js"></script>
+  <script type="text/javascript" src="node.js"></script>
+  <script type="text/javascript" src="nodeInsert.js"></script>
+  <script type="text/javascript" src="closeEvent.js"></script>
+  <script type="text/javascript" src="beachline.js"></script>
+  <script type="text/javascript" src="tree.js"></script>
+  <script type="text/javascript" src="seedrandom.js"></script>
+  <script type="text/javascript" src="draw.js"></script>
+  <script type="text/javascript" src="dataset.js"></script>
+  <script type="text/javascript" src="main.js"></script>
+
+</head>
+
+<body onload="init()">
+  <!-- test inner panel -->
+  <div class="sliding-panel">
+    <div class="text-center panel-header">
+      GVD Fortune
+      <div>
+        Dataset: <select id="g_dataset" onchange="datasetChange(this.value)"></select>
+        <label for="fullscreenToggle">Toggle Fullscreen</label>
+        <input type="checkbox" id="fullscreenToggle" />
       </div>
-    <div class="column">
-      <svg class="tree"></svg>
     </div>
-  </div>
-  <div id="moreInfo">
-    <div>
-      Press 'e' to toggle events
-    </div>
-    <div>
-      Press 'v' to draw bisecting lines and parabolas
-    </div>
-    <br>
-    <div class="debug row">
+    <!-- TODO make class -->
+    <div class="debug-row">
       <div class="column">
         d=<label id="sweeplineLabel"></label>
         <br>
@@ -60,18 +58,27 @@
         <br>
         <textarea class="events-box" id="events"></textarea>
       </div>
+
       <div class="column">
         <span>Node Debugging:</span><br>
-        Draw Inc:__<input type="number" name="xIncVal"><br>
-        Shift Inc:_<input type="number" name="incVal"><br><br>
-        Left Id:___<input type="number" name="leftId"><br>
-        Middle Id:_<input type="number" name="middleId"><br>
-        Right Id:__<input type="number" name="rightId"><br>
+        Draw Inc:<input type="number" name="xIncVal"><br>
+        Shift Inc:<input type="number" name="incVal"><br><br>
+        Left Id:<input type="number" name="leftId"><br>
+        Middle Id:<input type="number" name="middleId"><br>
+        Right Id:<input type="number" name="rightId"><br>
         <button onclick="updateDebugVars()">Update</button>
         <div id="debug">
         </div>
       </div>
     </div>
   </div>
-  </body>
+  <div class="row">
+    <div id="mainView" class="column">
+    </div>
+    <div class="column">
+      <svg class="tree"></svg>
+    </div>
+  </div>
+</body>
+
 </html>

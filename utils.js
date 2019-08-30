@@ -167,15 +167,6 @@ function toggleFS() {
   }
 }
 
-function toggleHideInfo() {
-  hideInfo = !hideInfo;
-  if (hideInfo) {
-    document.getElementById('moreInfo').hidden = true;
-  } else {
-    document.getElementById('moreInfo').hidden = false;
-  }
-}
-
 function setDebug(msg) {
   document.getElementById('debug').innerHTML = msg;
 }

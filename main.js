@@ -32,7 +32,6 @@ let g_xInc = 0.001;
 let showEvents = false;
 let showDebugObjs = false;
 let fullScreen = false;
-let hideInfo = false;
 
 function updateDebugVars() {
   var p = document.getElementsByName("xIncVal")[0].valueAsNumber;
@@ -119,7 +118,6 @@ function init() {
   document.onkeydown = keydown;
   document.getElementById("gvdsvg").onclick = mouseclick;
   document.getElementById("fullscreenToggle").onclick = toggleFS;
-  document.getElementById("hideInfo").onclick = toggleHideInfo;
   document.getElementById("sweeplineLabel").innerHTML = g_sweepline.toFixed(10);
 
   // createDatasets();
