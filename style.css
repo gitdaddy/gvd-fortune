@@ -155,8 +155,10 @@ path.beachline {
 .sliding-panel {
     /* position: fixed; */
     width: 100%;
-    height: 20px;
-    background: rgb(126, 179, 211);
+    height: 35px;
+    background: white;
+    border-style: solid;
+    border-width: 1px;
     -webkit-transition: height 500ms;
     /* For Safari 3.1 to 6.0 */
     transition: height 500ms;
@@ -166,4 +168,18 @@ path.beachline {
 
 .sliding-panel:hover {
     height: 400px;
+    background: whitesmoke;
+}
+
+.title-label {
+    padding: 5px;
+}
+
+.debug-inputs {
+    width: 50%;
+    text-align: right;
+}
+
+.debug-input {
+    padding: 5px;
 }

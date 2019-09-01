@@ -39,35 +39,29 @@
   <!-- test inner panel -->
   <div class="sliding-panel">
     <div class="text-center panel-header">
-      GVD Fortune
-      <div>
-        Dataset: <select id="g_dataset" onchange="datasetChange(this.value)"></select>
-        <label for="fullscreenToggle">Toggle Fullscreen</label>
-        <input type="checkbox" id="fullscreenToggle" />
-      </div>
+      Dataset: <select id="g_dataset" onchange="datasetChange(this.value)"></select>
+      <label class="title-label" for="fullscreenToggle">Toggle Fullscreen</label>
+      <input class="title-label" type="checkbox" id="fullscreenToggle" />
+      d=<label class="title-label" id="sweeplineLabel"></label>
+      X:<label class="title-label" id="mouseX"></label>
+      Y:<label class="title-label" id="mouseY"></label>
     </div>
     <!-- TODO make class -->
     <div class="debug-row">
       <div class="column">
-        d=<label id="sweeplineLabel"></label>
-        <br>
-        X:<label id="mouseX"></label>
-        Y:<label id="mouseY"></label>
-        <br>
         <label>Events:</label>
         <br>
         <textarea class="events-box" id="events"></textarea>
       </div>
 
       <div class="column">
-        <span>Node Debugging:</span><br>
-        Draw Inc:<input type="number" name="xIncVal"><br>
-        Shift Inc:<input type="number" name="incVal"><br><br>
-        Left Id:<input type="number" name="leftId"><br>
-        Middle Id:<input type="number" name="middleId"><br>
-        Right Id:<input type="number" name="rightId"><br>
-        <button onclick="updateDebugVars()">Update</button>
-        <div id="debug">
+        <div class="debug-inputs" id="debug">
+          <div class="debug-input">Draw Inc:<input type="number" name="xIncVal"></div>
+          <div class="debug-input">Shift Inc:<input type="number" name="incVal"></div>
+          <div class="debug-input">Left Id:<input type="number" name="leftId"></div>
+          <div class="debug-input">Middle Id:<input type="number" name="middleId"></div>
+          <div class="debug-input">Right Id:<input type="number" name="rightId"></div>
+        <div><button onclick="updateDebugVars()">Update</button></div>
         </div>
       </div>
     </div>
