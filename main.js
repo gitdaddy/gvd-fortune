@@ -52,8 +52,6 @@ function incSweepline(inc) {
   setSweepline(g_sweepline + inc);
 }
 
-// TODO left side pop-out for controls
-
 function keydown(event) {
   var x = event.keyCode;
   var key = event.key;
