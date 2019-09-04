@@ -1,3 +1,4 @@
-# close site test
+# current test
+./data/maze/poly160.dat
 ./data/maze/poly145.dat
 ./data/maze/poly148.dat

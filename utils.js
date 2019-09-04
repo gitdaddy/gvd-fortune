@@ -139,10 +139,11 @@ function mouseclick(e) {
 }
 
 function toggleFS() {
-  fullScreen = !fullScreen;
+  g_fullScreen = !g_fullScreen;
 
-  if (fullScreen) {
-    d3.select('.tree').attr('width', 0).attr('height', 0);
+  if (g_fullScreen) {
+    d3.select('#tree').attr('width', 0).attr('height', 0);
+    d3.select('#treeDebug').attr('width', widthT).attr('height', heightT);
 
     var w = window.innerWidth - margin.left - margin.right;
     var h = window.innerHeight - margin.top - margin.bottom;
@@ -156,7 +157,8 @@ function toggleFS() {
             ',' + -1 * height / 4.0 + ')');
     document.getElementById('mainView').className = 'fullscreen';
   } else {
-    d3.select('.tree').attr('width', widthT).attr('height', heightT);
+    d3.select('#tree').attr('width', widthT).attr('height', heightT);
+    d3.select('#treeDebug').attr('width', 0).attr('height', 0);
 
     d3.select('#gvdsvg').attr('width', width).attr('height', height);
 
@@ -168,5 +170,6 @@ function toggleFS() {
 }
 
 function setDebug(msg) {
-  document.getElementById('debug').innerHTML = msg;
+  var id = g_fullScreen ? "tree-debug1" : "tree-debug2";
+  document.getElementById(id).innerHTML = msg;
 }

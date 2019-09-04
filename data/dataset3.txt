@@ -1,5 +1,3 @@
-# current test
-./data/maze/poly271.dat
-./data/maze/poly109.dat
-./data/maze/poly135.dat
-./data/maze/poly275.dat
+# parallel test
+./data/maze/poly366.dat
+./data/maze/poly266.dat

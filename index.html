@@ -38,7 +38,7 @@
 <body onload="init()">
   <!-- test inner panel -->
   <div class="sliding-panel">
-    <div class="text-center panel-header">
+    <div class="text-left panel-header">
       Dataset: <select id="g_dataset" onchange="datasetChange(this.value)"></select>
       <label class="title-label" for="fullscreenToggle">Toggle Fullscreen</label>
       <input class="title-label" type="checkbox" id="fullscreenToggle" />
@@ -46,23 +46,30 @@
       X:<label class="title-label" id="mouseX"></label>
       Y:<label class="title-label" id="mouseY"></label>
     </div>
-    <!-- TODO make class -->
-    <div class="debug-row">
-      <div class="column">
+    <div class="row">
+      <div class="column-debug">
         <label>Events:</label>
         <br>
         <textarea class="events-box" id="events"></textarea>
       </div>
-
-      <div class="column">
-        <div class="debug-inputs" id="debug">
-          <div class="debug-input">Draw Inc:<input type="number" name="xIncVal"></div>
-          <div class="debug-input">Shift Inc:<input type="number" name="incVal"></div>
-          <div class="debug-input">Left Id:<input type="number" name="leftId"></div>
-          <div class="debug-input">Middle Id:<input type="number" name="middleId"></div>
-          <div class="debug-input">Right Id:<input type="number" name="rightId"></div>
+      <div class="column-debug">
+        <div class="debug-inputs">
+          <div>
+            <div class="debug-input">Draw Inc:<input type="number" name="xIncVal"></div>
+            <div class="debug-input">Shift Inc:<input type="number" name="incVal"></div>
+          </div>
+          <br>
+          <div>
+            <div class="debug-input">Left Id:<input type="number" name="leftId"></div>
+            <div class="debug-input">Middle Id:<input type="number" name="middleId"></div>
+            <div class="debug-input">Right Id:<input type="number" name="rightId"></div>
+          </div>
         <div><button onclick="updateDebugVars()">Update</button></div>
         </div>
+      </div>
+      <div class="column-debug">
+        <svg id="treeDebug"></svg>
+        <div id="tree-debug1"></div>
       </div>
     </div>
   </div>
@@ -70,7 +77,8 @@
     <div id="mainView" class="column">
     </div>
     <div class="column">
-      <svg class="tree"></svg>
+      <svg id="tree"></svg>
+      <div id="tree-debug2"></div>
     </div>
   </div>
 </body>

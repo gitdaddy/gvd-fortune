@@ -3,6 +3,8 @@ var g_zoomScale = 1;
 let g_siteRadius = 0.01;
 var g_isoEdgeWidth = 1;
 
+const ZOOM_EXTENT = 200000;
+
 var margin = {top: -5, right: -5, bottom: -5, left: -5},
     width = 700 - margin.left - margin.right,
     height = 700 - margin.top - margin.bottom;
@@ -28,8 +30,8 @@ var yAxis = d3.axisRight(y)
     .tickPadding(8 - width);
 
 let zoom = d3.zoom()
-    .extent([[50000, 50000], [width, height]])
-    .scaleExtent([1, 9000])
+    .extent([[width * ZOOM_EXTENT, height * ZOOM_EXTENT], [width, height]])
+    .scaleExtent([1, ZOOM_EXTENT])
     .translateExtent([[0, 0], [width, height]])
     .on("zoom", zoomed);
 

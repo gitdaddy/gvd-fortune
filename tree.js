@@ -71,11 +71,17 @@ function setView(data) {
 }
 
 function showTree(treeData) {
-  if (treeData == null || fullScreen) return;
+  if (treeData == null) return;
 
   // declares a tree layout and assigns the size
-  var treemap = d3.tree()
-    .size([heightT, widthT]);
+  var treeId;
+  if (g_fullScreen) {
+    treeId = "#treeDebug";
+  } else {
+    treeId = "#tree";
+  }
+  var treeMap = d3.tree()
+  .size([heightT, widthT]);
 
   // var diagonal = d3.svg.diagonal()
   // 	.projection(function(d) { return [d.x, d.y]; });
@@ -88,13 +94,13 @@ function showTree(treeData) {
   });
 
   // maps the arcNode data to the tree layout
-  nodes = treemap(nodes);
+  nodes = treeMap(nodes);
 
   // append the svg object to the body of the page
   // appends a 'group' element to 'svg'
   // moves the 'group' element to the top left margin
-  d3.select(".tree").html("");
-  var svg = d3.select(".tree")
+  d3.select(treeId).html("");
+  var svg = d3.select(treeId)
     .attr("width", widthT + marginT.left + marginT.right)
     .attr("height", heightT + marginT.top + marginT.bottom),
   g = svg.append("g")

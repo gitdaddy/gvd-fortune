@@ -31,7 +31,7 @@ let g_xInc = 0.001;
 
 let showEvents = false;
 let showDebugObjs = false;
-let fullScreen = false;
+let g_fullScreen = false;
 
 function updateDebugVars() {
   var p = document.getElementsByName("xIncVal")[0].valueAsNumber;

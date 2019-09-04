@@ -45,7 +45,7 @@ function getDatasetJson(set) {
   files.forEach(file => {
     // comments don't need to be processed
     if (file[0] !== '#') {
-      var inputPoints = fs.readFileSync(file, 'utf-8').split('\n');
+      var inputPoints = fs.readFileSync(file.trim(), 'utf-8').split('\n');
       var dataPoints = [];
       inputPoints = _.compact(inputPoints);
       if (inputPoints.length === 2) {
