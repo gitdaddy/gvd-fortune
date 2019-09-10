@@ -52,7 +52,8 @@ function drawInit()
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom)
   .attr("id", "gvdsvg")
-  .attr("xmlns", "http://www.w3.org/2000/svg");
+  .attr("xmlns", "http://www.w3.org/2000/svg")
+  ;
 
   svg.append("g")
     .attr("id", "gvd")
@@ -64,7 +65,8 @@ function drawInit()
     .attr("y1", 0)
     .attr("x2", 1)
     .attr("y2", 0)
-    .attr("vector-effect", "non-scaling-stroke");
+    .attr("vector-effect", "non-scaling-stroke")
+    ;
 }
 
 function clearSurface() {
@@ -264,8 +266,8 @@ function drawSurface(dcel) {
         var idStr = edge.a.toString() + "-" + edge.b.toString();
         // console.log("ID: " + idStr + " origin:" + edge.origin.point + " - dest:" + edge.dest.point);
         gp.prepDraw(idStr, edge.origin.point, edge.dest.point);
-        generalEdges.push(gp);
-      } else {
+          generalEdges.push(gp);
+        } else {
         edges.push(edge);
       }
     }
@@ -397,7 +399,7 @@ function drawBeachline(beachline, directrix) {
       .attr("leftx", p => p.drawPoints[0].x)
       .attr("rightx", p => p.drawPoints[p.drawPoints.length-1].x)
       .attr("transform", p => p.transform)
-      .style("stroke-width", g_isoEdgeWidth);
+      .style("stroke-width", g_isoEdgeWidth)
     ;
   }
 
