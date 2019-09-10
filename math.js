@@ -181,7 +181,9 @@ function intersectLines(p1, p2, p3, p4) {
   var y4 = p4.y;
   var denom = (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
   // tolerance previous tolerance 1e-8
-  if (Math.abs(denom) < 1e-10){
+  // originally 1e-6 but more precision has been needed
+  if (Math.abs(denom) < 1e-14){
+    console.log("intersectLines() denom too small:" + denom);
     return null;
   }
   var x = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4))/denom;

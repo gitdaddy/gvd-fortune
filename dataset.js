@@ -293,29 +293,29 @@ function createDatasets() {
   // polygons3.push(p31);
   // polygons3.push(g_boundingBox);
 
-  // var polygons4 = [];
-  // var p41 = new Polygon();
-  // var p42 = new Polygon();
+  var polygons4 = [];
+  var p41 = new Polygon();
+  var p42 = new Polygon();
 
-  // p41.addPoint(vec3(-0.56, 0.73, 0));
-  // p41.addPoint(vec3(-0.62, -0.77, 0));
-  // p41.addPoint(vec3(0.69, -0.57, 0));
-  // p41.addPoint(vec3(0.62, 0.67, 0));
+  p41.addPoint(vec3(-0.56, 0.73, 0));
+  p41.addPoint(vec3(-0.62, -0.77, 0));
+  p41.addPoint(vec3(0.69, -0.57, 0));
+  p41.addPoint(vec3(0.62, 0.67, 0));
 
-  // p42.addPoint(vec3(-0.41, 0.45, 0));
-  // p42.addPoint(vec3(-0.12,0.13, 0));
-  // p42.addPoint(vec3(-0.10, -0.61, 0));
+  p42.addPoint(vec3(-0.41, 0.45, 0));
+  p42.addPoint(vec3(-0.12,0.13, 0));
+  p42.addPoint(vec3(-0.10, -0.61, 0));
 
-  // p41.createSegment(0, 1);
-  // p41.createSegment(1, 2);
-  // p41.createSegment(2, 3);
-  // p41.createSegment(3, 0);
-  // polygons4.push(p41);
+  p41.createSegment(0, 1);
+  p41.createSegment(1, 2);
+  p41.createSegment(2, 3);
+  p41.createSegment(3, 0);
+  polygons4.push(p41);
 
-  // p42.createSegment(0, 1);
-  // p42.createSegment(1, 2);
-  // p42.createSegment(2, 0);
-  // polygons4.push(p42);
+  p42.createSegment(0, 1);
+  p42.createSegment(1, 2);
+  p42.createSegment(2, 0);
+  polygons4.push(p42);
   // polygons4.push(g_boundingBox);
 
   // Math.seedrandom('3');
@@ -336,4 +336,6 @@ function createDatasets() {
   //   'dataset4' : [],
   //   'dataset5' : [],
   // };
+
+  g_datasets["dataset6"] = polygons4;
 }

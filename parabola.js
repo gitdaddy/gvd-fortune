@@ -80,7 +80,17 @@ Parabola.prototype.intersectRay = function (p, v) {
 
 // y = f(x)
 Parabola.prototype.f = function (x) {
-  return (x - this.h) * (x - this.h) / (4 * this.p) + this.k;
+  var a = (x - this.h);
+  var a2 = a * a;
+  var b = (4 * this.p);
+  if (b === 0) {
+    // WATCH VALUE
+    return 1e10;
+  }
+  var c = a2/b;
+  var d = c + this.k;
+  return d;
+  // return (x - this.h) * (x - this.h) / (4 * this.p) + this.k;
 }
 
 // Inverse of f. x = f_(y)

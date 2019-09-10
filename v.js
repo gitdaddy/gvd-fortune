@@ -44,16 +44,11 @@ function filterOutPointsLowerThan(points, valY){
 }
 
 function intersectsTarget(line, t){
-  // if the intersection is on the line of the target
-  var i = intersectLines(line.y1, line.y0 , t.y1, t.y0);
-  // if the intersection is within the y bounds
-  // only works for non-horizontal lines
-  if (!i) {
-    // most likely the lines are parallel
-    return false;
-  }
-  return i.y <= t.y1.y && i.y >= t.y0.y;
-  // return betweenValue(i.y, t.y1.y, t.y0.y) && betweenValue(i.x, t.y1.x, t.y0.x);
+  // y0 upper
+  // y1 lower
+  var r1 = isRightOfLine(line.y1, line.y0, t.y0);
+  var r2 = isRightOfLine(line.y1, line.y0, t.y1);
+  return r1 && !r2 || !r1 && r2;
 }
 
 // get right and left lines
@@ -183,7 +178,7 @@ V.prototype.intersect = function(obj) {
 
       var validPoints = filterOutPointsLowerThan(intersects, this.p.y);
       if (validPoints.length == 0) {
-        // console.error("invalid intersection between id:" + this.id + " and arc id:" + obj.id);
+        console.error("invalid intersection between id:" + this.id + " and arc id:" + obj.id);
         return [];
       }
       return _.sortBy(validPoints, 'x');

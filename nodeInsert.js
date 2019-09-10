@@ -60,10 +60,14 @@ function splitArcNode(toSplit, node, dcel, optNodesToClose) {
     var x = node.site.x;
     var y;
     if (toSplit.isParabola) {
-      y = createParabola(toSplit.site, node.site.y, toSplit.id).f(x);
+      // avoid p==0 WATCH VALUE
+      var directrix = toSplit.site.y === node.site.y ? node.site.y - 1e-10: node.site.y;
+      y = createParabola(toSplit.site, directrix, toSplit.id).f(x);
     } else {
       y = new V(toSplit.site, node.site.y, toSplit.id).f(x);
     }
+    if (!_.isFinite(y))
+      console.log("Infinite vertex detected!");
     vertex = vec3(x, y, 0);
   }
   var left = toSplit;

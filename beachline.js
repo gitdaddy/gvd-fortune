@@ -201,20 +201,23 @@ Beachline.prototype.prepDraw = function (
           throw "Error edge node marked as general surface but is not between a V and parabola";
         }
 
-        if (!node.flipped || !belongsToSegment(node.prevArc(), node.nextArc())) {
+        if (!belongsToSegment(node.prevArc(), node.nextArc())) {
           var gp = createGeneralParabola(point, segment);
           var idStr = next.id.toString() + "-" + prev.id.toString();
           // console.log("ID: " + idStr + " origin:" + origin + " - dest:" + p);
           gp.prepDraw(idStr, origin, p);
           generalSurfaces.push(gp);
+        } else {
+          lines.push({ x0: point.x, y0: point.y, x1: p.x, y1: p.y, id: node.id, connectedToGVD: node.connectedToGVD });
         }
       } else {
         lines.push({ x0: origin.x, y0: origin.y, x1: p.x, y1: p.y, id: node.id, connectedToGVD: node.connectedToGVD });
       }
     }
 
-    // check V left
+    // check V left and right
     this.prepDraw(directrix, node.left, leftx, p.x, arcElements, lines, generalSurfaces, events);
+    // this.prepDraw(directrix, node.right, p.x, rightx, arcElements, lines, generalSurfaces, events);
     if (p.x < rightx) {
       // We can ignore anything outside our original bounds.
       this.prepDraw(directrix, node.right, p.x, rightx, arcElements, lines, generalSurfaces, events);

@@ -34,8 +34,9 @@ function nodeColor(node) {
 
 function highlight(d) {
   // Highlight the arc
-  let node = d3.select(`#treenode${d.data.id}`);
-  node.style("stroke-width", 5);
+  var identifier = `#treenode${d.data.id}`;
+  let node = d3.select(identifier);
+  node.style("stroke-width", g_isoEdgeWidth * 5);
 
   if (d.data.isArc) {
     // Highlight the site
@@ -173,7 +174,7 @@ function showTree(treeData) {
     // })
     .on('mouseover', highlight)
     .on("mouseout", function(d, i) {
-      d3.select(`#treenode${d.data.id}`).style("stroke-width", null);
+      d3.select(`#treenode${d.data.id}`).style("stroke-width", g_isoEdgeWidth);
       setDebug('');
       if (d.data.isArc)
         d3.select(`#site${d.data.site.id}`).attr("r", g_siteRadius);

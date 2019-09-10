@@ -26,7 +26,7 @@ body {
 .column-debug {
     float: left;
     width: 30%;
-    padding: 10px;
+    padding: 20px;
     height: auto; /* Should be removed. Only for demonstration */
     /* overflow: hidden; */
 }
@@ -92,9 +92,7 @@ line#sweepline {
 }
 
 .close-event {
-    stroke: cyan;
     fill: cyan;
-    /*fill: None;*/
 }
 
 #debug-circumcircle {
@@ -158,6 +156,7 @@ path.beachline {
 .events-box {
     width: 500px;
     height: 180px;
+    padding: 10px;
 }
 
 /* Debug Panel */

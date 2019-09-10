@@ -1,6 +1,6 @@
 var g_zoomScale = 1;
 
-let g_siteRadius = 0.01;
+let g_siteRadius = 0.02;
 var g_isoEdgeWidth = 1;
 
 const ZOOM_EXTENT = 200000;
@@ -278,30 +278,29 @@ function drawSurface(dcel) {
   .curve(d3.curveLinear);
   let d3generalEdges = d3.select('#gvd')
     .selectAll('.gvd-surface-parabola')
-    .data(generalEdges)
-  ;
+    .data(generalEdges);
   d3generalEdges.exit().remove();
   d3generalEdges.enter()
     .append("path")
     .style("fill","none")
     .attr("class", "gvd-surface-parabola")
     .attr("vector-effect", "non-scaling-stroke")
+    // .attr("id", p => `treenode${p.id}`)
     .merge(d3generalEdges)
     .style("stroke-width", e => getSurfaceWidth(e.splitSite))
     .attr("d", p => line(p.drawPoints))
-    .attr("id", p => p.id)
     .attr("transform", p => p.transform)
   ;
 
   let d3edges = d3.select('#gvd')
     .selectAll('.gvd-surface')
-    .data(edges)
-  ;
+    .data(edges);
   d3edges.exit().remove();
   d3edges.enter()
     .append('line')
     .attr('class', "gvd-surface")
     .attr("vector-effect", "non-scaling-stroke")
+    .attr("id", p => `treenode${p.id}`)
     .merge(d3edges)
     .attr('x1', e => e.origin.point.x)
     .attr('y1', e => e.origin.point.y)
@@ -325,8 +324,6 @@ function drawCloseEvents(eventPoints) {
   };
 
   let unhighlight = function(event) {
-    // console.log(event);
-    // console.log('unhighlight');
     let arcNode = event.arcNode;
 
     // Unhighlight the arc
@@ -455,10 +452,10 @@ function drawBeachline(beachline, directrix) {
       .attr("vector-effect", "non-scaling-stroke")
       .merge(selection)
       .attr("d", p => line(p.drawPoints))
-      .attr("id", p => p.id)
+      // .attr("id", p => p.id)
+      .attr("id", p => `treenode${p.id}`)
       .attr("transform", p => p.transform)
       .style("stroke-width", g_isoEdgeWidth);
-    ;
 
     let lineSelection = d3.select("#gvd").selectAll(".gvd-surface-active")
       .data(lines);

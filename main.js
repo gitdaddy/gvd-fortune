@@ -118,7 +118,7 @@ function init() {
   document.getElementById("fullscreenToggle").onclick = toggleFS;
   document.getElementById("sweeplineLabel").innerHTML = g_sweepline.toFixed(10);
 
-  // createDatasets();
+  createDatasets();
   for (let key in g_datasets) {
     var option = document.createElement("option");
     option.text = key;
@@ -238,7 +238,7 @@ function render(reorder = false) {
   console.log("Process Time:" + processTime);
 
   var t2 = performance.now();
-  drawBeachline(beachline, g_sweepline, showEvents);
+  drawBeachline(beachline, g_sweepline);
   drawCloseEvents(closeEventPoints);
   drawSweepline(g_sweepline);
   drawSurface(dcel);
