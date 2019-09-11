@@ -264,11 +264,10 @@ function drawSurface(dcel) {
         }
         var gp = createGeneralParabola(point, segment);
         var idStr = edge.a.toString() + "-" + edge.b.toString();
-        // console.log("ID: " + idStr + " origin:" + edge.origin.point + " - dest:" + edge.dest.point);
         gp.prepDraw(idStr, edge.origin.point, edge.dest.point);
-          generalEdges.push(gp);
-        } else {
-        edges.push(edge);
+        generalEdges.push(gp);
+      } else {
+      edges.push(edge);
       }
     }
     result = iter.next();

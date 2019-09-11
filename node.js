@@ -292,6 +292,15 @@ EdgeNode.prototype.intersection = function (directrix) {
   return obj.results[obj.resultIdx];
 };
 
+function neighborSites(edge) {
+  if (!edge.isEdge) return false;
+  var prev = edge.prevArc();
+  var next = edge.nextArc();
+  if (!prev || !next) return false;
+
+  return belongsToSegment(prev, next);
+}
+
 // Does not support horizontal arcs
 function intersectStraightArcs(left, right, directrix){
   let pleft = createBeachlineSegment(left.site, directrix, left.id);

@@ -240,7 +240,12 @@ function createCloseEvent(arcNode, directrix) {
 
   if (arcNode.isParabola && left.isParabola && right.isParabola) {
     // All three are points
-    closePoint = equidistant(left.site, arcNode.site, right.site)[0];
+    var equi = equidistant(left.site, arcNode.site, right.site);
+    if (!equi) {
+      console.log("Equi point null between 3 point sites");
+      return null;
+    }
+    closePoint = equi[0];
     if (closePoint == null) return null;
     var u = subtract(left.site, arcNode.site);
     var v = subtract(left.site, right.site);

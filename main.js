@@ -168,15 +168,17 @@ function fortune(reorder) {
     var event = queue.pop();
     if (event.isCloseEvent) {
       if (event.live && event.arcNode.closeEvent.live) {
-        var destPrev = event.arcNode.prevEdge().dcelEdge.dest;
-        var destNext = event.arcNode.nextEdge().dcelEdge.dest;
-        // only set if not overridden
-        if (!destPrev.overridden) {
-          destPrev.point = event.point;
+        var prevEdge = event.arcNode.prevEdge();
+        var nextEdge = event.arcNode.nextEdge();
+
+        // only set if not overridden // Performance
+        if (!prevEdge.dcelEdge.dest.overridden && !neighborSites(prevEdge)) {
+          prevEdge.dcelEdge.dest.point = event.point;
         }
-        if (!destNext.overridden) {
-          destNext.point = event.point;
+        if (!nextEdge.dcelEdge.dest.overridden && !neighborSites(nextEdge)) {
+          nextEdge.dcelEdge.dest.point = event.point;
         }
+
         var newEvents = beachline.remove(event.arcNode, event.point, event.y);
         newEvents.forEach(function (ev) {
           if (ev.y < event.y - 0.000001 || Math.abs(ev.y - event.y) < g_eventThresh) {

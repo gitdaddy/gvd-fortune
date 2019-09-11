@@ -1,6 +1,21 @@
 # current issue
+./data/maze/poly12.dat
+./data/maze/poly33.dat
+./data/maze/poly139.dat
+./data/maze/poly144.dat
+./data/maze/poly146.dat
 ./data/maze/poly148.dat
+./data/maze/poly145.dat
 ./data/maze/poly168.dat
 ./data/maze/poly172.dat
-#./data/maze/poly457.dat
+./data/maze/poly220.dat
+./data/maze/poly246.dat
+./data/maze/poly258.dat
+./data/maze/poly285.dat
+./data/maze/poly331.dat
+./data/maze/poly425.dat
+./data/maze/poly457.dat
 ./data/maze/poly460.dat
+./data/maze/poly467.dat
+./data/maze/poly468.dat
+./data/maze/poly470.dat
