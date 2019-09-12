@@ -180,6 +180,22 @@ function findNeighborSegments(node) {
   return segs;
 }
 
+// much like findNeighborSegments but using a point site
+function findConnectedSegments(pointSite) {
+  if (!pointSite.type || pointSite.type !== "vec") return [];
+  var segs = [];
+  _.forEach(g_polygons, function(poly) {
+    var rslt = _.filter(poly.segments, function(s) {
+      return (equal(s.a, pointSite) || equal(s.b, pointSite)) && pointSite.label === s.label;
+    });
+    if (!_.isEmpty(rslt)) {
+      segs = rslt;
+      return;
+    }
+  });
+  return segs;
+}
+
 function isColinear(p1, p2, p3) {
   p1 = new vec3(p1.x, p1.y, 0);
   p2 = new vec3(p2.x, p2.y, 0);
@@ -297,19 +313,17 @@ function createDatasets() {
   var p41 = new Polygon();
   var p42 = new Polygon();
 
-  p41.addPoint(vec3(-0.56, 0.73, 0));
-  p41.addPoint(vec3(-0.62, -0.77, 0));
-  p41.addPoint(vec3(0.69, -0.57, 0));
-  p41.addPoint(vec3(0.62, 0.67, 0));
+  p41.addPoint(vec3(-0.41, 0.45, 0)); // shared point
+  p41.addPoint(vec3(-0.56, 0.33, 0));
+  p41.addPoint(vec3(-0.62, 0.57, 0));
 
   p42.addPoint(vec3(-0.41, 0.45, 0));
-  p42.addPoint(vec3(-0.12,0.13, 0));
-  p42.addPoint(vec3(-0.10, -0.61, 0));
+  p42.addPoint(vec3(-0.12,0.53, 0));
+  p42.addPoint(vec3(0.32, 0.21, 0));
 
   p41.createSegment(0, 1);
   p41.createSegment(1, 2);
-  p41.createSegment(2, 3);
-  p41.createSegment(3, 0);
+  p41.createSegment(2, 0);
   polygons4.push(p41);
 
   p42.createSegment(0, 1);

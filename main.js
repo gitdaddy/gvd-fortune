@@ -128,7 +128,7 @@ function init() {
   // if (localStorage.g_dataset) {
   //   document.getElementById("g_dataset").value = localStorage.g_dataset;
   // }
-  document.getElementById("g_dataset").value = "dataset2";
+  document.getElementById("g_dataset").value = "dataset6";
   datasetChange(document.getElementById("g_dataset").value);
 }
 
@@ -156,6 +156,7 @@ function datasetChange(value) {
   }
 }
 
+// TODO fix overlapping sites
 function fortune(reorder) {
   nodeId = 1;
   var queue = createDataQueue(reorder);

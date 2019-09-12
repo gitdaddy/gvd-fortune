@@ -22,7 +22,7 @@ V = function(line, directrix, id) {
     lineSegment[0], lineSegment[1], vec3(-100, directrix, 0), vec3(100, directrix, 0));
   this.focus = this.p;
   var theta =
-    getSegmentsBisector([vec3(-1, directrix, 0), vec3(1, directrix, 0)], lineSegment);
+    getSegmentsBisectorAngle([vec3(-1, directrix, 0), vec3(1, directrix, 0)], lineSegment);
   // Get the first positive 90 degree sibling to theta
   while (theta > 0) theta -= Math.PI/2;
   while (theta < 0) theta += Math.PI/2;

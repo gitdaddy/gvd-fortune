@@ -236,6 +236,7 @@ function lpIntersect(h, k, p, q, v) {
 // * Note this assumes positive parabolas
 function ppIntersect(h1, k1, p1, h2, k2, p2) {
   // Check for degenerate parabolas
+  // WATCH VALUE
   const EPSILON = 0.00000001;
   if (Math.abs(p1) < EPSILON) {
     if (Math.abs(p2) < EPSILON) {
@@ -505,44 +506,11 @@ function intersectsTargetSegments(s1, s2){
 
 // Angle between two vectors theta = arccos(dot(v1,v2)/ |v1|* |v2|)
 // returns the angle in radians
-function getAngleBetweenTwoVec(v1, v2) {
-  var d = dot(v1, v2);
-  var m1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
-  var m2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
-  return Math.acos(d/(m1*m2));
-}
-
-// only return true if the point belongs on the quadrant
-// with the larger angle
-// function chooseLargestAngle(s1, s2, pointHint) {
-//   var sUpper, sLower;
-//   if (s1.a.y < s2.a.y) {
-//     sUpper = s2;
-//     sLower = s1;
-//   } else {
-//     sUpper = s1;
-//     sLower = s2;
-//   }
-
-//   var sUAB = subtract(sUpper.b, sUpper.a);
-//   var sUBA = subtract(sUpper.a, sUpper.b);
-//   var sLAB = subtract(sLower.b, sLower.a);
-//   var sLBA = subtract(sLower.a, sLower.b);
-//   var BC = subtract(pointHint, sLower.b);
-
-//   var lowerAngle = getAngleBetweenTwoVec(sUAB, sLAB);
-//   var upperAngle = getAngleBetweenTwoVec(sUBA, sLAB);
-
-//   var cLUA = cross(sLBA, sUBA).z;
-//   var cLUB = cross(sLBA, sUAB).z;
-//   var cLC = cross(sLBA, BC).z;
-
-//   if (upperAngle > lowerAngle) {
-//     return (cLC*cLUA > 0);
-//   } else {
-//     // lower angle is the largest
-//     return (cLC*cLUB > 0);
-//   }
+// function getAngleBetweenTwoVec(v1, v2) {
+//   var d = dot(v1, v2);
+//   var m1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+//   var m2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
+//   return Math.acos(d/(m1*m2));
 // }
 
 function connected(s1, s2) {
@@ -596,13 +564,13 @@ function bisectPointSegment(p, s) {
 }
 
 //------------------------------------------------------------
-// getSegmentsBisector
+// getSegmentsBisectorAngle
 //
 // Return the angle of the bisecting line of two segments.
 // The bisector is between the angle s to the angle t.
 // s,t are arrays of length 2
 //------------------------------------------------------------
-function getSegmentsBisector(s, t, debug=false) {
+function getSegmentsBisectorAngle(s, t, debug=false) {
   var stheta = getAngle(s, false);
   var ttheta = getAngle(t, false);
   if (stheta < 0) stheta += Math.PI*2;
@@ -628,6 +596,38 @@ function getSegmentsBisector(s, t, debug=false) {
 // the line. The vector v=q2-q1 will be oriented in the negative y direction.
 //------------------------------------------------------------
 function bisectPoints(p1, p2) {
+  // if the point sites are equal then
+  // we must rely on the external segments for an accurate bisector
+  if (equal(p1, p2)) {
+    console.log("Bisecting equal point sites...");
+    // get external segments
+    var ss1 = findConnectedSegments(p1);
+    var ss2 = findConnectedSegments(p2);
+
+    if (ss1.length !== 2 || ss2.length !== 2) {
+      throw "Invalid bisect points - data contains overlapping point sites";
+    }
+
+    // find the two segments with the smallest angle from p1 and p2
+    var smallestAnglePair = { angle: 1e10 };
+    _.forEach(ss1, function(s1){
+      _.forEach(ss2, function(s2) {
+        // if angle < sp.angle - set the smallest pair
+        var beta = getSegmentsBisectorAngle(s1, s2);
+        if (beta < smallestAnglePair.angle) {
+          smallestAnglePair.angle = beta;
+          smallestAnglePair.s1 = s1;
+          smallestAnglePair.s2 = s2;
+        }
+      });
+    });
+    // get the bisector between the two segments
+    var data = smallAngleBisectSegments(smallestAnglePair.s1, smallestAnglePair.s2, p1);
+    // debugging only
+    g_debugObjs.push(data.line);
+    return data.line;
+  }
+
   var v = subtract(p2, p1);
   var q = add(p1, mult(v, 0.5));
   if (v.y > 0) {
@@ -740,7 +740,7 @@ function smallAngleBisectSegments(s1, s2, optIntersect) {
     s2 = makeSegment(s2.b, s2.a, true);
   }
 
-  var beta = getSegmentsBisector(s1, s2, false);
+  var beta = getSegmentsBisectorAngle(s1, s2, false);
   var v = new vec3(Math.cos(beta), Math.sin(beta), 0);
   var p = optIntersect ? optIntersect : intersectLines(s1.a, s1.b, s2.a, s2.b);
   if (!p) {
@@ -757,54 +757,6 @@ function smallAngleBisectSegments(s1, s2, optIntersect) {
     optPoint: p
   };
 }
-
-//------------------------------------------------------------
-// bisectSegments
-// Return the line bisecting two lines. Returns two points [q1,q2] defining
-// the line. The vector v=q2-q1 will be oriented in the negative y direction.
-// NOTE: this bisects LINES not SEGMENTS.
-//------------------------------------------------------------
-// function bisectSegmentsWithHint(s1, s2, pointHint) {
-//   if (!pointHint) {
-//     throw "using segment bisector with invalid hint - use bisectSegments4 instead";
-//   }
-//   if (parallelTest(s1, s2)) return getAverage(s1, s2);
-//   var optConnection = connected(s1, s2);
-
-//   // get the closest points
-//   var d1 = dist(s1.a, s2.a);
-//   var d2 = dist(s1.a, s2.b);
-//   var d3 = dist(s1.b, s2.a);
-//   var d4 = dist(s1.b, s2.b);
-//   if (d1 < d2 && d1 < d3 && d1 < d4) {
-//   } else if (d2 < d1 && d2 < d3 && d2 < d4) {
-//     var useLargeAngle = false;
-//     if (!optConnection){
-//       useLargeAngle = chooseLargestAngle(s1, s2, pointHint);
-//     }
-//     if (!useLargeAngle)
-//       s2 = makeSegment(s2.b, s2.a, true);
-//   } else if (d3 < d1 && d3 < d2 && d3 < d4) {
-//     var useLargeAngle = false;
-//     if (!optConnection){
-//       useLargeAngle = chooseLargestAngle(s1, s2, pointHint);
-//     }
-//     if (!useLargeAngle)
-//       s1 = makeSegment(s1.b, s1.a, true);
-//   } else if (d4 < d1 && d4 < d2 && d4 < d3) {
-//     s1 = makeSegment(s1.b, s1.a, true);
-//     s2 = makeSegment(s2.b, s2.a, true);
-//   }
-
-//   var beta = getSegmentsBisector(s1, s2, false);
-//   var v = new vec3(Math.cos(beta), Math.sin(beta), 0);
-//   var p = optConnection ? optConnection : intersectLines(s1.a, s1.b, s2.a, s2.b);
-//   if (!p) {
-//     throw "Unable to intersect lines";
-//   }
-//   var l = new Line(p, add(p, v));
-//   return l;
-// }
 
 //------------------------------------------------------------
 //------------------------------------------------------------

@@ -346,6 +346,14 @@ function intersectStraightArcs(left, right, directrix){
 
 // Function supports the intersection of a parabolic arc to any other arc type
 function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, directrix){
+
+  // debugging only
+  if (left.id === g_debugIdLeft && right.id === g_debugIdRight) {
+    g_addDebug = true;
+  } else {
+    g_addDebug = false;
+  }
+
   var pleft = createBeachlineSegment(left.site, directrix, left.id);
   var pright = createBeachlineSegment(right.site, directrix, right.id);
 
@@ -431,6 +439,25 @@ function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, dire
 
 // Function supports the intersection of a parabolic arc to any other arc type
 function intersectParabolicArcs(left, right, directrix){
+
+  // debugging only
+  if (left.id === g_debugIdLeft && right.id === g_debugIdRight) {
+    g_addDebug = true;
+  } else {
+    g_addDebug = false;
+  }
+
+  // if the two sites are equal their
+  // intersection is mid point to the directrix
+  if (equal(left.site, right.site)) {
+    console.log("Intersecting equal point sites");
+    var i = new vec3(left.site.x, (left.site.y + directrix)/2.0);
+    return {
+      results: [i],
+      resultIdx: 0
+    };
+  }
+
   let pleft = createBeachlineSegment(left.site, directrix, left.id);
   let pright = createBeachlineSegment(right.site, directrix, right.id);
   let intersections = pleft.intersect(pright);
