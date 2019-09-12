@@ -57,7 +57,15 @@ line#sweepline {
     stroke: black;
 }
 
+.gvd-iso-surface {
+    stroke: black;
+}
+
 .gvd-surface-parabola {
+    stroke: black;
+}
+
+.gvd-iso-surface-parabola {
     stroke: black;
 }
 

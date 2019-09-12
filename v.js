@@ -61,7 +61,10 @@ function getLines(l, r){
   // 3 cases: 1 l divides r, r divides l, neither divide
   var t1 = intersectsTarget(l, r);
   var t2 = intersectsTarget(r, l);
-  if (t1 && t2) throw "Error invalid input data";
+  if (t1 && t2) {
+    console.error("Error invalid input data");
+    return {left:[], right:[]};
+  }
   if (!t1 && !t2) { // neither divide
     // all combinations possible 11, 10, 01, 00
     if (dividesRightOfLine(l.y1, l.y0, r.y1, r.y0)) {

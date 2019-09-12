@@ -72,18 +72,32 @@ function drawInit()
 function clearSurface() {
   d3.select("#gvd")
   .selectAll(".gvd-surface-active-parabola")
-  .style("stroke-width", e => 0)
+  .remove()
+  ;
 
   d3.select("#gvd").selectAll(".gvd-surface-active")
-  .style("stroke-width", e => 0)
+  .remove()
+  ;
 
   d3.select('#gvd')
   .selectAll('.gvd-surface-parabola')
-  .style("stroke-width", e => 0)
+  .remove()
+  ;
+
+  d3.select('#gvd')
+  .selectAll('.gvd-iso-surface-parabola')
+  .remove()
+  ;
 
   d3.select('#gvd')
   .selectAll('.gvd-surface')
-  .style("stroke-width", e => 0)
+  .remove()
+  ;
+
+  d3.select('#gvd')
+  .selectAll('.gvd-iso-surface')
+  .remove()
+  ;
 }
 
 function initDebugCircumcircle() {
@@ -235,8 +249,16 @@ function drawSweepline(sweepline) {
     ;
 }
 
+function getSurfaceClass(onGvd) {
+  return onGvd ? "gvd-surface" : "gvd-iso-surface";
+}
+
+function getSurfaceParabolaClass(onGvd) {
+  return onGvd ? "gvd-surface-parabola" : "gvd-iso-surface-parabola";
+}
+
 function getSurfaceWidth(bold) {
-  return bold ? g_isoEdgeWidth * 2 : g_isoEdgeWidth;
+  return bold ? g_isoEdgeWidth * 3 : g_isoEdgeWidth;
 }
 
 function drawSurface(dcel) {
@@ -284,7 +306,7 @@ function drawSurface(dcel) {
   d3generalEdges.enter()
     .append("path")
     .style("fill","none")
-    .attr("class", "gvd-surface-parabola")
+    .attr("class", e => getSurfaceParabolaClass(e.splitSite))
     .attr("vector-effect", "non-scaling-stroke")
     // .attr("id", p => `treenode${p.id}`)
     .merge(d3generalEdges)
@@ -299,7 +321,7 @@ function drawSurface(dcel) {
   d3edges.exit().remove();
   d3edges.enter()
     .append('line')
-    .attr('class', "gvd-surface")
+    .attr('class', e => getSurfaceClass(e.splitSite))
     .attr("vector-effect", "non-scaling-stroke")
     .attr("id", p => `treenode${p.id}`)
     .merge(d3edges)
@@ -543,4 +565,13 @@ function zoomed() {
   d3.select('#gvd')
   .selectAll('.gvd-surface')
   .style("stroke-width", e => getSurfaceWidth(e.splitSite))
+
+  if (!g_hide_iso_lines) {
+    d3.selectAll(".gvd-iso-surface")
+    .style("stroke-width", g_isoEdgeWidth)
+    ;
+    d3.selectAll('.gvd-iso-surface-parabola')
+    .style("stroke-width", g_isoEdgeWidth)
+    ;
+  }
 }

@@ -12,6 +12,23 @@ function arcColorSvg(id) {
   return d3.schemeCategory10[id % 10];
 }
 
+function sanitizePointSiteData(polygons) {
+  var points = [];
+  _.forEach(polygons, function(poly) {
+    points = points.concat(poly.points);
+  });
+
+  var sp = _.sortBy(points, 'y');
+  for (var i = 1; i < sp.length; i++) {
+    if (sp[i].x === sp[i-1].x && sp[i].y === sp[i-1].y) {
+      console.log("applying offset to overlapping point");
+      // offset the data point of i
+      // WATCH VALUE
+      sp[i].y -= 0.00001;
+    }
+  }
+}
+
 function processNewDataset() {
   var segments = [];
   var points = [];
@@ -20,6 +37,8 @@ function processNewDataset() {
     segments = segments.concat(poly.segments);
     points = points.concat(poly.points);
   });
+
+  sanitizePointSiteData(g_polygons);
 
   initDebugCircumcircle();
   drawSites(points);

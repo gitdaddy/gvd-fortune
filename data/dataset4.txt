@@ -1,4 +1,4 @@
-# current issue
+# Cluster
 ./data/maze/poly12.dat
 ./data/maze/poly33.dat
 ./data/maze/poly139.dat

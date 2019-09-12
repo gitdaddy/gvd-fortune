@@ -32,6 +32,7 @@ let g_xInc = 0.001;
 let showEvents = false;
 let showDebugObjs = false;
 let g_fullScreen = false;
+let g_hide_iso_lines = false;
 
 function updateDebugVars() {
   var p = document.getElementsByName("xIncVal")[0].valueAsNumber;
@@ -81,8 +82,22 @@ function keydown(event) {
     // Print the sweepline value
     console.log("sweepline = " + g_sweepline);
   } else if (key == "i") {
-    isoEdgeWidth = isoEdgeWidth == 0 ? 1 : 0;
-    changed = true;
+    g_hide_iso_lines = !g_hide_iso_lines;
+    if (g_hide_iso_lines) {
+      d3.selectAll(".gvd-iso-surface")
+      .style("stroke-width", 0)
+      ;
+      d3.selectAll('.gvd-iso-surface-parabola')
+      .style("stroke-width", 0)
+      ;
+    } else {
+      d3.selectAll(".gvd-iso-surface")
+      .style("stroke-width", g_isoEdgeWidth)
+      ;
+      d3.selectAll('.gvd-iso-surface-parabola')
+      .style("stroke-width", g_isoEdgeWidth)
+      ;
+    }
   } else if (key == 'e') {
     showEvents = !showEvents;
     d3.selectAll(".close-event")
@@ -93,6 +108,8 @@ function keydown(event) {
       .attr('visibility', showDebugObjs ? null : 'hidden');
     d3.selectAll(".debug-parabola")
       .attr('visibility', showDebugObjs ? null : 'hidden');
+  } else if (key == 'i') {
+
   }
   if (changed) {
     // Prevent scroll
