@@ -326,10 +326,11 @@ function filterVisiblePoints(site, points) {
   // new updated vector = (a-b) * scale + a
   var A = add(mult(subtract(site.a, site.b), tolerance), site.b);
   var B = add(mult(subtract(site.b, site.a), tolerance), site.a);
-  return _.filter(points, function (p) {
+  var rslt = _.filter(points, function (p) {
     p = convertToVec3(p);
     return fallsInBoundary(A, B, p);
   });
+  return rslt;
 }
 
 function sharedSegment(s1, s2) {

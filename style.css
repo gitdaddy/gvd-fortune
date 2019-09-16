@@ -81,12 +81,16 @@ line#sweepline {
 
 .debug-line {
     stroke: blue;
-    stroke-dasharray: 3, 3;
+    /* stroke-dasharray: 3, 3; */
 }
 
 .debug-parabola {
     stroke: green;
-    stroke-dasharray: 3, 3;
+    /* stroke-dasharray: 3, 3; */
+}
+
+.debug-point {
+    stroke: red;
 }
 
 .seg-boundary {

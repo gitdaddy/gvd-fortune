@@ -271,6 +271,13 @@ function createCloseEvent(arcNode, directrix) {
   // can compute up to 6 equi points
   var points = equidistant(left.site, arcNode.site, right.site);
 
+  // Debug TODO
+  // if (g_addDebug) {
+  //   _.forEach(points, function(p) {
+  //     g_debugObjs.push(p);
+  //   });
+  // }
+
   // guilty by association
   _.forEach([left, arcNode, right], function(node) {
     points = node.isV ? filterVisiblePoints(node.site, points) : points;

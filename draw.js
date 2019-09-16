@@ -1,6 +1,6 @@
 var g_zoomScale = 1;
 
-let g_siteRadius = 0.04;
+let g_siteRadius = 0.03;
 var g_isoEdgeWidth = 1;
 
 const ZOOM_EXTENT = 200000;
@@ -150,6 +150,24 @@ function drawDebugObjs(objs) {
   var lines = _.filter(objs, function (o) {
     return o instanceof Line;
   });
+
+  // var points = _.filter(objs, function (o) {
+  //   return o.type === "vec";
+  // });
+
+  // let pointSelection = d3.select("#gvd")
+  // .selectAll(".debug-point")
+  // .data(points);
+  // pointSelection.exit().remove();
+  // pointSelection.enter()
+  // .append("circle")
+  // .attr("class", "debug-point")
+  // .merge(pointSelection)
+  // .attr('r', g_siteRadius)
+  // .attr('cx', d => d.x)
+  // .attr('cy', d => d.y)
+  // .attr('visibility', showDebugObjs ? null : 'hidden')
+  // ;
 
   let selB = d3.select("#gvd")
   .selectAll(".debug-line")
@@ -363,7 +381,7 @@ function drawCloseEvents(eventPoints) {
   // exit
   selection.exit().remove();
   // enter
-  let enter = selection.enter()
+  selection.enter()
     .append("circle")
     .attr('class', "close-event")
     .attr("vector-effect", "non-scaling-stroke")
@@ -510,7 +528,7 @@ function getZoomedSize(node) {
 
 function zoomed() {
   g_zoomScale = d3.event.transform.k;
-  g_siteRadius = 0.01 / g_zoomScale;
+  g_siteRadius = 0.03 / g_zoomScale;
   g_isoEdgeWidth = 1 / g_zoomScale;
   svg.attr("transform", "translate(" +  d3.event.transform.x + ","
   +  d3.event.transform.y + ") scale(" +  d3.event.transform.k + ")");
