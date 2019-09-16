@@ -1,6 +1,6 @@
 var g_zoomScale = 1;
 
-let g_siteRadius = 0.02;
+let g_siteRadius = 0.04;
 var g_isoEdgeWidth = 1;
 
 const ZOOM_EXTENT = 200000;
