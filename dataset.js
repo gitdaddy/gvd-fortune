@@ -128,7 +128,7 @@ function parseInputJSON(jsonStr) {
   _.forEach(data.polygons, function(polygon) {
     var poly = new Polygon();
     if (polygon.points.length > 1) {
-      removeCAS(polygon.points);
+      polygon.points = removeCAS(polygon.points);
       for(var i = 0; i < polygon.points.length; i++) {
         if (i !== polygon.points.length - 1) {
           var point = new vec3(polygon.points[i].x,  polygon.points[i].y, 0);
@@ -206,37 +206,51 @@ function isColinear(p1, p2, p3) {
 }
 
 // Input is ordered by segment creation 0 -> 1 -> 2 -> 0
-function removeColinearAttachedSegments(orderedPoints) {
-  var removed = false;
-  if (orderedPoints.length < 3) return removed;
-  var p1 = orderedPoints[0];
-  var p2 = orderedPoints[1];
-  var p3 = orderedPoints[2];
+function removeColinearPoints(orderedPoints) {
+  var didRemove = false;
+  var rslt = {removed: false, points: orderedPoints};
+  if (orderedPoints.length < 3) return rslt;
   var toRemove = [];
-  for (var i = 3; i < orderedPoints.length; i++) {
+  // remove the last element since it is a circular list
+  if (orderedPoints[0].x === orderedPoints[orderedPoints.length-1].x
+    && orderedPoints[0].y === orderedPoints[orderedPoints.length-1].y)
+  {
+    orderedPoints.splice(orderedPoints.length-1, 1);
+  }
+
+  for (var i = 0; i < orderedPoints.length; i++) {
+    var start = i === 0 ? orderedPoints.length-1 : i-1;
+    var p1 = orderedPoints[start];
+    var p2 = orderedPoints[i];
+    var p3 = orderedPoints[(i+1)%orderedPoints.length]; // 2,3,0
     if (isColinear(p1, p2, p3)) {
-      console.log("Removing point(" + p2.x + ", " + p2.y + ")");
-      toRemove.push(p2);
+      var center = _.sortBy([p1, p2, p3], 'y')[1];
+      console.log("Removing point(" + center.x + ", " + center.y + ")");
+      toRemove.push(center);
     }
-    // advance
-    p1 = p2;
-    p2 = p3;
-    p3 = orderedPoints[i];
   }
 
   if (toRemove.length > 0) {
     _.forEach(toRemove, function(p) {
-      _.remove(orderedPoints, function (orderedPoint) {
+      var removedPoints = _.remove(orderedPoints, function (orderedPoint) {
         return orderedPoint.x === p.x && orderedPoint.y === p.y;
       });
+      if (removedPoints.length === 0) throw "invalid remove operation";
     });
-    removed = true;
+    didRemove = true;
   }
-  return removed;
+  // place the ending back on
+  orderedPoints.push(orderedPoints[0]);
+  return {removed: didRemove, points: orderedPoints};
 }
 
 function removeCAS(points) {
-  while(removeColinearAttachedSegments(points));
+  var rslt = removeColinearPoints(points);
+  while(rslt.removed)
+  {
+    rslt = removeColinearPoints(rslt.points);
+  }
+  return rslt.points;
 }
 
 function createDatasets() {
@@ -309,27 +323,27 @@ function createDatasets() {
   // polygons3.push(p31);
   // polygons3.push(g_boundingBox);
 
-  var polygons4 = [];
-  var p41 = new Polygon();
-  var p42 = new Polygon();
+  // var polygons4 = [];
+  // var p41 = new Polygon();
+  // var p42 = new Polygon();
 
-  p41.addPoint(vec3(-0.41, 0.45, 0)); // shared point
-  p41.addPoint(vec3(-0.56, 0.33, 0));
-  p41.addPoint(vec3(-0.62, 0.57, 0));
+  // p41.addPoint(vec3(-0.41, 0.45, 0)); // shared point
+  // p41.addPoint(vec3(-0.56, 0.33, 0));
+  // p41.addPoint(vec3(-0.62, 0.57, 0));
 
-  p42.addPoint(vec3(-0.41, 0.45, 0));
-  p42.addPoint(vec3(-0.12,0.53, 0));
-  p42.addPoint(vec3(0.32, 0.21, 0));
+  // p42.addPoint(vec3(-0.41, 0.45, 0));
+  // p42.addPoint(vec3(-0.12,0.53, 0));
+  // p42.addPoint(vec3(0.32, 0.21, 0));
 
-  p41.createSegment(0, 1);
-  p41.createSegment(1, 2);
-  p41.createSegment(2, 0);
-  polygons4.push(p41);
+  // p41.createSegment(0, 1);
+  // p41.createSegment(1, 2);
+  // p41.createSegment(2, 0);
+  // polygons4.push(p41);
 
-  p42.createSegment(0, 1);
-  p42.createSegment(1, 2);
-  p42.createSegment(2, 0);
-  polygons4.push(p42);
+  // p42.createSegment(0, 1);
+  // p42.createSegment(1, 2);
+  // p42.createSegment(2, 0);
+  // polygons4.push(p42);
   // polygons4.push(g_boundingBox);
 
   // Math.seedrandom('3');
@@ -351,5 +365,5 @@ function createDatasets() {
   //   'dataset5' : [],
   // };
 
-  g_datasets["dataset6"] = polygons4;
+  // g_datasets["dataset7"] = polygons4;
 }

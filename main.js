@@ -9,12 +9,13 @@ let g_datasets = {
   'dataset3' : [],
   'dataset4' : [],
   'dataset5' : [],
+  'dataset6' : [],
 };
 
 let g_polygons = [];
 let g_queue = {};
 
-let g_fileDatasets = ["dataset1", "dataset2", "dataset3", "dataset4", "dataset5"];
+let g_fileDatasets = ["dataset1", "dataset2", "dataset3", "dataset4", "dataset5", "dataset6"];
 
 var closeEventPoints = [];
 var dcel;
@@ -135,7 +136,7 @@ function init() {
   document.getElementById("fullscreenToggle").onclick = toggleFS;
   document.getElementById("sweeplineLabel").innerHTML = g_sweepline.toFixed(10);
 
-  createDatasets();
+  // createDatasets();
   for (let key in g_datasets) {
     var option = document.createElement("option");
     option.text = key;
