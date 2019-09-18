@@ -19,6 +19,92 @@ var NODE_RELATION = {
   NONE: 5
 }
 
+function getRandomAdjustment(dataPoints, match) {
+  var xDiff = Math.abs(dataPoints[match.s1Idx].x - dataPoints[match.s2Idx].x);
+  var value = xDiff * 0.01;
+  // var value = Math.random() * 1e-6;
+  if (value === 0.0) {return 1e-6;}
+  // console.log("Returning adjustment:" + rslt);
+  // var rslt = Math.random() < 0.5 ? -value : value;
+  // return rslt;
+  return value;
+}
+
+function getMatch(dataPoints) {
+  for (var i = 1; i < dataPoints.length; i++) {
+    if (dataPoints[i].y == dataPoints[i-1].y)
+      return {
+        s1Idx :i-1,
+        s2Idx :i
+      }
+  }
+  return null;
+}
+
+// Input is ordered by segment creation 0 -> 1 -> 2 -> 0
+function removeColinearPoints(orderedPoints) {
+  var didRemove = false;
+  var rslt = {removed: false, points: orderedPoints};
+  if (orderedPoints.length < 3) return rslt;
+  var toRemove = [];
+  // remove the last element since it is a circular list
+  if (orderedPoints[0].x === orderedPoints[orderedPoints.length-1].x
+    && orderedPoints[0].y === orderedPoints[orderedPoints.length-1].y)
+  {
+    orderedPoints.splice(orderedPoints.length-1, 1);
+  }
+
+  // order points should now be a unique set of points
+  orderedPoints = _.uniqWith(orderedPoints, _.isEqual);
+
+  for (var i = 0; i < orderedPoints.length; i++) {
+    var start = i === 0 ? orderedPoints.length-1 : i-1;
+    var p1 = orderedPoints[start];
+    var p2 = orderedPoints[i];
+    var p3 = orderedPoints[(i+1)%orderedPoints.length]; // 2,3,0
+    if (isColinear(p1, p2, p3)) {
+      var center = _.sortBy([p1, p2, p3], 'y')[1];
+      console.log("Removing point(" + center.x + ", " + center.y + ")");
+      toRemove.push(center);
+    }
+  }
+
+  if (toRemove.length > 0) {
+    _.forEach(toRemove, function(p) {
+      var removedPoints = _.remove(orderedPoints, function (orderedPoint) {
+        return orderedPoint.x === p.x && orderedPoint.y === p.y;
+      });
+      if (removedPoints.length === 0) throw "invalid remove operation";
+    });
+    didRemove = true;
+  }
+  // place the ending back on
+  orderedPoints.push(orderedPoints[0]);
+  return {removed: didRemove, points: orderedPoints};
+}
+
+function removeCAS(points) {
+  var rslt = removeColinearPoints(points);
+  while(rslt.removed)
+  {
+    rslt = removeColinearPoints(rslt.points);
+  }
+  return rslt.points;
+}
+
+function sanitizeData(orderedPoints) {
+  orderedPoints = removeCAS(orderedPoints);
+
+  var match = getMatch(orderedPoints);
+  while(match) {
+    // TODO smart pick s1 or s2
+    orderedPoints[match.s1Idx].y -= getRandomAdjustment(orderedPoints, match);
+    match = getMatch(orderedPoints);
+  }
+
+  return orderedPoints;
+}
+
 var Polygon = function () {
   this.points = [];
   this.segments = [];
@@ -128,7 +214,7 @@ function parseInputJSON(jsonStr) {
   _.forEach(data.polygons, function(polygon) {
     var poly = new Polygon();
     if (polygon.points.length > 1) {
-      polygon.points = removeCAS(polygon.points);
+      polygon.points = sanitizeData(polygon.points);
       for(var i = 0; i < polygon.points.length; i++) {
         if (i !== polygon.points.length - 1) {
           var point = new vec3(polygon.points[i].x,  polygon.points[i].y, 0);
@@ -203,54 +289,6 @@ function isColinear(p1, p2, p3) {
   var v1 = subtract(p2, p1);
   var v2 = subtract(p3, p1);
   return Math.abs(cross(v1, v2).z) === 0;
-}
-
-// Input is ordered by segment creation 0 -> 1 -> 2 -> 0
-function removeColinearPoints(orderedPoints) {
-  var didRemove = false;
-  var rslt = {removed: false, points: orderedPoints};
-  if (orderedPoints.length < 3) return rslt;
-  var toRemove = [];
-  // remove the last element since it is a circular list
-  if (orderedPoints[0].x === orderedPoints[orderedPoints.length-1].x
-    && orderedPoints[0].y === orderedPoints[orderedPoints.length-1].y)
-  {
-    orderedPoints.splice(orderedPoints.length-1, 1);
-  }
-
-  for (var i = 0; i < orderedPoints.length; i++) {
-    var start = i === 0 ? orderedPoints.length-1 : i-1;
-    var p1 = orderedPoints[start];
-    var p2 = orderedPoints[i];
-    var p3 = orderedPoints[(i+1)%orderedPoints.length]; // 2,3,0
-    if (isColinear(p1, p2, p3)) {
-      var center = _.sortBy([p1, p2, p3], 'y')[1];
-      console.log("Removing point(" + center.x + ", " + center.y + ")");
-      toRemove.push(center);
-    }
-  }
-
-  if (toRemove.length > 0) {
-    _.forEach(toRemove, function(p) {
-      var removedPoints = _.remove(orderedPoints, function (orderedPoint) {
-        return orderedPoint.x === p.x && orderedPoint.y === p.y;
-      });
-      if (removedPoints.length === 0) throw "invalid remove operation";
-    });
-    didRemove = true;
-  }
-  // place the ending back on
-  orderedPoints.push(orderedPoints[0]);
-  return {removed: didRemove, points: orderedPoints};
-}
-
-function removeCAS(points) {
-  var rslt = removeColinearPoints(points);
-  while(rslt.removed)
-  {
-    rslt = removeColinearPoints(rslt.points);
-  }
-  return rslt.points;
 }
 
 function createDatasets() {

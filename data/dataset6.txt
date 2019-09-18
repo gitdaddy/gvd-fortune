@@ -1,2 +1,5 @@
 # Current Issue
-./data/maze/poly31.dat
+#./data/maze/poly31.dat
+#./data/maze/poly163.dat
+# Data that is crossing over itself
+./data/maze/poly58.dat
