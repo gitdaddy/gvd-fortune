@@ -102,11 +102,11 @@ function getLines(l, r){
 // Intersect the V with a parabola.
 V.prototype.intersect = function(obj) {
   // debugging only
-  if (this.id === g_debugIdLeft && obj.id === g_debugIdRight) {
-    g_addDebug = true;
-  } else {
-    g_addDebug = false;
-  }
+  // if (this.id === g_debugIdLeft && obj.id === g_debugIdRight) {
+  //   g_addDebug = true;
+  // } else {
+  //   g_addDebug = false;
+  // }
 
   if (obj instanceof Parabola) {
     ret = [];

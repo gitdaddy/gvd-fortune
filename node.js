@@ -269,11 +269,11 @@ EdgeNode.prototype.intersection = function (directrix) {
   let rightArcNode = this.nextArc();
 
   // debugging only
-  if (leftArcNode.id === g_debugIdLeft && rightArcNode.id === g_debugIdRight) {
-    g_addDebug = true;
-  } else {
-    g_addDebug = false;
-  }
+  // if (leftArcNode.id === g_debugIdLeft && rightArcNode.id === g_debugIdRight) {
+  //   g_addDebug = true;
+  // } else {
+  //   g_addDebug = false;
+  // }
 
   var obj = {};
   if (leftArcNode.isV && rightArcNode.isV) {
@@ -348,11 +348,11 @@ function intersectStraightArcs(left, right, directrix){
 function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, directrix){
 
   // debugging only
-  if (left.id === g_debugIdLeft && right.id === g_debugIdRight) {
-    g_addDebug = true;
-  } else {
-    g_addDebug = false;
-  }
+  // if (left.id === g_debugIdLeft && right.id === g_debugIdRight) {
+  //   g_addDebug = true;
+  // } else {
+  //   g_addDebug = false;
+  // }
 
   var pleft = createBeachlineSegment(left.site, directrix, left.id);
   var pright = createBeachlineSegment(right.site, directrix, right.id);
@@ -441,11 +441,11 @@ function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, dire
 function intersectParabolicArcs(left, right, directrix){
 
   // debugging only
-  if (left.id === g_debugIdLeft && right.id === g_debugIdRight) {
-    g_addDebug = true;
-  } else {
-    g_addDebug = false;
-  }
+  // if (left.id === g_debugIdLeft && right.id === g_debugIdRight) {
+  //   g_addDebug = true;
+  // } else {
+  //   g_addDebug = false;
+  // }
 
   // if the two sites are equal their
   // intersection is mid point to the directrix

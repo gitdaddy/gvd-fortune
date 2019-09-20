@@ -100,6 +100,7 @@ function clearSurface() {
   ;
 }
 
+// debugging only
 function initDebugCircumcircle() {
   // Draw the close event highlight circle
   d3.select("#gvd").append("circle")

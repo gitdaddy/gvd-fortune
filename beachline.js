@@ -48,11 +48,11 @@ Beachline.prototype.add = function (eventPacket) {
   var directrix = eventPacket.site.y;
 
   // debugging only
-  if (arcNode.id === g_debugIdMiddle) {
-    g_addDebug = true;
-  } else {
-    g_addDebug = false;
-  }
+  // if (arcNode.id === g_debugIdMiddle) {
+  //   g_addDebug = true;
+  // } else {
+  //   g_addDebug = false;
+  // }
 
   if (this.root == null) {
     var subTreeData = generateSubTree(eventPacket, arcNode, this.dcel);
@@ -111,11 +111,11 @@ Beachline.prototype.remove = function (arcNode, point, directrix) {
   if (!arcNode.isArc) throw "Unexpected edge in remove";
 
   // debugging only
-  if (arcNode.id === g_debugIdMiddle) {
-    g_addDebug = true;
-  } else {
-    g_addDebug = false;
-  }
+  // if (arcNode.id === g_debugIdMiddle) {
+  //   g_addDebug = true;
+  // } else {
+  //   g_addDebug = false;
+  // }
 
   var parent = arcNode.parent;
   var grandparent = parent.parent;
