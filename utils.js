@@ -42,7 +42,7 @@ function processNewDataset() {
   sanitizePointSiteData(g_polygons);
 
   // debug only
-  // initDebugCircumcircle();
+  initDebugCircumcircle();
   drawSites(points);
   drawSegments(segments);
 

@@ -625,7 +625,7 @@ function bisectPoints(p1, p2) {
     // get the bisector between the two segments
     var data = smallAngleBisectSegments(smallestAnglePair.s1, smallestAnglePair.s2, p1);
     // debugging only
-    // g_debugObjs.push(data.line);
+    if (g_addDebug) g_debugObjs.push(data.line);
     return data.line;
   }
 

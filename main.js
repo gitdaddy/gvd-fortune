@@ -162,7 +162,6 @@ function init() {
 function datasetChange(value) {
   console.log(value);
   localStorage.g_dataset = value;
-  clearSurface();
 
   if (_.find(g_fileDatasets, function(f) { return f === value; })) {
     if (g_datasets[value].length == 0) {
@@ -256,31 +255,32 @@ function fortune(reorder) {
   console.log("Time in queue insertion:" + g_totalQueueInsertionTime.toFixed(6) + "(ms)");
 
   // debugging only
-  // var ev = '';
-  // while (queue.length > 0) {
-  //   var e = queue.pop();
-  //   var at = "(y)@:" + e.y + " ";
-  //   var data;
-  //   if (e.type == "segment") {
-  //     data = at + 'a(' + e.a.x + ',' + e.a.y + ') - b(' + e.b.x + ',' + e.b.y + ')';
-  //   } else if (e.isCloseEvent) {
-  //     var live = e.live && e.arcNode.closeEvent.live ? "(Live)" : "(Dead)";
-  //     data = at + 'Close:' + e.id + " " + live + ' -point(' + e.point.x + ',' + e.point.y + ')';
-  //   } else {
-  //     data = at + 'point(' + e.x + ',' + e.y + ')';
-  //   }
-  //   if (e.isCloseEvent) {
-  //     ev += data;
-  //   } else {
-  //     ev += data + ' r: ' + e.relation;
-  //   }
-  //   ev += '\n';
-  // }
-  // document.getElementById("events").innerHTML = ev;
+  var ev = '';
+  while (queue.length > 0) {
+    var e = queue.pop();
+    var at = "(y)@:" + e.y + " ";
+    var data;
+    if (e.type == "segment") {
+      data = at + 'a(' + e.a.x + ',' + e.a.y + ') - b(' + e.b.x + ',' + e.b.y + ')';
+    } else if (e.isCloseEvent) {
+      var live = e.live && e.arcNode.closeEvent.live ? "(Live)" : "(Dead)";
+      data = at + 'Close:' + e.id + " " + live + ' -point(' + e.point.x + ',' + e.point.y + ')';
+    } else {
+      data = at + 'point(' + e.x + ',' + e.y + ')';
+    }
+    if (e.isCloseEvent) {
+      ev += data;
+    } else {
+      ev += data + ' r: ' + e.relation;
+    }
+    ev += '\n';
+  }
+  document.getElementById("events").innerHTML = ev;
   return beachline;
 }
 
 function render(reorder = false) {
+  clearSurface();
   g_debugObjs = [];
   var t0 = performance.now();
   var beachline = fortune(reorder);

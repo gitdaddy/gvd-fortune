@@ -81,7 +81,6 @@ Beachline.prototype.add = function (eventPacket) {
   child = parent.getChild(side);
   while (child.isEdge) {
     parent = child;
-    // x = parent.intersection(directrix).x;
     var i = parent.intersection(directrix);
     if (!i) {
       throw "Invalid intersection on 'Add'";

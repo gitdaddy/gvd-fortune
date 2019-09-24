@@ -1,99 +1,86 @@
- // draw segment boundaries
-    // var boundaries = [];
-    // _.forEach(segments, function(s) {
-    //   var AB = subtract(s.b, s.a);
-    //   var BA = subtract(s.a, s.b);
-    //   var v1Clockwise = new vec3(AB.y, -AB.x, 0); // 90 degrees perpendicular
-    //   var v1CounterClockwise = new vec3(-AB.y, AB.x, 0);
-    //   var v2Clockwise = new vec3(BA.y, -BA.x, 0);
-    //   var v2CounterClockwise = new vec3(-BA.y, BA.x, 0);
-    //   // define the boundary endpoints - add end point values
-    //   boundaries.push({
-    //     p1: add(v1Clockwise, s.a),
-    //     p2: add(v1CounterClockwise, s.a)
-    //   });
-    //   boundaries.push({
-    //     p1: add(v2Clockwise, s.b),
-    //     p2: add(v2CounterClockwise, s.b)
-    //   });
-    // });
-
-    // let selB = d3.select("#gvd")
-    // .selectAll(".seg-boundary")
-    // .data(boundaries);
-
-    selB.exit().remove();
-    selB
-      .enter()
-      .append("line")
-      .attr("class", "seg-boundary")
-      .attr("vector-effect", "non-scaling-stroke")
-      .merge(selB)
-      .attr("x1", bound => bound.p1.x)
-      .attr("y1", bound => bound.p1.y)
-      .attr("x2", bound => bound.p2.x)
-      .attr("y2", bound => bound.p2.y)
-      .attr('visibility', showSegmentBoundaries ? null : 'hidden')
-    ;
-  }
+Child:
+closePoint: (3) [-0.0367190018296, -0.0886799991131, 0, x: (...), y: (...), z: (...), w: (...), type: "vec", …]
+id: 11933
+isArc: true
+isEdge: false
+isParabola: true
+isV: false
+openPoint: (3) [-0.0367190018296, -0.0886799991131, 0, x: (...), y: (...), z: (...), w: (...), type: "vec", …]
+parent: EdgeNode {isArc: false, isEdge: true, left: ArcNode, right: EdgeNode, dcelEdge: DCELHalfEdge, …}
+side: 0
+site: Array(3)
+0: -0.0367190018296
+1: -0.0886799991131
+2: 0
+fileId: "./data/maze/poly69.dat"
+flipped: false
+id: 8304
+label: 439
+relation: 1
 
 
-// Debug CONFIG JUST IN CASE
+ArcNode:
+closePoint: (3) [-0.0380540005863, -0.0897480025887, 0, x: (...), y: (...), z: (...), w: (...), type: "vec", …]
+id: 11952
+isArc: true
+isEdge: false
+isParabola: true
+isV: false
+openPoint: (3) [-0.0380540005863, -0.0897480025887, 0, x: (...), y: (...), z: (...), w: (...), type: "vec", …]
+side: 2
+site: Array(3)
+0: -0.0380540005863
+1: -0.0897480025887
+2: 0
+fileId: "./data/maze/poly447.dat"
+flipped: true
+id: 7456
+isEndPoint: true
+label: 389
+relation: 4
+type: "vec"
 
-  {
-  // Use IntelliSense to learn about possible attributes.
-  // Hover to view descriptions of existing attributes.
-  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "NodeServer",
-      "program": "${workspaceFolder}/nodeServer.js",
-      "cwd": "${workspaceFolder}",
-    },
-    {
-      "type": "chrome",
-      "request": "launch",
-      "name": "Debug chrome",
-      "file": "${workspaceFolder}/index.html",
-      "cwd": "${workspaceFolder}",
-    }
-  ]
-}
 
-    // // The lower V should never have to worry about intersecting with the
-      // // the upper V's 'hidden' arc
-      // // TODO upper lower concept doesn't work for
-      // // sites above and below each other...
-      // var upperV = this.y1.y > obj.y1.y ? this : obj;
-      // var lowerV = this.y1.y > obj.y1.y ? obj : this;
-      // // the lower V must be to one side of the upper V
-      // // use the zArea to determine which side
-      // var y0_y1 = subtract(upperV.y1, upperV.y0);
-      // var y0_Ly0 = subtract(lowerV.y0, upperV.y0);
-      // var y0_Ly1 = subtract(lowerV.y1, upperV.y0);
-      // // z area between this and obj
-      // var zArea = cross(y0_y1, y0_Ly0).z + cross(y0_y1, y0_Ly1).z;
-      // var p1,p2v0,p2v1,p3,p4;
-      // p1 = lowerV.p;
-      // p2v0 = vec3(lowerV.f_(lowerV.y1.y)[0], lowerV.y1.y, 0);
-      // p2v1 = vec3(lowerV.f_(lowerV.y1.y)[1], lowerV.y1.y, 0);
-      // p3 = upperV.p;
-      // if (zArea < 0) {
-      //   // right of upper
-      //   p4 = vec3(upperV.f_(upperV.y1.y)[1], upperV.y1.y, 0);
-      // } else {
-      //   // left of upper
-      //   p4 = vec3(upperV.f_(upperV.y1.y)[0], upperV.y1.y, 0);
-      // }
+Child RIGHT:
+closePoint: (3) [-0.0361850000918, -0.0908159986138, 0, x: (...), y: (...), z: (...), w: (...), type: "vec", …]
+id: 11934
+isArc: true
+isEdge: false
+isParabola: false
+isV: true
+openPoint: (3) [-0.0367190018296, -0.0886799991131, 0, x: (...), y: (...), z: (...), w: (...), type: "vec", …]
+parent: EdgeNode {isArc: false, isEdge: true, left: ArcNode, right: ArcNode, dcelEdge: DCELHalfEdge, …}
+side: 0
+site: Array(2)
+0: (3) [-0.0367190018296, -0.0886799991131, 0, x: (...), y: (...), z: (...), w: (...), type: "vec", …]
+1: (3) [-0.0361850000918, -0.0908159986138, 0, x: (...), y: (...), z: (...), w: (...), type: "vec", …]
+a: (3) [-0.0367190018296, -0.0886799991131, 0, x: (...), y: (...), z: (...), w: (...), type: "vec", …]
+b: (3) [-0.0361850000918, -0.0908159986138, 0, x: (...), y: (...), z: (...), w: (...), type: "vec", …]
+id: 8305
+label: 439
+type: "segment"
+FILE: 69
 
-      // if (g_addDebug) {
-      //   g_debugObjs.push(new Line(p3, p4));
-      //   g_debugObjs.push(new Line(p1, p2v0));
-      //   // g_debugObjs.push(new Line(p1, p2v1));
-      // }
+child LEFT:
 
-      // var i0 = intersectLines(p1, p2v0, p3, p4);
-      // var i1 = intersectLines(p1, p2v1, p3, p4);
+loseEvent: CloseEvent {yval: -0.06900806922199751, point: Array(3), arcNode: ArcNode, leftNode: ArcNode, rightNode: ArcNode, …}
+closePoint: (3) [-0.026839999482, -0.062781997025, 0, x: (...), y: (...), z: (...), w: (...), type: "vec", …]
+id: 11216
+isArc: true
+isEdge: false
+isParabola: true
+isV: false
+openPoint: (3) [-0.026839999482, -0.062781997025, 0, x: (...), y: (...), z: (...), w: (...), type: "vec", …]
+parent: EdgeNode {isArc: false, isEdge: true, left: EdgeNode, right: ArcNode, dcelEdge: DCELHalfEdge, …}
+side: 1
+site: Array(3)
+0: -0.026839999482
+1: -0.062781997025
+2: 0
+fileId: "./data/maze/poly23.dat"
+flipped: true
+id: 3197
+isEndPoint: true
+label: 148
+relation: 2
+type: "vec"

@@ -68,7 +68,7 @@ function getDiff(left, node, right, p, directrix) {
 
 function radiusTest(left, node, right, closePoint) {
   // WATCH VALUE
-  var thresh = 1e-5;
+  var thresh = 5e-5;
   if (left.isV && node.isV && right.isV) return true;
   var segments = _.filter([left, node, right], { isV: true });
   var points = _.filter([left, node, right], { isParabola: true });
@@ -232,11 +232,11 @@ function createCloseEvent(arcNode, directrix) {
   var closePoint;
 
   // debugging only
-  // if (left.id === g_debugIdLeft && right.id === g_debugIdRight) {
-  //   g_addDebug = true;
-  // } else {
-  //   g_addDebug = false;
-  // }
+  if (left.id === g_debugIdLeft && right.id === g_debugIdRight) {
+    g_addDebug = true;
+  } else {
+    g_addDebug = false;
+  }
 
   if (arcNode.isParabola && left.isParabola && right.isParabola) {
     // All three are points
