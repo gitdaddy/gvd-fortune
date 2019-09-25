@@ -216,7 +216,6 @@ Beachline.prototype.prepDraw = function (
 
     // check V left and right
     this.prepDraw(directrix, node.left, leftx, p.x, arcElements, lines, generalSurfaces, events);
-    // this.prepDraw(directrix, node.right, p.x, rightx, arcElements, lines, generalSurfaces, events);
     if (p.x < rightx) {
       // We can ignore anything outside our original bounds.
       this.prepDraw(directrix, node.right, p.x, rightx, arcElements, lines, generalSurfaces, events);

@@ -232,11 +232,11 @@ function createCloseEvent(arcNode, directrix) {
   var closePoint;
 
   // debugging only
-  if (left.id === g_debugIdLeft && right.id === g_debugIdRight) {
-    g_addDebug = true;
-  } else {
-    g_addDebug = false;
-  }
+  // if (left.id === g_debugIdLeft && right.id === g_debugIdRight) {
+  //   g_addDebug = true;
+  // } else {
+  //   g_addDebug = false;
+  // }
 
   if (arcNode.isParabola && left.isParabola && right.isParabola) {
     // All three are points

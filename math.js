@@ -293,7 +293,6 @@ function ppIntersect(h1, k1, p1, h2, k2, p2) {
 PointSegmentBisector = function(p, s) {
   p = vec3(p);
   this.para = createGeneralParabola(p, s);
-  this.para.prepDraw(100, add(p, vec3(-1, -1, 0)), add(p, vec3(1,1,0)));
 }
 
 PointSegmentBisector.prototype.intersect = function(obj) {
@@ -551,7 +550,6 @@ function bisectPointSegment(p, s) {
       length(subtract(p, s0))) {
     // special case: line and point are collinear
     let v0 = subtract(s1, s0);
-    let v = vec3(v0[1], -v0[0]);
     if (length(subtract(p, s0)) < length(subtract(p, s1))) {
       // if p is closer to s0...
       return bisect(p, s0);
@@ -835,7 +833,6 @@ function equidistant(left, arc, right) {
         b2 = bisect(points[0], segments[0]);
       } else {
         b1 = bisect(segments[0], points[0]);
-        // b2 = bisect(segments[0], segments[1], points[0]);
         if (g_addDebug) g_debugObjs.push(b1);
         var blines = bisectSegments2(segments[0], segments[1]);
         var ii = [];
@@ -867,10 +864,11 @@ function equidistant(left, arc, right) {
     b2 = bisect(arc, right);
   }
 
-  if (g_addDebug) {
-    g_debugObjs.push(b1);
-    g_debugObjs.push(b2);
-  }
+  // debugging only
+  // if (g_addDebug) {
+  //   g_debugObjs.push(b1);
+  //   g_debugObjs.push(b2);
+  // }
   // always return an array or nil
   var i = intersect(b1, b2);
   if (!i || i.length === 0) return null;
