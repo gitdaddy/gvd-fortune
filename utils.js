@@ -18,13 +18,13 @@ function sanitizePointSiteData(polygons) {
     points = points.concat(poly.points);
   });
 
-  var sp = _.sortBy(points, 'y');
+  var sp = _.sortBy(points, function(p) { return p[1]; });
   for (var i = 1; i < sp.length; i++) {
-    if (sp[i].x === sp[i-1].x && sp[i].y === sp[i-1].y) {
+    if (sp[i][0] === sp[i-1][0] && sp[i][1] === sp[i-1][1]) {
       console.log("applying offset to overlapping point");
       // offset the data point of i
       // WATCH VALUE
-      sp[i].y -= 0.00001;
+      sp[i][1] -= 0.00001;
     }
   }
 }
@@ -106,7 +106,7 @@ function createDataQueue(reorder) {
     points = points.concat(poly.points);
     segments = segments.concat(poly.segments);
   });
-  var sortedPoints = _.sortBy(points, 'y');
+  var sortedPoints = _.sortBy(points, function(p) { return p[1]; });
 
   _.forEach(sortedPoints, function(p) {
     var segs = _.remove(segments, function(s) { return equal(s.a, p); });

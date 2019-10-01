@@ -34,9 +34,11 @@ function vecn(v) {
     configurable: true,
     enumerable: true,
     get: function() {
+      // throw "x access";
       return this[0];
     },
     set: function(x) {
+      // throw "x set";
       this[0] = x;
     }
   });
@@ -45,9 +47,11 @@ function vecn(v) {
     configurable: true,
     enumerable: true,
     get: function() {
+      // throw "y access";
       return this[1];
     },
     set: function(y) {
+      // throw "y set";
       this[1] = y;
     }
   });

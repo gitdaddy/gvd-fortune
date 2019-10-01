@@ -10,7 +10,7 @@
 function makeSegment(p1, p2, forceOrder = false) {
   var s = [p1, p2];
   // Always store vertex with greatest y value first.
-  if (!forceOrder && p1.y < p2.y) {
+  if (!forceOrder && p1[1] < p2[1]) {
     s = [p2, p1];
     p1.isEndPoint = true;
   } else {
@@ -20,14 +20,14 @@ function makeSegment(p1, p2, forceOrder = false) {
     configurable: true,
     enumerable: true,
     get: function() {
-      return this[0].y;
+      return this[0][1];
     }
   });
   Object.defineProperty(s, "x", {
     configurable: true,
     enumerable: true,
     get: function() {
-      return this[0].x;
+      return this[0][0];
     }
   });
   s.a = s[0];
@@ -171,14 +171,14 @@ function interceptCircleSeg(circle, line){
 //      /
 //  p3 *
 function intersectLines(p1, p2, p3, p4) {
-  var x1 = p1.x;
-  var x2 = p2.x;
-  var x3 = p3.x;
-  var x4 = p4.x;
-  var y1 = p1.y;
-  var y2 = p2.y;
-  var y3 = p3.y;
-  var y4 = p4.y;
+  var x1 = p1[0];
+  var x2 = p2[0];
+  var x3 = p3[0];
+  var x4 = p4[0];
+  var y1 = p1[1];
+  var y2 = p2[1];
+  var y3 = p3[1];
+  var y4 = p4[1];
   var denom = (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
   // tolerance previous tolerance 1e-8
   // originally 1e-6 but more precision has been needed

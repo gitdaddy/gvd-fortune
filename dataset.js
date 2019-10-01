@@ -123,8 +123,8 @@ Polygon.prototype.createSegment = function (pIdxStart, pIdxEnd) {
   s.id = g_id++;
   s.label = this.label;
   this.segments.push(s);
-  if (this.points[pIdxStart].y == this.points[pIdxEnd].y) {
-    console.log("Horizontal segment detected with y values of: " + this.points[pIdxEnd].y);
+  if (this.points[pIdxStart][1] == this.points[pIdxEnd][1]) {
+    console.log("Horizontal segment detected with y values of: " + this.points[pIdxEnd][1]);
   }
   this.points[pIdxStart].flipped = isFlipped(this.points[pIdxStart], this.segments);
   this.points[pIdxEnd].flipped = isFlipped(this.points[pIdxEnd], this.segments);
@@ -361,27 +361,27 @@ function createDatasets() {
   // polygons3.push(p31);
   // polygons3.push(g_boundingBox);
 
-  // var polygons4 = [];
-  // var p41 = new Polygon();
-  // var p42 = new Polygon();
+  var polygons4 = [];
+  var p41 = new Polygon();
+  var p42 = new Polygon();
 
-  // p41.addPoint(vec3(-0.41, 0.45, 0)); // shared point
-  // p41.addPoint(vec3(-0.56, 0.33, 0));
-  // p41.addPoint(vec3(-0.62, 0.57, 0));
+  p41.addPoint(vec3(-0.41, 0.45, 0)); // shared point
+  p41.addPoint(vec3(-0.56, 0.33, 0));
+  p41.addPoint(vec3(-0.62, 0.57, 0));
 
-  // p42.addPoint(vec3(-0.41, 0.45, 0));
-  // p42.addPoint(vec3(-0.12,0.53, 0));
-  // p42.addPoint(vec3(0.32, 0.21, 0));
+  p42.addPoint(vec3(-0.41, 0.45, 0));
+  p42.addPoint(vec3(-0.12,0.53, 0));
+  p42.addPoint(vec3(0.32, 0.21, 0));
 
-  // p41.createSegment(0, 1);
-  // p41.createSegment(1, 2);
-  // p41.createSegment(2, 0);
-  // polygons4.push(p41);
+  p41.createSegment(0, 1);
+  p41.createSegment(1, 2);
+  p41.createSegment(2, 0);
+  polygons4.push(p41);
 
-  // p42.createSegment(0, 1);
-  // p42.createSegment(1, 2);
-  // p42.createSegment(2, 0);
-  // polygons4.push(p42);
+  p42.createSegment(0, 1);
+  p42.createSegment(1, 2);
+  p42.createSegment(2, 0);
+  polygons4.push(p42);
   // polygons4.push(g_boundingBox);
 
   // Math.seedrandom('3');
@@ -403,5 +403,5 @@ function createDatasets() {
   //   'dataset5' : [],
   // };
 
-  // g_datasets["dataset7"] = polygons4;
+  g_datasets["dataset7"] = polygons4;
 }

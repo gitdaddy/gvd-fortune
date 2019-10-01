@@ -30,9 +30,9 @@ Parabola = function (focus, h, k, p, id) {//, theta, offset) {
 
 // The directrix is assumed to be horizontal and is given as a y-value.
 function createParabola(focus, directrix, id) {
-  var h = focus.x;
-  var k = (directrix + focus.y) / 2;
-  var p = (focus.y - directrix) / 2;
+  var h = focus[0];
+  var k = (directrix + focus[1]) / 2;
+  var p = (focus[1] - directrix) / 2;
   return new Parabola(focus, h, k, p, id);
 }
 

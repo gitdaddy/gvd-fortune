@@ -15,7 +15,7 @@ var tolerance = 0.00001;
 // line is given as a pair of points through which the line passes.
 // The sweepline is assumed to be horizontal and is given as a y-value.
 V = function(line, directrix, id) {
-  lineSegment = _.sortBy(line, [function(i) { return i.y; }]);
+  lineSegment = _.sortBy(line, [function(i) { return i[1]; }]);
   this.y1 = lineSegment[1];
   this.y0 = lineSegment[0];
   this.p = intersectLines(
@@ -32,7 +32,7 @@ V = function(line, directrix, id) {
     vectors.push(vec3(Math.cos(theta), Math.sin(theta), 0));
   });
   this.vectors = vectors;
-  this.miny = directrix > Math.min(this.y0.y, this.y1.y) ? directrix : Math.min(this.y0.y, this.y1.y);
+  this.miny = directrix > Math.min(this.y0[1], this.y1[1]) ? directrix : Math.min(this.y0[1], this.y1[1]);
   this.id = id;
 }
 
@@ -241,27 +241,19 @@ V.prototype.prepDraw = function(nodeid, label, x0, x1) {
   var y1 = this.f(x1)
   if (x0 < this.p.x && this.p.x < x1) {
     // case 2
-    this.drawPoints.push({x:x0, y:y0});
-    this.drawPoints.push({x:this.p.x, y:this.p.y});
-    this.drawPoints.push({x:x1, y:y1});
+    this.drawPoints.push(vec3(x0, y0, 0));
+    this.drawPoints.push(vec3(this.p[0], this.p[1], 0));
+    this.drawPoints.push(vec3(x1, y1, 0));
+    // this.drawPoints.push({x:x0, y:y0});
+    // this.drawPoints.push({x:this.p.x, y:this.p.y});
+    // this.drawPoints.push({x:x1, y:y1});
   } else {
     // cases 1 and 3
-    this.drawPoints.push({x:x0, y:y0});
-    this.drawPoints.push({x:x1, y:y1});
+    this.drawPoints.push(vec3(x0, y0, 0));
+    this.drawPoints.push(vec3(x1, y1, 0));
+    // this.drawPoints.push({x:x0, y:y0});
+    // this.drawPoints.push({x:x1, y:y1});
   }
-  // To debug the v
-  // var y0 = this.f(-1)
-  // var y1 = this.f(1)
-  // if (-1 < this.p.x && this.p.x < 1) {
-  //   // case 2
-  //   this.drawPoints.push({x:-1, y:y0});
-  //   this.drawPoints.push({x:this.p.x, y:this.p.y});
-  //   this.drawPoints.push({x:1, y:y1});
-  // } else {
-  //   // cases 1 and 3
-  //   this.drawPoints.push({x:-1, y:y0});
-  //   this.drawPoints.push({x:1, y:y1});
-  // }
 }
 
 function divide(point, scalar){

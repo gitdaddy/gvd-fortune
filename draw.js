@@ -1,6 +1,6 @@
 var g_zoomScale = 1;
 
-let g_siteRadius = 0.03;
+let g_siteRadius = 0.01;
 var g_isoEdgeWidth = 1;
 
 const ZOOM_EXTENT = 200000;
@@ -226,12 +226,12 @@ function drawSites(points) {
     .merge(sel)
       .call(dragSite)
       .attr("r", g_siteRadius)
-      .attr("cx", p => p.x)
-      .attr("cy", p => p.y)
+      .attr("cx", p => p[0])
+      .attr("cy", p => p[1])
       .attr("fill", (d,i) => siteColorSvg(d.label))
       .attr("id", d => `site${d.id}`)
       .attr("href", "#gvd")
-      .append("title").html(d => d.id + " r: " + d.relation + " p(" + d.x + ", " + d.y + ")" + " file:" + d.fileId)
+      .append("title").html(d => d.id + " r: " + d.relation + " p(" + d[0] + ", " + d[1] + ")" + " file:" + d.fileId)
     ;
   }
 }
@@ -250,11 +250,11 @@ function drawSegments(segments) {
       .attr("vector-effect", "non-scaling-stroke")
       .merge(sel)
       .style("stroke-width", g_isoEdgeWidth)
-      .attr("x1", s => s[0].x)
-      .attr("y1", s => s[0].y)
-      .attr("x2", s => s[1].x)
-      .attr("y2", s => s[1].y)
-      .attr("stroke", (d,i) => siteColorSvg(d.label))
+      .attr("x1", s => s[0][0])
+      .attr("y1", s => s[0][1])
+      .attr("x2", s => s[1][0])
+      .attr("y2", s => s[1][1])
+      .attr("stroke", (d) => siteColorSvg(d.label))
     ;
   }
 }
@@ -529,7 +529,7 @@ function getZoomedSize(node) {
 
 function zoomed() {
   g_zoomScale = d3.event.transform.k;
-  g_siteRadius = 0.03 / g_zoomScale;
+  g_siteRadius = 0.01 / g_zoomScale;
   g_isoEdgeWidth = 1 / g_zoomScale;
   svg.attr("transform", "translate(" +  d3.event.transform.x + ","
   +  d3.event.transform.y + ") scale(" +  d3.event.transform.k + ")");

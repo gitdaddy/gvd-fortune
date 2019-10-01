@@ -1,4 +1,4 @@
-const open = require('opn');
+// const open = require('opn');
 const express = require('express');
 var router = express();
 var fs = require('fs');
@@ -61,5 +61,5 @@ router.use(express.static(__dirname));
 router.listen(port);
 
 // open default web client
-open('http://localhost:8082/');
+// open('http://localhost:8082/');
 

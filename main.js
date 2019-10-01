@@ -145,7 +145,7 @@ function init() {
   document.getElementById("fullscreenToggle").onclick = toggleFS;
   document.getElementById("sweeplineLabel").innerHTML = g_sweepline.toFixed(10);
 
-  // createDatasets();
+  createDatasets();
   for (let key in g_datasets) {
     var option = document.createElement("option");
     option.text = key;
@@ -155,7 +155,7 @@ function init() {
   // if (localStorage.g_dataset) {
   //   document.getElementById("g_dataset").value = localStorage.g_dataset;
   // }
-  document.getElementById("g_dataset").value = "dataset6";
+  document.getElementById("g_dataset").value = "dataset7";
   datasetChange(document.getElementById("g_dataset").value);
 }
 
