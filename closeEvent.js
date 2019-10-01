@@ -24,6 +24,7 @@ Object.defineProperty(CloseEvent.prototype, "y", {
   configurable: true,
   enumerable: true,
   get: function () {
+    // throw "event.yval";
     return this.yval;
   },
 });

@@ -4,6 +4,17 @@
 //------------------------------------------------------------
 //------------------------------------------------------------
 
+function getEventY(event)
+{
+  if (event.yval) return event.yval;
+  return event.type === "segment" ? event[0][1] : event[1];
+}
+
+function getEventX(event)
+{
+  return event.type === "segment" ? event[0][0] : event[0];
+}
+
 //------------------------------------------------------------
 // Segment "class"
 //------------------------------------------------------------
@@ -20,6 +31,7 @@ function makeSegment(p1, p2, forceOrder = false) {
     configurable: true,
     enumerable: true,
     get: function() {
+      throw "segment get y";
       return this[0][1];
     }
   });
@@ -27,6 +39,7 @@ function makeSegment(p1, p2, forceOrder = false) {
     configurable: true,
     enumerable: true,
     get: function() {
+      throw "segment get x";
       return this[0][0];
     }
   });

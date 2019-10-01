@@ -191,6 +191,7 @@ function fortune(reorder) {
   var beachline = new Beachline(dcel);
   closeEventPoints = [];
   if (queue.length < 1) return beachline;
+  // var nextY = getEventY(queue[queue.length - 1]);
   var nextY = queue[queue.length - 1].y;
 
   var timeRemove = 0;
@@ -214,9 +215,11 @@ function fortune(reorder) {
           nextEdge.dcelEdge.dest.point = event.point;
         }
 
+        // var newEvents = beachline.remove(event.arcNode, event.point, getEventY(queue[queue.length - 1]));
         var newEvents = beachline.remove(event.arcNode, event.point, event.y);
         newEvents.forEach(function (ev) {
-          if (ev.y < event.y - 0.000001 || Math.abs(ev.y - event.y) < g_eventThresh) {
+          // if (getEventY(ev) < getEventY(event) - 0.000001 || Math.abs(getEventY(ev) - getEventY(event)) < g_eventThresh) {
+            if (ev.y < event.y - 0.000001 || Math.abs(ev.y - event.y) < g_eventThresh) {
             sortedInsertion(queue, ev);
             if (ev.isCloseEvent) {
               closeEventPoints.push(ev);
@@ -232,6 +235,7 @@ function fortune(reorder) {
       var packet = getEventPacket(event, queue);
       var newEvents = beachline.add(packet);
       newEvents.forEach(function (ev) {
+          // if (getEventY(ev) < getEventY(event) - 0.000001 || Math.abs(getEventY(ev) - getEventY(event)) < g_eventThresh) {
         if (ev.y < event.y - 0.000001 || Math.abs(ev.y - event.y) < g_eventThresh) {
           sortedInsertion(queue, ev);
           if (ev.isCloseEvent) {
@@ -243,6 +247,7 @@ function fortune(reorder) {
       timeAdd += (t1 - t0);
     }
     if (queue.length > 0)
+      // nextY = getEventY(queue[queue.length - 1]);
       nextY = queue[queue.length - 1].y;
   }
   var tEnd = performance.now();
@@ -258,15 +263,16 @@ function fortune(reorder) {
   var ev = '';
   while (queue.length > 0) {
     var e = queue.pop();
-    var at = "(y)@:" + e.y + " ";
+    var yval = e.type === "segment" ? e[0][1] : e[1]; 
+    var at = "(y)@:" + yval + " ";
     var data;
     if (e.type == "segment") {
-      data = at + 'a(' + e.a.x + ',' + e.a.y + ') - b(' + e.b.x + ',' + e.b.y + ')';
+      data = at + 'a(' + e[0][0] + ',' + e[0][1] + ') - b(' + e[1][0] + ',' + e[1][1] + ')';
     } else if (e.isCloseEvent) {
       var live = e.live && e.arcNode.closeEvent.live ? "(Live)" : "(Dead)";
-      data = at + 'Close:' + e.id + " " + live + ' -point(' + e.point.x + ',' + e.point.y + ')';
+      data = at + 'Close:' + e.id + " " + live + ' -point(' + e.point[0] + ',' + e.point[1] + ')';
     } else {
-      data = at + 'point(' + e.x + ',' + e.y + ')';
+      data = at + 'point(' + e[0] + ',' + yval + ')';
     }
     if (e.isCloseEvent) {
       ev += data;
