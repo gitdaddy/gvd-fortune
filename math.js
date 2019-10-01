@@ -7,12 +7,18 @@
 function getEventY(event)
 {
   if (event.yval) return event.yval;
-  return event.type === "segment" ? event[0][1] : event[1];
+
+  if (event.type === "segment") return event[0][1];
+  if (event.type === "vec") return event[1];
+  throw "Undefined event Y";
 }
 
 function getEventX(event)
 {
-  return event.type === "segment" ? event[0][0] : event[0];
+  // return event.type === "segment" ? event[0][0] : event[0];
+  if (event.type === "segment") return event[0][0];
+  if (event.type === "vec") return event[0];
+  throw "Undefined event X";
 }
 
 //------------------------------------------------------------
@@ -27,22 +33,7 @@ function makeSegment(p1, p2, forceOrder = false) {
   } else {
     p2.isEndPoint = true;
   }
-  Object.defineProperty(s, "y", {
-    configurable: true,
-    enumerable: true,
-    get: function() {
-      throw "segment get y";
-      return this[0][1];
-    }
-  });
-  Object.defineProperty(s, "x", {
-    configurable: true,
-    enumerable: true,
-    get: function() {
-      throw "segment get x";
-      return this[0][0];
-    }
-  });
+
   s.a = s[0];
   s.b = s[1];
   s.type = 'segment';

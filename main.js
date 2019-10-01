@@ -191,8 +191,7 @@ function fortune(reorder) {
   var beachline = new Beachline(dcel);
   closeEventPoints = [];
   if (queue.length < 1) return beachline;
-  // var nextY = getEventY(queue[queue.length - 1]);
-  var nextY = queue[queue.length - 1].y;
+  var nextY = getEventY(queue[queue.length - 1]);
 
   var timeRemove = 0;
   var timeAdd = 0;
@@ -215,11 +214,11 @@ function fortune(reorder) {
           nextEdge.dcelEdge.dest.point = event.point;
         }
 
-        // var newEvents = beachline.remove(event.arcNode, event.point, getEventY(queue[queue.length - 1]));
-        var newEvents = beachline.remove(event.arcNode, event.point, event.y);
+        var curY = getEventY(event);
+        var newEvents = beachline.remove(event.arcNode, event.point,curY);
         newEvents.forEach(function (ev) {
-          // if (getEventY(ev) < getEventY(event) - 0.000001 || Math.abs(getEventY(ev) - getEventY(event)) < g_eventThresh) {
-            if (ev.y < event.y - 0.000001 || Math.abs(ev.y - event.y) < g_eventThresh) {
+            var newY = getEventY(ev);
+            if (newY < curY - 0.000001 || Math.abs(newY - curY) < g_eventThresh) {
             sortedInsertion(queue, ev);
             if (ev.isCloseEvent) {
               closeEventPoints.push(ev);
@@ -235,8 +234,9 @@ function fortune(reorder) {
       var packet = getEventPacket(event, queue);
       var newEvents = beachline.add(packet);
       newEvents.forEach(function (ev) {
-          // if (getEventY(ev) < getEventY(event) - 0.000001 || Math.abs(getEventY(ev) - getEventY(event)) < g_eventThresh) {
-        if (ev.y < event.y - 0.000001 || Math.abs(ev.y - event.y) < g_eventThresh) {
+        var newY = getEventY(ev);
+        var curY = getEventY(event);
+        if (newY < curY - 0.000001 || Math.abs(newY - curY) < g_eventThresh) {
           sortedInsertion(queue, ev);
           if (ev.isCloseEvent) {
             closeEventPoints.push(ev);
@@ -247,8 +247,7 @@ function fortune(reorder) {
       timeAdd += (t1 - t0);
     }
     if (queue.length > 0)
-      // nextY = getEventY(queue[queue.length - 1]);
-      nextY = queue[queue.length - 1].y;
+      nextY = getEventY(queue[queue.length - 1]);
   }
   var tEnd = performance.now();
   var loopTime = tEnd - tStart;
@@ -263,7 +262,7 @@ function fortune(reorder) {
   var ev = '';
   while (queue.length > 0) {
     var e = queue.pop();
-    var yval = e.type === "segment" ? e[0][1] : e[1]; 
+    var yval = e.type === "segment" ? e[0][1] : e[1];
     var at = "(y)@:" + yval + " ";
     var data;
     if (e.type == "segment") {

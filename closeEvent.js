@@ -20,15 +20,6 @@ var CloseEvent = function (y, arcNode, leftNode, rightNode, point, radius) {
   this.id = leftNode.id + "-" + arcNode.id + "-" + rightNode.id;
 };
 
-Object.defineProperty(CloseEvent.prototype, "y", {
-  configurable: true,
-  enumerable: true,
-  get: function () {
-    // throw "event.yval";
-    return this.yval;
-  },
-});
-
 ///////////////////// Utility Functions ///////////////////////////////////
 
 function validDiff(diff, id) {
