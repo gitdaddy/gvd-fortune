@@ -82,10 +82,10 @@ function consolidate(intersections, pivotX) {
   // WATCH VALUE
   var thresh = 0.000001;
   var left = _.filter(intersections, function(i) {
-    return i.x < pivotX;
+    return i[0] < pivotX;
   });
   var right = _.filter(intersections, function(i) {
-    return i.x > pivotX;
+    return i[0] > pivotX;
   });
   if (left.length === 2) {
     var d = dist(left[0], left[1]);
@@ -320,17 +320,17 @@ function intersectStraightArcs(left, right, directrix){
 
   if (intersections.length > 2) {
     // get the two intersections that are closest to the x value of the left v
-    var x = pleft.p.x;
+    var x = pleft.p[0];
     var sorted = _.sortBy(intersections, function(i) {
-      return Math.abs(x - i.x);
+      return Math.abs(x - i[0]);
     });
     intersections = [sorted[0], sorted[1]];
-    intersections = _.sortBy(intersections, 'x');
+    intersections = _.sortBy(intersections, function (p) { return p[0]; });
   }
 
   this.intersections = intersections;
   var idx;
-  let pcenterx = (intersections[0].x + intersections[1].x) / 2;
+  let pcenterx = (intersections[0][0] + intersections[1][0]) / 2;
   let prevy = pleft.f(pcenterx);
   let nexty = pright.f(pcenterx);
   let lower = 1;

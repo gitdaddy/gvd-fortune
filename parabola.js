@@ -279,11 +279,11 @@ GeneralParabola.prototype.transformPoint = function (p) {
 
   // translate, rotate, translate manually for performance.
   p = vec4(p);
-  p.x += -this.parabola.focus.x;
-  p.y += -this.parabola.focus.y;
+  p[0] += -this.parabola.focus[0];
+  p[1] += -this.parabola.focus[1];
   p = mult(this.Rz, p);
-  p.x += this.parabola.h;
-  p.y += 2 * this.parabola.k;
+  p[0] += this.parabola.h;
+  p[1] += 2 * this.parabola.k;
   return p;
 }
 
@@ -301,11 +301,11 @@ GeneralParabola.prototype.untransformPoint = function (p) {
 
   // translate, rotate, translate manually for performance
   p = vec4(p);
-  p.x += -this.parabola.h;
-  p.y += -2 * this.parabola.k;
+  p[0] += -this.parabola.h;
+  p[1] += -2 * this.parabola.k;
   p = mult(this.nRz, p);
-  p.x += this.parabola.focus.x;
-  p.y += this.parabola.focus.y;
+  p[0] += this.parabola.focus[0];
+  p[1] += this.parabola.focus[1];
   return p;
 }
 
@@ -324,7 +324,7 @@ GeneralParabola.prototype.intersectRay = function (p, v) {
   p = this.transformPoint(p);
   v = this.transformVector(v);
 
-  if (v.x === 0) {
+  if (v[0] === 0) {
     console.error("Horizontal vector detected");
     return [];
   }
@@ -377,8 +377,8 @@ GeneralParabola.prototype.intersectRay = function (p, v) {
 // Prepares this parabola for drawing
 GeneralParabola.prototype.prepDraw = function (id, p1, p2) {
   this.id = id;
-  var x0 = this.transformPoint(p1).x;
-  var x1 = this.transformPoint(p2).x;
+  var x0 = this.transformPoint(p1)[0];
+  var x1 = this.transformPoint(p2)[0];
   if (x0 > x1) {
     var temp = x1;
     x1 = x0;
@@ -395,7 +395,7 @@ GeneralParabola.prototype.setDrawPoints = function () {
   for (let i = 0; i < this.parabola.drawPoints.length; ++i) {
     let p = this.parabola.drawPoints[i];
     p = this.untransformPoint(p);
-    if (!_.isNaN(p.x)) {
+    if (!_.isNaN(p[0])) {
       this.drawPoints.push(p);
     }
   }

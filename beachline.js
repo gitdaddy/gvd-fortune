@@ -173,18 +173,18 @@ Beachline.prototype.prepDraw = function (
     // The intersection between the edge node's defining arc nodes
     var p = node.intersection(directrix);
 
-    if (p.x < leftx && Math.abs(leftx - p.x) > 0.00001) {
-      let msg = `intersection is less than leftx: ${p.x} < ${leftx}.` +
+    if (p[0] < leftx && Math.abs(leftx - p[0]) > 0.00001) {
+      let msg = `intersection is less than leftx: ${p[0]} < ${leftx}.` +
         ` id = ${node.id}`;
       console.error(msg);
     }
 
-    if (!Number.isNaN(origin.x) && !Number.isNaN(origin.y)) {
+    if (!Number.isNaN(origin[0]) && !Number.isNaN(origin[1])) {
       events.push(origin);
     }
 
-    if (!Number.isNaN(origin.x) && !Number.isNaN(origin.y) &&
-      !Number.isNaN(p.x) && !Number.isNaN(p.y)) {
+    if (!Number.isNaN(origin[0]) && !Number.isNaN(origin[1]) &&
+      !Number.isNaN(p[0]) && !Number.isNaN(p[1])) {
       if (node.isGeneralSurface) {
         var point;
         var segment;
@@ -207,18 +207,18 @@ Beachline.prototype.prepDraw = function (
           gp.prepDraw(idStr, origin, p);
           generalSurfaces.push(gp);
         } else {
-          lines.push({ x0: point.x, y0: point.y, x1: p.x, y1: p.y, id: node.id, connectedToGVD: node.connectedToGVD });
+          lines.push({ x0: point[0], y0: point[1], x1: p[0], y1: p[1], id: node.id, connectedToGVD: node.connectedToGVD });
         }
       } else {
-        lines.push({ x0: origin.x, y0: origin.y, x1: p.x, y1: p.y, id: node.id, connectedToGVD: node.connectedToGVD });
+        lines.push({ x0: origin[0], y0: origin[1], x1: p[0], y1: p[1], id: node.id, connectedToGVD: node.connectedToGVD });
       }
     }
 
     // check V left and right
-    this.prepDraw(directrix, node.left, leftx, p.x, arcElements, lines, generalSurfaces, events);
-    if (p.x < rightx) {
+    this.prepDraw(directrix, node.left, leftx, p[0], arcElements, lines, generalSurfaces, events);
+    if (p[0] < rightx) {
       // We can ignore anything outside our original bounds.
-      this.prepDraw(directrix, node.right, p.x, rightx, arcElements, lines, generalSurfaces, events);
+      this.prepDraw(directrix, node.right, p[0], rightx, arcElements, lines, generalSurfaces, events);
     }
   }
 }

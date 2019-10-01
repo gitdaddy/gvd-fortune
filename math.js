@@ -46,13 +46,7 @@ function isSegment(s) {
 
 function convertToVec3(p) {
   if (p.length === 3) return p;
-  return vec3(p.x, p.y, 0);
-}
-
-// Get the mid point between p1 and p2
-function midPoint(p1, p2) {
-  if (equal(p1, p2)) return p1;
-  return new vec3((p1.x + p2.x)/2.0, (p1.y + p2.y)/2.0, 0);
+  return vec3(p[0], p[1], 0);
 }
 
 function getPointsRightOfLine(a, b, points) {
@@ -440,10 +434,10 @@ function dist(obj1, obj2) {
   if (fallsInBoundary(seg.a, seg.b, point)) {
     // get the equation of the line from the segment ax + by + c = 0
     // (y1 - y2)x + (x2 - x1)y + (x1y2 - x2y1) = 0
-    var a = seg[0].y - seg[1].y;
-    var b = seg[1].x - seg[0].x;
-    var c = seg[0].x * seg[1].y - seg[1].x * seg[0].y;
-    var n = Math.abs(a * point.x + b * point.y + c);
+    var a = seg[0][1] - seg[1][1];
+    var b = seg[1][0] - seg[0][0];
+    var c = seg[0][0] * seg[1][1] - seg[1][0] * seg[0][1];
+    var n = Math.abs(a * point[0] + b * point[1] + c);
     var dn = Math.sqrt(a*a + b*b)
     return n/dn;
   } else {
@@ -678,10 +672,10 @@ function bisectSegments2(s1, s2) {
   var s = bisectData.line;
   // the line for the large angle is perpendicular to the
   // small angle bisector
-  var sorted = _.sortBy([s.p1, s.p2], 'y');
+  var sorted = _.sortBy([s.p1, s.p2], function (p) { return p[1]; });
   var AB = subtract(sorted[0], sorted[1]);
-  var v1Clockwise = new vec3(AB.y, -AB.x, 0); // 90 degrees perpendicular
-  var v1CounterClockwise = new vec3(-AB.y, AB.x, 0);
+  var v1Clockwise = new vec3(AB[1], -AB[0], 0); // 90 degrees perpendicular
+  var v1CounterClockwise = new vec3(-AB[1], AB[0], 0);
   var intersect = bisectData.optPoint ? bisectData.optPoint : intersectLines(s1.a, s1.b, s2.a, s2.b);
   if (!intersect) {
     return [s];

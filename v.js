@@ -39,7 +39,7 @@ V = function(line, directrix, id) {
 function filterOutPointsLowerThan(points, valY){
   return _.filter(points, function(p) {
     if (!p) return false;
-    return p.y >= valY;
+    return p[1] >= valY;
   });
 }
 
@@ -127,7 +127,7 @@ V.prototype.intersect = function(obj) {
     if (!ret[0] || _.isNaN(ret[0][0]))
       console.error("V - Para result Invalid between arc:" + this.id + " and arc:" + obj.id);
     // sort by xvalues if x0 < x1 [x0, x1]
-    ret = _.sortBy(ret, [function(i) { return i.x; }]);
+    ret = _.sortBy(ret, [function(i) { return i[0]; }]);
     return ret;
   } else if (obj instanceof V) {
     var s1 = makeSegment(this.y0, this.y1);
@@ -139,7 +139,7 @@ V.prototype.intersect = function(obj) {
       var y0_Oy0 = subtract(obj.y0, this.y0);
       var y0_Oy1 = subtract(obj.y1, this.y0);
       // z area between this and obj
-      var zArea = cross(y0_y1, y0_Oy0).z + cross(y0_y1, y0_Oy1).z;
+      var zArea = cross(y0_y1, y0_Oy0)[2] + cross(y0_y1, y0_Oy1)[2];
       if (zArea == 0) {
         // collinear
         console.log("collinear v-v arc!");
@@ -155,11 +155,11 @@ V.prototype.intersect = function(obj) {
       // often P is too close to p2 increment the height by a 0.01 to get a better width for each vector
       if (zArea < 0) {
         // segment right
-        var pPrime = vec3(this.f_(this.y1.y + 0.01)[1], this.y1.y + 0.01, 0);
+        var pPrime = vec3(this.f_(this.y1[1] + 0.01)[1], this.y1[1] + 0.01, 0);
         return [intersectLines(this.p, pPrime, bisector.line.p1, bisector.line.p2)];
       } else {
         // segment left
-        var pPrime = vec3(this.f_(this.y1.y + 0.01)[0], this.y1.y + 0.01, 0);
+        var pPrime = vec3(this.f_(this.y1[1] + 0.01)[0], this.y1[1] + 0.01, 0);
         return [intersectLines(this.p, pPrime, bisector.line.p1, bisector.line.p2)];
       }
     } else {
@@ -179,12 +179,12 @@ V.prototype.intersect = function(obj) {
         });
       });
 
-      var validPoints = filterOutPointsLowerThan(intersects, this.p.y);
+      var validPoints = filterOutPointsLowerThan(intersects, this.p[1]);
       if (validPoints.length == 0) {
         console.error("invalid intersection between id:" + this.id + " and arc id:" + obj.id);
         return [];
       }
-      return _.sortBy(validPoints, 'x');
+      return _.sortBy(validPoints, function (p) { return p[0]; });
     }
   }
   throw "intersection type not implemented";
@@ -239,7 +239,7 @@ V.prototype.prepDraw = function(nodeid, label, x0, x1) {
 
   var y0 = this.f(x0)
   var y1 = this.f(x1)
-  if (x0 < this.p.x && this.p.x < x1) {
+  if (x0 < this.p[0] && this.p[0] < x1) {
     // case 2
     this.drawPoints.push(vec3(x0, y0, 0));
     this.drawPoints.push(vec3(this.p[0], this.p[1], 0));
