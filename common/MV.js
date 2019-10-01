@@ -30,58 +30,6 @@ function degrees( radians ) {
 //
 
 function vecn(v) {
-  Object.defineProperty(v, "x", {
-    configurable: true,
-    enumerable: true,
-    get: function() {
-      throw "x access";
-      return this[0];
-    },
-    set: function(x) {
-      throw "x set";
-      this[0] = x;
-    }
-  });
-
-  Object.defineProperty(v, "y", {
-    configurable: true,
-    enumerable: true,
-    get: function() {
-      throw "y access";
-      return this[1];
-    },
-    set: function(y) {
-      throw "y set";
-      this[1] = y;
-    }
-  });
-
-  Object.defineProperty(v, "z", {
-    configurable: true,
-    enumerable: true,
-    get: function() {
-      throw "z access";
-      return this[2];
-    },
-    set: function(z) {
-      throw "z set";
-      this[2] = z;
-    }
-  });
-
-  Object.defineProperty(v, "w", {
-    configurable: true,
-    enumerable: true,
-    get: function() {
-      throw "w access";
-      return this[3];
-    },
-    set: function(w) {
-      throw "w set";
-      this[3] = w;
-    }
-  });
-
   v.type = 'vec';
   return v;
 }
