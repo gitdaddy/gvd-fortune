@@ -386,7 +386,7 @@ function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, dire
   }
 
   if (intersections.length > 2) {
-    var x = left.isParabola ? left.site.x : right.site.x;
+    var x = left.isParabola ? left.site[0] : right.site[0];
     // Test get the center intersections
     intersections = consolidate(intersections, x);
     if (intersections.length == 1) {
@@ -399,7 +399,7 @@ function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, dire
 
   this.intersections = intersections;
   var idx;
-  let pcenterx = (intersections[0].x + intersections[1].x) / 2;
+  let pcenterx = (intersections[0][0] + intersections[1][0]) / 2;
   let prevy = pleft.f(pcenterx);
   let nexty = pright.f(pcenterx);
   let lower = 1;
@@ -475,7 +475,7 @@ function intersectParabolicArcs(left, right, directrix){
 
   this.intersections = intersections;
   var idx;
-  let pcenterx = (intersections[0].x + intersections[1].x) / 2;
+  let pcenterx = (intersections[0][0] + intersections[1][0]) / 2;
   let prevy = pleft.f(pcenterx);
   let nexty = pright.f(pcenterx);
   let lower = 1;

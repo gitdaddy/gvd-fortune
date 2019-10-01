@@ -152,7 +152,7 @@ function setRelationTop(cur, next) {
     // either a left or right bend
     var v0 = subtract(cur.b, cur.a);
     var v1 = subtract(cur.b, next.seg.a);
-    if (cross(v0, v1).z < 0) {
+    if (cross(v0, v1)[2] < 0) {
       // right
       cur.a.relation = NODE_RELATION.CHILD_LEFT_HULL;
       next.seg.b.relation = NODE_RELATION.CHILD_LEFT_HULL;
@@ -173,7 +173,7 @@ function setRelationBottom(cur, next) {
     // either a left or right bend
     var v0 = subtract(cur.b, cur.a);
     var v1 = subtract(cur.b, next.seg.b);
-    if (cross(v0, v1).z < 0) {
+    if (cross(v0, v1)[2] < 0) {
       // right
       cur.b.relation = NODE_RELATION.CHILD_LEFT_HULL;
       next.seg.a.relation = NODE_RELATION.CHILD_LEFT_HULL;

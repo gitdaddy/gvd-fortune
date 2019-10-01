@@ -255,15 +255,15 @@ function createGeneralParabola(focus, directrix) {
   // on the left of b-a.
   var v = normalize(subtract(b, a));
   var vxf = cross(v, subtract(focus, a));
-  if (vxf.z < 0) {
+  if (vxf[2] < 0) {
     v = negate(v);
     [a, b] = [b, a];
-    vxf.z = -vxf.z;
+    vxf[2] = -vxf[2];
   }
   var k = length(vxf) / 2.0;
   var p = k;
-  var h = focus.x;
-  var theta = Math.atan2(v.y, v.x);
+  var h = focus[0];
+  var theta = Math.atan2(v[1], v[0]);
   splitSite = _.get(focus, "label") != _.get(directrix, "label");
   return new GeneralParabola(focus, h, k, p, theta, 0, splitSite);
 }

@@ -74,7 +74,7 @@ function dividesRightOfLine(a1, b1, a2, b2) {
 function isRightOfLine(upper, lower, p) {
   var v1 = subtract(upper, lower);
   var v2 = subtract(p, lower);
-  var z = cross(v1, v2).z;
+  var z = cross(v1, v2)[2];
   if (z === 0.0) console.log("Co-linear found when using isRightOfLine()");
   return z < 0;
 }
@@ -133,10 +133,10 @@ function interceptCircleSeg(circle, line){
   var a, b, c, d, u1, u2, ret, retP1, retP2, v1, v2;
   v1 = {};
   v2 = {};
-  v1.x = line.p2.x - line.p1.x;
-  v1.y = line.p2.y - line.p1.y;
-  v2.x = line.p1.x - circle.center.x;
-  v2.y = line.p1.y - circle.center.y;
+  v1.x = line.p2[0] - line.p1[0];
+  v1.y = line.p2[1] - line.p1[1];
+  v2.x = line.p1[0] - circle.center[0];
+  v2.y = line.p1[1] - circle.center[1];
   b = (v1.x * v2.x + v1.y * v2.y);
   c = 2 * (v1.x * v1.x + v1.y * v1.y);
   b *= -2;
@@ -150,13 +150,13 @@ function interceptCircleSeg(circle, line){
   retP2 = {}
   ret = []; // return array
   if(u1 <= 1 && u1 >= 0){  // add point if on the line segment
-      retP1.x = line.p1.x + v1.x * u1;
-      retP1.y = line.p1.y + v1.y * u1;
+      retP1.x = line.p1[0] + v1.x * u1;
+      retP1.y = line.p1[1] + v1.y * u1;
       ret[0] = retP1;
   }
   if(u2 <= 1 && u2 >= 0){  // second add point if on the line segment
-      retP2.x = line.p1.x + v1.x * u2;
-      retP2.y = line.p1.y + v1.y * u2;
+      retP2.x = line.p1[0] + v1.x * u2;
+      retP2.y = line.p1[1] + v1.y * u2;
       ret[ret.length] = retP2;
   }
   // if the points are too close return the tangent point
@@ -226,9 +226,9 @@ function lpIntersect(h, k, p, q, v) {
   // v = p1 --> p2
   // var q = p1;
   // var v = subtract(p2, q);
-  var a = v.x * v.x / (4 * p);
-  var b = 2 * v.x * (q.x - h) / (4 * p) - v.y;
-  var c = (q.x * q.x - 2 * q.x * h + h * h) / (4 * p) + k - q.y;
+  var a = v[0] * v[0] / (4 * p);
+  var b = 2 * v[0] * (q[0] - h) / (4 * p) - v[1];
+  var c = (q[0] * q[0] - 2 * q[0] * h + h * h) / (4 * p) + k - q[1];
   var tvals = quadratic(a, b, c);
   return tvals;
 }
@@ -376,30 +376,30 @@ function filterBySiteAssociation(left, node, right, points) {
 
 // Test if a point falls into the boundary of the sight of the segment line
 function fallsInBoundary(A, B, point) {
-  if (A.x === B.x) {
-    return point.y < A.y && point.y > B.y;
+  if (A[0] === B[0]) {
+    return point[1] < A[1] && point[1] > B[1];
   }
-  var positiveSlope = A.x > B.x ? true : false;
+  var positiveSlope = A[0] > B[0] ? true : false;
   var AB = subtract(B, A);
   var BA = subtract(A, B);
-  var v1Clockwise = new vec3(AB.y, -AB.x, 0); // 90 degrees perpendicular
-  var v1CounterClockwise = new vec3(-AB.y, AB.x, 0);
-  var v2Clockwise = new vec3(BA.y, -BA.x, 0);
-  var v2CounterClockwise = new vec3(-BA.y, BA.x, 0);
+  var v1Clockwise = new vec3(AB[1], -AB[0], 0); // 90 degrees perpendicular
+  var v1CounterClockwise = new vec3(-AB[1], AB[0], 0);
+  var v2Clockwise = new vec3(BA[1], -BA[0], 0);
+  var v2CounterClockwise = new vec3(-BA[1], BA[0], 0);
   // define the boundary endpoints - add end point values
   var p1a = add(v1Clockwise, A);
   var p2a = add(v1CounterClockwise, A);
-  var lineA = _.sortBy([p1a, p2a], 'y');
+  var lineA = _.sortBy([p1a, p2a], function (p) { return p[1]; });
   var va = subtract(lineA[1], lineA[0]); // vector from lower to upper
   var vap = subtract(point, lineA[0]);
-  var z1 = cross(va, vap).z;
+  var z1 = cross(va, vap)[2];
 
   var p1b = add(v2Clockwise, B);
   var p2b = add(v2CounterClockwise, B);
-  var lineB = _.sortBy([p1b, p2b], 'y');
+  var lineB = _.sortBy([p1b, p2b], function (p) { return p[1]; });
   var vb = subtract(lineB[1], lineB[0]); // vector from lower to upper
   var vbp = subtract(point, lineB[0]);
-  var z2 = cross(vb, vbp).z;
+  var z2 = cross(vb, vbp)[2];
   // if the point is in segment bounds it must be to the
   if (positiveSlope) {
     return z1 > 0 && z2 < 0;
@@ -546,8 +546,8 @@ function bisectPointSegment(p, s) {
     // special case: point is a segment endpoint
     let v0 = subtract(s1, s0);
     // Get both bisecting sides clockwise and counter clockwise
-    let v1 = vec3(v0.y, -v0.x);
-    let v2 = vec3(-v0.y, v0.x);
+    let v1 = vec3(v0[1], -v0[0]);
+    let v2 = vec3(-v0[1], v0[0]);
     return new Line(add(v1, p), add(v2, p));
   }
   if (dot(subtract(p, s0), normalize(subtract(s0, s1))) ==
@@ -633,13 +633,13 @@ function bisectPoints(p1, p2) {
 
   var v = subtract(p2, p1);
   var q = add(p1, mult(v, 0.5));
-  if (v.y > 0) {
+  if (v[1] > 0) {
     v = negate(v);
   }
   // Get both bisecting sides clockwise and counter clockwise
   // Testing multiple of 2 for better intersection detection effect
-  let v1 = vec3(v.y*2, -v.x*2);
-  let v2 = vec3(-v.y*2, v.x*2);
+  let v1 = vec3(v[1]*2, -v[0]*2);
+  let v2 = vec3(-v[1]*2, v[0]*2);
   return new Line(add(v1, q), add(v2, q));
 }
 
@@ -699,16 +699,16 @@ function parallelTest(s1, s2) {
   // used to round the floating point values
   // WATCH VALUE
   var precision = 10;
-  var x1 = l1.v.x.toFixed(precision);
-  var y1 = l1.v.y.toFixed(precision);
-  var x2 = l2.v.x.toFixed(precision);
-  var y2 = l2.v.y.toFixed(precision);
+  var x1 = l1.v[0].toFixed(precision);
+  var y1 = l1.v[1].toFixed(precision);
+  var x2 = l2.v[0].toFixed(precision);
+  var y2 = l2.v[1].toFixed(precision);
   return x1 === x2 && y1 === y2;
 }
 
 function getAverage(s1, s2) {
-  var p1 = vec3(((s1.a.x + s2.a.x) / 2.0), ((s1.a.y + s2.a.y) / 2.0), 0);
-  var p2 = vec3(((s1.b.x + s2.b.x) / 2.0), ((s1.b.y + s2.b.y) / 2.0), 0);
+  var p1 = vec3(((s1.a[0] + s2.a[0]) / 2.0), ((s1.a[1] + s2.a[1]) / 2.0), 0);
+  var p2 = vec3(((s1.b[0] + s2.b[0]) / 2.0), ((s1.b[1] + s2.b[1]) / 2.0), 0);
   return new Line(p1, p2);
 }
 

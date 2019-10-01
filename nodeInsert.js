@@ -57,11 +57,11 @@ function splitArcNode(toSplit, node, dcel, optNodesToClose) {
   if (node.isV) {
     vertex = node.site.a;
   } else {
-    var x = node.site.x;
+    var x = node.site[0];
     var y;
     if (toSplit.isParabola) {
       // avoid p==0 WATCH VALUE
-      var directrix = toSplit.site.y === node.site.y ? node.site.y - 1e-10: node.site.y;
+      var directrix = toSplit.site[1] === node.site[1] ? node.site[1] - 1e-10: node.site[1];
       y = createParabola(toSplit.site, directrix, toSplit.id).f(x);
     } else {
       y = new V(toSplit.site, node.site.y, toSplit.id).f(x);

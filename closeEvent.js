@@ -45,7 +45,7 @@ function getDiff(left, node, right, p, directrix) {
   // }
 
   var radius = getRadius(p, left, node, right);
-  var newY = p.y - radius;
+  var newY = p[1] - radius;
   // rule out points too far above the directrix
   if (newY > directrix) return 1e10;
 
@@ -53,8 +53,8 @@ function getDiff(left, node, right, p, directrix) {
   var i0 = getIntercept(left, node, newY);
   var i1 = getIntercept(node, right, newY);
   if (!i0 || !i1) return 1e10;
-  var diffX = Math.abs(i0.x - i1.x);
-  var diffY = Math.abs(i0.y - i1.y);
+  var diffX = Math.abs(i0[0] - i1[0]);
+  var diffY = Math.abs(i0[1] - i1[1]);
   return diffX + diffY;
 }
 
@@ -296,7 +296,7 @@ function createCloseEvent(arcNode, directrix) {
   if (_.isUndefined(radius)) throw "invalid radius";
 
   if (canClose(left, arcNode, right, closePoint)){
-    return new CloseEvent(closePoint.y - radius, arcNode, left, right, closePoint, radius);
+    return new CloseEvent(closePoint[1] - radius, arcNode, left, right, closePoint, radius);
   }
 
   return null;

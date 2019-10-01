@@ -116,7 +116,7 @@ V.prototype.intersect = function(obj) {
       ret = ret.concat(obj.intersectRay(p, v));
     });
     // sort by xvalues if x0 < x1 [x0, x1]
-    ret = _.sortBy(ret, 'x');
+    ret = _.sortBy(ret, function (val) { return val[0]; });
     return ret;
   } else if (obj instanceof Line) {
     ret = [];
@@ -201,23 +201,23 @@ V.prototype.intersectRay = function(p, v) {
 // y = f(x)
 V.prototype.f = function(x) {
   var v;
-  if (x < this.p.x) {
+  if (x < this.p[0]) {
     v = this.vectors[0];
   } else {
     v = this.vectors[1];
   }
-  return this.p.y + v.y*(x-this.p.x)/v.x;
+  return this.p[1] + v[1]*(x-this.p[0])/v[0];
 }
 
 // Inverse of f. x = f_(y)
 V.prototype.f_ = function(y) {
-  if (y < this.p.y) return [this.p.x];
-  if (y == this.p.y) return [this.p.x];
+  if (y < this.p[1]) return [this.p[0]];
+  if (y == this.p[1]) return [this.p[0]];
   var ret = []
-  var tY = this.p.y;
-  var tX = this.p.x;
+  var tY = this.p[1];
+  var tX = this.p[0];
   this.vectors.forEach(function(v) {
-    var x = tX + v.x*(y-tY)/v.y;
+    var x = tX + v[0]*(y-tY)/v[1];
     ret.push(x);
   });
   return ret;

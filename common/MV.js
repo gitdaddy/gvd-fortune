@@ -60,9 +60,11 @@ function vecn(v) {
     configurable: true,
     enumerable: true,
     get: function() {
+      // throw "z access";
       return this[2];
     },
     set: function(z) {
+      // throw "z set";
       this[2] = z;
     }
   });

@@ -45,7 +45,7 @@ function shareVClosing(arcNode, sibling) {
 //------------------------------------------------------------
 Beachline.prototype.add = function (eventPacket) {
   var arcNode = new ArcNode(eventPacket.site);
-  var directrix = eventPacket.site.y;
+  var directrix = eventPacket.site[1];
 
   // debugging only
   // if (arcNode.id === g_debugIdMiddle) {
@@ -76,8 +76,8 @@ Beachline.prototype.add = function (eventPacket) {
 
   // Do a binary search to find the arc node that the new
   // site intersects with
-  var x = parent.intersection(directrix).x;
-  side = (eventPacket.site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
+  var x = parent.intersection(directrix)[0];
+  side = (eventPacket.site[0] < x) ? LEFT_CHILD : RIGHT_CHILD;
   child = parent.getChild(side);
   while (child.isEdge) {
     parent = child;
@@ -85,12 +85,12 @@ Beachline.prototype.add = function (eventPacket) {
     if (!i) {
       throw "Invalid intersection on 'Add'";
     } else {
-      x = i.x;
+      x = i[0];
     }
-    if (eventPacket.site.x == x) {
+    if (eventPacket.site[0] == x) {
       console.log("Site and intersect values equal:" + x + " for intersection: " + parent.id);
     }
-    side = (eventPacket.site.x < x) ? LEFT_CHILD : RIGHT_CHILD;
+    side = (eventPacket.site[0] < x) ? LEFT_CHILD : RIGHT_CHILD;
     child = parent.getChild(side);
   }
 
