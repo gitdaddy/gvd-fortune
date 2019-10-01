@@ -135,12 +135,12 @@ function canClose(left, arcNode, right, equi) {
       // the right site should be on the left of the segment
       var v1 = subtract(arcNode.site.a, arcNode.site.b);
       var v2 = subtract(right.site, arcNode.site.b);
-      can = cross(v1, v2).z > 0;
+      can = cross(v1, v2)[2] > 0;
     } else if (right.isParabola && left.isParabola && equal(arcNode.site.a, right.site)) {
       // the left site should be on the right of the segment
       var v1 = subtract(arcNode.site.a, arcNode.site.b);
       var v2 = subtract(left.site, arcNode.site.b);
-      can = cross(v1, v2).z < 0;
+      can = cross(v1, v2)[2] < 0;
     }
 
     return can;
@@ -245,7 +245,7 @@ function createCloseEvent(arcNode, directrix) {
     // cases there shouldn't be.
     if (cross(u, v)[2] < 0) {
       let r = length(subtract(arcNode.site, closePoint));
-      let event_y = closePoint.y - r;
+      let event_y = closePoint[1] - r;
       return new CloseEvent(event_y, arcNode, left, right, closePoint, r);
     }
     return null;

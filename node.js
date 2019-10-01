@@ -369,7 +369,7 @@ function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, dire
     var para = left.isParabola ? pleft : pright;
     var V = left.isParabola ? pright : pleft;
     if (belongsToSegment(left, right) && para.p < 1e-5) {
-      var backupLine = new Line(vec3(-1, para.focus.y, 0), vec3(1, para.focus.y, 0));
+      var backupLine = new Line(vec3(-1, para.focus[1], 0), vec3(1, para.focus[1], 0));
       intersections = V.intersect(backupLine);
     }
     if (intersections.length == 0 || !intersections[0]) {

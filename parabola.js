@@ -292,7 +292,7 @@ GeneralParabola.prototype.transformVector = function (v) {
 
   v = mult(this.Rz, vec4(v));
   // Not sure why w is getting set to 1.
-  v.w = 0;
+  v[3] = 0;
   return v;
 }
 

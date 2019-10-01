@@ -288,7 +288,7 @@ function isColinear(p1, p2, p3) {
   p3 = new vec3(p3.x, p3.y, 0);
   var v1 = subtract(p2, p1);
   var v2 = subtract(p3, p1);
-  return Math.abs(cross(v1, v2).z) === 0;
+  return Math.abs(cross(v1, v2)[2]) === 0;
 }
 
 function createDatasets() {
