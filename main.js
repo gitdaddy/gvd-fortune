@@ -27,15 +27,6 @@ let g_debugIdLeft = undefined;
 let g_debugIdMiddle = undefined;
 let g_debugIdRight = undefined;
 
-// metric testing
-let g_totalQueueInsertionTime;
-/*
- var t0 = performance.now();
- // Work
-  var t1 = performance.now();
-  var processTime = t1 - t0;
-*/
-
 let g_sInc = 0.01;
 let g_xInc = 0.001;
 
@@ -183,8 +174,6 @@ function datasetChange(value) {
 }
 
 function fortune(reorder) {
-  g_totalQueueInsertionTime = 0;
-
   nodeId = 1;
   var queue = createDataQueue(reorder);
   dcel = new DCEL();
@@ -192,9 +181,6 @@ function fortune(reorder) {
   closeEventPoints = [];
   if (queue.length < 1) return beachline;
   var nextY = getEventY(queue[queue.length - 1]);
-
-  var timeRemove = 0;
-  var timeAdd = 0;
 
   var tStart = performance.now();
   while (queue.length > 0 && nextY > g_sweepline) {
@@ -225,11 +211,8 @@ function fortune(reorder) {
             }
           }
         });
-        var t1 = performance.now();
-        timeRemove += (t1 - t0);
       }
     } else {
-      var t0 = performance.now();
       // Site event
       var packet = getEventPacket(event, queue);
       var newEvents = beachline.add(packet);
@@ -243,8 +226,6 @@ function fortune(reorder) {
           }
         }
       });
-      var t1 = performance.now();
-      timeAdd += (t1 - t0);
     }
     if (queue.length > 0)
       nextY = getEventY(queue[queue.length - 1]);
@@ -253,10 +234,7 @@ function fortune(reorder) {
   var loopTime = tEnd - tStart;
 
   // Processing metrics
-  console.log("Time in add:" + timeAdd.toFixed(6) + "(ms)");
-  console.log("Time in remove:" + timeRemove.toFixed(6) + "(ms)");
   console.log("Time in loop:" + loopTime.toFixed(6) + "(ms)");
-  console.log("Time in queue insertion:" + g_totalQueueInsertionTime.toFixed(6) + "(ms)");
 
   // debugging only
   var ev = '';

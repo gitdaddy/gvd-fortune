@@ -50,7 +50,7 @@ Parabola.prototype.intersect = function (object) {
 Parabola.prototype.intersectRay = function (p, v) {
 
   if (this.p === 0) {
-    console.log("intersectRay P value === 0");
+    // console.log("intersectRay P value === 0");
     this.p = 1e-10;
   }
 

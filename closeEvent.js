@@ -234,7 +234,7 @@ function createCloseEvent(arcNode, directrix) {
     // All three are points
     var equi = equidistant(left.site, arcNode.site, right.site);
     if (!equi) {
-      console.log("Equi point null between 3 point sites");
+      // console.log("Equi point null between 3 point sites");
       return null;
     }
     closePoint = equi[0];

@@ -5,7 +5,7 @@ var fs = require('fs');
 var _ = require('lodash');
 
 const hostname = 'localhost';
-const port = 8082;
+const port = 8080;
 
 function getDatasetJson(set) {
   // read in the files

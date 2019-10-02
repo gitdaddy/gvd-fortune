@@ -64,7 +64,7 @@ function removeColinearPoints(orderedPoints) {
     var p3 = orderedPoints[(i+1)%orderedPoints.length]; // 2,3,0
     if (isColinear(p1, p2, p3)) {
       var center = _.sortBy([p1, p2, p3], 'y')[1];
-      console.log("Removing point(" + center.x + ", " + center.y + ")");
+      // console.log("Removing point(" + center.x + ", " + center.y + ")");
       toRemove.push(center);
     }
   }
@@ -124,7 +124,7 @@ Polygon.prototype.createSegment = function (pIdxStart, pIdxEnd) {
   s.label = this.label;
   this.segments.push(s);
   if (this.points[pIdxStart][1] == this.points[pIdxEnd][1]) {
-    console.log("Horizontal segment detected with y values of: " + this.points[pIdxEnd][1]);
+    console.error("Horizontal segment detected with y values of: " + this.points[pIdxEnd][1]);
   }
   this.points[pIdxStart].flipped = isFlipped(this.points[pIdxStart], this.segments);
   this.points[pIdxEnd].flipped = isFlipped(this.points[pIdxEnd], this.segments);
@@ -252,34 +252,25 @@ function isFlipped(p, segs) {
   return endPoint;
 }
 
-function findNeighborSegments(node) {
-  if (node.isV) return [node.site];
-  var segs = [];
-  _.forEach(g_polygons, function(poly) {
-    var rslt = _.filter(poly.segments, function(s) {
-      return equal(s.a, node.site) || equal(s.b, node.site);
-    });
-    if (!_.isEmpty(rslt)) {
-      segs = _.concat(segs, rslt);
-    }
-  });
-  return segs;
+function getPolygonByLabel(label) {
+  var idx = _.findIndex(g_polygons, {'label': label});
+  return g_polygons[idx];
 }
 
+function findNeighborSegments(node) {
+  if (node.isV) return [node.site];
+  return findConnectedSegments(node.site);
+}
+
+// TODO Performance search by label then polygon
 // much like findNeighborSegments but using a point site
 function findConnectedSegments(pointSite) {
   if (!pointSite.type || pointSite.type !== "vec") return [];
-  var segs = [];
-  _.forEach(g_polygons, function(poly) {
-    var rslt = _.filter(poly.segments, function(s) {
-      return (equal(s.a, pointSite) || equal(s.b, pointSite)) && pointSite.label === s.label;
-    });
-    if (!_.isEmpty(rslt)) {
-      segs = rslt;
-      return;
-    }
+  var poly = getPolygonByLabel(pointSite.label);
+  var rslt = _.filter(poly.segments, function(s) {
+    return equal(s.a, pointSite) || equal(s.b, pointSite);
   });
-  return segs;
+  return rslt;
 }
 
 function isColinear(p1, p2, p3) {

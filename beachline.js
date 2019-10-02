@@ -87,9 +87,9 @@ Beachline.prototype.add = function (eventPacket) {
     } else {
       x = i[0];
     }
-    if (eventPacket.site[0] == x) {
-      console.log("Site and intersect values equal:" + x + " for intersection: " + parent.id);
-    }
+    // if (eventPacket.site[0] == x) {
+    //   console.log("Site and intersect values equal:" + x + " for intersection: " + parent.id);
+    // }
     side = (eventPacket.site[0] < x) ? LEFT_CHILD : RIGHT_CHILD;
     child = parent.getChild(side);
   }

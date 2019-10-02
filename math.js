@@ -6,19 +6,12 @@
 
 function getEventY(event)
 {
+  // TODO performance
   if (event.yval) return event.yval;
 
   if (event.type === "segment") return event[0][1];
   if (event.type === "vec") return event[1];
   throw "Undefined event Y";
-}
-
-function getEventX(event)
-{
-  // return event.type === "segment" ? event[0][0] : event[0];
-  if (event.type === "segment") return event[0][0];
-  if (event.type === "vec") return event[0];
-  throw "Undefined event X";
 }
 
 //------------------------------------------------------------
@@ -69,7 +62,7 @@ function isRightOfLine(upper, lower, p) {
   var v1 = subtract(upper, lower);
   var v2 = subtract(p, lower);
   var z = cross(v1, v2)[2];
-  if (z === 0.0) console.log("Co-linear found when using isRightOfLine()");
+  // if (z === 0.0) console.log("Co-linear found when using isRightOfLine()");
   return z < 0;
 }
 
@@ -181,7 +174,7 @@ function intersectLines(p1, p2, p3, p4) {
   // tolerance previous tolerance 1e-8
   // originally 1e-6 but more precision has been needed
   if (Math.abs(denom) < 1e-14){
-    console.log("intersectLines() denom too small:" + denom);
+    // console.log("intersectLines() denom too small:" + denom);
     return null;
   }
   var x = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4))/denom;

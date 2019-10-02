@@ -78,11 +78,11 @@ function win2y(yWin) {
 }
 
 function sortedInsertion(queue, newEvent) {
-  var t0 = performance.now();
   // Work
   var yval = getEventY(newEvent);
+  // TODO performance
   var idx = _.findIndex(queue, function(event) { return getEventY(event) > yval; });
- 
+
   // var yVal = newEvent.y;
   // var idx = _.findIndex(queue, function(event) { return event.y > yVal; });
   // insert the new event in order or on top
@@ -92,8 +92,6 @@ function sortedInsertion(queue, newEvent) {
     // PERFORMANCE - optional boost using pop/shift instead
     queue.splice(idx, 0, newEvent);
   }
-  var t1 = performance.now();
-  g_totalQueueInsertionTime += t1 - t0;
 }
 
 // Create the queue for the current dataset
