@@ -262,7 +262,6 @@ function findNeighborSegments(node) {
   return findConnectedSegments(node.site);
 }
 
-// TODO Performance search by label then polygon
 // much like findNeighborSegments but using a point site
 function findConnectedSegments(pointSite) {
   if (!pointSite.type || pointSite.type !== "vec") return [];

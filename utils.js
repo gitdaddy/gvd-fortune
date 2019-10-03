@@ -78,18 +78,12 @@ function win2y(yWin) {
 }
 
 function sortedInsertion(queue, newEvent) {
-  // Work
-  var yval = getEventY(newEvent);
-  // TODO performance
-  var idx = _.findIndex(queue, function(event) { return getEventY(event) > yval; });
+  var idx = _.sortedIndexBy(queue, newEvent, function(event) { return getEventY(event); });
 
-  // var yVal = newEvent.y;
-  // var idx = _.findIndex(queue, function(event) { return event.y > yVal; });
   // insert the new event in order or on top
   if (idx === -1) {
     queue.push(newEvent);
   } else {
-    // PERFORMANCE - optional boost using pop/shift instead
     queue.splice(idx, 0, newEvent);
   }
 }
