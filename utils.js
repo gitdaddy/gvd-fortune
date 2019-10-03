@@ -104,6 +104,7 @@ function createDataQueue(reorder) {
   var sortedPoints = _.sortBy(points, function(p) { return p[1]; });
 
   _.forEach(sortedPoints, function(p) {
+    // TODO performance
     var segs = _.remove(segments, function(s) { return equal(s.a, p); });
     if (!_.isEmpty(segs)) {
       if (segs.length === 2) {

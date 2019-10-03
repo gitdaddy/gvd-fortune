@@ -6,7 +6,6 @@
 
 function getEventY(event)
 {
-  // TODO performance
   if (event.yval) return event.yval;
 
   if (event.type === "segment") return event[0][1];
@@ -282,7 +281,7 @@ function ppIntersect(h1, k1, p1, h2, k2, p2) {
 // ray/parabola combination.
 //------------------------------------------------------------
 PointSegmentBisector = function(p, s) {
-  p = vec3(p);
+  p = convertToVec3(p);
   this.para = createGeneralParabola(p, s);
 }
 
@@ -363,6 +362,7 @@ function filterBySiteAssociation(left, node, right, points) {
 
 // Test if a point falls into the boundary of the sight of the segment line
 function fallsInBoundary(A, B, point) {
+  // TODO performance subtract, add, cross are expensive
   if (A[0] === B[0]) {
     return point[1] < A[1] && point[1] > B[1];
   }
@@ -409,7 +409,7 @@ function dist(obj1, obj2) {
 
   if (obj1.type == "vec" && obj2.type == "vec") {
     if (equal(obj1, obj2)) return 0;
-    return length(subtract(vec2(obj1), vec2(obj2)));
+    return length(subtract(vec2(obj1[0], obj1[1]), vec2(obj2[0], obj2[1])));
   }
 
   var seg, point;
@@ -525,22 +525,21 @@ function connected(s1, s2) {
 // value will be a PointSegmentBisector.
 //------------------------------------------------------------
 function bisectPointSegment(p, s) {
-  p = vec3(p);
-  s0 = vec3(s[0]);
-  s1 = vec3(s[1]);
+  p = convertToVec3(p);
+  var s0 = s[0];
+  var s1 = s[1];
   if ((p[0] == s0[0] && p[1] == s0[1]) ||
       (p[0] == s1[0] && p[1] == s1[1])) {
     // special case: point is a segment endpoint
     let v0 = subtract(s1, s0);
     // Get both bisecting sides clockwise and counter clockwise
-    let v1 = vec3(v0[1], -v0[0]);
-    let v2 = vec3(-v0[1], v0[0]);
+    let v1 = vec3(v0[1], -v0[0], 0);
+    let v2 = vec3(-v0[1], v0[0], 0);
     return new Line(add(v1, p), add(v2, p));
   }
   if (dot(subtract(p, s0), normalize(subtract(s0, s1))) ==
       length(subtract(p, s0))) {
     // special case: line and point are collinear
-    let v0 = subtract(s1, s0);
     if (length(subtract(p, s0)) < length(subtract(p, s1))) {
       // if p is closer to s0...
       return bisect(p, s0);
@@ -625,8 +624,8 @@ function bisectPoints(p1, p2) {
   }
   // Get both bisecting sides clockwise and counter clockwise
   // Testing multiple of 2 for better intersection detection effect
-  let v1 = vec3(v[1]*2, -v[0]*2);
-  let v2 = vec3(-v[1]*2, v[0]*2);
+  let v1 = vec3(v[1]*2, -v[0]*2, 0);
+  let v2 = vec3(-v[1]*2, v[0]*2, 0);
   return new Line(add(v1, q), add(v2, q));
 }
 
@@ -708,8 +707,8 @@ function getAverage(s1, s2) {
 //------------------------------------------------------------
 function smallAngleBisectSegments(s1, s2, optIntersect) {
   if (parallelTest(s1, s2)) {
-    console.log("Parallel Sites:" + s1.a.fileId + " and " + s2.a.fileId
-     + " - using average");
+    // console.log("Parallel Sites:" + s1.a.fileId + " and " + s2.a.fileId
+    //  + " - using average");
     return {
       line: getAverage(s1, s2),
       optPoint: null

@@ -34,31 +34,31 @@ function vecn(v) {
   return v;
 }
 
-function vec2()
+function vec2(x, y)
 {
-  var result = _argumentsToArray( arguments );
+  // var result = _argumentsToArray( arguments );
 
-  switch ( result.length ) {
-  case 0: result.push( 0.0 );
-  case 1: result.push( 0.0 );
-  }
+  // switch ( result.length ) {
+  // case 0: result.push( 0.0 );
+  // case 1: result.push( 0.0 );
+  // }
 
-  result = result.splice( 0, 2 );
-  return vecn(result);
+  // result = result.splice( 0, 2 );
+  return vecn([x, y]);
 }
 
-function vec3()
+function vec3(x, y, z)
 {
-  var result = _argumentsToArray( arguments );
+  // var result = _argumentsToArray( arguments );
 
-  switch ( result.length ) {
-  case 0: result.push( 0.0 );
-  case 1: result.push( 0.0 );
-  case 2: result.push( 0.0 );
-  }
+  // switch ( result.length ) {
+  // case 0: result.push( 0.0 );
+  // case 1: result.push( 0.0 );
+  // case 2: result.push( 0.0 );
+  // }
 
-  result = result.splice( 0, 3 );
-  return vecn(result);
+  // result = result.splice( 0, 3 );
+  return vecn([x,y,z]);
 }
 
 function vec4()
@@ -125,9 +125,9 @@ function mat3()
     break;
 
   default:
-    m.push( vec3(v) );  v.splice( 0, 3 );
-    m.push( vec3(v) );  v.splice( 0, 3 );
-    m.push( vec3(v) );
+    m.push( vec3(v[0], v[1], v[2]) );  v.splice( 0, 3 );
+    m.push( vec3(v[0], v[1], v[2]) );  v.splice( 0, 3 );
+    m.push( vec3(v[0], v[1], v[2]) );
     break;
   }
 
@@ -193,12 +193,12 @@ function equal( u, v )
       }
     }
   }
-  else if ( u.matrix && !v.matrix || !u.matrix && v.matrix ) {
+  else if ( u.matrix && !v.matrix || !u.matrix && v.matrix ) { // TODO performance Expensive
     return false;
   }
   else {
     for ( var i = 0; i < u.length; ++i ) {
-      if ( u[i] !== v[i] ) { return false; }
+      if ( u[i] !== v[i] ) { return false; } // TODO performance Expensive
     }
   }
 
@@ -765,8 +765,8 @@ function flatten( v )
 //----------------------------------------------------------------------------
 
 var sizeof = {
-  'vec2' : new Float32Array( flatten(vec2()) ).byteLength,
-  'vec3' : new Float32Array( flatten(vec3()) ).byteLength,
+  'vec2' : new Float32Array( flatten(vec2(0, 0)) ).byteLength,
+  'vec3' : new Float32Array( flatten(vec3(0, 0, 0)) ).byteLength,
   'vec4' : new Float32Array( flatten(vec4()) ).byteLength,
   'mat2' : new Float32Array( flatten(mat2()) ).byteLength,
   'mat3' : new Float32Array( flatten(mat3()) ).byteLength,
