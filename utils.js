@@ -96,16 +96,17 @@ function createDataQueue(reorder) {
   }
   var rslt = [];
   var points = [];
-  var segments = [];
   g_polygons.forEach(function(poly) {
     points = points.concat(poly.points);
-    segments = segments.concat(poly.segments);
   });
   var sortedPoints = _.sortBy(points, function(p) { return p[1]; });
 
   _.forEach(sortedPoints, function(p) {
-    // TODO performance
-    var segs = _.remove(segments, function(s) { return equal(s.a, p); });
+    var poly = getPolygonByLabel(p.label);
+    var segs = _.filter(poly.segments, function(s) {
+      return s.a[0] === p[0] && s.a[1] === p[1];
+    });
+
     if (!_.isEmpty(segs)) {
       if (segs.length === 2) {
         if (isRightOfLine(segs[0].a, segs[0].b, segs[1].b)) {

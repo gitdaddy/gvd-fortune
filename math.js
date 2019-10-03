@@ -362,10 +362,24 @@ function filterBySiteAssociation(left, node, right, points) {
 
 // Test if a point falls into the boundary of the sight of the segment line
 function fallsInBoundary(A, B, point) {
-  // TODO performance subtract, add, cross are expensive
   if (A[0] === B[0]) {
     return point[1] < A[1] && point[1] > B[1];
   }
+
+  // TODO test performance subtract, add, cross are expensive
+  // var AB = subtract(B, A);
+  // var BA = subtract(A, B);
+  // var BP = subtract(point, B);
+  // var AP = subtract(point, A);
+
+  // // if the angle between AB and AP > 90 or BA and BP > 90
+  // // then the point is outside of the boundary
+  // var r0 = getAngleBetweenTwoVec(AB, AP)
+  // var r1 = getAngleBetweenTwoVec(BA, BP);
+  // // console.log("Angle 1:" + r0 + " Angle 2:" + r1);
+  // // 1.5708 is 90 degrees in radians
+  // return r0 < 1.5708 && r1 < 1.5708;
+
   var positiveSlope = A[0] > B[0] ? true : false;
   var AB = subtract(B, A);
   var BA = subtract(A, B);
@@ -497,12 +511,12 @@ function intersectsTargetSegments(s1, s2){
 
 // Angle between two vectors theta = arccos(dot(v1,v2)/ |v1|* |v2|)
 // returns the angle in radians
-// function getAngleBetweenTwoVec(v1, v2) {
-//   var d = dot(v1, v2);
-//   var m1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
-//   var m2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
-//   return Math.acos(d/(m1*m2));
-// }
+function getAngleBetweenTwoVec(v1, v2) {
+  var d = dot(v1, v2);
+  var m1 = Math.sqrt(v1[0] * v1[0] + v1[1] * v1[1]);
+  var m2 = Math.sqrt(v2[0] * v2[0] + v2[1] * v2[1]);
+  return Math.acos(d/(m1*m2));
+}
 
 function connected(s1, s2) {
   if (equal(s1.a, s2.a) || equal(s1.a, s2.b)) {
