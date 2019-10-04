@@ -133,13 +133,18 @@ function canClose(left, arcNode, right, equi) {
     // if the V is arcing with the top parabola then both sites must coincide
     if (left.isParabola && right.isParabola && equal(arcNode.site.a, left.site)) {
       // the right site should be on the left of the segment
-      var v1 = subtract(arcNode.site.a, arcNode.site.b);
-      var v2 = subtract(right.site, arcNode.site.b);
+      // var v1 = subtract(arcNode.site.a, arcNode.site.b);
+      // var v2 = subtract(right.site, arcNode.site.b);
+      var v1 = vec3(arcNode.site.a[0] - arcNode.site.b[0], arcNode.site.a[1] - arcNode.site.b[1], 0);
+      var v2 = vec3(right.site[0] - arcNode.site.b[0], right.site[1] - arcNode.site.b[1], 0);
+
       can = cross(v1, v2)[2] > 0;
     } else if (right.isParabola && left.isParabola && equal(arcNode.site.a, right.site)) {
       // the left site should be on the right of the segment
-      var v1 = subtract(arcNode.site.a, arcNode.site.b);
-      var v2 = subtract(left.site, arcNode.site.b);
+      // var v1 = subtract(arcNode.site.a, arcNode.site.b);
+      // var v2 = subtract(left.site, arcNode.site.b);
+      var v1 = vec3(arcNode.site.a[0] - arcNode.site.b[0], arcNode.site.a[1] - arcNode.site.b[1], 0);
+      var v2 = vec3(left.site[0] - arcNode.site.b[0], left.site[1] - arcNode.site.b[1], 0);
       can = cross(v1, v2)[2] < 0;
     }
 
@@ -263,7 +268,7 @@ function createCloseEvent(arcNode, directrix) {
   // can compute up to 6 equi points
   var points = equidistant(left.site, arcNode.site, right.site);
 
-  // Debug TODO
+  // debugging only
   // if (g_addDebug) {
   //   _.forEach(points, function(p) {
   //     g_debugObjs.push(p);
@@ -289,6 +294,7 @@ function createCloseEvent(arcNode, directrix) {
     closePoint = p;
   }
 
+  // TODO needed?
   closePoint = convertToVec3(closePoint);
   if (!radiusTest(left, arcNode, right, closePoint)) return null;
 

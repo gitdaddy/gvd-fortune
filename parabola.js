@@ -253,8 +253,11 @@ function createGeneralParabola(focus, directrix) {
   var b = directrix[1];
   // Make sure a and b are ordered such that the focus is located
   // on the left of b-a.
-  var v = normalize(subtract(b, a));
-  var vxf = cross(v, subtract(focus, a));
+  var v0 = vec3(b[0] - a[0], b[1] - a[1], 0);
+  var v1 = vec3(focus[0] - a[0], focus[1] - a[1], 0);
+
+  var v = normalize(v0);
+  var vxf = cross(v, v1);
   if (vxf[2] < 0) {
     v = negate(v);
     [a, b] = [b, a];

@@ -193,12 +193,12 @@ function equal( u, v )
       }
     }
   }
-  else if ( u.matrix && !v.matrix || !u.matrix && v.matrix ) { // TODO performance Expensive
+  else if ( u.matrix && !v.matrix || !u.matrix && v.matrix ) {
     return false;
   }
   else {
     for ( var i = 0; i < u.length; ++i ) {
-      if ( u[i] !== v[i] ) { return false; } // TODO performance Expensive
+      if ( u[i] !== v[i] ) { return false; }
     }
   }
 

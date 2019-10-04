@@ -150,8 +150,10 @@ function setRelationTop(cur, next) {
     next.seg.a.relation = NODE_RELATION.TOP;
   } else {
     // either a left or right bend
-    var v0 = subtract(cur.b, cur.a);
-    var v1 = subtract(cur.b, next.seg.a);
+    // var v0 = subtract(cur.b, cur.a);
+    // var v1 = subtract(cur.b, next.seg.a);
+    var v0 = vec3(cur.b[0] - cur.a[0], cur.b[1] - cur.a[1], 0);
+    var v1 = vec3(cur.b[0] - next.seg.a[0], cur.b[1] - next.seg.a[1], 0);
     if (cross(v0, v1)[2] < 0) {
       // right
       cur.a.relation = NODE_RELATION.CHILD_LEFT_HULL;
@@ -171,8 +173,10 @@ function setRelationBottom(cur, next) {
     next.seg.b.relation = NODE_RELATION.CLOSING;
   } else {
     // either a left or right bend
-    var v0 = subtract(cur.b, cur.a);
-    var v1 = subtract(cur.b, next.seg.b);
+    // var v0 = subtract(cur.b, cur.a);
+    // var v1 = subtract(cur.b, next.seg.b);
+    var v0 = vec3(cur.b[0] - cur.a[0], cur.b[1] - cur.a[1], 0);
+    var v1 = vec3(cur.b[0] - next.seg.b[0], cur.b[1] - next.seg.b[1], 0);
     if (cross(v0, v1)[2] < 0) {
       // right
       cur.b.relation = NODE_RELATION.CHILD_LEFT_HULL;
@@ -276,8 +280,10 @@ function isColinear(p1, p2, p3) {
   p1 = new vec3(p1.x, p1.y, 0);
   p2 = new vec3(p2.x, p2.y, 0);
   p3 = new vec3(p3.x, p3.y, 0);
-  var v1 = subtract(p2, p1);
-  var v2 = subtract(p3, p1);
+  // var v1 = subtract(p2, p1);
+  // var v2 = subtract(p3, p1);
+  var v1 = vec3(p2[0] - p1[0], p2[1] - p1[1], 0);
+  var v2 = vec3(p3[0] - p1[0], p3[1] - p1[1], 0);
   return Math.abs(cross(v1, v2)[2]) === 0;
 }
 

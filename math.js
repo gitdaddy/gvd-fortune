@@ -43,12 +43,14 @@ function convertToVec3(p) {
 
 function getPointsRightOfLine(a, b, points) {
   return _.filter(points, function (p) {
+    // TODO convert needed?
     return isRightOfLine(a, b, convertToVec3(p));
   });
 }
 
 function getPointsLeftOfLine(a, b, points) {
   return _.filter(points, function (p) {
+    // TODO convert needed?
     return !isRightOfLine(a, b, convertToVec3(p));
   });
 }
@@ -58,8 +60,10 @@ function dividesRightOfLine(a1, b1, a2, b2) {
 }
 
 function isRightOfLine(upper, lower, p) {
-  var v1 = subtract(upper, lower);
-  var v2 = subtract(p, lower);
+  // var v1 = subtract(upper, lower);
+  // var v2 = subtract(p, lower);
+  var v1 = vec3(upper[0] - lower[0], upper[1] - lower[1], 0);
+  var v2 = vec3(p[0] - lower[0], p[1] - lower[1], 0);
   var z = cross(v1, v2)[2];
   // if (z === 0.0) console.log("Co-linear found when using isRightOfLine()");
   return z < 0;
@@ -75,7 +79,9 @@ Line = function(p1, p2) {
   // An arbitrary point on the line
   this.p = p1;
   // The direction of the line, normalized
-  this.v = normalize(subtract(p2, p1));
+  var v = vec2(p2[0] - p1[0], p2[1] - p1[1]);
+  this.v = normalize(v);
+  // this.v = normalize(subtract(p2, p1));
 }
 
 //------------------------------------------------------------
@@ -182,14 +188,15 @@ function intersectLines(p1, p2, p3, p4) {
 }
 
 function intersectLeftRightLines(leftLines, rightLines) {
-  if (g_addDebug) {
-    _.forEach(leftLines, function(l) {
-      g_debugObjs.push(l);
-    });
-    _.forEach(rightLines, function(l) {
-      g_debugObjs.push(l);
-    });
-  }
+  // debugging only
+  // if (g_addDebug) {
+  //   _.forEach(leftLines, function(l) {
+  //     g_debugObjs.push(l);
+  //   });
+  //   _.forEach(rightLines, function(l) {
+  //     g_debugObjs.push(l);
+  //   });
+  // }
   var rslts = [];
   _.forEach(leftLines, function(l1) {
     _.forEach(rightLines, function(l2) {
@@ -281,6 +288,7 @@ function ppIntersect(h1, k1, p1, h2, k2, p2) {
 // ray/parabola combination.
 //------------------------------------------------------------
 PointSegmentBisector = function(p, s) {
+  // TODO Performance convert needed?
   p = convertToVec3(p);
   this.para = createGeneralParabola(p, s);
 }
@@ -311,12 +319,13 @@ function filterVisiblePoints(site, points) {
   // WATCH VALUE
   // Some equi points can have a certain degree of error
   // account for that error using a tolerance vector
-  var tolerance = 1.000001;
+  var tolerance = 1.00001;
   // new updated vector = (a-b) * scale + a
+  // TODO performance
   var A = add(mult(subtract(site.a, site.b), tolerance), site.b);
   var B = add(mult(subtract(site.b, site.a), tolerance), site.a);
   var rslt = _.filter(points, function (p) {
-    p = convertToVec3(p);
+    p = convertToVec3(p); // TODO needed?
     return fallsInBoundary(A, B, p);
   });
   return rslt;
@@ -366,47 +375,17 @@ function fallsInBoundary(A, B, point) {
     return point[1] < A[1] && point[1] > B[1];
   }
 
-  // TODO test performance subtract, add, cross are expensive
-  // var AB = subtract(B, A);
-  // var BA = subtract(A, B);
-  // var BP = subtract(point, B);
-  // var AP = subtract(point, A);
+  var AB = vec3(B[0] - A[0], B[1] - A[1], 0);
+  var BA = vec3(A[0] - B[0], A[1] - B[1], 0);
+  var BP = vec3(point[0] - B[0], point[1] - B[1], 0);
+  var AP = vec3(point[0] - A[0], point[1] - A[1], 0);
 
-  // // if the angle between AB and AP > 90 or BA and BP > 90
-  // // then the point is outside of the boundary
-  // var r0 = getAngleBetweenTwoVec(AB, AP)
-  // var r1 = getAngleBetweenTwoVec(BA, BP);
-  // // console.log("Angle 1:" + r0 + " Angle 2:" + r1);
-  // // 1.5708 is 90 degrees in radians
-  // return r0 < 1.5708 && r1 < 1.5708;
-
-  var positiveSlope = A[0] > B[0] ? true : false;
-  var AB = subtract(B, A);
-  var BA = subtract(A, B);
-  var v1Clockwise = new vec3(AB[1], -AB[0], 0); // 90 degrees perpendicular
-  var v1CounterClockwise = new vec3(-AB[1], AB[0], 0);
-  var v2Clockwise = new vec3(BA[1], -BA[0], 0);
-  var v2CounterClockwise = new vec3(-BA[1], BA[0], 0);
-  // define the boundary endpoints - add end point values
-  var p1a = add(v1Clockwise, A);
-  var p2a = add(v1CounterClockwise, A);
-  var lineA = _.sortBy([p1a, p2a], function (p) { return p[1]; });
-  var va = subtract(lineA[1], lineA[0]); // vector from lower to upper
-  var vap = subtract(point, lineA[0]);
-  var z1 = cross(va, vap)[2];
-
-  var p1b = add(v2Clockwise, B);
-  var p2b = add(v2CounterClockwise, B);
-  var lineB = _.sortBy([p1b, p2b], function (p) { return p[1]; });
-  var vb = subtract(lineB[1], lineB[0]); // vector from lower to upper
-  var vbp = subtract(point, lineB[0]);
-  var z2 = cross(vb, vbp)[2];
-  // if the point is in segment bounds it must be to the
-  if (positiveSlope) {
-    return z1 > 0 && z2 < 0;
-  } else {
-    return z1 < 0 && z2 > 0;
-  }
+  // if the angle between AB and AP > 90 or BA and BP > 90
+  // then the point is outside of the boundary
+  var r0 = getAngleBetweenTwoVec(AB, AP)
+  var r1 = getAngleBetweenTwoVec(BA, BP);
+  // 1.5708 is 90 degrees in radians
+  return r0 < 1.5708 && r1 < 1.5708;
 }
 
 //------------------------------------------------------------
@@ -422,8 +401,11 @@ function dist(obj1, obj2) {
   if (obj1 == null || obj2 == null) return null;
 
   if (obj1.type == "vec" && obj2.type == "vec") {
-    if (equal(obj1, obj2)) return 0;
-    return length(subtract(vec2(obj1[0], obj1[1]), vec2(obj2[0], obj2[1])));
+    // if (equal(obj1, obj2)) return 0;
+    if (obj1[0] === obj2[0] && obj1[1] === obj2[1]) return 0;
+    var v = vec2(obj1[0]- obj2[0], obj1[1] - obj2[1]);
+    return length(v);
+    // return length(subtract(vec2(obj1[0], obj1[1]), vec2(obj2[0], obj2[1])));
   }
 
   var seg, point;
@@ -464,8 +446,10 @@ function dist(obj1, obj2) {
            *origin
 ------------------------------------------------------------*/
 function dividesPoints(v, origin, p1, p2) {
-  var v1 = subtract(p1, origin);
-  var v2 = subtract(p2, origin);
+  // var v1 = subtract(p1, origin);
+  // var v2 = subtract(p2, origin);
+  var v1 = vec3(p1[0] - origin[0], p1[1] - origin[1], 0);
+  var v2 = vec3(p2[0] - origin[0], p2[1] - origin[1], 0);
   var c0 = cross(v, v1);
   var c1 = cross(v, v2);
  //  console.log("Node id:" + arcNode.id + " c0.z:" + c0.z + "  -c1.z:" + c1.z);
@@ -539,13 +523,15 @@ function connected(s1, s2) {
 // value will be a PointSegmentBisector.
 //------------------------------------------------------------
 function bisectPointSegment(p, s) {
-  p = convertToVec3(p);
+  p = convertToVec3(p); // TODO needed?
   var s0 = s[0];
   var s1 = s[1];
   if ((p[0] == s0[0] && p[1] == s0[1]) ||
       (p[0] == s1[0] && p[1] == s1[1])) {
     // special case: point is a segment endpoint
-    let v0 = subtract(s1, s0);
+    // let v0 = subtract(s1, s0);
+    var v0 = vec3(s1[0] - s0[0], s1[1] - s0[1], 0);
+
     // Get both bisecting sides clockwise and counter clockwise
     let v1 = vec3(v0[1], -v0[0], 0);
     let v2 = vec3(-v0[1], v0[0], 0);
@@ -627,11 +613,13 @@ function bisectPoints(p1, p2) {
     // get the bisector between the two segments
     var data = smallAngleBisectSegments(smallestAnglePair.s1, smallestAnglePair.s2, p1);
     // debugging only
-    if (g_addDebug) g_debugObjs.push(data.line);
+    // if (g_addDebug) g_debugObjs.push(data.line);
     return data.line;
   }
 
-  var v = subtract(p2, p1);
+  // var v = subtract(p2, p1);
+  var v = vec3(p2[0] - p1[0], p2[1] - p1[1], 0);
+
   var q = add(p1, mult(v, 0.5));
   if (v[1] > 0) {
     v = negate(v);
@@ -649,7 +637,7 @@ function bisectPoints(p1, p2) {
 // NOTE: this bisects LINES not SEGMENTS.
 //------------------------------------------------------------
 function bisectSegments4(s1, s2, s3) {
-  var l = [];
+var l = [];
   var r = [];
   l.push(bisectSegments2(s1, s2));
   r.push(bisectSegments2(s2, s3));
@@ -679,7 +667,9 @@ function bisectSegments2(s1, s2) {
   // the line for the large angle is perpendicular to the
   // small angle bisector
   var sorted = _.sortBy([s.p1, s.p2], function (p) { return p[1]; });
-  var AB = subtract(sorted[0], sorted[1]);
+  // var AB = subtract(sorted[0], sorted[1]);
+  var AB = vec3(sorted[0][0] - sorted[1][0], sorted[0][1] - sorted[1][1], 0);
+
   var v1Clockwise = new vec3(AB[1], -AB[0], 0); // 90 degrees perpendicular
   var v1CounterClockwise = new vec3(-AB[1], AB[0], 0);
   var intersect = bisectData.optPoint ? bisectData.optPoint : intersectLines(s1.a, s1.b, s2.a, s2.b);
@@ -699,6 +689,7 @@ function parallelTest(s1, s2) {
   // used to round the floating point values
   // WATCH VALUE
   var precision = 10;
+  // TODO performance
   var x1 = l1.v[0].toFixed(precision);
   var y1 = l1.v[1].toFixed(precision);
   var x2 = l2.v[0].toFixed(precision);
@@ -837,11 +828,13 @@ function equidistant(left, arc, right) {
         b2 = bisect(points[0], segments[0]);
       } else {
         b1 = bisect(segments[0], points[0]);
-        if (g_addDebug) g_debugObjs.push(b1);
+        // debugging only
+        // if (g_addDebug) g_debugObjs.push(b1);
         var blines = bisectSegments2(segments[0], segments[1]);
         var ii = [];
         _.forEach(blines, function(line) {
-          if (g_addDebug) g_debugObjs.push(line);
+          // debugging only
+          // if (g_addDebug) g_debugObjs.push(line);
           var i = intersect(line, b1);
           ii = _.concat(ii, i);
         });

@@ -28,6 +28,7 @@ var Beachline = function (dcel) {
 
 function createBeachlineSegment(site, directrix, id) {
   if (isSegment(site)) {
+    // TODO performance
     return new V(site, directrix, id);
   }
   return createParabola(site, directrix, id);

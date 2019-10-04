@@ -135,9 +135,13 @@ V.prototype.intersect = function(obj) {
 
     var optConnection = connected(s1, s2);
     if (optConnection) {
-      var y0_y1 = subtract(this.y1, this.y0);
-      var y0_Oy0 = subtract(obj.y0, this.y0);
-      var y0_Oy1 = subtract(obj.y1, this.y0);
+      // var y0_y1 = subtract(this.y1, this.y0);
+      // var y0_Oy0 = subtract(obj.y0, this.y0);
+      // var y0_Oy1 = subtract(obj.y1, this.y0);
+      var y0_y1 = vec3(this.y1[0] - this.y0[0], this.y1[1] - this.y0[1], 0);
+      var y0_Oy0 = vec3(obj.y0[0] - this.y0[0], obj.y0[1] - this.y0[1], 0);
+      var y0_Oy1 = vec3(obj.y1[0] - this.y0[0], obj.y1[1] - this.y0[1], 0);
+
       // z area between this and obj
       var zArea = cross(y0_y1, y0_Oy0)[2] + cross(y0_y1, y0_Oy1)[2];
       if (zArea == 0) {
@@ -148,9 +152,10 @@ V.prototype.intersect = function(obj) {
       // choose this v left or right based on zArea
       var bisector = smallAngleBisectSegments(s1, s2, optConnection);
 
-      if (g_addDebug) {
-        g_debugObjs.push(bisector.line);
-      }
+      // debugging only
+      // if (g_addDebug) {
+      //   g_debugObjs.push(bisector.line);
+      // }
 
       // often P is too close to p2 increment the height by a 0.01 to get a better width for each vector
       if (zArea < 0) {
@@ -164,14 +169,16 @@ V.prototype.intersect = function(obj) {
       }
     } else {
       var lines = getLines(this, obj);
-      if (g_addDebug) {
-        _.forEach(lines.left, function(l) {
-          g_debugObjs.push(l);
-        });
-        _.forEach(lines.right, function(l) {
-          g_debugObjs.push(l);
-        });
-      }
+
+      // debugging only
+      // if (g_addDebug) {
+      //   _.forEach(lines.left, function(l) {
+      //     g_debugObjs.push(l);
+      //   });
+      //   _.forEach(lines.right, function(l) {
+      //     g_debugObjs.push(l);
+      //   });
+      // }
       var intersects = [];
       _.forEach(lines.left, function(l) {
         _.forEach(lines.right, function(r) {
@@ -181,7 +188,7 @@ V.prototype.intersect = function(obj) {
 
       var validPoints = filterOutPointsLowerThan(intersects, this.p[1]);
       if (validPoints.length == 0) {
-        console.error("invalid intersection between id:" + this.id + " and arc id:" + obj.id);
+        // console.log("no intersection between id:" + this.id + " and arc id:" + obj.id);
         return [];
       }
       return _.sortBy(validPoints, function (p) { return p[0]; });
