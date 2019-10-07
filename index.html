@@ -39,12 +39,19 @@
   <!-- test inner panel -->
   <div class="sliding-panel">
     <div class="text-left panel-header">
-      Dataset: <select id="g_dataset" onchange="datasetChange(this.value)"></select>
-      <label class="title-label" for="fullscreenToggle">Toggle Fullscreen</label>
-      <input class="title-label" type="checkbox" id="fullscreenToggle" />
-      d=<label class="title-label" id="sweeplineLabel"></label>
-      X:<label class="title-label" id="mouseX"></label>
-      Y:<label class="title-label" id="mouseY"></label>
+      <div class="title-group">
+        Dataset: <select id="g_dataset" onchange="datasetChange(this.value)"></select>
+      </div>
+      <div class="title-group">
+        <button onclick="generateRandomSites()"> Generate Random </button>
+      </div>
+      <div class="title-group">
+        <label for="fullscreenToggle">Toggle Fullscreen</label>
+        <input type="checkbox" id="fullscreenToggle" />
+      </div>
+      <div class="title-group">
+        d=<label id="sweeplineLabel"></label>
+      </div>
     </div>
     <div class="row">
       <div class="column-debug">

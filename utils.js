@@ -159,10 +159,6 @@ function onSiteDrag() {
 }
 
 /// Code For Debugging the GVD
-function mouseclick(e) {
-  document.getElementById('mouseX').innerHTML = win2x(e.offsetX);
-  document.getElementById('mouseY').innerHTML = win2y(e.offsetY);
-}
 
 function toggleFS() {
   g_fullScreen = !g_fullScreen;

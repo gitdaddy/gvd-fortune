@@ -15,7 +15,13 @@ let g_datasets = {
 let g_polygons = [];
 let g_queue = {};
 
-let g_fileDatasets = ["dataset1", "dataset2", "dataset3", "dataset4", "dataset5", "dataset6"];
+let g_fileDatasets = [
+  {key:"dataset1", label:"dataset1"},
+  {key:"dataset2", label:"dataset2 - 100 Random", num:100},
+  {key:"dataset3", label:"dataset3 - 200 Random", num:200},
+  {key:"dataset4", label:"dataset4 - 500 Random", num:500},
+  {key:"dataset5", label:"dataset5 - 1000 Random", num:1000}
+ ];
 
 var closeEventPoints = [];
 var dcel;
@@ -34,6 +40,27 @@ let showEvents = false;
 let showDebugObjs = false;
 let g_fullScreen = false;
 let g_hide_iso_lines = false;
+
+function generateRandomSites(){
+  // var selection = document.getElementById("g_dataset").value;
+  // var value = 0;
+  // _.forEach(g_fileDatasets, function (f) {
+  //   if (f.label === selection) {
+  //     value = f.num;
+  //   }
+  // });
+  // var query = '/randomize/?value=' + value;
+
+  var query = '/randomize/';
+
+  $.get(query);
+  // .then(function (json) {
+  //   var polygons = parseInputJSON(json);
+  //   g_datasets[found.key] = polygons;
+  //   g_polygons = polygons;
+  //   processNewDataset();
+  // });
+}
 
 function updateDebugVars() {
   var p = document.getElementsByName("xIncVal")[0].valueAsNumber;
@@ -132,21 +159,19 @@ function init() {
   drawInit();
 
   document.onkeydown = keydown;
-  document.getElementById("gvdsvg").onclick = mouseclick;
   document.getElementById("fullscreenToggle").onclick = toggleFS;
   document.getElementById("sweeplineLabel").innerHTML = g_sweepline.toFixed(10);
 
-  createDatasets();
-  for (let key in g_datasets) {
+  _.forEach(g_fileDatasets, function (p) {
     var option = document.createElement("option");
-    option.text = key;
+    option.text = p.label;
     document.getElementById("g_dataset").add(option);
-  }
+  });
 
   // if (localStorage.g_dataset) {
   //   document.getElementById("g_dataset").value = localStorage.g_dataset;
   // }
-  document.getElementById("g_dataset").value = "dataset7";
+  document.getElementById("g_dataset").value = "dataset1";
   datasetChange(document.getElementById("g_dataset").value);
 }
 
@@ -154,22 +179,22 @@ function datasetChange(value) {
   console.log(value);
   localStorage.g_dataset = value;
 
-  if (_.find(g_fileDatasets, function(f) { return f === value; })) {
-    if (g_datasets[value].length == 0) {
-      var query = '/data/?value=' + value;
+  var found = _.find(g_fileDatasets, function(f) { return f.label === value; });
+  if (found) {
+    if (g_datasets[found.key].length == 0) {
+      var query = '/data/?value=' + found.key;
       $.get(query).then(function (json) {
         var polygons = parseInputJSON(json);
-        g_datasets[value] = polygons;
+        g_datasets[found.key] = polygons;
         g_polygons = polygons;
         processNewDataset();
       });
     } else {
-      g_polygons = g_datasets[value]; // load the cached data
+      g_polygons = g_datasets[found.key]; // load the cached data
       processNewDataset();
     }
   } else {
-    g_polygons = g_datasets[value];
-    processNewDataset();
+    console.error("Unable to find dataset...");
   }
 }
 
@@ -187,7 +212,6 @@ function fortune(reorder) {
     var event = queue.pop();
     if (event.isCloseEvent) {
       if (event.live && event.arcNode.closeEvent.live) {
-        var t0 = performance.now();
 
         var prevEdge = event.arcNode.prevEdge();
         var nextEdge = event.arcNode.nextEdge();
