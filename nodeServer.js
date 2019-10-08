@@ -11,6 +11,16 @@ function sameSign(a,b) {
   return (a * b) > 0;
 }
 
+function crossZ(v1, v2) {
+  return (v1.x*v2.y) - (v1.y*v1.x);
+}
+
+function isColinear(p1, p2, p3) {
+  var v1 = {x:p2.x - p1.x, y:p2.y - p1.y};
+  var v2 = {x:p3.x - p1.x, y:p3.y - p1.y};
+  return crossZ(v1, v2) === 0;
+}
+
 function overlap(x1, y1, x2, y2, x3, y3, x4, y4){
 	var a1, a2, b1, b2, c1, c2;
 	var r1, r2 , r3, r4;
@@ -24,7 +34,14 @@ function overlap(x1, y1, x2, y2, x3, y3, x4, y4){
 
 	// r3 and r4.
 	r3 = ((a1 * x3) + (b1 * y3) + c1);
-	r4 = ((a1 * x4) + (b1 * y4) + c1);
+  r4 = ((a1 * x4) + (b1 * y4) + c1);
+
+  // check co-linear isColinear(p1,p2,p3)
+  var np0 = {x: x1, y: y1};
+  var np1 = {x: x2, y: y2};
+  var lp0 = {x: x3, y: y3};
+  var lp1 = {x: x4, y: y4};
+  if (isColinear(lp0, lp1, np0) || isColinear(lp0, lp1, np1)) return 0;
 
 	// Check signs of r3 and r4. If both point 3 and point 4 lie on
 	// same side of line 1, the line segments do not intersect.
@@ -59,19 +76,79 @@ function overlap(x1, y1, x2, y2, x3, y3, x4, y4){
 	return 1; //lines intersect, return true
 }
 
+function overlapsAny(x0, y0, x1, y1, lines) {
+  var rslt = false;
+  _.forEach(lines, function (l) {
+    if (overlap(x0, y0, x1, y1, l.x0, l.y0, l.x1, l.y1)){
+      rslt = true;
+      return;
+    }
+  });
+  return rslt;
+}
+
 function writeRandom(size, datasetFile) {
   // all bounds are within -1, 1
-  var sibDir = "/data/random_" + size;
+  var sibDir = "./data/random_" + size;
 
   var path = './data/' + datasetFile + '.txt';
 
   // add a line that doesn't intersect any previous line
-  // TODO
-  // var lines = [];
-  // for (var i = 0; i < size; i++) {
+  var lines = [];
+  var i = 0;
+  var isOverLapping = false;
+  while (i < size || isOverLapping) {
+    var x0 = Math.random();
+    if (Math.random() > 0.5) x0 = -x0;
+    var x1 = Math.random();
+    if (Math.random() > 0.5) x1 = -x1;
+    var y0 = Math.random();
+    if (Math.random() > 0.5) y0 = -y0;
+    var y1 = Math.random();
+    if (Math.random() > 0.5) y1 = -y1;
+    if (overlapsAny(x0, y0, x1, y1, lines)) {
+      console.log("overlapped i:" + i)
+      isOverLapping = true;
+    } else {
+      isOverLapping = false;
+      lines.push({x0: x0, y0: y0, x1: x1, y1: y1});
+      i++;
+    }
+  }
 
-  // }
+  // console.log(lines);
+  // TODO write all lines to disk
+  var count = 1;
+  _.forEach(lines, function (l) {
+    l.fileId = "line" + count++ + ".txt";
+    // lines are in the format of (p1.p2..p1) start .. point ... start
+    var data = `${l.x0} ${l.y0}\n${l.x1} ${l.y1}\n${l.x0} ${l.y0}`;
+    var newPath = sibDir + '/' + l.fileId;
+    fs.writeFile(newPath, data, function (err) {
+      if (err) throw err;
+    })
+  });
 
+  // write the new file references in dataset#.text
+  fs.open(path, 'w', function(err, fd) {
+    if (err) {
+      throw 'could not open file: ' + err;
+    }
+    var data = "";
+    _.forEach(lines, function(l, idx) {
+      if (idx !== 0) data += "\n";
+      data +=  sibDir + '/' + l.fileId;
+    });
+    var buffer = new Buffer(data);
+
+    // write the contents of the buffer, from position 0 to the end, to the file descriptor returned in opening our file
+    fs.write(fd, buffer, 0, buffer.length, null, function(err) {
+        if (err) throw 'error writing file: ' + err;
+        fs.close(fd, function() {
+            console.log('wrote the file successfully');
+        });
+    });
+  });
 }
 
 function getDatasetJson(set) {
@@ -125,9 +202,9 @@ router.get('/data', function(req, res) {
 
 router.get('/randomize', function(req, res) {
   // Randomize the dataset data
-  writeRandom(100, "dataset2");
-  writeRandom(200, "dataset3");
-  writeRandom(500, "dataset4");
+  // writeRandom(100, "dataset2");
+  // writeRandom(200, "dataset3");
+  // writeRandom(500, "dataset4");
   writeRandom(1000, "dataset5");
 });
 

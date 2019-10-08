@@ -20,7 +20,8 @@ let g_fileDatasets = [
   {key:"dataset2", label:"dataset2 - 100 Random", num:100},
   {key:"dataset3", label:"dataset3 - 200 Random", num:200},
   {key:"dataset4", label:"dataset4 - 500 Random", num:500},
-  {key:"dataset5", label:"dataset5 - 1000 Random", num:1000}
+  {key:"dataset5", label:"dataset5 - 1000 Random", num:1000},
+  {key:"dataset6", label:"dataset6 - Testing"}
  ];
 
 var closeEventPoints = [];
@@ -42,24 +43,8 @@ let g_fullScreen = false;
 let g_hide_iso_lines = false;
 
 function generateRandomSites(){
-  // var selection = document.getElementById("g_dataset").value;
-  // var value = 0;
-  // _.forEach(g_fileDatasets, function (f) {
-  //   if (f.label === selection) {
-  //     value = f.num;
-  //   }
-  // });
-  // var query = '/randomize/?value=' + value;
-
   var query = '/randomize/';
-
   $.get(query);
-  // .then(function (json) {
-  //   var polygons = parseInputJSON(json);
-  //   g_datasets[found.key] = polygons;
-  //   g_polygons = polygons;
-  //   processNewDataset();
-  // });
 }
 
 function updateDebugVars() {

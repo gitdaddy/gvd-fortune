@@ -93,7 +93,9 @@ function removeCAS(points) {
 }
 
 function sanitizeData(orderedPoints) {
-  orderedPoints = removeCAS(orderedPoints);
+  if (orderedPoints.length > 3) {
+    orderedPoints = removeCAS(orderedPoints);
+  }
 
   var match = getMatch(orderedPoints);
   while(match) {

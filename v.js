@@ -146,7 +146,7 @@ V.prototype.intersect = function(obj) {
       var zArea = cross(y0_y1, y0_Oy0)[2] + cross(y0_y1, y0_Oy1)[2];
       if (zArea == 0) {
         // collinear
-        console.log("collinear v-v arc!");
+        // console.log("collinear v-v arc!");
         return [this.p];
       }
       // choose this v left or right based on zArea

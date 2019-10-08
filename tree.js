@@ -55,11 +55,11 @@ function highlight(d) {
     // console.log(edge);
     let msg = 'intersections: ';
     edge.intersections.forEach(function(i) {
-      msg = msg + ` (${i.x.toFixed(1)}, ${i.y.toFixed(1)})`;
+      msg = msg + ` (${i[0].toFixed(1)}, ${i[1].toFixed(1)})`;
     });
     msg = msg + '<br>selected intersection: ';
     let i = edge.selectedIntersection;
-    msg = msg + ` (${i.x.toFixed(1)}, ${i.y.toFixed(1)})`;
+    msg = msg + ` (${i[0].toFixed(1)}, ${i[1].toFixed(1)})`;
     msg = msg + ` id=${edge.id}`;
     setDebug(msg);
   }
