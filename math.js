@@ -685,21 +685,25 @@ function bisectSegments2(s1, s2) {
   return [s, l];
 }
 
+function fastFloorEqual(f1, f2) {
+  if (!f1.type || f1.type !== "vec") throw "Invalid type";
+  if (!f2.type || f2.type !== "vec") throw "Invalid type";
+  var x1 = Math.round(f1[0] * 1e10);
+  var x2 = Math.round(f2[0] * 1e10);
+  var y1 = Math.round(f1[1] * 1e10);
+  var y2 = Math.round(f2[1] * 1e10);
+  return x1 === x2 && y1 === y2;
+}
+
 function parallelTest(s1, s2) {
   var l1 = new Line(s1.a, s1.b);
   var l2 = new Line(s2.a, s2.b);
+
   // each line has a normalized vector
   // if the vector of each segment is equal then they lines are parallel
   // To reduce floating point error we introduce a precision value
   // used to round the floating point values
-  // WATCH VALUE
-  var precision = 10;
-  // TODO performance
-  var x1 = l1.v[0].toFixed(precision);
-  var y1 = l1.v[1].toFixed(precision);
-  var x2 = l2.v[0].toFixed(precision);
-  var y2 = l2.v[1].toFixed(precision);
-  return x1 === x2 && y1 === y2;
+  return fastFloorEqual(l1.v, l2.v);
 }
 
 function getAverage(s1, s2) {
