@@ -288,8 +288,6 @@ function ppIntersect(h1, k1, p1, h2, k2, p2) {
 // ray/parabola combination.
 //------------------------------------------------------------
 PointSegmentBisector = function(p, s) {
-  // TODO Performance convert needed?
-  p = convertToVec3(p);
   this.para = createGeneralParabola(p, s);
 }
 
@@ -321,11 +319,18 @@ function filterVisiblePoints(site, points) {
   // account for that error using a tolerance vector
   var tolerance = 1.00001;
   // new updated vector = (a-b) * scale + a
-  // TODO performance
-  var A = add(mult(subtract(site.a, site.b), tolerance), site.b);
-  var B = add(mult(subtract(site.b, site.a), tolerance), site.a);
+  // var A = add(mult(subtract(site.a, site.b), tolerance), site.b);
+  // var B = add(mult(subtract(site.b, site.a), tolerance), site.a);
+  var A = vec3(
+    ((site.a[0]-site.b[0]) * tolerance) + site.b[0],
+    ((site.a[1]-site.b[1]) * tolerance) + site.b[1],
+    0);
+
+  var B = vec3(
+    ((site.b[0]-site.a[0]) * tolerance) + site.a[0],
+    ((site.b[1]-site.a[1]) * tolerance) + site.a[1],
+    0);
   var rslt = _.filter(points, function (p) {
-    p = convertToVec3(p); // TODO needed?
     return fallsInBoundary(A, B, p);
   });
   return rslt;

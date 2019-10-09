@@ -7,7 +7,7 @@ var _ = require('lodash');
 const hostname = 'localhost';
 const port = 8080;
 
-function sameSign(a,b) {
+/* function sameSign(a,b) {
   return (a * b) > 0;
 }
 
@@ -98,14 +98,16 @@ function writeRandom(size, datasetFile) {
   var i = 0;
   var isOverLapping = false;
   while (i < size || isOverLapping) {
+    var negativeY = Math.random() > 0.5;
+    var negativeX = Math.random() > 0.5;
     var x0 = Math.random();
-    if (Math.random() > 0.5) x0 = -x0;
+    if (negativeX) x0 = -x0;
     var x1 = Math.random();
-    if (Math.random() > 0.5) x1 = -x1;
+    if (negativeX) x1 = -x1;
     var y0 = Math.random();
-    if (Math.random() > 0.5) y0 = -y0;
+    if (negativeY) y0 = -y0;
     var y1 = Math.random();
-    if (Math.random() > 0.5) y1 = -y1;
+    if (negativeY) y1 = -y1;
     if (overlapsAny(x0, y0, x1, y1, lines)) {
       console.log("overlapped i:" + i)
       isOverLapping = true;
@@ -116,8 +118,6 @@ function writeRandom(size, datasetFile) {
     }
   }
 
-  // console.log(lines);
-  // TODO write all lines to disk
   var count = 1;
   _.forEach(lines, function (l) {
     l.fileId = "line" + count++ + ".txt";
@@ -149,7 +149,7 @@ function writeRandom(size, datasetFile) {
         });
     });
   });
-}
+} */
 
 function getDatasetJson(set) {
   // read in the files

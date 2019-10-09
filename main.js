@@ -35,17 +35,17 @@ let g_debugIdMiddle = undefined;
 let g_debugIdRight = undefined;
 
 let g_sInc = 0.01;
-let g_xInc = 0.001;
+let g_xInc = 0.01;
 
 let showEvents = false;
 let showDebugObjs = false;
 let g_fullScreen = false;
 let g_hide_iso_lines = false;
 
-function generateRandomSites(){
-  var query = '/randomize/';
-  $.get(query);
-}
+// function generateRandomSites(){
+//   var query = '/randomize/';
+//   $.get(query);
+// }
 
 function updateDebugVars() {
   var p = document.getElementsByName("xIncVal")[0].valueAsNumber;
