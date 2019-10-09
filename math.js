@@ -338,9 +338,9 @@ function filterVisiblePoints(site, points) {
 
 function sharedSegment(s1, s2) {
   if (s1.type === "vec" && s2.type === "segment") {
-    return equal(s1, s2.a) || equal(s1, s2.b) ? s2 : null;
+    return fastFloorEqual(s1, s2.a) || fastFloorEqual(s1, s2.b) ? s2 : null;
   } else if (s2.type === "vec" && s1.type === "segment") {
-    return equal(s1.a, s2) || equal(s1.b, s2) ? s1 : null;
+    return fastFloorEqual(s1.a, s2) || fastFloorEqual(s1.b, s2) ? s1 : null;
   }
   return null;
 }
@@ -357,19 +357,19 @@ function filterBySiteAssociation(left, node, right, points) {
 
   if (sLeft) {
     if (s2.type === "segment") {
-      return equal(s2.b, s1) ? getPointsRightOfLine(sLeft.a, sLeft.b, points)
+      return fastFloorEqual(s2.b, s1) ? getPointsRightOfLine(sLeft.a, sLeft.b, points)
         : getPointsLeftOfLine(sLeft.a, sLeft.b, points);
     } else {
-      return equal(s2, s1.a) ? getPointsRightOfLine(sLeft.a, sLeft.b, points)
+      return fastFloorEqual(s2, s1.a) ? getPointsRightOfLine(sLeft.a, sLeft.b, points)
       : getPointsLeftOfLine(sLeft.a, sLeft.b, points);
     }
   }
   // sRight otherwise
   if (s2.type === "segment") {
-    return equal(s2.b, s3) ? getPointsLeftOfLine(sRight.a, sRight.b, points)
+    return fastFloorEqual(s2.b, s3) ? getPointsLeftOfLine(sRight.a, sRight.b, points)
       : getPointsRightOfLine(sRight.a, sRight.b, points);
   } else {
-    return equal(s2, s3.a) ? getPointsLeftOfLine(sRight.a, sRight.b, points)
+    return fastFloorEqual(s2, s3.a) ? getPointsLeftOfLine(sRight.a, sRight.b, points)
     : getPointsRightOfLine(sRight.a, sRight.b, points);
   }
 }
@@ -508,9 +508,9 @@ function getAngleBetweenTwoVec(v1, v2) {
 }
 
 function connected(s1, s2) {
-  if (equal(s1.a, s2.a) || equal(s1.a, s2.b)) {
+  if (fastFloorEqual(s1.a, s2.a) || fastFloorEqual(s1.a, s2.b)) {
     return s1.a;
-  } else if (equal(s1.b, s2.a) || equal(s1.b, s2.b)) {
+  } else if (fastFloorEqual(s1.b, s2.a) || fastFloorEqual(s1.b, s2.b)) {
     return s1.b;
   }
   return null;
@@ -592,7 +592,7 @@ function getSegmentsBisectorAngle(s, t, debug=false) {
 function bisectPoints(p1, p2) {
   // if the point sites are equal then
   // we must rely on the external segments for an accurate bisector
-  if (equal(p1, p2)) {
+  if (fastFloorEqual(p1, p2)) {
     console.log("Bisecting equal point sites...");
     // get external segments
     var ss1 = findConnectedSegments(p1);
@@ -625,7 +625,7 @@ function bisectPoints(p1, p2) {
   // var v = subtract(p2, p1);
   var v = vec3(p2[0] - p1[0], p2[1] - p1[1], 0);
 
-  var q = add(p1, mult(v, 0.5));
+  var q = add(p1, mult(v, 0.5)); // TODO performance
   if (v[1] > 0) {
     v = negate(v);
   }

@@ -201,7 +201,7 @@ function fortune(reorder) {
         var prevEdge = event.arcNode.prevEdge();
         var nextEdge = event.arcNode.nextEdge();
 
-        // only set if not overridden // Performance
+        // only set if not overridden // TODO Performance
         if (!prevEdge.dcelEdge.dest.overridden && !neighborSites(prevEdge)) {
           prevEdge.dcelEdge.dest.point = event.point;
         }
@@ -237,7 +237,7 @@ function fortune(reorder) {
       });
     }
     if (queue.length > 0)
-      nextY = getEventY(queue[queue.length - 1]);
+      nextY = getEventY(queue[queue.length - 1]); // TODO performance
   }
   var tEnd = performance.now();
   var loopTime = tEnd - tStart;

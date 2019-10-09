@@ -134,11 +134,11 @@ Polygon.prototype.createSegment = function (pIdxStart, pIdxEnd) {
 
 function getNextSeg(p, segments, segId) {
   var next = _.find(segments, function(s) {
-    if (equal(p, s.a) || equal(p, s.b))
+    if (fastFloorEqual(p, s.a) || fastFloorEqual(p, s.b))
       return segId !== s.id;
   });
   if (!next) return;
-  if (equal(p, next.a)) {
+  if (fastFloorEqual(p, next.a)) {
     return {side: 'a', seg: next};
   } else {
     return {side: 'b', seg: next};
@@ -250,7 +250,7 @@ function isFlipped(p, segs) {
   var endPoint = false;
   // return true if point is lowest of all segments it is a part of
    segs.forEach(function(s) {
-    if (equal(p, s.b)) {
+    if (fastFloorEqual(p, s.b)) {
       endPoint = true;
       return;
     }
@@ -273,7 +273,7 @@ function findConnectedSegments(pointSite) {
   if (!pointSite.type || pointSite.type !== "vec") return [];
   var poly = getPolygonByLabel(pointSite.label);
   var rslt = _.filter(poly.segments, function(s) {
-    return equal(s.a, pointSite) || equal(s.b, pointSite);
+    return fastFloorEqual(s.a, pointSite) || fastFloorEqual(s.b, pointSite);
   });
   return rslt;
 }

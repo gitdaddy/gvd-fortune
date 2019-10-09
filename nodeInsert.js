@@ -124,7 +124,7 @@ function ParaInsert(child, arcNode, dcel, nodesToClose) {
     if (!child.isV) throw "Invalid node insertion";
     var sRight = child.nextArc();
     var updateEdge = child.prevEdge();
-    if (sRight.isV && child.isV && equal(child.site.b, sRight.site.b)) {
+    if (sRight.isV && child.isV && fastFloorEqual(child.site.b, sRight.site.b)) {
       updateEdge = child.nextEdge();
     }
     if (updateEdge) {
@@ -134,7 +134,7 @@ function ParaInsert(child, arcNode, dcel, nodesToClose) {
     nodesToClose.push(child);
     if (_.get(child, 'site.b.relation') == NODE_RELATION.CLOSING &&
         _.get(sRight, 'site.b.relation') == NODE_RELATION.CLOSING &&
-        equal(child.site.b, sRight.site.b)) {
+        fastFloorEqual(child.site.b, sRight.site.b)) {
       nodesToClose.push(child.nextArc());
       newChild = closePointSplit(child, arcNode, dcel);
     } else {
@@ -144,7 +144,6 @@ function ParaInsert(child, arcNode, dcel, nodesToClose) {
   } else {
     // regular split
     newChild = splitArcNode(child, arcNode, dcel);
-    // nodesToClose.push(arcNode);
     nodesToClose.push(arcNode.nextArc());
     nodesToClose.push(arcNode.prevArc());
   }

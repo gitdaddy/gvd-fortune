@@ -131,7 +131,7 @@ function canClose(left, arcNode, right, equi) {
   if (arcNode.isV) {
     var can = true;
     // if the V is arcing with the top parabola then both sites must coincide
-    if (left.isParabola && right.isParabola && equal(arcNode.site.a, left.site)) {
+    if (left.isParabola && right.isParabola && fastFloorEqual(arcNode.site.a, left.site)) {
       // the right site should be on the left of the segment
       // var v1 = subtract(arcNode.site.a, arcNode.site.b);
       // var v2 = subtract(right.site, arcNode.site.b);
@@ -139,7 +139,7 @@ function canClose(left, arcNode, right, equi) {
       var v2 = vec3(right.site[0] - arcNode.site.b[0], right.site[1] - arcNode.site.b[1], 0);
 
       can = cross(v1, v2)[2] > 0;
-    } else if (right.isParabola && left.isParabola && equal(arcNode.site.a, right.site)) {
+    } else if (right.isParabola && left.isParabola && fastFloorEqual(arcNode.site.a, right.site)) {
       // the left site should be on the right of the segment
       // var v1 = subtract(arcNode.site.a, arcNode.site.b);
       // var v2 = subtract(left.site, arcNode.site.b);
@@ -153,9 +153,9 @@ function canClose(left, arcNode, right, equi) {
 
     // half plane test
     var hpTest;
-    if (left.isV && equal(arcNode.site, left.site.a)) {
+    if (left.isV && fastFloorEqual(arcNode.site, left.site.a)) {
       hpTest = isRightOfLine(left.site.a, left.site.b, equi);
-    } else if (right.isV && equal(arcNode.site, right.site.a)) {
+    } else if (right.isV && fastFloorEqual(arcNode.site, right.site.a)) {
       hpTest = !isRightOfLine(right.site.a, right.site.b, equi);
     } else {
       return circleTest(left, arcNode, right, dist(arcNode.site, equi), equi);

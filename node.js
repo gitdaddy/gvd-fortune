@@ -449,7 +449,7 @@ function intersectParabolicArcs(left, right, directrix){
 
   // if the two sites are equal their
   // intersection is mid point to the directrix
-  if (equal(left.site, right.site)) {
+  if (fastFloorEqual(left.site, right.site)) {
     console.log("Intersecting equal point sites");
     var i = new vec3(left.site.x, (left.site.y + directrix)/2.0, 0);
     return {
