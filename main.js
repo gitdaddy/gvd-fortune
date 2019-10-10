@@ -237,7 +237,7 @@ function fortune(reorder) {
       });
     }
     if (queue.length > 0)
-      nextY = getEventY(queue[queue.length - 1]); // TODO performance
+      nextY = getEventY(queue[queue.length - 1]);
   }
   var tEnd = performance.now();
   var loopTime = tEnd - tStart;

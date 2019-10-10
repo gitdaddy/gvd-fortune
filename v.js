@@ -65,35 +65,41 @@ function getLines(l, r){
     console.error("Error invalid input data");
     return {left:[], right:[]};
   }
+  var v0lp = vec3(l.vectors[0][0] + l.p[0], l.vectors[0][1] + l.p[1], 0);
+  var v1lp = vec3(l.vectors[1][0] + l.p[0], l.vectors[1][1] + l.p[1], 0);
+
+  var v0rp = vec3(r.vectors[0][0] + r.p[0], r.vectors[0][1] + r.p[1], 0);
+  var v1rp = vec3(r.vectors[1][0] + r.p[0], r.vectors[1][1] + r.p[1], 0);
+
   if (!t1 && !t2) { // neither divide
     // all combinations possible 11, 10, 01, 00
     if (dividesRightOfLine(l.y1, l.y0, r.y1, r.y0)) {
-      lines.left.push(new Line(l.p, add(l.vectors[1], l.p)));
+      lines.left.push(new Line(l.p, v1lp));
     } else {
-      lines.left.push(new Line(l.p, add(l.vectors[0], l.p)));
+      lines.left.push(new Line(l.p, v0lp));
     }
 
     if (dividesRightOfLine(r.y1, r.y0, l.y1, l.y0)) {
-      lines.right.push(new Line (r.p, add(r.vectors[1], r.p)));
+      lines.right.push(new Line (r.p, v1rp));
     } else {
-      lines.right.push(new Line (r.p, add(r.vectors[0], r.p)));
+      lines.right.push(new Line (r.p, v0rp));
     }
 
   } else if (t1) {
-    lines.left.push(new Line(l.p, add(l.vectors[1], l.p)));
-    lines.left.push(new Line(l.p, add(l.vectors[0], l.p)));
+    lines.left.push(new Line(l.p, v1lp));
+    lines.left.push(new Line(l.p, v0lp));
     if (dividesRightOfLine(r.y1, r.y0, l.y1, l.y0)) {
-      lines.right.push(new Line (r.p, add(r.vectors[1], r.p)));
+      lines.right.push(new Line (r.p, v1rp));
     } else {
-      lines.right.push(new Line (r.p, add(r.vectors[0], r.p)));
+      lines.right.push(new Line (r.p, v0rp));
     }
   } else { // r intersects l
-    lines.right.push(new Line (r.p, add(r.vectors[1], r.p)));
-    lines.right.push(new Line (r.p, add(r.vectors[0], r.p)));
+    lines.right.push(new Line (r.p, v1rp));
+    lines.right.push(new Line (r.p, v0rp));
     if (dividesRightOfLine(l.y1, l.y0, r.y1, r.y0)) {
-      lines.left.push(new Line(l.p, add(l.vectors[1], l.p)));
+      lines.left.push(new Line(l.p, v1lp));
     } else {
-      lines.left.push(new Line(l.p, add(l.vectors[0], l.p)));
+      lines.left.push(new Line(l.p, v0lp));
     }
   }
   return lines;

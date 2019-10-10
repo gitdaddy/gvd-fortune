@@ -540,7 +540,9 @@ function bisectPointSegment(p, s) {
     // Get both bisecting sides clockwise and counter clockwise
     let v1 = vec3(v0[1], -v0[0], 0);
     let v2 = vec3(-v0[1], v0[0], 0);
-    return new Line(add(v1, p), add(v2, p));
+    var v1p = vec3(v1[0]+p[0], v1[1]+p[1],0)
+    var v2p = vec3(v2[0]+p[0], v2[1]+p[1],0)
+    return new Line(v1p, v2p);
   }
   if (dot(subtract(p, s0), normalize(subtract(s0, s1))) ==
       length(subtract(p, s0))) {
@@ -592,48 +594,51 @@ function getSegmentsBisectorAngle(s, t, debug=false) {
 function bisectPoints(p1, p2) {
   // if the point sites are equal then
   // we must rely on the external segments for an accurate bisector
-  if (fastFloorEqual(p1, p2)) {
-    console.log("Bisecting equal point sites...");
-    // get external segments
-    var ss1 = findConnectedSegments(p1);
-    var ss2 = findConnectedSegments(p2);
+  // THIS CASE SHOULD NEVER occur
+  // if (fastFloorEqual(p1, p2)) {
+  //   console.log("!!!!!!!!!! Bisecting equal point sites...");
+  //   // get external segments
+  //   var ss1 = findConnectedSegments(p1);
+  //   var ss2 = findConnectedSegments(p2);
 
-    if (ss1.length !== 2 || ss2.length !== 2) {
-      throw "Invalid bisect points - data contains overlapping point sites";
-    }
+  //   if (ss1.length !== 2 || ss2.length !== 2) {
+  //     throw "Invalid bisect points - data contains overlapping point sites";
+  //   }
 
-    // find the two segments with the smallest angle from p1 and p2
-    var smallestAnglePair = { angle: 1e10 };
-    _.forEach(ss1, function(s1){
-      _.forEach(ss2, function(s2) {
-        // if angle < sp.angle - set the smallest pair
-        var beta = getSegmentsBisectorAngle(s1, s2);
-        if (beta < smallestAnglePair.angle) {
-          smallestAnglePair.angle = beta;
-          smallestAnglePair.s1 = s1;
-          smallestAnglePair.s2 = s2;
-        }
-      });
-    });
-    // get the bisector between the two segments
-    var data = smallAngleBisectSegments(smallestAnglePair.s1, smallestAnglePair.s2, p1);
-    // debugging only
-    // if (g_addDebug) g_debugObjs.push(data.line);
-    return data.line;
-  }
+  //   // find the two segments with the smallest angle from p1 and p2
+  //   var smallestAnglePair = { angle: 1e10 };
+  //   _.forEach(ss1, function(s1){
+  //     _.forEach(ss2, function(s2) {
+  //       // if angle < sp.angle - set the smallest pair
+  //       var beta = getSegmentsBisectorAngle(s1, s2);
+  //       if (beta < smallestAnglePair.angle) {
+  //         smallestAnglePair.angle = beta;
+  //         smallestAnglePair.s1 = s1;
+  //         smallestAnglePair.s2 = s2;
+  //       }
+  //     });
+  //   });
+  //   // get the bisector between the two segments
+  //   var data = smallAngleBisectSegments(smallestAnglePair.s1, smallestAnglePair.s2, p1);
+  //   // debugging only
+  //   // if (g_addDebug) g_debugObjs.push(data.line);
+  //   return data.line;
+  // }
 
   // var v = subtract(p2, p1);
   var v = vec3(p2[0] - p1[0], p2[1] - p1[1], 0);
 
-  var q = add(p1, mult(v, 0.5)); // TODO performance
+  // var q = add(p1, mult(v, 0.5));
+  var q = vec3((v[0]*0.5) + p1[0], v[1]*0.5 + p1[1], 0);
   if (v[1] > 0) {
     v = negate(v);
   }
   // Get both bisecting sides clockwise and counter clockwise
   // Testing multiple of 2 for better intersection detection effect
-  let v1 = vec3(v[1]*2, -v[0]*2, 0);
-  let v2 = vec3(-v[1]*2, v[0]*2, 0);
-  return new Line(add(v1, q), add(v2, q));
+  let v1 = vec3((v[1]*2) + q[0], (-v[0]*2) + q[1], 0);
+  let v2 = vec3((-v[1]*2) + q[0], (v[0]*2) + q[1], 0);
+  // return new Line(add(v1, q), add(v2, q));
+  return new Line(v1, v2);
 }
 
 //------------------------------------------------------------
@@ -681,13 +686,16 @@ function bisectSegments2(s1, s2) {
   if (!intersect) {
     return [s];
   }
-  var l = new Line(add(v1Clockwise, intersect), add(v1CounterClockwise, intersect));
+  var v1 = vec3(v1Clockwise[0] + intersect[0], v1Clockwise[1] + intersect[1], 0);
+  var v2 = vec3(v1CounterClockwise[0] + intersect[0], v1CounterClockwise[1] + intersect[1], 0);
+  // var l = new Line(add(v1Clockwise, intersect), add(v1CounterClockwise, intersect));
+  var l = new Line(v1, v2);
   return [s, l];
 }
 
 function fastFloorEqual(f1, f2) {
-  if (!f1.type || f1.type !== "vec") throw "Invalid type";
-  if (!f2.type || f2.type !== "vec") throw "Invalid type";
+  // if (!f1.type || f1.type !== "vec") throw "Invalid type";
+  // if (!f2.type || f2.type !== "vec") throw "Invalid type";
   var x1 = Math.round(f1[0] * 1e10);
   var x2 = Math.round(f2[0] * 1e10);
   var y1 = Math.round(f1[1] * 1e10);
@@ -754,7 +762,9 @@ function smallAngleBisectSegments(s1, s2, optIntersect) {
       optPoint: null
     };
   }
-  var l = new Line(p, add(p, v));
+  var v2 = vec3(p[0] + v[0], p[1] + v[1], 0);
+  // var l = new Line(p, add(p, v));
+  var l = new Line(p, v2);
   return {
     line: l,
     optPoint: p
@@ -783,9 +793,6 @@ function bisect(a, b) {
   } else if (b.type == 'vec') {
     bisector = bisectPointSegment(b, a);
   }
-  // } else {
-  //   // bisector = bisectSegmentsWithHint(a, b, pointHint);
-  // }
   return bisector;
 }
 
