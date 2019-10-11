@@ -318,11 +318,31 @@ function drawSurface(dcel) {
     .style("fill","none")
     .attr("class", e => getSurfaceParabolaClass(e.splitSite))
     .attr("vector-effect", "non-scaling-stroke")
-    // .attr("id", p => `treenode${p.id}`)
+    .attr("id", d => `edge-${d.id}`)
     .merge(d3generalEdges)
     .style("stroke-width", e => getSurfaceWidth(e.splitSite))
     .attr("d", p => line(p.drawPoints))
     .attr("transform", p => p.transform)
+    .on("mouseover", function (d,i) {
+/*       stroke: ""
+strokeDasharray: ""
+strokeDashoffset: ""
+strokeLinecap: ""
+strokeLinejoin: ""
+strokeMiterlimit: ""
+strokeOpacity: ""
+strokeWidth: "0.412642" */
+      // this.style["strokeOpacity"] = 0.2;
+      this.style["stroke"] = "deepskyblue";
+      this.style["stokeWidth"] = getSurfaceWidth(d.splitSite) * 3;
+
+    })
+    // .on("mouseout", function (d,i) {
+    //   console.log("mouse out edge");
+    //   var node = d3.select(this);
+    //   node.style("stoke-opacity", 1);
+    //   node.style("stoke-width", getSurfaceWidth(d.splitSite));
+    // })
   ;
 
   let d3edges = d3.select('#gvd')
@@ -340,6 +360,17 @@ function drawSurface(dcel) {
     .attr('x2', e => e.dest.point[0])
     .attr('y2', e => e.dest.point[1])
     .style("stroke-width", e => getSurfaceWidth(e.splitSite))
+    .on("mouseover", function (d,i) {
+      // this.style["strokeOpacity"] = 0.2;
+      this.style["stroke"] = "deepskyblue";
+      this.style["stokeWidth"] = getSurfaceWidth(d.splitSite) * 3;
+    })
+    // .on("mouseout", function (d,i) {
+    //   console.log("mouse out edge");
+    //   var node = d3.select(this);
+    //   node.style("stoke-opacity", 1);
+    //   node.style("stoke-width", getSurfaceWidth(d.splitSite));
+    // })
   ;
 }
 
