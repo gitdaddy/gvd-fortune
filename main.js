@@ -271,6 +271,12 @@ function fortune(reorder) {
   return beachline;
 }
 
+function moveSweepline(y) {
+  setSweepline(y);
+  document.getElementById("sweeplineLabel").innerHTML = g_sweepline.toFixed(10);
+  render();
+}
+
 function render(reorder = false) {
   clearSurface();
   g_debugObjs = [];

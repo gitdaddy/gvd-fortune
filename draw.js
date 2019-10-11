@@ -12,19 +12,23 @@ var margin = {top: -5, right: -5, bottom: -5, left: -5},
 var svg;
 var zoomCatcher;
 
-var x = d3.scaleLinear()
+let xScale = d3.scaleLinear()
     .domain([0, width])
     .range([0, width]);
 
-var y = d3.scaleLinear()
+let yScale = d3.scaleLinear()
     .domain([0, height])
     .range([0, height]);
 
-var xAxis = d3.axisBottom(x)
+let gvdyScale = d3.scaleLinear()
+    .domain([0, height])
+    .range([1, -1]);
+
+let xAxis = d3.axisBottom(xScale)
     .tickSize(height)
     .tickPadding(8 - height);
 
-var yAxis = d3.axisRight(y)
+let yAxis = d3.axisRight(yScale)
     .ticks(4)
     .tickSize(width)
     .tickPadding(8 - width);
@@ -53,6 +57,11 @@ function drawInit()
   .attr("height", height + margin.top + margin.bottom)
   .attr("id", "gvdsvg")
   .attr("xmlns", "http://www.w3.org/2000/svg")
+  .on("click", function() {
+    var coords = d3.mouse(this);
+    var y = gvdyScale(coords[1]);
+    moveSweepline(y);
+  })
   ;
 
   svg.append("g")
@@ -151,24 +160,6 @@ function drawDebugObjs(objs) {
   var lines = _.filter(objs, function (o) {
     return o instanceof Line;
   });
-
-  // var points = _.filter(objs, function (o) {
-  //   return o.type === "vec";
-  // });
-
-  // let pointSelection = d3.select("#gvd")
-  // .selectAll(".debug-point")
-  // .data(points);
-  // pointSelection.exit().remove();
-  // pointSelection.enter()
-  // .append("circle")
-  // .attr("class", "debug-point")
-  // .merge(pointSelection)
-  // .attr('r', g_siteRadius)
-  // .attr('cx', d => d.x)
-  // .attr('cy', d => d.y)
-  // .attr('visibility', showDebugObjs ? null : 'hidden')
-  // ;
 
   let selB = d3.select("#gvd")
   .selectAll(".debug-line")

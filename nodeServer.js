@@ -1,11 +1,11 @@
-// const open = require('opn');
+const open = require('opn');
 const express = require('express');
 var router = express();
 var fs = require('fs');
 var _ = require('lodash');
 
 const hostname = 'localhost';
-const port = 8080;
+const port = 8082;
 
 /* function sameSign(a,b) {
   return (a * b) > 0;
@@ -200,18 +200,18 @@ router.get('/data', function(req, res) {
   res.json(getDatasetJson(set));
 });
 
-router.get('/randomize', function(req, res) {
-  // Randomize the dataset data
-  // writeRandom(100, "dataset2");
-  // writeRandom(200, "dataset3");
-  // writeRandom(500, "dataset4");
-  writeRandom(1000, "dataset5");
-});
+// router.get('/randomize', function(req, res) {
+//   // Randomize the dataset data
+//   // writeRandom(100, "dataset2");
+//   // writeRandom(200, "dataset3");
+//   // writeRandom(500, "dataset4");
+//   writeRandom(1000, "dataset5");
+// });
 
 router.use(express.static(__dirname));
 
 router.listen(port);
 
 // open default web client
-// open('http://localhost:8082/');
+open('http://localhost:8082/');
 
