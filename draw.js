@@ -3,6 +3,9 @@ var g_zoomScale = 1;
 let g_siteRadius = 0.01;
 var g_isoEdgeWidth = 1;
 
+// dijkstra's controls
+let g_selectingStart = true;
+
 const ZOOM_EXTENT = 200000;
 
 var margin = {top: -5, right: -5, bottom: -5, left: -5},
@@ -38,6 +41,50 @@ let zoom = d3.zoom()
     .scaleExtent([1, ZOOM_EXTENT])
     .translateExtent([[0, 0], [width, height]])
     .on("zoom", zoomed);
+
+
+/////////////// Handler Functions /////////////////
+
+function onEdgeClick(d, i) {
+  console.log("Edge Clicked!!");
+  // Stop the event from propagating to the SVG
+  d3.event.stopPropagation();
+  if (g_selectingStart) {
+      d.pathStart = true;
+  } else {
+    d.pathEnd = true;
+  }
+  g_selectingStart = !g_selectingStart;
+}
+
+function onEdgeMouseOver(d, i) {
+/*      TODO had to use a hacky way of setting the path style
+stroke: ""
+strokeDasharray: ""
+strokeDashoffset: ""
+strokeLinecap: ""
+strokeLinejoin: ""
+strokeMiterlimit: ""
+strokeOpacity: ""
+strokeWidth: "0.412642" */
+      // this.style["strokeOpacity"] = 0.2;
+      this.style["stroke"] = g_selectingStart ? "red" : "lightgreen";
+      // this.style["stokeWidth"] = getSurfaceWidth(d.splitSite) * 3;
+}
+
+function onEdgeMouseOut(d, i) {
+  if (d.pathStart) {
+    this.style["stroke"] = "red";
+  } else if (d.pathEnd) {
+    this.style["stroke"] = "lightgreen";
+  } else {
+    this.style["stroke"] = "black";
+  }
+  // this.style["stokeWidth"] = getSurfaceWidth(d.splitSite);
+}
+
+///////////////////////////////////////////////////
+
 
 function drawInit()
 {
@@ -268,7 +315,7 @@ function getSurfaceParabolaClass(onGvd) {
 }
 
 function getSurfaceWidth(bold) {
-  return bold ? g_isoEdgeWidth * 3 : g_isoEdgeWidth;
+  return bold ? g_isoEdgeWidth * 4 : g_isoEdgeWidth;
 }
 
 function drawSurface(dcel) {
@@ -323,26 +370,9 @@ function drawSurface(dcel) {
     .style("stroke-width", e => getSurfaceWidth(e.splitSite))
     .attr("d", p => line(p.drawPoints))
     .attr("transform", p => p.transform)
-    .on("mouseover", function (d,i) {
-/*       stroke: ""
-strokeDasharray: ""
-strokeDashoffset: ""
-strokeLinecap: ""
-strokeLinejoin: ""
-strokeMiterlimit: ""
-strokeOpacity: ""
-strokeWidth: "0.412642" */
-      // this.style["strokeOpacity"] = 0.2;
-      this.style["stroke"] = "deepskyblue";
-      this.style["stokeWidth"] = getSurfaceWidth(d.splitSite) * 3;
-
-    })
-    // .on("mouseout", function (d,i) {
-    //   console.log("mouse out edge");
-    //   var node = d3.select(this);
-    //   node.style("stoke-opacity", 1);
-    //   node.style("stoke-width", getSurfaceWidth(d.splitSite));
-    // })
+    .on("click", onEdgeClick)
+    .on("mouseover", onEdgeMouseOver)
+    .on("mouseout", onEdgeMouseOut)
   ;
 
   let d3edges = d3.select('#gvd')
@@ -360,17 +390,9 @@ strokeWidth: "0.412642" */
     .attr('x2', e => e.dest.point[0])
     .attr('y2', e => e.dest.point[1])
     .style("stroke-width", e => getSurfaceWidth(e.splitSite))
-    .on("mouseover", function (d,i) {
-      // this.style["strokeOpacity"] = 0.2;
-      this.style["stroke"] = "deepskyblue";
-      this.style["stokeWidth"] = getSurfaceWidth(d.splitSite) * 3;
-    })
-    // .on("mouseout", function (d,i) {
-    //   console.log("mouse out edge");
-    //   var node = d3.select(this);
-    //   node.style("stoke-opacity", 1);
-    //   node.style("stoke-width", getSurfaceWidth(d.splitSite));
-    // })
+    .on("click", onEdgeClick)
+    .on("mouseover", onEdgeMouseOver)
+    .on("mouseout", onEdgeMouseOut)
   ;
 }
 
