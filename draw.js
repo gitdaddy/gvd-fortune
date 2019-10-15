@@ -23,6 +23,10 @@ let yScale = d3.scaleLinear()
     .domain([0, height])
     .range([0, height]);
 
+let gvdxScale = d3.scaleLinear()
+    .domain([0, width])
+    .range([1, -1]);
+
 let gvdyScale = d3.scaleLinear()
     .domain([0, height])
     .range([1, -1]);
@@ -46,7 +50,6 @@ let zoom = d3.zoom()
 /////////////// Handler Functions /////////////////
 
 function onEdgeClick(d, i) {
-  console.log("Edge Clicked!!");
   // Stop the event from propagating to the SVG
   d3.event.stopPropagation();
   if (g_selectingStart) {
@@ -68,8 +71,21 @@ strokeMiterlimit: ""
 strokeOpacity: ""
 strokeWidth: "0.412642" */
       // this.style["strokeOpacity"] = 0.2;
-      this.style["stroke"] = g_selectingStart ? "red" : "lightgreen";
+  this.style["stroke"] = g_selectingStart ? "red" : "lightgreen";
+  var msg = g_selectingStart ? "Path Start" : "Path End";
+  // TODO condition for line edges and general parabola edges
+  // var xVal = d.origin.point[0];
+  // var yVal = d.origin.point[1];
+  // d3.select("#highlight-text")
+  //   .attr("x", gvdxScale(xVal))
+  //   .attr("y", gvdyScale(yVal))
+  //   .style("opacity", 1)
+  //   .text(msg)
+  //   ;
       // this.style["stokeWidth"] = getSurfaceWidth(d.splitSite) * 3;
+  // d3.select(this)
+  //   .selectAll("text")
+    
 }
 
 function onEdgeMouseOut(d, i) {
@@ -80,6 +96,10 @@ function onEdgeMouseOut(d, i) {
   } else {
     this.style["stroke"] = "black";
   }
+
+  // d3.select("#highlight-text")
+  // .style("opacity", 0)
+  // ;
   // this.style["stokeWidth"] = getSurfaceWidth(d.splitSite);
 }
 
@@ -111,11 +131,20 @@ function drawInit()
   })
   ;
 
-  svg.append("g")
+  svg.append("text")
+  .attr("x", 50)
+  .attr("y", 100)
+  .attr("id", "highlight-text")
+  // .style("opacity", 1)
+  .text("Hello World")
+  ;
+
+  var group = svg.append("g")
     .attr("id", "gvd")
     .attr("transform", "translate(" + width/2.0
-      + "," + height/2.0 + ") scale(" + width/2.0 + "," + -1*height/2.0 + ")")
-    .append("line")
+      + "," + height/2.0 + ") scale(" + width/2.0 + "," + -1*height/2.0 + ")");
+
+    group.append("line")
     .attr("id", "sweepline")
     .attr("x1", -1)
     .attr("y1", 0)
@@ -257,9 +286,10 @@ function drawSites(points) {
       .data(points);
 
     sel.exit().remove();
-    let enter = sel.enter()
-    .append("g")
-    .append("circle")
+    let enter = sel.enter();
+    enter.exit().remove();
+
+    enter.append("circle")
     .attr("class", "site point-site")
     .merge(sel)
       .call(dragSite)
