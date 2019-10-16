@@ -20,6 +20,7 @@
   <script type="text/javascript" src="./dcel.js"></script>
   <script type="text/javascript" src="./common/MV.js"></script>
   <script type="text/javascript" src="utils.js"></script>
+  <script type="text/javascript" src="dijkstra.js"></script>
   <script type="text/javascript" src="test.js"></script>
   <script type="text/javascript" src="parabola.js"></script>
   <script type="text/javascript" src="v.js"></script>
@@ -42,9 +43,9 @@
       <span class="title-group">
         Dataset: <select id="g_dataset" onchange="datasetChange(this.value)"></select>
       </span>
-      <!-- <span class="title-group">
-        <button onclick="generateRandomSites()"> Generate Random </button>
-      </span> -->
+      <span class="title-group">
+        <button onclick="onBeginPathAlgorithm()"> Find Shortest Path </button>
+      </span>
       <span class="title-group">
         <label for="fullscreenToggle">Toggle Fullscreen</label>
         <input type="checkbox" id="fullscreenToggle" />

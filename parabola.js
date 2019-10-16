@@ -288,6 +288,7 @@ GeneralParabola.prototype.transformPoint = function (p) {
   p = mult(this.Rz, p);
   p[0] += this.parabola.h;
   p[1] += 2 * this.parabola.k;
+  this.type = "general_parabola";
   return p;
 }
 
@@ -380,10 +381,12 @@ GeneralParabola.prototype.intersectRay = function (p, v) {
 // }
 
 // Prepares this parabola for drawing
-GeneralParabola.prototype.prepDraw = function (id, p1, p2) {
+GeneralParabola.prototype.prepDraw = function (id, origin, dest) {
+  this.origin = origin;
+  this.dest = dest;
   this.id = id;
-  var x0 = this.transformPoint(p1)[0];
-  var x1 = this.transformPoint(p2)[0];
+  var x0 = this.transformPoint(origin.point)[0];
+  var x1 = this.transformPoint(dest.point)[0];
   if (x0 > x1) {
     var temp = x1;
     x1 = x0;

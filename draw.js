@@ -5,6 +5,11 @@ var g_isoEdgeWidth = 1;
 
 // dijkstra's controls
 let g_selectingStart = true;
+let g_pathStartElem = undefined;
+let g_pathEndElem = undefined;
+
+// start, end, default
+let g_edgeColors = [ 'darkkhaki', 'limegreen', 'red', 'black'];
 
 const ZOOM_EXTENT = 200000;
 
@@ -23,13 +28,17 @@ let yScale = d3.scaleLinear()
     .domain([0, height])
     .range([0, height]);
 
-let gvdxScale = d3.scaleLinear()
-    .domain([0, width])
-    .range([1, -1]);
-
 let gvdyScale = d3.scaleLinear()
     .domain([0, height])
     .range([1, -1]);
+
+let gvdToPixelXScale =  d3.scaleLinear()
+.domain([-1, 1])
+.range([0, width]);
+
+let gvdToPixelYScale =  d3.scaleLinear()
+.domain([1, -1])
+.range([0, height]);
 
 let xAxis = d3.axisBottom(xScale)
     .tickSize(height)
@@ -49,18 +58,37 @@ let zoom = d3.zoom()
 
 /////////////// Handler Functions /////////////////
 
+function getEdgeId(d) {
+  if (d.type === "general_parabola") {
+    return `edge${d.id}`;
+  }
+  return `edge${d.siteA.id}-${d.siteB.id}`;
+}
+
 function onEdgeClick(d, i) {
+  if (!d.splitSite) return;
   // Stop the event from propagating to the SVG
   d3.event.stopPropagation();
   if (g_selectingStart) {
-      d.pathStart = true;
+    if (g_pathStartElem) {
+      d3.select('#' + getEdgeId(g_pathStartElem))
+        .style("stroke", g_edgeColors[3]);
+    }
+    this.style["stroke"] = g_edgeColors[1];
+    g_pathStartElem = d;
   } else {
-    d.pathEnd = true;
+    if (g_pathEndElem) {
+      d3.select('#' + getEdgeId(g_pathEndElem))
+        .style("stroke", g_edgeColors[3]);
+    }
+    this.style["stroke"] = g_edgeColors[2];
+    g_pathEndElem = d;
   }
   g_selectingStart = !g_selectingStart;
 }
 
 function onEdgeMouseOver(d, i) {
+  if (!d.splitSite) return;
 /*      TODO had to use a hacky way of setting the path style
 stroke: ""
 strokeDasharray: ""
@@ -71,36 +99,41 @@ strokeMiterlimit: ""
 strokeOpacity: ""
 strokeWidth: "0.412642" */
       // this.style["strokeOpacity"] = 0.2;
-  this.style["stroke"] = g_selectingStart ? "red" : "lightgreen";
-  var msg = g_selectingStart ? "Path Start" : "Path End";
-  // TODO condition for line edges and general parabola edges
-  // var xVal = d.origin.point[0];
-  // var yVal = d.origin.point[1];
-  // d3.select("#highlight-text")
-  //   .attr("x", gvdxScale(xVal))
-  //   .attr("y", gvdyScale(yVal))
-  //   .style("opacity", 1)
-  //   .text(msg)
-  //   ;
-      // this.style["stokeWidth"] = getSurfaceWidth(d.splitSite) * 3;
-  // d3.select(this)
-  //   .selectAll("text")
-    
+
+  var color, msg, xVal, yVal;
+  if (g_selectingStart) {
+    color = g_edgeColors[1];
+    msg = "Start";
+    xVal = gvdToPixelXScale(d.origin.point[0]);
+    yVal = gvdToPixelYScale(d.origin.point[1]);
+  } else {
+    color = g_edgeColors[2];
+    xVal = gvdToPixelXScale(d.dest.point[0]);
+    yVal = gvdToPixelYScale(d.dest.point[1]);
+    msg = "Finish";
+  }
+
+  if (this.style["stroke"] !== g_edgeColors[1]
+      && this.style["stroke"] !== g_edgeColors[2])
+    this.style["stroke"] = g_edgeColors[0];
+  d3.select("#highlight-text")
+    .attr("x", xVal)
+    .attr("y", yVal)
+    .style("opacity", 1)
+    .style("stroke", color)
+    .style("fill", "white")
+    .text(msg)
+    ;
 }
 
 function onEdgeMouseOut(d, i) {
-  if (d.pathStart) {
-    this.style["stroke"] = "red";
-  } else if (d.pathEnd) {
-    this.style["stroke"] = "lightgreen";
-  } else {
-    this.style["stroke"] = "black";
+  if (this.style["stroke"] === g_edgeColors[0]) {
+    this.style["stroke"] = g_edgeColors[3];
   }
 
-  // d3.select("#highlight-text")
-  // .style("opacity", 0)
-  // ;
-  // this.style["stokeWidth"] = getSurfaceWidth(d.splitSite);
+  d3.select("#highlight-text")
+  .style("opacity", 0)
+  ;
 }
 
 ///////////////////////////////////////////////////
@@ -132,11 +165,8 @@ function drawInit()
   ;
 
   svg.append("text")
-  .attr("x", 50)
-  .attr("y", 100)
   .attr("id", "highlight-text")
-  // .style("opacity", 1)
-  .text("Hello World")
+  .style("opacity", 0)
   ;
 
   var group = svg.append("g")
@@ -373,14 +403,17 @@ function drawSurface(dcel) {
         }
         var gp = createGeneralParabola(point, segment);
         var idStr = edge.a.toString() + "-" + edge.b.toString();
-        gp.prepDraw(idStr, edge.origin.point, edge.dest.point);
+        gp.prepDraw(idStr, edge.origin, edge.dest);
         generalEdges.push(gp);
       } else {
-      edges.push(edge);
+        edges.push(edge);
       }
     }
     result = iter.next();
   }
+
+  // for path algorithm
+  setEdgeDataset(edges, generalEdges)
 
   let line = d3.line()
   .x(function (d) {return d[0];})
@@ -395,7 +428,7 @@ function drawSurface(dcel) {
     .style("fill","none")
     .attr("class", e => getSurfaceParabolaClass(e.splitSite))
     .attr("vector-effect", "non-scaling-stroke")
-    .attr("id", d => `edge-${d.id}`)
+    .attr("id", d => getEdgeId(d))
     .merge(d3generalEdges)
     .style("stroke-width", e => getSurfaceWidth(e.splitSite))
     .attr("d", p => line(p.drawPoints))
@@ -413,7 +446,7 @@ function drawSurface(dcel) {
     .append('line')
     .attr('class', e => getSurfaceClass(e.splitSite))
     .attr("vector-effect", "non-scaling-stroke")
-    .attr("id", p => `treenode${p.id}`)
+    .attr("id", (d) => getEdgeId(d))
     .merge(d3edges)
     .attr('x1', e => e.origin.point[0])
     .attr('y1', e => e.origin.point[1])
