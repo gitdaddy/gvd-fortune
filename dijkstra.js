@@ -1,43 +1,58 @@
 "use strict";
 
 let edgeDataset = [];
-// let sortedX0 = [];
-// let sortedX1 = [];
-// let sortedY0 = [];
-// let sortedY1 = [];
+let highlightColor = "yellow";
 
-/**
- * Performs a binary search on the host array. This method can either be
- * injected into Array.prototype or called with a specified scope like this:
- * binaryIndexOf.call(someArray, searchElement);
- *
- * @param {*} searchElement The item to search for within the array.
- * @return {Number} The index of the element which defaults to -1 when not found.
- */
-// function binaryIndexOf(searchElement, array) {
+// priority queue
+let queue = [];
 
-//     var minIndex = 0;
-//     var maxIndex = array.length - 1;
-//     var currentIndex;
-//     var currentElement;
+function distance(dcelEdge) {
+  var x0 = dcelEdge.origin.point[0];
+  var x1 = dcelEdge.dest.point[0];
+  var y0 = dcelEdge.origin.point[1];
+  var y1 = dcelEdge.dest.point[1];
+  var dx = x0 - x1;
+  var dy = y0 - y1;
+  return Math.sqrt((dx*dx)+(dy*dy));
+}
 
-//     while (minIndex <= maxIndex) {
-//         currentIndex = (minIndex + maxIndex) / 2 | 0;
-//         currentElement = array[currentIndex];
+function enqueue(queue, edge, prevId) {
+  var sortFunc = function(edge) {
+    if (!edge.tCost || edge.tCost === 0) throw "invalid tCost";
+    // inverted sort order - largest [....] smallest
+    return (1/edge.tCost);
+  };
 
-//         if (currentElement < searchElement) {
-//             minIndex = currentIndex + 1;
-//         }
-//         else if (currentElement > searchElement) {
-//             maxIndex = currentIndex - 1;
-//         }
-//         else {
-//             return currentIndex;
-//         }
-//     }
+  // if the queue contains the edge already
+  // update the tCost if it is less than the
+  // current cost
+  var existingIdx = _.findIndex(queue, function(e) {
+    return e.id === edge.id;
+  });
+  if (existingIdx !== -1) { // if found
+    if (queue[existingIdx].tCost > edge.tCost) {
+      queue[existingIdx].tCost = edge.tCost;
+      queue[existingIdx].previousEdge = prevId;
+      _.sortBy(queue, sortFunc);
+    }
+    return;
+  }
 
-//     return -1;
-// }
+  var idx = _.sortedIndexBy(queue, edge, sortFunc);
+  // update the previous edge
+  edge.previousEdge = prevId;
+  // insert the in order or on top
+  if (idx === -1) {
+    queue.push(edge);
+  } else {
+    queue.splice(idx, 0, edge);
+  }
+}
+
+function dequeue(queue) {
+  // return the smallest tCost
+  return queue.pop();
+}
 
 function setEdgeDataset(lineEdges, parabolicEdges) {
   var elems = parabolicEdges.concat(lineEdges);
@@ -49,40 +64,143 @@ function setEdgeDataset(lineEdges, parabolicEdges) {
       x1: e.dest.point[0],
       y0: e.origin.point[1],
       y1: e.dest.point[1],
-      id: getEdgeId(e)
+      id: getEdgeId(e),
+      cost: distance(e),
+      tCost: undefined,
+      previousEdge: undefined
     };
     edgeDataset.push(obj);
   });
-  // sortedX0 = _.sortBy(edgeDataset, 'x0');
-  // sortedX1 = _.sortBy(edgeDataset, 'x1');
-  // sortedY0 = _.sortBy(edgeDataset, 'y0');
-  // sortedY1 = _.sortBy(edgeDataset, 'y1');
 
   console.log("set edges:" + edgeDataset.length);
 }
 
-function getConnectedEdges(x, y, id) {
-  return _.filter(edgeDataset, function (edge) {
-    if (edge.id === id) return false;
-    return edge.x0 === x && edge.y0 === y || edge.x1 === x && edge.y1 === y;
+// visit the next edge - return false if we've
+// already visited that edge
+function visitEdge(visited, unvisited, id) {
+  var idx = _.findIndex(unvisited, function (edge) {
+    if (edge.id === id) return true;
   });
+  // we've already visited this edge
+  if (idx === -1) return false;
+  // find at idx - remove 1
+  var edge = unvisited.splice(idx, 1);
+  visited.push(edge[0]);
+  return true;
 }
 
+function getConnectedEdges(x, y, unvisitedSet) {
+  var oEdges = [];
+  var dEdges = [];
+  // NOTE this assumes the input edge is NOT in the unvisited set
+  _.forEach(unvisitedSet, function (edge) {
+    if (edge.x0 === x && edge.y0 === y) {
+      oEdges.push(edge);
+    } else if (edge.x1 === x && edge.y1 === y) {
+      dEdges.push(edge);
+    }
+  });
+
+  return {
+    oCons: oEdges,
+    dCons: dEdges
+  }
+}
+// edge9275-8920
 function onBeginPathAlgorithm() {
   if (!(g_pathStartElem && g_pathEndElem)) {
     console.error("Please select a path start and finish");
     return;
   }
   // console.log(edgeDataset.length);
-  var originX = g_pathStartElem.origin.point[0];
-  var originY = g_pathStartElem.origin.point[1];
-  var destX = g_pathEndElem.dest.point[0];
-  var destY = g_pathEndElem.dest.point[1];
+  var endId = getEdgeId(g_pathEndElem);
+  var originX = g_pathStartElem.dest.point[0];
+  var originY = g_pathStartElem.dest.point[1];
 
-  // testing only
-  var co = getConnectedEdges(originX, originY, getEdgeId(g_pathStartElem));
-  var cd = getConnectedEdges(destX, destY, getEdgeId(g_pathEndElem));
+  queue = [];
+  var visited = [];
+  var unvisited = edgeDataset;
 
-  console.log("origin connected edges:" + co.length);
-  console.log("dest connected edges:" + cd.length);
+  // set the initial edge tentative cost
+  // var startIdx = _.findIndex(unvisited, function (edge) {
+  //   if (edge.id === g_pathStartElem.id) return;
+  // });
+  var curEdge = {
+    x0: g_pathStartElem.origin.point[0],
+    x1: g_pathStartElem.dest.point[0],
+    y0: g_pathStartElem.origin.point[1],
+    y1: g_pathStartElem.dest.point[1],
+    id: getEdgeId(g_pathStartElem),
+    cost: 0,
+    tCost: 0,
+    previousEdge: undefined
+  };
+  curEdge.tCost = 0;
+  curEdge.endX = originX;
+  curEdge.endY = originY;
+  // visitEdge(visited, unvisited, curEdge.id);
+
+  while (curEdge.id !== endId) {
+    // handle the case where we have no
+    // more edges to visit
+    if (unvisited.length < 1) throw "exhausted unvisited list";
+
+    var endX = curEdge.endX;
+    var endY = curEdge.endY;
+    var n = getConnectedEdges(endX, endY, unvisited);
+    // evaluate connected neighbors and update the tCost
+    // set the previous vertex
+    _.forEach(n.oCons, function (oEdge) {
+      oEdge.endX = oEdge.x1;
+      oEdge.endY = oEdge.y1;
+      oEdge.tCost = curEdge.tCost + oEdge.cost;
+      enqueue(queue, oEdge, curEdge.id);
+    });
+    _.forEach(n.dCons, function (dEdge) {
+      dEdge.endX = dEdge.x0;
+      dEdge.endY = dEdge.y0;
+      dEdge.tCost = curEdge.tCost + dEdge.cost;
+      enqueue(queue, dEdge, curEdge.id);
+    });
+    // Visit the unvisited vertex with the smallest tCost
+    var smallestCostEdge = dequeue(queue);
+    var newVisit = visitEdge(visited, unvisited, smallestCostEdge.id);
+    // keep trying to visit new neighbors until we've
+    // reached one we haven't visited
+    while(!newVisit) {
+      if (unvisited.length < 1) throw "exhausted unvisited list";
+      smallestCostEdge = dequeue(queue);
+      newVisit = visitEdge(visited, unvisited, smallestCostEdge.id);
+    }
+    curEdge = smallestCostEdge;
+  }
+
+  // TODO add logic get the correct path
+  _.forEach(visited, function(edge) {
+    var selected = d3.select(`#${edge.id}`);
+    selected.style('stroke', highlightColor);
+  });
+
+  // start by visiting the edge with the smallest know distance
+  // from the current edge
+
+  // _.forEach(co.oCons, function(con) {
+  //   d3.select(`#${con.id}`)
+  //     .style('stroke', highlightColor);
+  // });
+
+  // _.forEach(co.dCons, function(con) {
+  //   d3.select(`#${con.id}`)
+  //     .style('stroke', highlightColor);
+  // });
+
+  // _.forEach(cd.oCons, function(con) {
+  //   d3.select(`#${con.id}`)
+  //     .style('stroke', highlightColor);
+  // });
+
+  // _.forEach(cd.dCons, function(con) {
+  //   d3.select(`#${con.id}`)
+  //     .style('stroke', highlightColor);
+  // });
 }
