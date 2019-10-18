@@ -16,6 +16,24 @@ function distance(dcelEdge) {
   return Math.sqrt((dx*dx)+(dy*dy));
 }
 
+function pathFromVisited(visited, endId) {
+  var path = [endId];
+  var curId = endId;
+  var curIdx = _.findIndex(visited, function (v) {
+    return v.id === curId;
+  });
+  while(curIdx !== -1) {
+    var edge = visited.splice(curIdx, 1)[0];
+    curId = edge.previousEdge;
+    if (!curId) break;
+    path.push(curId);
+    curIdx = _.findIndex(visited, function (v) {
+      return v.id === curId;
+    });
+  }
+  return path;
+}
+
 function enqueue(queue, edge, prevId) {
   var sortFunc = function(edge) {
     if (!edge.tCost || edge.tCost === 0) throw "invalid tCost";
@@ -84,8 +102,8 @@ function visitEdge(visited, unvisited, id) {
   // we've already visited this edge
   if (idx === -1) return false;
   // find at idx - remove 1
-  var edge = unvisited.splice(idx, 1);
-  visited.push(edge[0]);
+  var edge = unvisited.splice(idx, 1)[0];
+  visited.push(edge);
   return true;
 }
 
@@ -119,7 +137,7 @@ function onBeginPathAlgorithm() {
 
   queue = [];
   var visited = [];
-  var unvisited = edgeDataset;
+  var unvisited = [...edgeDataset];
 
   // set the initial edge tentative cost
   // var startIdx = _.findIndex(unvisited, function (edge) {
@@ -176,31 +194,9 @@ function onBeginPathAlgorithm() {
   }
 
   // TODO add logic get the correct path
-  _.forEach(visited, function(edge) {
-    var selected = d3.select(`#${edge.id}`);
+  var ids = pathFromVisited(visited, endId);
+  _.forEach(ids, function(id) {
+    var selected = d3.select(`#${id}`);
     selected.style('stroke', highlightColor);
   });
-
-  // start by visiting the edge with the smallest know distance
-  // from the current edge
-
-  // _.forEach(co.oCons, function(con) {
-  //   d3.select(`#${con.id}`)
-  //     .style('stroke', highlightColor);
-  // });
-
-  // _.forEach(co.dCons, function(con) {
-  //   d3.select(`#${con.id}`)
-  //     .style('stroke', highlightColor);
-  // });
-
-  // _.forEach(cd.oCons, function(con) {
-  //   d3.select(`#${con.id}`)
-  //     .style('stroke', highlightColor);
-  // });
-
-  // _.forEach(cd.dCons, function(con) {
-  //   d3.select(`#${con.id}`)
-  //     .style('stroke', highlightColor);
-  // });
 }
