@@ -5,8 +5,9 @@ var g_isoEdgeWidth = 1;
 
 // dijkstra's controls
 let g_selectingStart = true;
-let g_pathStartElem = undefined;
-let g_pathEndElem = undefined;
+let g_pathStartElem = {};
+let g_pathEndElem = {};
+let g_allEdges = [];
 
 // start, end, default
 let g_edgeColors = [ 'darkkhaki', 'limegreen', 'red', 'black'];
@@ -65,57 +66,50 @@ function getEdgeId(d) {
   return `edge${d.siteA.id}-${d.siteB.id}`;
 }
 
-function onEdgeClick(d, i) {
-  if (!d.splitSite) return;
+function getEdgeVertexId(i) {
+  return `edge-vertex-${i}`;
+}
+
+function onEdgeVertexClick(d, i) {
   // Stop the event from propagating to the SVG
   d3.event.stopPropagation();
   if (g_selectingStart) {
     if (g_pathStartElem) {
-      d3.select('#' + getEdgeId(g_pathStartElem))
-        .style("stroke", g_edgeColors[3]);
+      d3.select('#' + getEdgeVertexId(g_pathStartElem.idx))
+        .style("fill", g_edgeColors[3]);
     }
-    this.style["stroke"] = g_edgeColors[1];
-    g_pathStartElem = d;
+    this.style["fill"] = g_edgeColors[1];
+    g_pathStartElem.value = d;
+    g_pathStartElem.idx = i;
   } else {
     if (g_pathEndElem) {
-      d3.select('#' + getEdgeId(g_pathEndElem))
-        .style("stroke", g_edgeColors[3]);
+      d3.select('#' + getEdgeVertexId(g_pathEndElem.idx))
+        .style("fill", g_edgeColors[3]);
     }
-    this.style["stroke"] = g_edgeColors[2];
-    g_pathEndElem = d;
+    this.style["fill"] = g_edgeColors[2];
+    g_pathEndElem.value = d;
+    g_pathEndElem.idx = i;
   }
   g_selectingStart = !g_selectingStart;
 }
 
-function onEdgeMouseOver(d, i) {
-  if (!d.splitSite) return;
-/*      TODO had to use a hacky way of setting the path style
-stroke: ""
-strokeDasharray: ""
-strokeDashoffset: ""
-strokeLinecap: ""
-strokeLinejoin: ""
-strokeMiterlimit: ""
-strokeOpacity: ""
-strokeWidth: "0.412642" */
-      // this.style["strokeOpacity"] = 0.2;
-
+function onEdgeVertexMouseOver(d, i) {
   var color, msg, xVal, yVal;
   if (g_selectingStart) {
     color = g_edgeColors[1];
     msg = "Start";
-    xVal = gvdToPixelXScale(d.origin.point[0]);
-    yVal = gvdToPixelYScale(d.origin.point[1]);
+    xVal = gvdToPixelXScale(d.x);
+    yVal = gvdToPixelYScale(d.y);
   } else {
     color = g_edgeColors[2];
-    xVal = gvdToPixelXScale(d.dest.point[0]);
-    yVal = gvdToPixelYScale(d.dest.point[1]);
+    xVal = gvdToPixelXScale(d.x);
+    yVal = gvdToPixelYScale(d.y);
     msg = "Finish";
   }
 
-  if (this.style["stroke"] !== g_edgeColors[1]
-      && this.style["stroke"] !== g_edgeColors[2])
-    this.style["stroke"] = g_edgeColors[0];
+  if (this.style["fill"] !== g_edgeColors[1]
+      && this.style["fill"] !== g_edgeColors[2])
+    this.style["fill"] = g_edgeColors[0];
   d3.select("#highlight-text")
     .attr("x", xVal)
     .attr("y", yVal)
@@ -126,9 +120,9 @@ strokeWidth: "0.412642" */
     ;
 }
 
-function onEdgeMouseOut(d, i) {
-  if (this.style["stroke"] === g_edgeColors[0]) {
-    this.style["stroke"] = g_edgeColors[3];
+function onEdgeVertexMouseOut(d, i) {
+  if (this.style["fill"] === g_edgeColors[0]) {
+    this.style["fill"] = g_edgeColors[3];
   }
 
   d3.select("#highlight-text")
@@ -413,7 +407,11 @@ function drawSurface(dcel) {
   }
 
   // for path algorithm
-  setEdgeDataset(edges, generalEdges)
+  // setEdgeDataset(edges, generalEdges);
+  g_allEdges = edges.concat(generalEdges);
+
+  g_pathStartElem = {};
+  g_pathEndElem = {};
 
   let line = d3.line()
   .x(function (d) {return d[0];})
@@ -433,9 +431,6 @@ function drawSurface(dcel) {
     .style("stroke-width", e => getSurfaceWidth(e.splitSite))
     .attr("d", p => line(p.drawPoints))
     .attr("transform", p => p.transform)
-    .on("click", onEdgeClick)
-    .on("mouseover", onEdgeMouseOver)
-    .on("mouseout", onEdgeMouseOut)
   ;
 
   let d3edges = d3.select('#gvd')
@@ -453,10 +448,52 @@ function drawSurface(dcel) {
     .attr('x2', e => e.dest.point[0])
     .attr('y2', e => e.dest.point[1])
     .style("stroke-width", e => getSurfaceWidth(e.splitSite))
-    .on("click", onEdgeClick)
-    .on("mouseover", onEdgeMouseOver)
-    .on("mouseout", onEdgeMouseOut)
   ;
+
+  var vertices = [];
+  _.forEach(edges, function(e) {
+    if (!e.splitSite) return;
+    var po = {x: e.origin.point[0], y: e.origin.point[1]};
+    var pd = {x: e.dest.point[0], y: e.dest.point[1]};
+    // insert only unique values
+    if (vertices.indexOf(po) === -1) {
+      vertices.push(po);
+    }
+
+    if (vertices.indexOf(pd) === -1) {
+      vertices.push(pd);
+    }
+  });
+  _.forEach(generalEdges, function(e) {
+    if (!e.splitSite) return;
+    var po = {x: e.origin.point[0], y: e.origin.point[1]};
+    var pd = {x: e.dest.point[0], y: e.dest.point[1]};
+    // insert only unique values
+    if (vertices.indexOf(po) === -1) {
+      vertices.push(po);
+    }
+
+    if (vertices.indexOf(pd) === -1) {
+      vertices.push(pd);
+    }
+  });
+
+  d3.select('#gvd').selectAll(".gvd-edge-vertex").remove();
+
+  let edgeVertices = d3.select('#gvd')
+    .selectAll(".gvd-edge-vertex")
+    .data(vertices);
+  edgeVertices.enter()
+    .append("circle")
+    .attr("class", "gvd-edge-vertex")
+    .attr("id", (d,i) => `edge-vertex-${i}`)
+    .attr("cx", d => d.x)
+    .attr("cy", d => d.y)
+    .attr("r", g_siteRadius)
+    .on("click", onEdgeVertexClick)
+    .on("mouseover", onEdgeVertexMouseOver)
+    .on("mouseout", onEdgeVertexMouseOut)
+    ;
 }
 
 function drawCloseEvents(eventPoints) {
@@ -644,6 +681,10 @@ function zoomed() {
   // update point sites
   d3.select("#gvd")
   .selectAll(".point-site")
+  .attr("r", g_siteRadius);
+
+  d3.select("#gvd")
+  .selectAll(".gvd-edge-vertex")
   .attr("r", g_siteRadius);
 
   d3.select("#gvd")

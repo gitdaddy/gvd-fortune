@@ -79,6 +79,10 @@ line#sweepline {
     stroke-dasharray: 3, 3;
 }
 
+.gvd-edge-vertex {
+    fill: black;
+}
+
 .debug-line {
     stroke: blue;
     /* stroke-dasharray: 3, 3; */
