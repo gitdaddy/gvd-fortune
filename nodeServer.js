@@ -4,6 +4,8 @@ var router = express();
 var fs = require('fs');
 var _ = require('lodash');
 
+var MarchingSquaresJS = require('marchingsquares');
+
 const hostname = 'localhost';
 const port = 8082;
 
@@ -188,6 +190,15 @@ function getDatasetJson(set) {
   return JSON.stringify(json); // {polygons:[{points: [{}], fileId: ''}, ..]}
 }
 
+function getMapDatasetJson(filePath) {
+  var matrix = [];
+  var lines = fs.readFileSync(filePath, 'utf-8').split('\n');
+  for (var i = 4; i < lines.length; i++) {
+    matrix.push(lines[i]);
+  }
+  return JSON.stringify(matrix); // {polygons:[{points: [{}], fileId: ''}, ..]}
+}
+
 // route code
 router.get('/', function(req, res) {
   res.type("html");
@@ -198,6 +209,12 @@ router.get('/data', function(req, res) {
   var set = req.query.value;
   res.type('json');
   res.json(getDatasetJson(set));
+});
+
+router.get('/map', function(req, res) {
+  var filePath = req.query.value;
+  res.type('json');
+  res.json(getMapDatasetJson(filePath));
 });
 
 // router.get('/randomize', function(req, res) {

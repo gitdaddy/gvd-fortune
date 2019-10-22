@@ -212,6 +212,11 @@ function markSiteRelations(segments) {
   }
 }
 
+function parseInputMap(matrixData) {
+  // TODO use the marchingsquares library to parse the graph into
+  // usable polygons
+}
+
 function parseInputJSON(jsonStr) {
   var data = JSON.parse(jsonStr);
   if (!data)

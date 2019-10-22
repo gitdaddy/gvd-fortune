@@ -21,7 +21,7 @@ let g_fileDatasets = [
   {key:"dataset3", label:"dataset3 - 200 Random", num:200},
   {key:"dataset4", label:"dataset4 - 500 Random", num:500},
   {key:"dataset5", label:"dataset5 - 1000 Random", num:1000},
-  {key:"dataset6", label:"dataset6 - Testing"}
+  {key:"dataset6", label:"dataset6 - Sydney city dataset", isMap: true, filename:"Sydney_2_512.map"}
  ];
 
 var closeEventPoints = [];
@@ -167,13 +167,24 @@ function datasetChange(value) {
   var found = _.find(g_fileDatasets, function(f) { return f.label === value; });
   if (found) {
     if (g_datasets[found.key].length == 0) {
-      var query = '/data/?value=' + found.key;
-      $.get(query).then(function (json) {
-        var polygons = parseInputJSON(json);
-        g_datasets[found.key] = polygons;
-        g_polygons = polygons;
-        processNewDataset();
-      });
+      if (found.isMap) {
+        var query = '/map/?value=' + './data/maps/' + found.filename;
+        $.get(query).then(function (json) {
+          var polygons = parseInputMap(json);
+          console.log("error not yet implemented")
+          // g_datasets[found.key] = polygons;
+          // g_polygons = polygons;
+          // processNewDataset();
+        });
+      } else {
+        var query = '/data/?value=' + found.key;
+        $.get(query).then(function (json) {
+          var polygons = parseInputJSON(json);
+          g_datasets[found.key] = polygons;
+          g_polygons = polygons;
+          processNewDataset();
+        });
+      }
     } else {
       g_polygons = g_datasets[found.key]; // load the cached data
       processNewDataset();
