@@ -171,7 +171,7 @@ function datasetChange(value) {
         var query = '/map/?value=' + './data/maps/' + found.filename;
         $.get(query).then(function (json) {
           var polygons = parseInputMap(json);
-          console.log("error not yet implemented")
+          console.error("error not yet implemented")
           // g_datasets[found.key] = polygons;
           // g_polygons = polygons;
           // processNewDataset();

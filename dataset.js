@@ -212,9 +212,60 @@ function markSiteRelations(segments) {
   }
 }
 
-function parseInputMap(matrixData) {
-  // TODO use the marchingsquares library to parse the graph into
-  // usable polygons
+// returns a uint8 matrix
+// function getpaddedMatrix(m, padSize, width, height) {
+//   var rslt = [];
+//   // top, middle, bottom
+//   for (var i = 0; i < padSize; i++) {
+//     var row = new Uint8Array(width + padSize * 2);
+//     rslt.push(row);
+//   }
+
+//   for (var i = 0; i < height; i++) {
+//     var row = new Uint8Array(width + padSize * 2);
+//     for (var k = 0; k < width; k++) {
+//       row[i + padSize] = m[i][k];
+//     }
+//     rslt.push(row);
+//   }
+
+//   for (var i = 0; i < padSize; i++) {
+//     var row = new Uint8Array(width + padSize * 2);
+//     rslt.push(row);
+//   }
+// }
+
+// testing only
+function renderOutline(outlinePoints, context){
+  //THIS IS IT, MARCHING SQUARES SAMPLE :
+  context.fillStyle = "#0000FF";
+  for(var i=0; i<outlinePoints.length; i+=2){
+      context.fillRect(outlinePoints[i], outlinePoints[i+1], 1, 1);
+  }
+}
+
+function parseInputMap(jsonStr) {
+  var data = JSON.parse(jsonStr);
+  var canvas = document.getElementById("myCanvas");
+  canvas.width = data.width;
+  canvas.height = data.height;
+  // var canvas = createCanvas(width, height);
+  canvas.style.position = "absolute";
+  var ctx = canvas.getContext('2d')
+  // set the black and white image data
+  var imgData = ctx.createImageData(data.width, data.height);
+  for (var i = 0; i < imgData.data.length; i += 4) {
+    var idx = i/4;
+    // RGB - Intensity (0-white - 255 Black)
+    imgData.data[i+0] = 0;
+    imgData.data[i+1] = 0;
+    imgData.data[i+2] = 0;
+    imgData.data[i+3] = data.value[idx];
+  }
+  // put img data, at point(x,y)
+  ctx.putImageData(imgData, 0, 0);
+  var output = MarchingSquaresOpt.getBlobOutlinePoints(data.value, data.width, height);
+  renderOutline(output, ctx);
 }
 
 function parseInputJSON(jsonStr) {

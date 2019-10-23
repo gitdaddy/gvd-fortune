@@ -3,8 +3,8 @@ const express = require('express');
 var router = express();
 var fs = require('fs');
 var _ = require('lodash');
-
-var MarchingSquaresJS = require('marchingsquares');
+// var squares = require('./libs/marching_squares');
+// const { createCanvas, loadImage } = require('canvas');
 
 const hostname = 'localhost';
 const port = 8082;
@@ -191,12 +191,28 @@ function getDatasetJson(set) {
 }
 
 function getMapDatasetJson(filePath) {
-  var matrix = [];
+  var json = {};
+
   var lines = fs.readFileSync(filePath, 'utf-8').split('\n');
+
+  var padding = 50;
+  json.height = lines.length - 4 + padding;
+  json.width = lines[4].length - 1 + padding;
+  var oneDimPixelArray = new Uint8Array(json.height * json.width);
+
   for (var i = 4; i < lines.length; i++) {
-    matrix.push(lines[i]);
+    for (var k = 0; k < lines[i].length-1; k++) {
+      if (lines[i][k] === '@') { // non-passable object
+        // compute the current idx
+        var pI = ((i + padding/2) - 4) * json.width;
+        var pK = k + padding;
+        oneDimPixelArray[pI + pK] = 255;// black
+      }
+    }
   }
-  return JSON.stringify(matrix); // {polygons:[{points: [{}], fileId: ''}, ..]}
+
+  json.value = oneDimPixelArray;
+  return JSON.stringify(json);
 }
 
 // route code
