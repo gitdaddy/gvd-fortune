@@ -306,7 +306,7 @@ function render(reorder = false) {
   var drawTime = t3 - t2;
   console.log("Draw Time:" + drawTime.toFixed(6) + "(ms)");
 
-  showTree(beachline.root);
+  // showTree(beachline.root);
 
-  runTests();
+  // runTests();
 }

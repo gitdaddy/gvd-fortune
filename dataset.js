@@ -21,7 +21,7 @@ var NODE_RELATION = {
 
 function getRandomAdjustment(dataPoints, match) {
   var xDiff = Math.abs(dataPoints[match.s1Idx].x - dataPoints[match.s2Idx].x);
-  var value = xDiff * 0.01;
+  var value = xDiff * 0.007;
   // var value = Math.random() * 1e-6;
   if (value === 0.0) {return 1e-6;}
   // console.log("Returning adjustment:" + rslt);
@@ -42,7 +42,7 @@ function getMatch(dataPoints) {
 }
 
 // Input is ordered by segment creation 0 -> 1 -> 2 -> 0
-function removeColinearPoints(orderedPoints) {
+function removeColinearPoints(orderedPoints, optTolerance) {
   var didRemove = false;
   var rslt = {removed: false, points: orderedPoints};
   if (orderedPoints.length < 3) return rslt;
@@ -62,7 +62,7 @@ function removeColinearPoints(orderedPoints) {
     var p1 = orderedPoints[start];
     var p2 = orderedPoints[i];
     var p3 = orderedPoints[(i+1)%orderedPoints.length]; // 2,3,0
-    if (isColinear(p1, p2, p3)) {
+    if (isColinear(p1, p2, p3, optTolerance)) {
       var center = _.sortBy([p1, p2, p3], 'y')[1];
       // console.log("Removing point(" + center.x + ", " + center.y + ")");
       toRemove.push(center);
@@ -83,24 +83,54 @@ function removeColinearPoints(orderedPoints) {
   return {removed: didRemove, points: orderedPoints};
 }
 
-function removeCAS(points) {
-  var rslt = removeColinearPoints(points);
+function removeCAS(points, optTolerance) {
+  var rslt = removeColinearPoints(points, optTolerance);
   while(rslt.removed)
   {
-    rslt = removeColinearPoints(rslt.points);
+    rslt = removeColinearPoints(rslt.points, optTolerance);
   }
   return rslt.points;
 }
 
-function sanitizeData(orderedPoints) {
+function sanitizeData(orderedPoints, optTolerance) {
   if (orderedPoints.length > 3) {
-    orderedPoints = removeCAS(orderedPoints);
+    orderedPoints = removeCAS(orderedPoints, optTolerance);
   }
+
+  // var lines = [];
+  // for (var i = 0; i < orderedPoints.length; i++) {
+  //   if (i === orderedPoints.length - 1) {
+  //     // poly.createSegment(i-1, 0);
+  //     lines.push({x0:orderedPoints[i-1].x, y0:orderedPoints[i-1].y,x1:orderedPoints[0].x,y1:orderedPoints[0].y});
+  //   } else if (i !== 0) {
+  //     // poly.createSegment(i-1, i);
+  //     lines.push({x0:orderedPoints[i-1].x, y0:orderedPoints[i-1].y,x1:orderedPoints[1].x,y1:orderedPoints[1].y});
+  //   }
+  // }
+
+      // var loop = true;
+    // while(loop) {
+    //   orderedPoints[match.s1Idx].y += getRandomAdjustment(orderedPoints, match);
+    //   loop = overlapsAny(
+    //     orderedPoints[match.s1Idx].x,
+    //     orderedPoints[match.s1Idx].y,
+    //     orderedPoints[match.s2Idx].x,
+    //     orderedPoints[match.s2Idx].y,
+    //     lines);
+    // }
+
+        // var linesCP = lines.slice(0);
+    // _.remove(linesCP, function (l) {
+    //   return l.x0 === orderedPoints[match.s1Idx].x &&
+    //   l.y0 === orderedPoints[match.s1Idx].y &&
+    //   l.x1 === orderedPoints[match.s2Idx].x &&
+    //   l.y1 === orderedPoints[match.s2Idx].y
+    // });
 
   var match = getMatch(orderedPoints);
   while(match) {
     // TODO smart pick s1 or s2
-    orderedPoints[match.s1Idx].y -= getRandomAdjustment(orderedPoints, match);
+    orderedPoints[match.s2Idx].y -= getRandomAdjustment(orderedPoints, match);
     match = getMatch(orderedPoints);
   }
 
@@ -221,6 +251,7 @@ function renderOutline(outlinePoints, context){
 }
 
 function canvasToPolygons(srcArray, width, height){
+  // let theta = 0.1;
   let xScale = d3.scaleLinear()
     .domain([0, width])
     .range([-1, 1]);
@@ -236,33 +267,30 @@ function canvasToPolygons(srcArray, width, height){
     var stdPoints = [];
 
     for(var i=0; i<cPoints.length; i+=2){
-        stdPoints.push({x:xScale(cPoints[i]), y:yScale(cPoints[i+1])});
+      // TODO rotate canvas points
+      // x' = xcos(theta) - ysin(theta)
+      // y' = xsin(theta) + ycos(theta)
+      var x = xScale(cPoints[i]);
+      var y = yScale(cPoints[i+1]);
+      // var xP = x*Math.cos(theta) - y*Math.sin(theta);
+      // var yP = x*Math.sin(theta) + y*Math.cos(theta);
+      // yP += .35;
+      // stdPoints.push({x:xP, y:yP});
+      stdPoints.push({x:x, y:y});
     }
 
-    // stdPoints = sanitizeData(stdPoints);
+    // WATCH VALUE
+    stdPoints = sanitizeData(stdPoints, 0.0000001);
 
     for(var i = 0; i < stdPoints.length; i++){
       poly.addPoint(new vec3(stdPoints[i].x, stdPoints[i].y, 0));
 
-      if (i !== 0) {
+
+      if (i === stdPoints.length - 1) {
+        poly.createSegment(i-1, 0);
+      } else if (i !== 0) {
         poly.createSegment(i-1, i);
       }
-
-      // if we are not at the end
-      // if (i !== polygon.points.length - 2) {
-      //   var point = new vec3(polygon.points[i].x,  polygon.points[i].y, 0);
-      //   point.fileId = polygon.fileId;
-      //   poly.addPoint(point);
-
-      //   // if we are not the start
-      //   if (i !== 0) {
-      //     // if not the first point in the polygon
-      //      poly.createSegment(i-1, i);
-      //   }
-      // } else {
-      //   // last segment in the polygon (end, start)
-      //   poly.createSegment(i-1, 0);
-      // }
     }
     polygons.push(poly);
   });
@@ -289,16 +317,12 @@ function parseInputMap(jsonStr) {
   }
   // put img data, at point(x,y)
   // rotate 1 degree
-  ctx.rotate(Math.PI / 180);
+  // ctx.rotate(Math.PI / 180);
   ctx.putImageData(imgData, 0, 0);
   var objs = MarchingSquaresOpt.getBlobOutlinePoints(data.value, data.width, height);
 
   // ctx.clearRect(0, 0, canvas.width, canvas.height);
   _.each(objs, function(o) { renderOutline(o, ctx) });
-
-  // TODO rotate canvas points
-  // x' = xcos(theta) - ysin(theta)
-  // y' = xsin(theta) + ycos(theta)
 
   return canvasToPolygons(objs, width, height);
 }
@@ -369,7 +393,7 @@ function findConnectedSegments(pointSite) {
   return rslt;
 }
 
-function isColinear(p1, p2, p3) {
+function isColinear(p1, p2, p3, optTolerance) {
   p1 = new vec3(p1.x, p1.y, 0);
   p2 = new vec3(p2.x, p2.y, 0);
   p3 = new vec3(p3.x, p3.y, 0);
@@ -377,7 +401,11 @@ function isColinear(p1, p2, p3) {
   // var v2 = subtract(p3, p1);
   var v1 = vec3(p2[0] - p1[0], p2[1] - p1[1], 0);
   var v2 = vec3(p3[0] - p1[0], p3[1] - p1[1], 0);
-  return Math.abs(cross(v1, v2)[2]) === 0;
+  var zVal = cross(v1, v2)[2];
+  if (optTolerance)
+   return Math.abs(zVal) < optTolerance;
+
+  return zVal === 0;
 }
 
 /* function createDatasets() {
