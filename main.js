@@ -274,7 +274,8 @@ function fortune(reorder) {
     if (e.isCloseEvent) {
       ev += data;
     } else {
-      ev += data + ' r: ' + e.relation;
+      ev += data;
+      // ev += data + ' r: ' + e.relation;
     }
     ev += '\n';
   }
@@ -306,7 +307,7 @@ function render(reorder = false) {
   var drawTime = t3 - t2;
   console.log("Draw Time:" + drawTime.toFixed(6) + "(ms)");
 
-  // showTree(beachline.root);
+  showTree(beachline.root);
 
   // runTests();
 }

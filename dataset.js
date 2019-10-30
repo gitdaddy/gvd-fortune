@@ -276,7 +276,12 @@ function canvasToPolygons(srcArray, width, height){
       // var yP = x*Math.sin(theta) + y*Math.cos(theta);
       // yP += .35;
       // stdPoints.push({x:xP, y:yP});
-      stdPoints.push({x:x, y:y});
+      var idx = _.findIndex(stdPoints, function (p){
+        return p.x === x && p.y === y;
+      });
+      if (idx === -1) {
+        stdPoints.push({x:x, y:y});
+      }
     }
 
     // WATCH VALUE
@@ -284,7 +289,6 @@ function canvasToPolygons(srcArray, width, height){
 
     for(var i = 0; i < stdPoints.length; i++){
       poly.addPoint(new vec3(stdPoints[i].x, stdPoints[i].y, 0));
-
 
       if (i === stdPoints.length - 1) {
         poly.createSegment(i-1, 0);
@@ -324,7 +328,11 @@ function parseInputMap(jsonStr) {
   // ctx.clearRect(0, 0, canvas.width, canvas.height);
   _.each(objs, function(o) { renderOutline(o, ctx) });
 
-  return canvasToPolygons(objs, width, height);
+  // testing only
+  var ofOne = [objs[0]];
+  return canvasToPolygons(ofOne, width, height);
+
+  // return canvasToPolygons(objs, width, height);
 }
 
 function parseInputJSON(jsonStr) {

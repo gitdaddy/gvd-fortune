@@ -305,25 +305,23 @@ function drawDebugObjs(objs) {
 
 function drawSites(points) {
   {
-    let sel = d3.select("#gvd")
+    d3.select("#gvd").selectAll(".point-site").remove();
+
+    d3.select("#gvd")
       .selectAll(".point-site")
-      .data(points);
-
-    sel.exit().remove();
-    let enter = sel.enter();
-    enter.exit().remove();
-
-    enter.append("circle")
-    .attr("class", "site point-site")
-    .merge(sel)
-      .call(dragSite)
+      .data(points)
+      .enter()
+      .append("circle")
+      .attr("class", "site point-site")
+      // .call(dragSite)
       .attr("r", g_siteRadius)
       .attr("cx", p => p[0])
       .attr("cy", p => p[1])
       .attr("fill", (d,i) => siteColorSvg(d.label))
       .attr("id", d => `site${d.id}`)
       .attr("href", "#gvd")
-      .append("title").html(d => d.id + " r: " + d.relation + " p(" + d[0] + ", " + d[1] + ")" + " file:" + d.fileId)
+      .append("title").html(d => d.id + " p(" + d[0] + ", " + d[1] + ")" + " file:" + d.fileId)
+      // .append("title").html(d => d.id + " r: " + d.relation + " p(" + d[0] + ", " + d[1] + ")" + " file:" + d.fileId)
     ;
   }
 }

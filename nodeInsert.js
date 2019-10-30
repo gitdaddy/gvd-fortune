@@ -96,6 +96,8 @@ function insertEdge(toSplit, edge, vertex, dcel, optNodesToClose) {
       left, new EdgeNode(edge, right, vertex, dcel), vertex, dcel);
 }
 
+// TODO REMOVE .relation - auto derive this data
+
 // Child is guaranteed to be the parabola arc
 function VRegularInsert(arcNode, childArcNode, dcel, nodesToClose) {
   if (_.get(childArcNode, 'site.a.relation') == NODE_RELATION.CHILD_LEFT_HULL) {

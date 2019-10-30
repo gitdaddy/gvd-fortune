@@ -38,12 +38,6 @@ function getDiff(left, node, right, p, directrix) {
     return 1e10;
   }
 
-  // if (shallowSite(node.site)) {
-  //   var radius = getRadius(p, left, node, right);
-  //   var newY = p.y - radius;
-  //   return Math.abs(newY - directrix);
-  // }
-
   var radius = getRadius(p, left, node, right);
   var newY = p[1] - radius;
   // rule out points too far above the directrix
@@ -229,11 +223,11 @@ function createCloseEvent(arcNode, directrix) {
   var closePoint;
 
   // debugging only
-  // if (left.id === g_debugIdLeft && right.id === g_debugIdRight) {
-  //   g_addDebug = true;
-  // } else {
-  //   g_addDebug = false;
-  // }
+  if (left.id === g_debugIdLeft && right.id === g_debugIdRight) {
+    g_addDebug = true;
+  } else {
+    g_addDebug = false;
+  }
 
   if (arcNode.isParabola && left.isParabola && right.isParabola) {
     // All three are points

@@ -36,9 +36,10 @@ function createBeachlineSegment(site, directrix, id) {
 
 function shareVClosing(arcNode, sibling) {
   if (!arcNode.isV || !sibling.isV) return false;
-  return _.get(arcNode, "site.b.relation") == NODE_RELATION.CLOSING &&
-  _.get(sibling, "site.b.relation") == NODE_RELATION.CLOSING &&
-  fastFloorEqual(arcNode.site.b, sibling.site.b);
+  return fastFloorEqual(arcNode.site.b, sibling.site.b);
+  // return _.get(arcNode, "site.b.relation") == NODE_RELATION.CLOSING &&
+  // _.get(sibling, "site.b.relation") == NODE_RELATION.CLOSING &&
+  // fastFloorEqual(arcNode.site.b, sibling.site.b);
 }
 
 //------------------------------------------------------------
