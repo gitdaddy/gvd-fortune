@@ -177,7 +177,6 @@ function getDatasetJson(set) {
               throw "Invalid input data line:" + input;
             var newElem = {x: parseFloat(p[0]), y: parseFloat(p[1])};
             dataPoints.push(newElem);
-            // sanitizeData(dataPoints);
           }
         });
       }

@@ -41,7 +41,6 @@ function pathFromVisited(visited, endId) {
 // set idx
 function enqueue(queue, edge, prevId) {
   var sortFunc = function(edge) {
-    // if (!edge.tCost || edge.tCost === 0) throw "invalid tCost";
     // inverted sort order - largest [....] smallest
     return (1/edge.tCost);
   };
@@ -77,21 +76,6 @@ function dequeue(queue) {
   // return the smallest tCost
   return queue.pop();
 }
-
-// visit the next edge - return false if we've
-// already visited that edge
-// TODO performance
-// function visitEdge(visited, unvisited, id) {
-//   var idx = _.findIndex(unvisited, function (edge) {
-//     if (edge.id === id) return true;
-//   });
-//   // we've already visited this edge
-//   if (idx === -1) return false;
-//   // find at idx - remove 1
-//   var edge = unvisited.splice(idx, 1)[0];
-//   visited.push(edge);
-//   return true;
-// }
 
 // only return the edges of the unvisited neighbors
 function getConnectedEdges(x, y, optStartId) {

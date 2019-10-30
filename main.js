@@ -171,10 +171,10 @@ function datasetChange(value) {
         var query = '/map/?value=' + './data/maps/' + found.filename;
         $.get(query).then(function (json) {
           var polygons = parseInputMap(json);
-          console.error("error not yet implemented")
-          // g_datasets[found.key] = polygons;
-          // g_polygons = polygons;
-          // processNewDataset();
+          // console.error("error not yet implemented");
+          g_datasets[found.key] = polygons;
+          g_polygons = polygons;
+          processNewDataset();
         });
       } else {
         var query = '/data/?value=' + found.key;

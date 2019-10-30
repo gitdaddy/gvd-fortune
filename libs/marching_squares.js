@@ -9,8 +9,40 @@
  */
 (function (window){
 
+    // recursive function
+    // no need to worry about stepping out of bounds
+    // since the image is padded
+    function removeConnected(src, start, width) {
+        var idx, topIdx, leftIdx, bottomIdx, rightIdx;
+        idx = start.w + start.h*width;
+        topIdx = start.w + (start.h-1)*width
+        bottomIdx = start.w + (start.h+1)*width
+        leftIdx = idx-1;
+        rightIdx = idx+1;
+        src[idx] = 0;
+
+        if (src[topIdx] !== 0) {
+            removeConnected(src, {w:start.w, h:start.h-1}, width);
+        }
+
+        if (src[bottomIdx] !== 0) {
+            removeConnected(src, {w:start.w, h:start.h+1}, width);
+        }
+
+        if (src[rightIdx] !== 0) {
+            removeConnected(src, {w:start.w+1, h:start.h}, width);
+        }
+
+        if (src[leftIdx] !== 0) {
+            removeConnected(src, {w:start.w-1, h:start.h-1}, width);
+        }
+
+        return;
+    }
+
     const MarchingSquaresOpt = {};
 
+    // return an array of objects
     MarchingSquaresOpt.getBlobOutlinePoints = function(source_array, width, height=0){
         // Note: object should not be on the border of the array, since there is
         //       no padding of 1 pixel to handle points which touch edges
@@ -30,14 +62,27 @@
         }
 
         // find the starting point
-        const startingPoint = MarchingSquaresOpt.getFirstNonTransparentPixelTopDown(source_array, width, height);
+        let startingPoint = MarchingSquaresOpt.getFirstNonTransparentPixelTopDown(source_array, width, height);
         if (null === startingPoint){
             console.log('[Warning] Marching Squares could not find an object in the given array');
             return [];
         }
 
-        // return list of w and h positions
-        return MarchingSquaresOpt.walkPerimeter(source_array, width, height, startingPoint.w, startingPoint.h);
+        var rslt = [];
+        while(startingPoint !== null) {
+            // debug only
+            console.log(`Object start point w: ${startingPoint.w}, h: ${startingPoint.h}`);
+            var newObj = MarchingSquaresOpt.walkPerimeter(source_array, width, height, startingPoint.w, startingPoint.h);
+            rslt.push(newObj);
+            // clear the object in the array
+            removeConnected(source_array, startingPoint, width);
+
+            // find a new start point
+            startingPoint = MarchingSquaresOpt.getFirstNonTransparentPixelTopDown(source_array, width, height);
+        }
+
+        // return an array of objects containing a list of w and h positions
+        return rslt;
     };
 
     MarchingSquaresOpt.getFirstNonTransparentPixelTopDown = function(source_array, width, height){

@@ -212,36 +212,61 @@ function markSiteRelations(segments) {
   }
 }
 
-// returns a uint8 matrix
-// function getpaddedMatrix(m, padSize, width, height) {
-//   var rslt = [];
-//   // top, middle, bottom
-//   for (var i = 0; i < padSize; i++) {
-//     var row = new Uint8Array(width + padSize * 2);
-//     rslt.push(row);
-//   }
-
-//   for (var i = 0; i < height; i++) {
-//     var row = new Uint8Array(width + padSize * 2);
-//     for (var k = 0; k < width; k++) {
-//       row[i + padSize] = m[i][k];
-//     }
-//     rslt.push(row);
-//   }
-
-//   for (var i = 0; i < padSize; i++) {
-//     var row = new Uint8Array(width + padSize * 2);
-//     rslt.push(row);
-//   }
-// }
-
 // testing only
 function renderOutline(outlinePoints, context){
-  //THIS IS IT, MARCHING SQUARES SAMPLE :
   context.fillStyle = "#0000FF";
   for(var i=0; i<outlinePoints.length; i+=2){
       context.fillRect(outlinePoints[i], outlinePoints[i+1], 1, 1);
   }
+}
+
+function canvasToPolygons(srcArray, width, height){
+  let xScale = d3.scaleLinear()
+    .domain([0, width])
+    .range([-1, 1]);
+
+  let yScale = d3.scaleLinear()
+    .domain([0, height])
+    .range([1, -1]);
+
+  var polygons = [];
+  _.each(srcArray, function(cPoints){
+    var poly = new Polygon();
+
+    var stdPoints = [];
+
+    for(var i=0; i<cPoints.length; i+=2){
+        stdPoints.push({x:xScale(cPoints[i]), y:yScale(cPoints[i+1])});
+    }
+
+    // stdPoints = sanitizeData(stdPoints);
+
+    for(var i = 0; i < stdPoints.length; i++){
+      poly.addPoint(new vec3(stdPoints[i].x, stdPoints[i].y, 0));
+
+      if (i !== 0) {
+        poly.createSegment(i-1, i);
+      }
+
+      // if we are not at the end
+      // if (i !== polygon.points.length - 2) {
+      //   var point = new vec3(polygon.points[i].x,  polygon.points[i].y, 0);
+      //   point.fileId = polygon.fileId;
+      //   poly.addPoint(point);
+
+      //   // if we are not the start
+      //   if (i !== 0) {
+      //     // if not the first point in the polygon
+      //      poly.createSegment(i-1, i);
+      //   }
+      // } else {
+      //   // last segment in the polygon (end, start)
+      //   poly.createSegment(i-1, 0);
+      // }
+    }
+    polygons.push(poly);
+  });
+  return polygons;
 }
 
 function parseInputMap(jsonStr) {
@@ -263,9 +288,19 @@ function parseInputMap(jsonStr) {
     imgData.data[i+3] = data.value[idx];
   }
   // put img data, at point(x,y)
+  // rotate 1 degree
+  ctx.rotate(Math.PI / 180);
   ctx.putImageData(imgData, 0, 0);
-  var output = MarchingSquaresOpt.getBlobOutlinePoints(data.value, data.width, height);
-  renderOutline(output, ctx);
+  var objs = MarchingSquaresOpt.getBlobOutlinePoints(data.value, data.width, height);
+
+  // ctx.clearRect(0, 0, canvas.width, canvas.height);
+  _.each(objs, function(o) { renderOutline(o, ctx) });
+
+  // TODO rotate canvas points
+  // x' = xcos(theta) - ysin(theta)
+  // y' = xsin(theta) + ycos(theta)
+
+  return canvasToPolygons(objs, width, height);
 }
 
 function parseInputJSON(jsonStr) {
