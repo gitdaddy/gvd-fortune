@@ -1,5 +1,16 @@
 // Helper functions for insertion operations
 
+function isLeftHull(sLower, sUpper) {
+  if (sLower.type !== "segment" || sUpper.type !== "segment")
+    throw "Invalid hull compare";
+  var a = sUpper.a;
+  var o = sLower.a;
+  var b = sLower.b;
+  var v0 = vec3(a[0] - o[0], a[1] - o[1], 0);
+  var v1 = vec3(b[0] - o[0], b[1] - o[1], 0);
+  return cross(v0, v1)[2] < 0;
+}
+
 // function to create an edge node
 function createNewEdge(left, right, vertex, dcel) {
   if (left.closeEvent) {
@@ -11,13 +22,6 @@ function createNewEdge(left, right, vertex, dcel) {
 
   return new EdgeNode(left, right, vertex, dcel);
 }
-
-// If used needs rework to match adjustment vals
-// function shallowSite(site) {
-//   if (!site.type || site.type !== "segment") return false;
-//   // WATCH VALUE
-//   return Math.abs(site.a.y - site.b.y) < 1e-4;
-// }
 
 //------------------------------------------------------------
 // Utility function right joint split
@@ -99,25 +103,30 @@ function insertEdge(toSplit, edge, vertex, dcel, optNodesToClose) {
 // TODO REMOVE .relation - auto derive this data
 
 // Child is guaranteed to be the parabola arc
-function VRegularInsert(arcNode, childArcNode, dcel, nodesToClose) {
-  if (_.get(childArcNode, 'site.a.relation') == NODE_RELATION.CHILD_LEFT_HULL) {
+function VRegularInsert(arcNode, childArcNode, dcel, parentV) {
+  var left = isLeftHull(childArcNode.site, parentV.site);
+  // if (_.get(childArcNode, 'site.a.relation') == NODE_RELATION.CHILD_LEFT_HULL) {
+  if (left) {
     // // Set edge information since we are using a left joint split
     var nextEdge = arcNode.nextEdge();
     if (nextEdge) nextEdge.dcelEdge.generalEdge = false;
     return createNewEdge(arcNode, childArcNode, childArcNode.site.a, dcel);
     // set the parent since a left joint split may not preserve order
-  } else if (
-      _.get(childArcNode, 'site.a.relation') ==
-      NODE_RELATION.CHILD_RIGHT_HULL) {
+  // } else if (
+  //     _.get(childArcNode, 'site.a.relation') ==
+  //     NODE_RELATION.CHILD_RIGHT_HULL) {
+  } else {
     // // Set edge information since we are using a right joint split
     var prevEdge = arcNode.prevEdge();
     if (prevEdge) prevEdge.dcelEdge.generalEdge = false;
     // is a arc created by the right hull joint
     return createNewEdge(childArcNode, arcNode, childArcNode.site.a, dcel);
-  } else {
-    // regular split nodes to close?
-    return splitArcNode(arcNode, childArcNode, dcel, nodesToClose);
-  }
+  } 
+  
+  // else {
+  //   // regular split nodes to close?
+  //   return splitArcNode(arcNode, childArcNode, dcel, nodesToClose);
+  // }
 }
 
 function ParaInsert(child, arcNode, dcel, nodesToClose) {
@@ -173,36 +182,12 @@ function generateSubTree(eventPacket, arcNode, dcel, optChild) {
       tree = insertEdge(arcNode, newEdge, arcNode.site, dcel);
     }
   } else if (eventPacket.type === PACKET_TYPE.PARENT) {
-    if (!optChild) throw 'Invalid insert operation';
-    var ls = optChild.prevArc();
-    var rs = optChild.nextArc();
+    if (!optChild || !optChild.isV) throw 'Invalid insert operation';
     childArcNode = new ArcNode(eventPacket.child);
     tree = splitArcNode(optChild, arcNode, dcel, nodesToClose);
     var parent = arcNode.parent;
-    var newEdge = VRegularInsert(arcNode, childArcNode, dcel, nodesToClose);
+    var newEdge = VRegularInsert(arcNode, childArcNode, dcel, optChild);
     parent.setChild(newEdge, LEFT_CHILD);
-
-    // if (shallowSite(optChild.site)) {
-    //   if (optChild.site.a.x > optChild.site.b.x) {
-    //     removeNode = optChild;
-    //     removePoint = getIntercept(ls, removeNode, arcNode.site.y);
-    //     var edge = ls.parent;
-    //     edge.dcelEdge.dest = removePoint;
-    //     edge.dcelEdge.dest.overridden = true;
-    //     edge.dcelEdge.dest.point = removePoint;
-    //   } else {
-    //     removeNode = parent.nextArc();
-    //     removePoint = getIntercept(removeNode, rs, arcNode.site.y);
-    //     var edge = rs.parent;
-    //     edge.dcelEdge.dest = removePoint;
-    //     edge.dcelEdge.dest.overridden = true;
-    //     edge.dcelEdge.dest.point = removePoint;
-    //   }
-
-    //   _.remove(nodesToClose, function(node) {
-    //     return node.id === removeNode.id;
-    //   });
-    // }
   } else {
     if (optChild) {
       tree = ParaInsert(optChild, arcNode, dcel, nodesToClose);
