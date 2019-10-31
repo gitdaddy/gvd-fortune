@@ -11,6 +11,40 @@ function isLeftHull(sLower, sUpper) {
   return cross(v0, v1)[2] < 0;
 }
 
+function isClosing(child, p) {
+  if (p.type !== "vec") throw "Invalid close test";
+
+  var r = child.nextArc().site;
+  var c = child.site;
+  var l = child.prevArc().site;
+
+
+  /* cases:
+  1. l and c are segments and end at p
+  2. c and r are segments and end at p
+  2. l and r are segments and end at p
+  */
+
+//  var segs = _.filter([l,c,b], {type: "segment"});
+
+//  if (segs < 2) return false;
+
+//  for (var i = 1; i < segs.length)
+
+  if (c.type === "segment" && r.type === "segment") {
+    if (fastFloorEqual(r.b, p) && fastFloorEqual(c.b, p)) return {closeRight: true};
+  }
+
+  if (l.type === "segment" && c.type === "segment") {
+    if (fastFloorEqual(l.b, p) && fastFloorEqual(c.b, p)) return {closeLeft: true};
+  }
+
+  // maybe is needed in the future
+  // if (l.type === "segment" && r.type === "segment") {
+  //   if (fastFloorEqual(l.b, p) && fastFloorEqual(r.b, p)) return true;
+  // }
+}
+
 // function to create an edge node
 function createNewEdge(left, right, vertex, dcel) {
   if (left.closeEvent) {
@@ -121,8 +155,8 @@ function VRegularInsert(arcNode, childArcNode, dcel, parentV) {
     if (prevEdge) prevEdge.dcelEdge.generalEdge = false;
     // is a arc created by the right hull joint
     return createNewEdge(childArcNode, arcNode, childArcNode.site.a, dcel);
-  } 
-  
+  }
+
   // else {
   //   // regular split nodes to close?
   //   return splitArcNode(arcNode, childArcNode, dcel, nodesToClose);
@@ -131,11 +165,20 @@ function VRegularInsert(arcNode, childArcNode, dcel, parentV) {
 
 function ParaInsert(child, arcNode, dcel, nodesToClose) {
   var newChild;
-  if (_.get(arcNode, 'site.relation') == NODE_RELATION.CLOSING) {
+
+  var closingData = isClosing(child, arcNode.site);
+
+  // if (_.get(arcNode, 'site.relation') == NODE_RELATION.CLOSING && !closingData) {
+  //   console.error("ERROR !same");
+  // }
+
+  // if (_.get(arcNode, 'site.relation') == NODE_RELATION.CLOSING) {
+  if (closingData) {
     if (!child.isV) throw "Invalid node insertion";
-    var sRight = child.nextArc();
+    // var sRight = child.nextArc();
     var updateEdge = child.prevEdge();
-    if (sRight.isV && child.isV && fastFloorEqual(child.site.b, sRight.site.b)) {
+    // if (sRight.isV && child.isV && fastFloorEqual(child.site.b, sRight.site.b)) {
+    if (closingData.closeRight) {
       updateEdge = child.nextEdge();
     }
     if (updateEdge) {
@@ -143,9 +186,10 @@ function ParaInsert(child, arcNode, dcel, nodesToClose) {
       updateEdge.dcelEdge.dest.point = arcNode.site;
     }
     nodesToClose.push(child);
-    if (_.get(child, 'site.b.relation') == NODE_RELATION.CLOSING &&
-        _.get(sRight, 'site.b.relation') == NODE_RELATION.CLOSING &&
-        fastFloorEqual(child.site.b, sRight.site.b)) {
+    // if (_.get(child, 'site.b.relation') == NODE_RELATION.CLOSING &&
+    //     _.get(sRight, 'site.b.relation') == NODE_RELATION.CLOSING &&
+    //     fastFloorEqual(child.site.b, sRight.site.b)) {
+    if (closingData.closeRight) {
       nodesToClose.push(child.nextArc());
       newChild = closePointSplit(child, arcNode, dcel);
     } else {

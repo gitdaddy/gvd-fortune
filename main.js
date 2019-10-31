@@ -10,6 +10,7 @@ let g_datasets = {
   'dataset4' : [],
   'dataset5' : [],
   'dataset6' : [],
+  'dataset7' : [],
 };
 
 let g_polygons = [];
@@ -21,7 +22,8 @@ let g_fileDatasets = [
   {key:"dataset3", label:"dataset3 - 200 Random", num:200},
   {key:"dataset4", label:"dataset4 - 500 Random", num:500},
   {key:"dataset5", label:"dataset5 - 1000 Random", num:1000},
-  {key:"dataset6", label:"dataset6 - Sydney city dataset", isMap: true, filename:"Sydney_2_512.map"}
+  {key:"dataset6", label:"dataset6 - Sydney city dataset", isMap: true, filename:"Sydney_2_512.map"},
+  {key:"dataset7", label:"dataset7 - Berlin city dataset", isMap: true, filename:"Berlin_0_1024.map"}
  ];
 
 var closeEventPoints = [];

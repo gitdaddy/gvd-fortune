@@ -329,8 +329,8 @@ function parseInputMap(jsonStr) {
   _.each(objs, function(o) { renderOutline(o, ctx) });
 
   // testing only
-  var ofOne = [objs[0]];
-  return canvasToPolygons(ofOne, width, height);
+  var few = [objs[0]];
+  return canvasToPolygons(few, width, height);
 
   // return canvasToPolygons(objs, width, height);
 }

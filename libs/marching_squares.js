@@ -71,7 +71,7 @@
         var rslt = [];
         while(startingPoint !== null) {
             // debug only
-            console.log(`Object start point w: ${startingPoint.w}, h: ${startingPoint.h}`);
+            // console.log(`Object start point w: ${startingPoint.w}, h: ${startingPoint.h}`);
             var newObj = MarchingSquaresOpt.walkPerimeter(source_array, width, height, startingPoint.w, startingPoint.h);
             rslt.push(newObj);
             // clear the object in the array
