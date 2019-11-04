@@ -193,7 +193,7 @@ function labelConnectedComponents(src, height, width) {
   var count = 1;
   var conflicts = [];
   for (var row = 0; row < height; row++) {
-    console.log("row:" + row);
+    // console.log("row:" + row);
     for (var col = 0; col < width; col++) {
       var idx = col + row * width;
       if (src[idx] === 255) {
@@ -218,26 +218,36 @@ function labelConnectedComponents(src, height, width) {
         } else if (src[idxAbove] !== 0) {
           src[idx] = src[idxAbove];
         } else {
-          // not connected - label
-          src[idx] = count;
-          count++;
+          // test go until you end || connect to something above
+          var endIdx = idx;
+          var end = false;
+          var above = false;
+          while (!above && !end) {
+            idxAbove = idxAbove + 1;
+            above = (src[idxAbove] !== 0);
+            end = (!src[endIdx] || src[endIdx] === 0);
+            endIdx++;
+          }
+
+          if (end) {
+            // not connected - label
+            src[idx] = count;
+            // console.log("count:" + count);
+            count++;
+          } else {
+            // increment the start to the end and label
+            // to match the top
+            for (var ii = idx; ii <= endIdx; ii++){
+              src[ii] = src[idxAbove];
+            }
+            col += (endIdx - idx);
+          }
         }
       }
     }
   }
 
   // re- label
-  // for (var row = 0; row < height; row++) {
-  //   console.log("re label row:" + row);
-  //   for (var col = 0; col < width; col++) {
-  //     var idx = col + row * width;
-  //     conflicts.forEach(function (c) {
-  //       if (src[idx] === c.b) {
-  //         src[idx] = c.a;
-  //       }
-  //     });
-  //   }
-  // }
   console.log("re label rows conflicts size:" + conflicts.length);
   var len = height * width;
   conflicts.forEach(function (c) {
