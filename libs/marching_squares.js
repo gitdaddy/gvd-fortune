@@ -12,67 +12,6 @@
 
   const MarchingSquaresOpt = {};
 
-  function labelConnectedComponents(src, height, width) {
-    var count = 1;
-    var conflicts = [];
-    for (var row = 0; row < height; row++) {
-      console.log("row:" + row);
-      for (var col = 0; col < width; col++) {
-        var idx = col + row * width;
-        if (src[idx] === 255) {
-          var idxBehind = idx - 1;
-          var idxAbove = idx - width;
-          // connected
-          if (src[idxBehind] !== 0 && src[idxAbove] !== 0) {
-            if (src[idxBehind] === src[idxAbove]) {
-              src[idx] = src[idxBehind];
-            } else {
-              // conflict - remember them for later
-              if (src[idxBehind] < src[idxAbove]) {
-                src[idx] = src[idxBehind];
-                conflicts.push({a: src[idxBehind], b:src[idxAbove] });
-              } else {
-                src[idx] = src[idxAbove];
-                conflicts.push({a: src[idxAbove], b:src[idxBehind] });
-              }
-            }
-          } else if (src[idxBehind] !== 0) {
-            src[idx] = src[idxBehind];
-          } else if (src[idxAbove] !== 0) {
-            src[idx] = src[idxAbove];
-          } else {
-            // not connected - label
-            src[idx] = count;
-            count++;
-          }
-        }
-      }
-    }
-
-    // re- label
-    // for (var row = 0; row < height; row++) {
-    //   console.log("re label row:" + row);
-    //   for (var col = 0; col < width; col++) {
-    //     var idx = col + row * width;
-    //     conflicts.forEach(function (c) {
-    //       if (src[idx] === c.b) {
-    //         src[idx] = c.a;
-    //       }
-    //     });
-    //   }
-    // }
-    console.log("re label rows");
-    var len = height * width;
-    for (var i = 0; i < len; i++){
-      conflicts.forEach(function (c) {
-          if (src[i] === c.b) {
-            src[i] = c.a;
-          }
-      });
-    }
-    console.log("done re-labeling");
-    // TODO write to disk?
-  }
 
   // return an array of objects
   MarchingSquaresOpt.getBlobOutlinePoints = function(
@@ -95,11 +34,6 @@
     } else if (0 == height) {
       height = (source_array.length / width) | 0;
     }
-
-    // label all the connected components
-    console.log("labeling components with height:" + height + " width:" + width);
-    labelConnectedComponents(source_array, height, width);
-
     // find the starting point
     let startingPoint = MarchingSquaresOpt.getFirstNonTransparentPixelTopDown(
         source_array, width, height);
@@ -113,7 +47,7 @@
     while (startingPoint !== null) {
       // debug only
       // console.log(`Object start point w: ${startingPoint.w}, h:
-      // ${startingPoint.h}`);
+      // ${startingPoint.h}`);n
       var newObj = MarchingSquaresOpt.walkPerimeter(
           source_array, width, height, startingPoint.w, startingPoint.h);
       rslt.push(newObj);
@@ -125,9 +59,9 @@
       console.log("removing comp:" + removeLabel);
       var len = height * width;
       for (var i = 0; i < len; i++){
-        if (source_array[i] !== 0) {
-          console.log("component label:" + source_array[i]);
-        }
+        // if (source_array[i] !== 0) {
+        //   console.log("component label:" + source_array[i]);
+        // }
         if (source_array[i] === removeLabel) {
           source_array[i] = 0;
         }

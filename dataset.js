@@ -329,10 +329,10 @@ function parseInputMap(jsonStr) {
   _.each(objs, function(o) { renderOutline(o, ctx) });
 
   // testing only
-  var few = [objs[0]];
-  return canvasToPolygons(few, width, height);
+  // var few = [objs[0]];
+  // return canvasToPolygons(few, width, height);
 
-  // return canvasToPolygons(objs, width, height);
+  return canvasToPolygons(objs, width, height);
 }
 
 function parseInputJSON(jsonStr) {

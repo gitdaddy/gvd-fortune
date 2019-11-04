@@ -189,11 +189,71 @@ function getDatasetJson(set) {
   return JSON.stringify(json); // {polygons:[{points: [{}], fileId: ''}, ..]}
 }
 
+function labelConnectedComponents(src, height, width) {
+  var count = 1;
+  var conflicts = [];
+  for (var row = 0; row < height; row++) {
+    console.log("row:" + row);
+    for (var col = 0; col < width; col++) {
+      var idx = col + row * width;
+      if (src[idx] === 255) {
+        var idxBehind = idx - 1;
+        var idxAbove = idx - width;
+        // connected
+        if (src[idxBehind] !== 0 && src[idxAbove] !== 0) {
+          if (src[idxBehind] === src[idxAbove]) {
+            src[idx] = src[idxBehind];
+          } else {
+            // conflict - remember them for later
+            if (src[idxBehind] < src[idxAbove]) {
+              src[idx] = src[idxBehind];
+              conflicts.push({a: src[idxBehind], b:src[idxAbove] });
+            } else {
+              src[idx] = src[idxAbove];
+              conflicts.push({a: src[idxAbove], b:src[idxBehind] });
+            }
+          }
+        } else if (src[idxBehind] !== 0) {
+          src[idx] = src[idxBehind];
+        } else if (src[idxAbove] !== 0) {
+          src[idx] = src[idxAbove];
+        } else {
+          // not connected - label
+          src[idx] = count;
+          count++;
+        }
+      }
+    }
+  }
+
+  // re- label
+  // for (var row = 0; row < height; row++) {
+  //   console.log("re label row:" + row);
+  //   for (var col = 0; col < width; col++) {
+  //     var idx = col + row * width;
+  //     conflicts.forEach(function (c) {
+  //       if (src[idx] === c.b) {
+  //         src[idx] = c.a;
+  //       }
+  //     });
+  //   }
+  // }
+  console.log("re label rows conflicts size:" + conflicts.length);
+  var len = height * width;
+  conflicts.forEach(function (c) {
+  for (var i = 0; i < len; i++){
+        if (src[i] === c.b) {
+          src[i] = c.a;
+        }
+      }
+  });
+  console.log("done re-labeling");
+  return src;
+}
+
 function getMapDatasetJson(filePath) {
   var json = {};
-
   var lines = fs.readFileSync(filePath, 'utf-8').split('\n');
-
   var padding = 50;
   json.height = lines.length - 4 + padding;
   json.width = lines[4].length - 1 + padding;
@@ -210,7 +270,15 @@ function getMapDatasetJson(filePath) {
     }
   }
 
-  json.value = oneDimPixelArray;
+  var output = labelConnectedComponents(oneDimPixelArray, json.height, json.width);
+  json.value = output;
+  // fs.writeFile('2pac.txt', output, (err) => {
+  //     // throws an error, you could also catch it here
+  //     if (err) throw err;
+
+  //     // success case, the file was saved
+  //     console.log('Lyric saved!');
+  // });
   return JSON.stringify(json);
 }
 
