@@ -267,6 +267,9 @@ function getMapDatasetJson(filePath) {
   var padding = 50;
   json.height = lines.length - 4 + padding;
   json.width = lines[4].length - 1 + padding;
+
+  // console.log("File lines - width:" + json.width + " height:" + json.height);
+
   var oneDimPixelArray = new Uint8Array(json.height * json.width);
 
   for (var i = 4; i < lines.length; i++) {

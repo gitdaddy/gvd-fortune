@@ -97,36 +97,6 @@ function sanitizeData(orderedPoints, optTolerance) {
     orderedPoints = removeCAS(orderedPoints, optTolerance);
   }
 
-  // var lines = [];
-  // for (var i = 0; i < orderedPoints.length; i++) {
-  //   if (i === orderedPoints.length - 1) {
-  //     // poly.createSegment(i-1, 0);
-  //     lines.push({x0:orderedPoints[i-1].x, y0:orderedPoints[i-1].y,x1:orderedPoints[0].x,y1:orderedPoints[0].y});
-  //   } else if (i !== 0) {
-  //     // poly.createSegment(i-1, i);
-  //     lines.push({x0:orderedPoints[i-1].x, y0:orderedPoints[i-1].y,x1:orderedPoints[1].x,y1:orderedPoints[1].y});
-  //   }
-  // }
-
-      // var loop = true;
-    // while(loop) {
-    //   orderedPoints[match.s1Idx].y += getRandomAdjustment(orderedPoints, match);
-    //   loop = overlapsAny(
-    //     orderedPoints[match.s1Idx].x,
-    //     orderedPoints[match.s1Idx].y,
-    //     orderedPoints[match.s2Idx].x,
-    //     orderedPoints[match.s2Idx].y,
-    //     lines);
-    // }
-
-        // var linesCP = lines.slice(0);
-    // _.remove(linesCP, function (l) {
-    //   return l.x0 === orderedPoints[match.s1Idx].x &&
-    //   l.y0 === orderedPoints[match.s1Idx].y &&
-    //   l.x1 === orderedPoints[match.s2Idx].x &&
-    //   l.y1 === orderedPoints[match.s2Idx].y
-    // });
-
   var match = getMatch(orderedPoints);
   while(match) {
     // TODO smart pick s1 or s2
@@ -252,6 +222,7 @@ function renderOutline(outlinePoints, context){
 
 function canvasToPolygons(srcArray, width, height){
   // let theta = 0.1;
+  // console.log("canvas to polygon width:" + width + " height:" + height);
   let xScale = d3.scaleLinear()
     .domain([0, width])
     .range([-1, 1]);
@@ -323,16 +294,16 @@ function parseInputMap(jsonStr) {
   // rotate 1 degree
   // ctx.rotate(Math.PI / 180);
   ctx.putImageData(imgData, 0, 0);
-  var objs = MarchingSquaresOpt.getBlobOutlinePoints(data.value, data.width, height);
+  var objs = MarchingSquaresOpt.getBlobOutlinePoints(data.value, data.width, data.height);
 
   // ctx.clearRect(0, 0, canvas.width, canvas.height);
   _.each(objs, function(o) { renderOutline(o, ctx) });
 
   // testing only
-  // var few = [objs[0]];
-  // return canvasToPolygons(few, width, height);
+  var few = [objs[0]];
+  return canvasToPolygons(few, width, height);
 
-  return canvasToPolygons(objs, width, height);
+  // return canvasToPolygons(objs, data.width, data.height);
 }
 
 function parseInputJSON(jsonStr) {

@@ -9,6 +9,8 @@ let highlightColor = "yellow";
 let queue = [];
 
 let g_pathIds = [];
+// TODO highlight all vertices
+let g_vertexIds = [];
 
 function distance(dcelEdge) {
   var x0 = dcelEdge.origin.point[0];
@@ -128,8 +130,9 @@ function onBeginPathAlgorithm() {
   var t0 = performance.now();
   clearPaths();
   g_pathIds = [];
+  g_vertexIds = [];
   if (!(g_pathStartElem.value && g_pathEndElem.value)) {
-    console.error("Please select a path start and finish");
+    // console.error("Please select a path start and finish");
     return;
   }
 

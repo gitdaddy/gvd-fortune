@@ -91,33 +91,34 @@ function onEdgeVertexClick(d, i) {
     g_pathEndElem.idx = i;
   }
   g_selectingStart = !g_selectingStart;
+  onBeginPathAlgorithm();
 }
 
 function onEdgeVertexMouseOver(d, i) {
-  var color, msg, xVal, yVal;
-  if (g_selectingStart) {
-    color = g_edgeColors[1];
-    msg = "Start";
-    xVal = gvdToPixelXScale(d.x);
-    yVal = gvdToPixelYScale(d.y);
-  } else {
-    color = g_edgeColors[2];
-    xVal = gvdToPixelXScale(d.x);
-    yVal = gvdToPixelYScale(d.y);
-    msg = "Finish";
-  }
+  // var color, msg, xVal, yVal;
+  // if (g_selectingStart) {
+  //   color = g_edgeColors[1];
+  //   msg = "Start";
+  //   xVal = gvdToPixelXScale(d.x);
+  //   yVal = gvdToPixelYScale(d.y);
+  // } else {
+  //   color = g_edgeColors[2];
+  //   xVal = gvdToPixelXScale(d.x);
+  //   yVal = gvdToPixelYScale(d.y);
+  //   msg = "Finish";
+  // }
 
   if (this.style["fill"] !== g_edgeColors[1]
       && this.style["fill"] !== g_edgeColors[2])
     this.style["fill"] = g_edgeColors[0];
-  d3.select("#highlight-text")
-    .attr("x", xVal)
-    .attr("y", yVal)
-    .style("opacity", 1)
-    .style("stroke", color)
-    .style("fill", "white")
-    .text(msg)
-    ;
+  // d3.select("#highlight-text")
+  //   .attr("x", xVal)
+  //   .attr("y", yVal)
+  //   .style("opacity", 1)
+  //   .style("stroke", color)
+  //   .style("fill", "white")
+  //   .text(msg)
+  //   ;
 }
 
 function onEdgeVertexMouseOut(d, i) {
@@ -125,9 +126,9 @@ function onEdgeVertexMouseOut(d, i) {
     this.style["fill"] = g_edgeColors[3];
   }
 
-  d3.select("#highlight-text")
-  .style("opacity", 0)
-  ;
+  // d3.select("#highlight-text")
+  // .style("opacity", 0)
+  // ;
 }
 
 ///////////////////////////////////////////////////

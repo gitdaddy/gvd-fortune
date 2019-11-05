@@ -56,20 +56,12 @@
       var idx = startingPoint.w + startingPoint.h * width;
       var removeLabel = source_array[idx];
 
-      console.log("removing comp:" + removeLabel);
       var len = height * width;
       for (var i = 0; i < len; i++){
-        // if (source_array[i] !== 0) {
-        //   console.log("component label:" + source_array[i]);
-        // }
         if (source_array[i] === removeLabel) {
           source_array[i] = 0;
         }
       }
-      console.log("done removing comp");
-
-      // removeConnected(source_array, idx, width);
-
       // find a new start point
       startingPoint = MarchingSquaresOpt.getFirstNonTransparentPixelTopDown(
           source_array, width, height);

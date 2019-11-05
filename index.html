@@ -44,9 +44,9 @@
       <span class="title-group">
         Dataset: <select id="g_dataset" onchange="datasetChange(this.value)"></select>
       </span>
-      <span class="title-group">
+      <!-- <span class="title-group">
         <button onclick="onBeginPathAlgorithm()"> Find Shortest Path </button>
-      </span>
+      </span> -->
       <span class="title-group">
         <label for="fullscreenToggle">Toggle Fullscreen</label>
         <input type="checkbox" id="fullscreenToggle" />
@@ -88,7 +88,7 @@
     <div class="column">
       <svg id="tree"></svg>
       <div id="tree-debug2"></div>
-      <div><canvas id="myCanvas" width="512" height="512" style="visibility:hidden border:1px solid #d3d3d3;">
+      <div><canvas id="myCanvas" width="1024" height="1024" style="visibility:hidden border:1px solid #d3d3d3;">
         Your browser does not support the HTML5 canvas tag.</canvas></div>
     </div>
   </div>
