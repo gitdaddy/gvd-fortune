@@ -38,6 +38,8 @@ function createParabola(focus, directrix, id) {
 
 Parabola.prototype.intersect = function (object) {
   if (object instanceof Parabola) {
+    this.p = this.p === 0 ? 1e-8 : this.p;
+    object.p = object.p === 0 ? 1e-8 : object.p;
     return ppIntersect(this.h, this.k, this.p, object.h, object.k, object.p);
   }
   return object.intersect(this);

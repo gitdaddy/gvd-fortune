@@ -85,6 +85,7 @@ function removeColinearPoints(orderedPoints, optTolerance) {
 
 function removeCAS(points, optTolerance) {
   var rslt = removeColinearPoints(points, optTolerance);
+  // rslt.points = _.uniqWith(rslt.points, _.isEqual);
   while(rslt.removed)
   {
     rslt = removeColinearPoints(rslt.points, optTolerance);
@@ -92,15 +93,28 @@ function removeCAS(points, optTolerance) {
   return rslt.points;
 }
 
-function sanitizeData(orderedPoints, optTolerance) {
+function sanitizeData(orderedPoints, optTolerance, optXoffset) {
   if (orderedPoints.length > 3) {
     orderedPoints = removeCAS(orderedPoints, optTolerance);
   }
 
+
   var match = getMatch(orderedPoints);
   while(match) {
-    // TODO smart pick s1 or s2
+    // if (match.s2Idx === 0 && isColinear(orderedPoints[0], orderedPoints[1], orderedPoints[orderedPoints.length-1], 0)){
+    //       debugger;
+    // }
+    // if (match.s2Idx === orderedPoints.length -1 && _.isEqual(orderedPoints[0], orderedPoints[orderedPoints.length -1])) {
+    //   console.log("MATCH");
+    //   debugger;
+    //   var co = isColinear(orderedPoints[0], orderedPoints[1], orderedPoints[orderedPoints.length-1], 0);
+    //   console.log("co:" + co);
+    // }
+
     orderedPoints[match.s2Idx].y -= getRandomAdjustment(orderedPoints, match);
+    if (optXoffset) {
+      orderedPoints[match.s2Idx].x += Math.random() < 0.5 ? -optXoffset : optXoffset;
+    }
     match = getMatch(orderedPoints);
   }
 
@@ -256,7 +270,7 @@ function canvasToPolygons(srcArray, width, height){
     }
 
     // WATCH VALUE
-    stdPoints = sanitizeData(stdPoints, 0.0000001);
+    stdPoints = sanitizeData(stdPoints, 1e-7, 1e-4);
 
     for(var i = 0; i < stdPoints.length; i++){
       poly.addPoint(new vec3(stdPoints[i].x, stdPoints[i].y, 0));
@@ -300,10 +314,10 @@ function parseInputMap(jsonStr) {
   _.each(objs, function(o) { renderOutline(o, ctx) });
 
   // testing only
-  var few = [objs[0]];
-  return canvasToPolygons(few, width, height);
+  // var few = [objs[0]];
+  // return canvasToPolygons(few, width, height);
 
-  // return canvasToPolygons(objs, data.width, data.height);
+  return canvasToPolygons(objs, data.width, data.height);
 }
 
 function parseInputJSON(jsonStr) {

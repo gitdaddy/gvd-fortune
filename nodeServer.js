@@ -193,7 +193,6 @@ function labelConnectedComponents(src, height, width) {
   var count = 1;
   var conflicts = [];
   for (var row = 0; row < height; row++) {
-    // console.log("row:" + row);
     for (var col = 0; col < width; col++) {
       var idx = col + row * width;
       if (src[idx] === 255) {
@@ -207,10 +206,10 @@ function labelConnectedComponents(src, height, width) {
             // conflict - remember them for later
             if (src[idxBehind] < src[idxAbove]) {
               src[idx] = src[idxBehind];
-              conflicts.push({a: src[idxBehind], b:src[idxAbove] });
+              conflicts.push({a: src[idxAbove], b:src[idxBehind] });
             } else {
               src[idx] = src[idxAbove];
-              conflicts.push({a: src[idxAbove], b:src[idxBehind] });
+              conflicts.push({a: src[idxBehind], b:src[idxAbove] });
             }
           }
         } else if (src[idxBehind] !== 0) {
@@ -250,10 +249,11 @@ function labelConnectedComponents(src, height, width) {
   // re- label
   console.log("re label rows conflicts size:" + conflicts.length);
   var len = height * width;
-  conflicts.forEach(function (c) {
+  conflicts = _.sortBy(conflicts, 'a');
+  _.each(_.reverse(conflicts), function (c) {
   for (var i = 0; i < len; i++){
-        if (src[i] === c.b) {
-          src[i] = c.a;
+        if (src[i] === c.a) {
+          src[i] = c.b;
         }
       }
   });
@@ -285,13 +285,6 @@ function getMapDatasetJson(filePath) {
 
   var output = labelConnectedComponents(oneDimPixelArray, json.height, json.width);
   json.value = output;
-  // fs.writeFile('2pac.txt', output, (err) => {
-  //     // throws an error, you could also catch it here
-  //     if (err) throw err;
-
-  //     // success case, the file was saved
-  //     console.log('Lyric saved!');
-  // });
   return JSON.stringify(json);
 }
 
