@@ -235,7 +235,6 @@ function renderOutline(outlinePoints, context){
 }
 
 function canvasToPolygons(srcArray, width, height){
-  // let theta = 0.1;
   // console.log("canvas to polygon width:" + width + " height:" + height);
   let xScale = d3.scaleLinear()
     .domain([0, width])
@@ -251,21 +250,22 @@ function canvasToPolygons(srcArray, width, height){
 
     var stdPoints = [];
 
+    let theta = -0.05;
     for(var i=0; i<cPoints.length; i+=2){
       // TODO rotate canvas points
       // x' = xcos(theta) - ysin(theta)
       // y' = xsin(theta) + ycos(theta)
       var x = xScale(cPoints[i]);
       var y = yScale(cPoints[i+1]);
-      // var xP = x*Math.cos(theta) - y*Math.sin(theta);
-      // var yP = x*Math.sin(theta) + y*Math.cos(theta);
+      var xP = x*Math.cos(theta) - y*Math.sin(theta);
+      var yP = x*Math.sin(theta) + y*Math.cos(theta);
       // yP += .35;
-      // stdPoints.push({x:xP, y:yP});
       var idx = _.findIndex(stdPoints, function (p){
         return p.x === x && p.y === y;
       });
       if (idx === -1) {
-        stdPoints.push({x:x, y:y});
+        // stdPoints.push({x:x, y:y});
+        stdPoints.push({x:xP, y:yP});
       }
     }
 
@@ -314,10 +314,10 @@ function parseInputMap(jsonStr) {
   _.each(objs, function(o) { renderOutline(o, ctx) });
 
   // testing only
-  // var few = [objs[0]];
-  // return canvasToPolygons(few, width, height);
+  var few = [objs[0]];
+  return canvasToPolygons(few, width, height);
 
-  return canvasToPolygons(objs, data.width, data.height);
+  // return canvasToPolygons(objs, data.width, data.height);
 }
 
 function parseInputJSON(jsonStr) {
