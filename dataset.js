@@ -250,27 +250,30 @@ function canvasToPolygons(srcArray, width, height){
 
     var stdPoints = [];
 
-    let theta = -0.01;
     for(var i=0; i<cPoints.length; i+=2){
-      // TODO rotate canvas points
-      // x' = xcos(theta) - ysin(theta)
-      // y' = xsin(theta) + ycos(theta)
       var x = xScale(cPoints[i]);
       var y = yScale(cPoints[i+1]);
-      var xP = x*Math.cos(theta) - y*Math.sin(theta);
-      var yP = x*Math.sin(theta) + y*Math.cos(theta);
-      // yP += .35;
       var idx = _.findIndex(stdPoints, function (p){
         return p.x === x && p.y === y;
       });
       if (idx === -1) {
-        // stdPoints.push({x:x, y:y});
-        stdPoints.push({x:xP, y:yP});
+        stdPoints.push({x:x, y:y});
       }
     }
 
     // WATCH VALUE
     stdPoints = sanitizeData(stdPoints, 1e-7, 1e-4);
+
+    // rotate canvas points
+    // for better accuracy
+    let theta = -0.02;
+    stdPoints = _.transform(stdPoints, function(result, p){
+      // x' = xcos(theta) - ysin(theta)
+      // y' = xsin(theta) + ycos(theta)
+      var xP = p.x*Math.cos(theta) - p.y*Math.sin(theta);
+      var yP = p.x*Math.sin(theta) + p.y*Math.cos(theta);
+      result.push({x:xP, y:yP});
+    }, []);
 
     for(var i = 0; i < stdPoints.length; i++){
       poly.addPoint(new vec3(stdPoints[i].x, stdPoints[i].y, 0));
