@@ -40,8 +40,9 @@ function getDiff(left, node, right, p, directrix) {
 
   var radius = getRadius(p, left, node, right);
   var newY = p[1] - radius;
+  var newYErrorMargin = p[1] - (radius + 1e-13);
   // rule out points too far above the directrix
-  if (newY > directrix) return 1e10;
+  if (newY > directrix && newYErrorMargin > directrix) return 1e10;
 
   // Option: or test that left and right intersection
   var i0 = getIntercept(left, node, newY);

@@ -250,7 +250,7 @@ function canvasToPolygons(srcArray, width, height){
 
     var stdPoints = [];
 
-    let theta = -0.05;
+    let theta = -0.01;
     for(var i=0; i<cPoints.length; i+=2){
       // TODO rotate canvas points
       // x' = xcos(theta) - ysin(theta)
@@ -314,10 +314,9 @@ function parseInputMap(jsonStr) {
   _.each(objs, function(o) { renderOutline(o, ctx) });
 
   // testing only
-  var few = [objs[0]];
-  return canvasToPolygons(few, width, height);
-
-  // return canvasToPolygons(objs, data.width, data.height);
+  // var few = [objs[0]];
+  // return canvasToPolygons(few, width, height);
+  return canvasToPolygons(objs, data.width, data.height);
 }
 
 function parseInputJSON(jsonStr) {
