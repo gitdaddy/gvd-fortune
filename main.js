@@ -1,6 +1,6 @@
 "use strict";
 
-var g_sweepline = 0.1;
+var g_sweepline = {x1: -1, x2:1, y: -1};
 var g_eventThresh = 1e-6;
 
 let g_datasets = {
@@ -41,13 +41,9 @@ let g_xInc = 0.01;
 
 let showEvents = false;
 let showDebugObjs = false;
-let g_fullScreen = false;
-let g_hide_iso_lines = false;
-
-// function generateRandomSites(){
-//   var query = '/randomize/';
-//   $.get(query);
-// }
+// let g_fullScreen = false;
+let g_hide_iso_lines = true;
+let g_hide_tree = true;
 
 function updateDebugVars() {
   var p = document.getElementsByName("xIncVal")[0].valueAsNumber;
@@ -60,12 +56,13 @@ function updateDebugVars() {
 }
 
 function setSweepline(d) {
-  g_sweepline = d;
+  g_sweepline.y = d;
   localStorage.sweepline = d;
 }
 
 function incSweepline(inc) {
-  setSweepline(g_sweepline + inc);
+  g_sweepline.y += inc;
+  setSweepline(g_sweepline.y);
 }
 
 function keydown(event) {
@@ -105,11 +102,23 @@ function keydown(event) {
       d3.selectAll('.gvd-iso-surface-parabola')
       .style("stroke-width", 0)
       ;
+      d3.selectAll(".gvd-surface-active-parabola")
+      .style("stroke-width", 0)
+      ;
+      d3.selectAll('.gvd-surface-active')
+      .style("stroke-width", 0)
+      ;
     } else {
       d3.selectAll(".gvd-iso-surface")
       .style("stroke-width", g_isoEdgeWidth)
       ;
       d3.selectAll('.gvd-iso-surface-parabola')
+      .style("stroke-width", g_isoEdgeWidth)
+      ;
+      d3.selectAll(".gvd-surface-active-parabola")
+      .style("stroke-width", g_isoEdgeWidth)
+      ;
+      d3.selectAll('.gvd-surface-active')
       .style("stroke-width", g_isoEdgeWidth)
       ;
     }
@@ -129,7 +138,7 @@ function keydown(event) {
   if (changed) {
     // Prevent scroll
     event.preventDefault();
-    document.getElementById("sweeplineLabel").innerHTML = g_sweepline.toFixed(10);
+    document.getElementById("sweeplineLabel").innerHTML = g_sweepline.y.toFixed(10);
     render();
   }
 }
@@ -137,17 +146,17 @@ function keydown(event) {
 function init() {
   if (localStorage.sweepline && !_.isNaN(localStorage.sweepline)
   && localStorage.sweepline !== "NaN") {
-    g_sweepline = parseFloat(localStorage.sweepline);
+    g_sweepline.y = parseFloat(localStorage.sweepline);
   }
 
   document.getElementsByName("xIncVal")[0].valueAsNumber = g_xInc;
   document.getElementsByName("incVal")[0].valueAsNumber = g_sInc;
 
-  drawInit();
+  drawInit(g_sweepline);
 
   document.onkeydown = keydown;
-  document.getElementById("fullscreenToggle").onclick = toggleFS;
-  document.getElementById("sweeplineLabel").innerHTML = g_sweepline.toFixed(10);
+  // document.getElementById("fullscreenToggle").onclick = toggleFS;
+  document.getElementById("sweeplineLabel").innerHTML = g_sweepline.y.toFixed(10);
 
   _.forEach(g_fileDatasets, function (p) {
     var option = document.createElement("option");
@@ -206,7 +215,7 @@ function fortune(reorder) {
   var nextY = getEventY(queue[queue.length - 1]);
 
   var tStart = performance.now();
-  while (queue.length > 0 && nextY > g_sweepline) {
+  while (queue.length > 0 && nextY > g_sweepline.y) {
     var event = queue.pop();
     if (event.isCloseEvent) {
       if (event.live && event.arcNode.closeEvent.live) {
@@ -286,8 +295,9 @@ function fortune(reorder) {
 }
 
 function moveSweepline(y) {
+
   setSweepline(y);
-  document.getElementById("sweeplineLabel").innerHTML = g_sweepline.toFixed(10);
+  document.getElementById("sweeplineLabel").innerHTML = g_sweepline.y.toFixed(10);
   render();
 }
 
@@ -301,7 +311,7 @@ function render(reorder = false) {
   console.log("Process Time:" + processTime.toFixed(6) + "(ms)");
 
   var t2 = performance.now();
-  drawBeachline(beachline, g_sweepline);
+  drawBeachline(beachline, g_sweepline.y);
   drawCloseEvents(closeEventPoints);
   drawSweepline(g_sweepline);
   drawSurface(dcel);
@@ -309,7 +319,23 @@ function render(reorder = false) {
   var drawTime = t3 - t2;
   console.log("Draw Time:" + drawTime.toFixed(6) + "(ms)");
 
-  showTree(beachline.root);
+  if (!g_hide_tree){
+    showTree(beachline.root);
+  }
 
+  if (g_hide_iso_lines) {
+    d3.selectAll(".gvd-iso-surface")
+    .style("stroke-width", 0)
+    ;
+    d3.selectAll('.gvd-iso-surface-parabola')
+    .style("stroke-width", 0)
+    ;
+    d3.selectAll(".gvd-surface-active-parabola")
+    .style("stroke-width", 0)
+    ;
+    d3.selectAll('.gvd-surface-active')
+    .style("stroke-width", 0)
+    ;
+  }
   // runTests();
 }

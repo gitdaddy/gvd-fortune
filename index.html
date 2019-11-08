@@ -14,7 +14,7 @@
     integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
   </script>
 
-  <!-- Link d3 version 4 -->
+  <!-- Link d3 version 5 -->
   <script src="https://d3js.org/d3.v5.min.js"></script>
   <script type="text/javascript" src="./d3.min.js"></script>
   <script type="text/javascript" src="./dcel.js"></script>
@@ -47,10 +47,10 @@
       <!-- <span class="title-group">
         <button onclick="onBeginPathAlgorithm()"> Find Shortest Path </button>
       </span> -->
-      <span class="title-group">
+      <!-- <span class="title-group">
         <label for="fullscreenToggle">Toggle Fullscreen</label>
         <input type="checkbox" id="fullscreenToggle" />
-      </span>
+      </span> -->
       <span class="title-group">
         d=<label id="sweeplineLabel"></label>
       </span>
@@ -83,8 +83,9 @@
     </div>
   </div>
   <div class="row">
-    <div id="mainView" class="column">
-    </div>
+    <svg id="mainView" class="column">
+      <!-- <line id="sweepline" x1="0" y1="0" x2="0" y2="0" vector-effect="non-scaling-stroke"></line> -->
+    </svg>
     <div class="column">
       <svg id="tree"></svg>
       <div id="tree-debug2"></div>

@@ -227,12 +227,12 @@ function markSiteRelations(segments) {
 }
 
 // testing only
-function renderOutline(outlinePoints, context){
-  context.fillStyle = "#0000FF";
-  for(var i=0; i<outlinePoints.length; i+=2){
-      context.fillRect(outlinePoints[i], outlinePoints[i+1], 1, 1);
-  }
-}
+// function renderOutline(outlinePoints, context){
+//   context.fillStyle = "#0000FF";
+//   for(var i=0; i<outlinePoints.length; i+=2){
+//       context.fillRect(outlinePoints[i], outlinePoints[i+1], 1, 1);
+//   }
+// }
 
 function canvasToPolygons(srcArray, width, height){
   // console.log("canvas to polygon width:" + width + " height:" + height);
@@ -314,7 +314,7 @@ function parseInputMap(jsonStr) {
   var objs = MarchingSquaresOpt.getBlobOutlinePoints(data.value, data.width, data.height);
 
   // ctx.clearRect(0, 0, canvas.width, canvas.height);
-  _.each(objs, function(o) { renderOutline(o, ctx) });
+  // _.each(objs, function(o) { renderOutline(o, ctx) });
 
   // testing only
   // var few = [objs[0]];
