@@ -75,12 +75,6 @@ function showTree(treeData) {
   if (treeData == null) return;
 
   // declares a tree layout and assigns the size
-  var treeId;
-  if (g_fullScreen) {
-    treeId = "#treeDebug";
-  } else {
-    treeId = "#tree";
-  }
   var treeMap = d3.tree()
   .size([heightT, widthT]);
 
@@ -100,8 +94,8 @@ function showTree(treeData) {
   // append the svg object to the body of the page
   // appends a 'group' element to 'svg'
   // moves the 'group' element to the top left margin
-  d3.select(treeId).html("");
-  var svg = d3.select(treeId)
+  d3.select(g_treeId).html("");
+  var svg = d3.select(g_treeId)
     .attr("width", widthT + marginT.left + marginT.right)
     .attr("height", heightT + marginT.top + marginT.bottom),
   g = svg.append("g")
@@ -114,7 +108,7 @@ function showTree(treeData) {
     .data(nodes.descendants().slice(1))
     .enter().append("path")
     .attr("class", "link")
-    .style("stroke", function(d) { return "green"; })//d.data.level; })
+    .style("stroke", function(d) { return "green"; })
     .attr("d", function(d) {
       return "M" + d.x + "," + d.y
         + "L" + d.parent.x + "," + d.parent.y;

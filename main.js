@@ -44,6 +44,7 @@ let showDebugObjs = false;
 // let g_fullScreen = false;
 let g_hide_iso_lines = true;
 let g_hide_tree = true;
+let g_treeId = "#treeTagId";
 
 function updateDebugVars() {
   var p = document.getElementsByName("xIncVal")[0].valueAsNumber;
@@ -121,6 +122,13 @@ function keydown(event) {
       d3.selectAll('.gvd-surface-active')
       .style("stroke-width", g_isoEdgeWidth)
       ;
+    }
+  } else if (key == 't') {
+    g_hide_tree = !g_hide_tree;
+    if (g_hide_tree) {
+      d3.select(g_treeId).attr('width', 0).attr('height', 0);
+    } else {
+      d3.select(g_treeId).attr('width', widthT).attr('height', heightT);
     }
   } else if (key == 'e') {
     showEvents = !showEvents;

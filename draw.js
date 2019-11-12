@@ -14,9 +14,9 @@ let g_edgeColors = [ 'darkkhaki', 'limegreen', 'red', 'black'];
 
 const ZOOM_EXTENT = 200000;
 
-let margin = {top: 30, right: 30, bottom: 30, left: 30},
-    width = 700 - margin.left - margin.right,
-    height = 700 - margin.top - margin.bottom;
+let margin = {top: 50, right: 50, bottom: 50, left: 50},
+    width = 1000 - margin.left - margin.right,
+    height = 1000 - margin.top - margin.bottom;
 
 let svg;
 let xAxis;
@@ -45,13 +45,6 @@ let gvdToPixelXScale =  d3.scaleLinear()
 let gvdToPixelYScale =  d3.scaleLinear()
 .domain([1, -1])
 .range([0, height]);
-
-// let zoom = d3.zoom()
-//     .extent([[width * ZOOM_EXTENT, height * ZOOM_EXTENT], [width, height]])
-//     .scaleExtent([1, ZOOM_EXTENT])
-//     .translateExtent([[0, 0], [width, height]])
-//     .on("zoom", zoomed);
-
 
 /////////////// Handler Functions /////////////////
 
@@ -338,7 +331,6 @@ function drawSegments(segments) {
 }
 
 function drawSweepline(sweepline) {
-  console.log("sweepline val:" + sweepline.y);
   d3.select("#sweepline").data([sweepline])
     .attr("x1", d => xRev(d.x1))
     .attr("y1", d => yRev(d.y))

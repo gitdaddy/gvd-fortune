@@ -13,6 +13,18 @@ body {
     height: 100%;
 }
 
+.main-view-center {
+    margin: auto;
+    width: 50%;
+    /* border: 3px solid green; */
+    padding: 10px;
+  }
+
+.hidden-canvas {
+    visibility:hidden;
+    border:1px solid #d3d3d3;
+}
+
 /* Create three equal columns that floats next to each other */
 .column {
     float: left;
