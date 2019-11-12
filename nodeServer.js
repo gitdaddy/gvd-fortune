@@ -191,7 +191,7 @@ function getDatasetJson(set) {
 
 function labelConnectedComponents(src, height, width) {
   var count = 1;
-  var conflicts = [];
+  var conflicts = new Array(1000);
   for (var row = 0; row < height; row++) {
     for (var col = 0; col < width; col++) {
       var idx = col + row * width;
@@ -206,10 +206,14 @@ function labelConnectedComponents(src, height, width) {
             // conflict - remember them for later
             if (src[idxBehind] < src[idxAbove]) {
               src[idx] = src[idxBehind];
-              conflicts.push({a: src[idxAbove], b:src[idxBehind] });
+              // conflicts.push({a: src[idxAbove], b:src[idxBehind] });
+              // conflicts[src[idxBehind]] = src[idxAbove];
+              conflicts[src[idxAbove]] = src[idxBehind];
             } else {
               src[idx] = src[idxAbove];
-              conflicts.push({a: src[idxBehind], b:src[idxAbove] });
+              // conflicts.push({a: src[idxBehind], b:src[idxAbove] });
+              // conflicts[src[idxAbove]] = src[idxBehind];
+              conflicts[src[idxBehind]] = src[idxAbove];
             }
           }
         } else if (src[idxBehind] !== 0) {
@@ -247,16 +251,29 @@ function labelConnectedComponents(src, height, width) {
   }
 
   // re- label
-  console.log("re label rows conflicts size:" + conflicts.length);
+  // conflicts = _.uniq(conflicts);
+  // console.log("re label rows conflicts size:" + conflicts.length);
   var len = height * width;
-  conflicts = _.sortBy(conflicts, 'a');
-  _.each(_.reverse(conflicts), function (c) {
-  for (var i = 0; i < len; i++){
-        if (src[i] === c.a) {
-          src[i] = c.b;
+  for (var i = conflicts.length - 1; i > -1; i--)
+  {
+    var low = conflicts[i];
+    if (low) {
+      for (var j = 0; j < len; j++){
+        if (src[j] === i) {
+          src[j] = low;
         }
       }
-  });
+    }
+  }
+  // conflicts = _.uniq(conflicts);
+  // conflicts = _.sortBy(conflicts, 'a');
+  // _.each(_.reverse(conflicts), function (c) {
+  // for (var i = 0; i < len; i++){
+  //       if (src[i] === c.a) {
+  //         src[i] = c.b;
+  //       }
+  //     }
+  // });
   console.log("done re-labeling");
   return src;
 }

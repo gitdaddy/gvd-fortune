@@ -55,7 +55,7 @@ function removeColinearPoints(orderedPoints, optTolerance) {
   }
 
   // order points should now be a unique set of points
-  orderedPoints = _.uniqWith(orderedPoints, _.isEqual);
+  orderedPoints = _.uniqWith(orderedPoints, _.isEqual); // TODO performance
 
   for (var i = 0; i < orderedPoints.length; i++) {
     var start = i === 0 ? orderedPoints.length-1 : i-1;
@@ -85,7 +85,6 @@ function removeColinearPoints(orderedPoints, optTolerance) {
 
 function removeCAS(points, optTolerance) {
   var rslt = removeColinearPoints(points, optTolerance);
-  // rslt.points = _.uniqWith(rslt.points, _.isEqual);
   while(rslt.removed)
   {
     rslt = removeColinearPoints(rslt.points, optTolerance);
@@ -101,16 +100,6 @@ function sanitizeData(orderedPoints, optTolerance, optXoffset) {
 
   var match = getMatch(orderedPoints);
   while(match) {
-    // if (match.s2Idx === 0 && isColinear(orderedPoints[0], orderedPoints[1], orderedPoints[orderedPoints.length-1], 0)){
-    //       debugger;
-    // }
-    // if (match.s2Idx === orderedPoints.length -1 && _.isEqual(orderedPoints[0], orderedPoints[orderedPoints.length -1])) {
-    //   console.log("MATCH");
-    //   debugger;
-    //   var co = isColinear(orderedPoints[0], orderedPoints[1], orderedPoints[orderedPoints.length-1], 0);
-    //   console.log("co:" + co);
-    // }
-
     orderedPoints[match.s2Idx].y -= getRandomAdjustment(orderedPoints, match);
     if (optXoffset) {
       orderedPoints[match.s2Idx].x += Math.random() < 0.5 ? -optXoffset : optXoffset;
@@ -227,12 +216,12 @@ function markSiteRelations(segments) {
 }
 
 // testing only
-// function renderOutline(outlinePoints, context){
-//   context.fillStyle = "#0000FF";
-//   for(var i=0; i<outlinePoints.length; i+=2){
-//       context.fillRect(outlinePoints[i], outlinePoints[i+1], 1, 1);
-//   }
-// }
+function renderOutline(outlinePoints, context){
+  context.fillStyle = "#0000FF";
+  for(var i=0; i<outlinePoints.length; i+=2){
+      context.fillRect(outlinePoints[i], outlinePoints[i+1], 1, 1);
+  }
+}
 
 function canvasToPolygons(srcArray, width, height){
   // console.log("canvas to polygon width:" + width + " height:" + height);
@@ -245,6 +234,7 @@ function canvasToPolygons(srcArray, width, height){
     .range([1, -1]);
 
   var polygons = [];
+  var debugIdx = 0;
   _.each(srcArray, function(cPoints){
     var poly = new Polygon();
 
@@ -276,8 +266,9 @@ function canvasToPolygons(srcArray, width, height){
     }, []);
 
     for(var i = 0; i < stdPoints.length; i++){
-      poly.addPoint(new vec3(stdPoints[i].x, stdPoints[i].y, 0));
-
+      var point = new vec3(stdPoints[i].x, stdPoints[i].y, 0);
+      point.fileId = debugIdx.toString();
+      poly.addPoint(point);
       if (i === stdPoints.length - 1) {
         poly.createSegment(i-1, 0);
       } else if (i !== 0) {
@@ -285,6 +276,7 @@ function canvasToPolygons(srcArray, width, height){
       }
     }
     polygons.push(poly);
+    debugIdx++;
   });
   return polygons;
 }
@@ -313,11 +305,19 @@ function parseInputMap(jsonStr) {
   ctx.putImageData(imgData, 0, 0);
   var objs = MarchingSquaresOpt.getBlobOutlinePoints(data.value, data.width, data.height);
 
+  // Debug the canvas
   // ctx.clearRect(0, 0, canvas.width, canvas.height);
   // _.each(objs, function(o) { renderOutline(o, ctx) });
 
+  var found = _.find(g_fileDatasets, function(f) { return f.label === "dataset7 - Berlin city dataset"; });
+  if (found) {
+    console.log("removing extra polygon");
+    objs.splice(27, 1);
+  }
+
   // testing only
-  // var few = [objs[0]];
+  // debug ids: 21,33,35 38 37 39 30 34
+  // var few = [objs[21]]; // 27
   // return canvasToPolygons(few, width, height);
   return canvasToPolygons(objs, data.width, data.height);
 }
