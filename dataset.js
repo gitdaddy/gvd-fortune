@@ -311,7 +311,6 @@ function parseInputMap(jsonStr) {
 
   var found = _.find(g_fileDatasets, function(f) { return f.label === "dataset7 - Berlin city dataset"; });
   if (found) {
-    console.log("removing extra polygon");
     objs.splice(27, 1);
   }
 

@@ -4,7 +4,6 @@ let g_siteRadius = 3;
 let g_isoEdgeWidth = 1;
 
 // dijkstra's controls
-let g_selectingStart = true;
 let g_pathStartElem = {};
 let g_pathEndElem = {};
 let g_allEdges = [];
@@ -62,25 +61,23 @@ function getEdgeVertexId(i) {
 function onEdgeVertexClick(d, i) {
   // Stop the event from propagating to the SVG
   d3.event.stopPropagation();
-  if (g_selectingStart) {
-    if (g_pathStartElem) {
-      d3.select('#' + getEdgeVertexId(g_pathStartElem.idx))
-        .style("fill", g_edgeColors[3]);
-    }
-    this.style["fill"] = g_edgeColors[1];
-    g_pathStartElem.value = d;
-    g_pathStartElem.idx = i;
-  } else {
-    if (g_pathEndElem) {
-      d3.select('#' + getEdgeVertexId(g_pathEndElem.idx))
-        .style("fill", g_edgeColors[3]);
-    }
-    this.style["fill"] = g_edgeColors[2];
-    g_pathEndElem.value = d;
-    g_pathEndElem.idx = i;
+
+  if (g_pathStartElem) {
+    d3.select('#' + getEdgeVertexId(g_pathStartElem.idx))
+      .style("fill", g_edgeColors[3]);
   }
-  g_selectingStart = !g_selectingStart;
-  onBeginPathAlgorithm();
+  this.style["fill"] = g_edgeColors[1];
+  g_pathStartElem.value = d;
+  g_pathStartElem.idx = i;
+  var t0 = performance.now();
+  shortestPath({
+    x: g_pathStartElem.value.x,
+    y: g_pathStartElem.value.y,
+    tc: 0
+  });
+  var t1 = performance.now();
+  var processTime = t1 - t0;
+  console.log("Path Processing Time:" + processTime.toFixed(6) + "(ms)");
 }
 
 function onEdgeVertexMouseOver(d, i) {
