@@ -5,8 +5,8 @@ let g_isoEdgeWidth = 1;
 
 // dijkstra's controls
 let g_pathStartElem = {};
-let g_pathEndElem = {};
 let g_allEdges = [];
+let g_allVertices = [];
 
 // start, end, default
 let g_edgeColors = [ 'darkkhaki', 'limegreen', 'red', 'black'];
@@ -70,10 +70,12 @@ function onEdgeVertexClick(d, i) {
   g_pathStartElem.value = d;
   g_pathStartElem.idx = i;
   var t0 = performance.now();
+  clearPathInfo();
   shortestPath({
     x: g_pathStartElem.value.x,
     y: g_pathStartElem.value.y,
-    tc: 0
+    tc: 0,
+    path: []
   });
   var t1 = performance.now();
   var processTime = t1 - t0;
@@ -81,16 +83,19 @@ function onEdgeVertexClick(d, i) {
 }
 
 function onEdgeVertexMouseOver(d, i) {
-
-  if (this.style["fill"] !== g_edgeColors[1]
-      && this.style["fill"] !== g_edgeColors[2])
-    this.style["fill"] = g_edgeColors[0];
+  // if (this.style["fill"] !== g_edgeColors[1]
+  //     && this.style["fill"] !== g_edgeColors[2])
+  //   this.style["fill"] = g_edgeColors[0];
+  d3.select(`#${this.id}`).attr("r", g_siteRadius * 3);
+  onNodeHighlight({x:d.x, y:d.y});
 }
 
 function onEdgeVertexMouseOut(d, i) {
-  if (this.style["fill"] === g_edgeColors[0]) {
-    this.style["fill"] = g_edgeColors[3];
-  }
+  // if (this.style["fill"] === g_edgeColors[0]) {
+  //   this.style["fill"] = g_edgeColors[3];
+  // }
+  d3.select(`#${this.id}`).attr("r", g_siteRadius);
+  unHighlightPaths();
 }
 
 ///////////////////////////////////////////////////
@@ -384,11 +389,9 @@ function drawSurface(dcel) {
   }
 
   // for path algorithm
-  // setEdgeDataset(edges, generalEdges);
-  g_allEdges = edges.concat(generalEdges);
+  setSortedDatasets(edges.concat(generalEdges));
 
   g_pathStartElem = {};
-  g_pathEndElem = {};
 
   let line = d3.line()
   .x(function (d) {return xRev(d[0]);})
@@ -427,18 +430,18 @@ function drawSurface(dcel) {
     .style("stroke-width", e => getSurfaceWidth(e.splitSite))
   ;
 
-  var vertices = [];
+  g_allVertices = [];
   _.forEach(edges, function(e) {
     if (!e.splitSite) return;
     var po = {x: e.origin.point[0], y: e.origin.point[1]};
     var pd = {x: e.dest.point[0], y: e.dest.point[1]};
     // insert only unique values
-    if (vertices.indexOf(po) === -1) {
-      vertices.push(po);
+    if (g_allVertices.indexOf(po) === -1) {
+      g_allVertices.push(po);
     }
 
-    if (vertices.indexOf(pd) === -1) {
-      vertices.push(pd);
+    if (g_allVertices.indexOf(pd) === -1) {
+      g_allVertices.push(pd);
     }
   });
   _.forEach(generalEdges, function(e) {
@@ -446,12 +449,12 @@ function drawSurface(dcel) {
     var po = {x: e.origin.point[0], y: e.origin.point[1]};
     var pd = {x: e.dest.point[0], y: e.dest.point[1]};
     // insert only unique values
-    if (vertices.indexOf(po) === -1) {
-      vertices.push(po);
+    if (g_allVertices.indexOf(po) === -1) {
+      g_allVertices.push(po);
     }
 
-    if (vertices.indexOf(pd) === -1) {
-      vertices.push(pd);
+    if (g_allVertices.indexOf(pd) === -1) {
+      g_allVertices.push(pd);
     }
   });
 
@@ -459,7 +462,7 @@ function drawSurface(dcel) {
 
   let edgeVertices = d3.select('#gvd')
     .selectAll(".gvd-edge-vertex")
-    .data(vertices);
+    .data(g_allVertices);
   edgeVertices.enter()
     .append("circle")
     .attr("class", "gvd-edge-vertex")

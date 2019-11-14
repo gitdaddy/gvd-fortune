@@ -1,9 +1,10 @@
 "use strict";
 
-let g_edgeDataset = [];
+// let g_edgeDataset = [];
 let g_edgex0SortedDataset = [];
 let g_edgex1SortedDataset = [];
-let highlightColor = "yellow";
+let g_currentHighlightedPaths = [];
+// let highlightColor = "yellow";
 
 // priority queue
 // let queue = [];
@@ -11,6 +12,39 @@ let highlightColor = "yellow";
 let g_pathIds = [];
 // TODO highlight all vertices
 let g_vertexIds = [];
+
+function setSortedDatasets(allEdges){
+  var dataset = [];
+  _.forEach(allEdges, function (e) {
+    if (!e.origin.point || !e.dest.point) throw "invalid edge detected";
+    var obj = {
+      x0: e.origin.point[0],
+      x1: e.dest.point[0],
+      y0: e.origin.point[1],
+      y1: e.dest.point[1],
+      id: getEdgeId(e),
+      cost: distance(e),
+      tCost: undefined,
+      previousEdge: undefined // may not need this anymore
+    };
+    dataset.push(obj);
+  });
+  // must be a reference to
+  g_edgex0SortedDataset = _.sortBy(dataset, 'x0');
+  g_edgex1SortedDataset = _.sortBy(dataset, 'x1');
+}
+
+function clearPathInfo() {
+  for (var i = 0; i < g_edgex0SortedDataset.length; i++) {
+    g_edgex0SortedDataset[i].path = [];
+    g_edgex0SortedDataset[i].tCost = undefined;
+  }
+
+  for (var i = 0; i < g_edgex1SortedDataset.length; i++) {
+    g_edgex1SortedDataset[i].path = [];
+    g_edgex1SortedDataset[i].tCost = undefined;
+  }
+}
 
 function distance(dcelEdge) {
   var x0 = dcelEdge.origin.point[0];
@@ -22,62 +56,62 @@ function distance(dcelEdge) {
   return Math.sqrt((dx*dx)+(dy*dy));
 }
 
-function pathFromVisited(visited, endId) {
-  var path = [endId];
-  var curId = endId;
-  var curIdx = _.findIndex(visited, function (v) {
-    return v.id === curId;
-  });
-  while(curIdx !== -1) {
-    var edge = visited.splice(curIdx, 1)[0];
-    curId = edge.previousEdge;
-    if (!curId) break;
-    path.push(curId);
-    curIdx = _.findIndex(visited, function (v) {
-      return v.id === curId;
-    });
-  }
-  return path;
-}
+// function pathFromVisited(visited, endId) {
+//   var path = [endId];
+//   var curId = endId;
+//   var curIdx = _.findIndex(visited, function (v) {
+//     return v.id === curId;
+//   });
+//   while(curIdx !== -1) {
+//     var edge = visited.splice(curIdx, 1)[0];
+//     curId = edge.previousEdge;
+//     if (!curId) break;
+//     path.push(curId);
+//     curIdx = _.findIndex(visited, function (v) {
+//       return v.id === curId;
+//     });
+//   }
+//   return path;
+// }
 
 // set idx
-function enqueue(queue, edge, prevId) {
-  var sortFunc = function(edge) {
-    // inverted sort order - largest [....] smallest
-    return (1/edge.tCost);
-  };
+// function enqueue(queue, edge, prevId) {
+//   var sortFunc = function(edge) {
+//     // inverted sort order - largest [....] smallest
+//     return (1/edge.tCost);
+//   };
 
-  // if the queue contains the edge already
-  // update the tCost if it is less than the
-  // current cost
-  var existingIdx = _.findIndex(queue, function(e) {
-    return e.id === edge.id;
-  });
-  if (existingIdx !== -1) { // if found
-    if (queue[existingIdx].tCost > edge.tCost) {
-      queue[existingIdx].tCost = edge.tCost;
-      queue[existingIdx].previousEdge = prevId;
-      _.sortBy(queue, sortFunc);
-    }
-    return;
-  }
+//   // if the queue contains the edge already
+//   // update the tCost if it is less than the
+//   // current cost
+//   var existingIdx = _.findIndex(queue, function(e) {
+//     return e.id === edge.id;
+//   });
+//   if (existingIdx !== -1) { // if found
+//     if (queue[existingIdx].tCost > edge.tCost) {
+//       queue[existingIdx].tCost = edge.tCost;
+//       queue[existingIdx].previousEdge = prevId;
+//       _.sortBy(queue, sortFunc);
+//     }
+//     return;
+//   }
 
-  var idx = _.sortedIndexBy(queue, edge, sortFunc);
-  // update the previous edge
-  edge.previousEdge = prevId;
-  // insert the in order or on top
-  if (idx === -1) {
-    queue.push(edge);
-  } else {
-    queue.splice(idx, 0, edge);
-  }
-}
+//   var idx = _.sortedIndexBy(queue, edge, sortFunc);
+//   // update the previous edge
+//   edge.previousEdge = prevId;
+//   // insert the in order or on top
+//   if (idx === -1) {
+//     queue.push(edge);
+//   } else {
+//     queue.splice(idx, 0, edge);
+//   }
+// }
 
 // return idx
-function dequeue(queue) {
-  // return the smallest tCost
-  return queue.pop();
-}
+// function dequeue(queue) {
+//   // return the smallest tCost
+//   return queue.pop();
+// }
 
 // only return the edges of the unvisited neighbors
 function getConnectedEdges(x, y, optStartId) {
@@ -87,13 +121,15 @@ function getConnectedEdges(x, y, optStartId) {
   var x0Indexes = [];
   for (var i = idx0Start; i <= idx0End; i++) {
     if (!g_edgex0SortedDataset[i]) {
-      console.error("Invalid index");
-    }
-    if (g_edgex0SortedDataset[i].y0 === y) {
-      if (g_edgex0SortedDataset[i].visited ||
-          (optStartId && g_edgex0SortedDataset[i].id === optStartId));
-      else
-        x0Indexes.push(i);
+      // end of the line
+      // console.error("Invalid index");
+    } else {
+      if (g_edgex0SortedDataset[i].y0 === y) {
+        if (g_edgex0SortedDataset[i].visited ||
+            (optStartId && g_edgex0SortedDataset[i].id === optStartId));
+        else
+          x0Indexes.push(i);
+      }
     }
   }
 
@@ -102,14 +138,16 @@ function getConnectedEdges(x, y, optStartId) {
 
   var x1Indexes = [];
   for (var i = idx1Start; i <= idx1End; i++) {
+    if (!g_edgex1SortedDataset[i]) {
+      // end of the line
+      // console.error("Invalid index");
+    } else {
     if (g_edgex1SortedDataset[i].y1 === y) {
-      if (!g_edgex1SortedDataset[i]) {
-        console.error("Invalid index");
+        if (g_edgex1SortedDataset[i].visited ||
+          (optStartId && g_edgex1SortedDataset[i].id === optStartId));
+        else
+          x1Indexes.push(i);
       }
-      if (g_edgex1SortedDataset[i].visited ||
-        (optStartId && g_edgex1SortedDataset[i].id === optStartId));
-      else
-        x1Indexes.push(i);
     }
   }
 
@@ -126,7 +164,6 @@ function clearPaths() {
   });
 }
 
-// TODO test
 // single point implementation
 // ({x,y,tc, path:[id1,id2,id3...]})
 function shortestPath(point) {
@@ -137,40 +174,34 @@ function shortestPath(point) {
   var nextPts = [];
 
   _.each(linkedIdxs.oSortedIndexes, function (idx) {
-    // g_edgex0SortedDataset[idx].endX = g_edgex0SortedDataset[idx].x1;
-    // g_edgex0SortedDataset[idx].endY = g_edgex0SortedDataset[idx].y1;
-    // g_edgex0SortedDataset[idx].tCost = g_edgex0SortedDataset[idx].cost;
-    // enqueue(queue,  g_edgex0SortedDataset[idx], undefined);
-    var edge = g_edgex0SortedDataset[idx];
-    var newCost = point.tc + edge.cost;
-    var newPath = _.concat(point.path, [getEdgeId(edge)]);
-    var old = edge.tCost;
+    // var edge = g_edgex0SortedDataset[idx];
+    var newCost = point.tc + g_edgex0SortedDataset[idx].cost;
+    var newPath = _.concat(point.path, [g_edgex0SortedDataset[idx].id]); //[getEdgeId(edge)]);
+    var old = g_edgex0SortedDataset[idx].tCost;
     if (old && old < newCost); // do nothing
     else {
-      edge.tCost = newCost;
-      edge.path = path;
-      nextPts.push({x: edge.x1,
-        y: edge.y1,
+      g_edgex0SortedDataset[idx].tCost = newCost;
+      // g_edgex0SortedDataset[idx].path = point.path;
+      g_edgex0SortedDataset[idx].path = newPath;
+      nextPts.push({x: g_edgex0SortedDataset[idx].x1,
+        y: g_edgex0SortedDataset[idx].y1,
         tc: newCost,
         path: newPath});
     }
   });
 
-  _.each(indexes.dSortedIndexes, function (idx) {
-    // g_edgex1SortedDataset[idx].endX = g_edgex1SortedDataset[idx].x0;
-    // g_edgex1SortedDataset[idx].endY = g_edgex1SortedDataset[idx].y0;
-    // g_edgex1SortedDataset[idx].tCost = g_edgex1SortedDataset[idx].cost;
-    // enqueue(queue,  g_edgex1SortedDataset[idx], undefined);
-    var edge = g_edgex1SortedDataset[idx];
-    var newPath = _.concat(point.path, [getEdgeId(edge)]);
-    var newCost = point.tc + edge.cost;
-    var old = edge.tCost;
+  _.each(linkedIdxs.dSortedIndexes, function (idx) {
+    // var edge = g_edgex1SortedDataset[idx];
+    var newCost = point.tc + g_edgex1SortedDataset[idx].cost;
+    var newPath = _.concat(point.path, [g_edgex1SortedDataset[idx].id]);
+    var old = g_edgex1SortedDataset[idx].tCost;
     if (old && old < newCost); // do nothing
     else {
-      edge.tCost = newCost;
-      edge.path = path;
-      nextPts.push({x: edge.x2,
-        y: edge.y2,
+      g_edgex1SortedDataset[idx].tCost = newCost;
+      // g_edgex1SortedDataset[idx].path = point.path;
+      g_edgex1SortedDataset[idx].path = newPath;
+      nextPts.push({x: g_edgex1SortedDataset[idx].x0,
+        y: g_edgex1SortedDataset[idx].y0,
         tc: newCost,
         path: newPath});
     }
@@ -181,6 +212,59 @@ function shortestPath(point) {
   _.each(nextPts, function(pt) {
     shortestPath(pt);
   });
+}
+
+function highlightPath(path, color) {
+  _.each(path, function (pId) {
+    var selected = d3.select(`#${pId}`);
+    selected.style('stroke', color)
+    selected.style("stroke-width", 10)
+    ;
+
+    g_currentHighlightedPaths.push(pId);
+  });
+}
+
+function unHighlightPaths() {
+  _.each(g_currentHighlightedPaths, function (pId) {
+    var selected = d3.select(`#${pId}`);
+    selected.style('stroke', 'black')
+    selected.style("stroke-width", 4)
+    ;
+
+  });
+}
+
+function onNodeHighlight(pt) {
+  var linkedIdxs = getConnectedEdges(pt.x, pt.y);
+  var paths = [];
+  _.each(linkedIdxs.oSortedIndexes, function (idx) {
+    var edge = g_edgex0SortedDataset[idx];
+    if (!edge.tCost || !edge.path)
+      console.log("No path information available");
+    else
+      paths.push({route: edge.path, cost: edge.tCost});
+  });
+
+  _.each(linkedIdxs.dSortedIndexes, function (idx) {
+    var edge = g_edgex1SortedDataset[idx];
+    if (!edge.tCost || !edge.path)
+     console.log("No path information available");
+    else
+      paths.push({route: edge.path, cost: edge.tCost});
+  });
+
+  paths = _.sortBy(paths, 'cost');
+  // TODO perhaps highlight the second or third routes
+  if (paths.length > 0)
+    highlightPath(paths[0].route, "blue");
+
+  // for (var i = 0; i < paths.length; i++){
+  //   if (i === 0) {
+  //     highlightPath(paths[i].route, "blue");
+  //   }
+  //   highlightPath(paths[i].route, "gray");
+  // }
 }
 
 // function onBeginPathAlgorithm() {
