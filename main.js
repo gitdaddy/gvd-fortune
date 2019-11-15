@@ -43,11 +43,18 @@ let g_debugIdRight = undefined;
 let g_sInc = 0.01;
 let g_xInc = 0.01;
 
-let showEvents = false;
-let showDebugObjs = false;
-// let g_fullScreen = false;
-let g_hide_iso_lines = true;
-let g_hide_tree = true;
+let g_settings = {
+  showEvents: {label: "Show Events", value: false},
+  showGVDVer: {label: "Show edge vertices", value: true},
+  showGVDSeg: {label: "Show edge segments", value: true},
+  showObjVer: {label: "Show object vertices", value: true},
+  showObjSeg: {label: "Show object segments", value: true},
+  showMedial: {label: "Show Medial Axis", value: false},
+  showDebugObjs: {label: "Show debug objects", value: false},
+  showTree: {label: "Show Tree", value: false},
+  showBeachLine: {label: "Show beach-line", value: true}
+};
+
 let g_treeId = "#treeTagId";
 
 function updateDebugVars() {
@@ -95,57 +102,6 @@ function keydown(event) {
       incSweepline(inc);
     }
     changed = true;
-  } else if (key == "d") {
-    // Print the sweepline value
-    console.log("sweepline = " + g_sweepline);
-  } else if (key == "i") {
-    g_hide_iso_lines = !g_hide_iso_lines;
-    if (g_hide_iso_lines) {
-      d3.selectAll(".gvd-iso-surface")
-      .style("stroke-width", 0)
-      ;
-      d3.selectAll('.gvd-iso-surface-parabola')
-      .style("stroke-width", 0)
-      ;
-      d3.selectAll(".gvd-surface-active-parabola")
-      .style("stroke-width", 0)
-      ;
-      d3.selectAll('.gvd-surface-active')
-      .style("stroke-width", 0)
-      ;
-    } else {
-      d3.selectAll(".gvd-iso-surface")
-      .style("stroke-width", g_isoEdgeWidth)
-      ;
-      d3.selectAll('.gvd-iso-surface-parabola')
-      .style("stroke-width", g_isoEdgeWidth)
-      ;
-      d3.selectAll(".gvd-surface-active-parabola")
-      .style("stroke-width", g_isoEdgeWidth)
-      ;
-      d3.selectAll('.gvd-surface-active')
-      .style("stroke-width", g_isoEdgeWidth)
-      ;
-    }
-  } else if (key == 't') {
-    g_hide_tree = !g_hide_tree;
-    if (g_hide_tree) {
-      d3.select(g_treeId).attr('width', 0).attr('height', 0);
-    } else {
-      d3.select(g_treeId).attr('width', widthT).attr('height', heightT);
-    }
-  } else if (key == 'e') {
-    showEvents = !showEvents;
-    d3.selectAll(".close-event")
-      .attr('visibility', showEvents ? null : 'hidden');
-  } else if (key == 'v') {
-    showDebugObjs = !showDebugObjs;
-    d3.selectAll(".debug-line")
-      .attr('visibility', showDebugObjs ? null : 'hidden');
-    d3.selectAll(".debug-parabola")
-      .attr('visibility', showDebugObjs ? null : 'hidden');
-  } else if (key == 'i') {
-
   }
   if (changed) {
     // Prevent scroll
@@ -161,10 +117,10 @@ function init() {
     g_sweepline.y = parseFloat(localStorage.sweepline);
   }
 
-  document.getElementsByName("xIncVal")[0].valueAsNumber = g_xInc;
-  document.getElementsByName("incVal")[0].valueAsNumber = g_sInc;
+  // document.getElementsByName("xIncVal")[0].valueAsNumber = g_xInc;
+  // document.getElementsByName("incVal")[0].valueAsNumber = g_sInc;
 
-  drawInit(g_sweepline);
+  drawInit(g_sweepline, g_settings);
 
   document.onkeydown = keydown;
   // document.getElementById("fullscreenToggle").onclick = toggleFS;
@@ -280,29 +236,29 @@ function fortune(reorder) {
   console.log("Time in loop:" + loopTime.toFixed(6) + "(ms)");
 
   // debugging only
-  var ev = '';
-  while (queue.length > 0) {
-    var e = queue.pop();
-    var yval = e.type === "segment" ? e[0][1] : e[1];
-    var at = "(y)@:" + yval + " ";
-    var data;
-    if (e.type == "segment") {
-      data = at + 'a(' + e[0][0] + ',' + e[0][1] + ') - b(' + e[1][0] + ',' + e[1][1] + ')';
-    } else if (e.isCloseEvent) {
-      var live = e.live && e.arcNode.closeEvent.live ? "(Live)" : "(Dead)";
-      data = at + 'Close:' + e.id + " " + live + ' -point(' + e.point[0] + ',' + e.point[1] + ')';
-    } else {
-      data = at + 'point(' + e[0] + ',' + yval + ')';
-    }
-    if (e.isCloseEvent) {
-      ev += data;
-    } else {
-      ev += data;
-      // ev += data + ' r: ' + e.relation;
-    }
-    ev += '\n';
-  }
-  document.getElementById("events").innerHTML = ev;
+  // var ev = '';
+  // while (queue.length > 0) {
+  //   var e = queue.pop();
+  //   var yval = e.type === "segment" ? e[0][1] : e[1];
+  //   var at = "(y)@:" + yval + " ";
+  //   var data;
+  //   if (e.type == "segment") {
+  //     data = at + 'a(' + e[0][0] + ',' + e[0][1] + ') - b(' + e[1][0] + ',' + e[1][1] + ')';
+  //   } else if (e.isCloseEvent) {
+  //     var live = e.live && e.arcNode.closeEvent.live ? "(Live)" : "(Dead)";
+  //     data = at + 'Close:' + e.id + " " + live + ' -point(' + e.point[0] + ',' + e.point[1] + ')';
+  //   } else {
+  //     data = at + 'point(' + e[0] + ',' + yval + ')';
+  //   }
+  //   if (e.isCloseEvent) {
+  //     ev += data;
+  //   } else {
+  //     ev += data;
+  //     // ev += data + ' r: ' + e.relation;
+  //   }
+  //   ev += '\n';
+  // }
+  // document.getElementById("events").innerHTML = ev;
   return beachline;
 }
 
@@ -331,23 +287,10 @@ function render(reorder = false) {
   var drawTime = t3 - t2;
   console.log("Draw Time:" + drawTime.toFixed(6) + "(ms)");
 
-  if (!g_hide_tree){
+  if (g_settings.showTree.value){
     showTree(beachline.root);
   }
 
-  if (g_hide_iso_lines) {
-    d3.selectAll(".gvd-iso-surface")
-    .style("stroke-width", 0)
-    ;
-    d3.selectAll('.gvd-iso-surface-parabola')
-    .style("stroke-width", 0)
-    ;
-    d3.selectAll(".gvd-surface-active-parabola")
-    .style("stroke-width", 0)
-    ;
-    d3.selectAll('.gvd-surface-active')
-    .style("stroke-width", 0)
-    ;
-  }
+  enforceSettings();
   // runTests();
 }

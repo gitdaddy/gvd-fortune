@@ -39,18 +39,11 @@
 
 <body onload="init()">
   <!-- test inner panel -->
-  <div class="sliding-panel">
+  <!-- <div class="sliding-panel">
     <div class="text-left panel-header">
       <span class="title-group">
         Dataset: <select id="g_dataset" onchange="datasetChange(this.value)"></select>
       </span>
-      <!-- <span class="title-group">
-        <button onclick="onBeginPathAlgorithm()"> Find Shortest Path </button>
-      </span> -->
-      <!-- <span class="title-group">
-        <label for="fullscreenToggle">Toggle Fullscreen</label>
-        <input type="checkbox" id="fullscreenToggle" />
-      </span> -->
       <span class="title-group">
         d=<label id="sweeplineLabel"></label>
       </span>
@@ -81,15 +74,27 @@
         <div id="tree-debug1"></div>
       </div>
     </div>
-  </div>
+  </div> -->
+
+
   <div class="row">
-    <svg id="mainView" class="main-view-center">
-      <!-- <svg id="mainView" class="column"> -->
-      </svg>
+    <svg id="mainView" class="main-view-center"></svg>
+    <div class="settings-col">
+      <span class="title-group">
+        Dataset: <select id="g_dataset" onchange="datasetChange(this.value)"></select>
+      </span>
+      <span class="title-group">
+        y value=<label id="sweeplineLabel"></label>
+      </span>
+      <div id="gvd-settings" class="gvd-switches">
+      </div>
+      <div class="column-debug">
+        <svg id="treeTagId"></svg>
+        <div id="tree-debug"></div>
+      </div>
+    </div>
   </div>
-    <!-- <div class="column">
-      <svg id="tree"></svg>
-      <div id="tree-debug2"></div> -->
+
   <div>
     <canvas id="myCanvas" class="hidden-canvas" width="1024" height="1024">
       Your browser does not support the HTML5 canvas tag.</canvas>

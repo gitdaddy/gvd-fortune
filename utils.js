@@ -121,8 +121,6 @@ function processNewDataset() {
 
   sanitizePointSiteData(g_polygons);
 
-  // debug only
-  initDebugCircumcircle();
   drawSites(points);
   drawSegments(segments);
 
@@ -238,40 +236,6 @@ function onSiteDrag() {
   render(true);
 }
 
-/// Code For Debugging the GVD
-
-// function toggleFS() {
-//   g_fullScreen = !g_fullScreen;
-
-//   if (g_fullScreen) {
-//     d3.select('#tree').attr('width', 0).attr('height', 0);
-//     d3.select('#treeDebug').attr('width', widthT).attr('height', heightT);
-
-//     var w = window.innerWidth - margin.left - margin.right;
-//     var h = window.innerHeight - margin.top - margin.bottom;
-
-//     d3.select('#gvdsvg').attr('width', w).attr('height', h);
-
-//     var h2 = window.innerHeight / 2;
-//     var w2 = window.innerWidth / 2;
-//     d3.select('#gvd').attr(
-//         'transform', 'translate(' + w2 + ',' + h2 + ') scale(' + width / 4.0 +
-//             ',' + -1 * height / 4.0 + ')');
-//     document.getElementById('mainView').className = 'fullscreen';
-//   } else {
-//     d3.select('#tree').attr('width', widthT).attr('height', heightT);
-//     d3.select('#treeDebug').attr('width', 0).attr('height', 0);
-
-//     d3.select('#gvdsvg').attr('width', width).attr('height', height);
-
-//     d3.select('#gvd').attr(
-//         'transform', 'translate(' + width / 2.0 + ',' + height / 2.0 +
-//             ') scale(' + width / 2.0 + ',' + -1 * height / 2.0 + ')');
-//     document.getElementById('mainView').className = 'column';
-//   }
-// }
-
 function setDebug(msg) {
-  var id = g_fullScreen ? "tree-debug1" : "tree-debug2";
-  document.getElementById(id).innerHTML = msg;
+  document.getElementById("tree-debug").innerHTML = msg;
 }

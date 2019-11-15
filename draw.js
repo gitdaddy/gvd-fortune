@@ -101,7 +101,7 @@ function onEdgeVertexMouseOut(d, i) {
 ///////////////////////////////////////////////////
 
 
-function drawInit(sweepline)
+function drawInit(sweepline, settings)
 {
   svg = d3.select('#mainView')
   .attr("width", width + margin.left + margin.right)
@@ -161,6 +161,104 @@ function drawInit(sweepline)
     .style("pointer-events", "all")
     .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
     .call(zoom);
+
+  // add settings
+  var settings = _.map(g_settings, function (val, key) {
+    return {key: key, label:val.label, value: val.value};
+  })
+  d3.select("#gvd-settings")
+    .selectAll("label").data(settings)
+    .enter()
+    .append("label")
+    .html(d => {
+      if (d.value) {
+        return `<input type="checkbox" checked data-toggle="toggle" value="${d.key}"
+                onclick="onSettingChecked(this)" /> ${d.label}`;
+      }
+      return `<input type="checkbox" data-toggle="toggle" value="${d.key}"
+              onclick="onSettingChecked(this)" /> ${d.label}`;
+    })
+    ;
+
+  initDebugCircumcircle();
+}
+
+function enforceSettings() {
+  // show events
+  d3.selectAll(".close-event")
+  .attr('visibility', g_settings.showEvents.value ? null : 'hidden');
+
+  // show gvd vertices
+  d3.select("#gvd")
+  .selectAll(".gvd-edge-vertex")
+  .attr('r', g_settings.showGVDVer.value ? g_siteRadius : 0);
+
+  // Show gvd segments/parabolas
+  d3.select('#gvd')
+  .selectAll('.gvd-surface-parabola')
+  .style("stroke-width", g_settings.showGVDSeg.value ? g_isoEdgeWidth * 4 : 0)
+  ;
+
+  d3.select('#gvd')
+  .selectAll('.gvd-surface')
+  .style("stroke-width", g_settings.showGVDSeg.value ? g_isoEdgeWidth * 4 : 0)
+  ;
+
+  // show sites
+  d3.select("#gvd")
+  .selectAll(".point-site")
+  .attr('r', g_settings.showObjVer.value ? g_siteRadius : 0);
+  ;
+
+  // show site segments
+  d3.select("#gvd")
+  .selectAll(".segment-site")
+  .style('stroke-width', g_settings.showObjSeg.value ? g_isoEdgeWidth : 0)
+  ;
+
+  // Medial Axis
+  d3.selectAll(".gvd-iso-surface")
+  .style("stroke-width", g_settings.showMedial.value ? g_isoEdgeWidth : 0)
+  ;
+
+  d3.selectAll(".gvd-iso-surface-parabola")
+  .style("stroke-width", g_settings.showMedial.value ? g_isoEdgeWidth : 0)
+  ;
+
+  d3.selectAll(".gvd-surface-active-parabola")
+  .style("stroke-width", g_settings.showMedial.value ? g_isoEdgeWidth : 0)
+  ;
+
+  d3.selectAll(".gvd-surface-active")
+  .style("stroke-width", g_settings.showMedial.value ? g_isoEdgeWidth : 0)
+  ;
+
+  // Show debug
+  d3.selectAll(".debug-line")
+  .attr('visibility', g_settings.showDebugObjs.value ? null : 'hidden');
+  d3.selectAll(".debug-parabola")
+  .attr('visibility', g_settings.showDebugObjs.value ? null : 'hidden');
+
+  // Tree
+  d3.select(g_treeId)
+  .attr('width', g_settings.showTree.value ? widthT : 0)
+  .attr('height', g_settings.showTree.value ? heightT : 0);
+
+  // beach line
+  d3.select("#gvd")
+  .selectAll(".beach-parabola")
+  .style("stroke-width",  g_settings.showBeachLine.value ? g_isoEdgeWidth : 0);
+  ;
+
+  d3.select("#gvd")
+  .selectAll(".beach-v")
+  .style("stroke-width", g_settings.showBeachLine.value ? g_isoEdgeWidth : 0);
+  ;
+}
+
+function onSettingChecked(event) {
+  g_settings[event.value].value = event.checked;
+  enforceSettings();
 }
 
 function clearSurface() {
@@ -201,24 +299,28 @@ function initDebugCircumcircle() {
     .attr("cx", xRev(0))
     .attr("cy", yRev(0))
     .attr("r", 0)
-    .attr("id", "debug-circumcircle")
-    .attr("stroke-width", g_isoEdgeWidth)
+    .attr("class", "debug-circumcircle")
+    .style("stroke-width", g_isoEdgeWidth)
     .attr("vector-effect", "non-scaling-stroke")
   ;
 }
 
 function showDebugCircumcircle(cx, cy, r) {
-  d3.select("#debug-circumcircle")
+  let rScale = d3.scaleLinear()
+    .domain([0, 2.2])
+    .range([0, width]);
+
+  d3.selectAll(".debug-circumcircle")
     .attr("cx", xRev(cx))
     .attr("cy", yRev(cy))
-    .attr("r", r)
+    .attr("r", rScale(r))
     .attr("opacity", 1)
-    .attr("stroke-width", g_isoEdgeWidth)
+    .style("stroke-width", g_isoEdgeWidth)
   ;
 }
 
 function hideDebugCircumcircle() {
-  d3.select("#debug-circumcircle")
+  d3.select(".debug-circumcircle")
     .attr("opacity", 0)
   ;
 }
@@ -486,7 +588,7 @@ function drawCloseEvents(eventPoints) {
     let arcElement = d3.select(`#treenode${arcNode.id}`);
     arcElement.style("stroke-width", g_isoEdgeWidth * 5);
 
-    showDebugCircumcircle(event.point.x, event.point.y, event.r);
+    showDebugCircumcircle(event.point[0], event.point[1], event.r);
   };
 
   let unhighlight = function(event) {
@@ -516,7 +618,7 @@ function drawCloseEvents(eventPoints) {
     .attr('r', g_siteRadius)
     .attr('cx', d => xRev(d.point[0]))
     .attr('cy', d => yRev(d.point[1]))
-    .attr('visibility', showEvents ? null : 'hidden')
+    .attr('visibility', g_settings.showEvents.value ? null : 'hidden')
   ;
 }
 
@@ -647,10 +749,6 @@ function drawBeachline(beachline, directrix) {
   // drawDebugObjs(g_debugObjs);
 }
 
-function getZoomedSize(node) {
-  return node.view ? g_isoEdgeWidth * 3: g_isoEdgeWidth;
-}
-
 function zoomed() {
 
   // recover the new scale
@@ -670,43 +768,49 @@ function zoomed() {
   .curve(d3.curveLinear)
   ;
 
-  // update point sites
-  d3.select("#gvd")
-  .selectAll(".point-site")
-  .attr('cx', d => newX(d[0]))
-  .attr('cy', d => newY(d[1]))
-  ;
+  if (g_settings.showObjVer.value) {
+    // update point sites
+    d3.select("#gvd")
+    .selectAll(".point-site")
+    .attr('cx', d => newX(d[0]))
+    .attr('cy', d => newY(d[1]))
+    ;
+  }
 
-  d3.select("#gvd")
-  .selectAll(".gvd-edge-vertex")
-  .attr('cx', d => newX(d.x))
-  .attr('cy', d => newY(d.y))
-  ;
+  if (g_settings.showGVDVer.value) {
+    d3.select("#gvd")
+    .selectAll(".gvd-edge-vertex")
+    .attr('cx', d => newX(d.x))
+    .attr('cy', d => newY(d.y))
+    ;
+  }
 
-  d3.select("#gvd")
-  .selectAll(".segment-site")
-  .attr("x1", s => newX(s[0][0]))
-  .attr("y1", s => newY(s[0][1]))
-  .attr("x2", s => newX(s[1][0]))
-  .attr("y2", s => newY(s[1][1]))
-  ;
+  if (g_settings.showObjSeg.value) {
+    d3.select("#gvd")
+    .selectAll(".segment-site")
+    .attr("x1", s => newX(s[0][0]))
+    .attr("y1", s => newY(s[0][1]))
+    .attr("x2", s => newX(s[1][0]))
+    .attr("y2", s => newY(s[1][1]))
+    ;
+  }
 
   // update beachline
-  d3.select("#gvd")
-  .selectAll(".beach-parabola")
-  .attr("d", p => line(p.drawPoints))
-  .attr("leftx", p => newX(p.drawPoints[0][0]))
-  .attr("rightx", p => newX(p.drawPoints[p.drawPoints.length-1][0]))
-  ;
-  // .style("stroke-width", e => getZoomedSize(e));
+  if (g_settings.showBeachLine.value) {
+    d3.select("#gvd")
+    .selectAll(".beach-parabola")
+    .attr("d", p => line(p.drawPoints))
+    .attr("leftx", p => newX(p.drawPoints[0][0]))
+    .attr("rightx", p => newX(p.drawPoints[p.drawPoints.length-1][0]))
+    ;
 
-  d3.select("#gvd")
-  .selectAll(".beach-v")
-  .attr("d", p => line(p.drawPoints))
-  .attr("leftx", p => newX(p.drawPoints[0][0]))
-  .attr("rightx", p => newX(p.drawPoints[p.drawPoints.length-1][0]))
-  ;
-  // .style("stroke-width", e => getZoomedSize(e));
+    d3.select("#gvd")
+    .selectAll(".beach-v")
+    .attr("d", p => line(p.drawPoints))
+    .attr("leftx", p => newX(p.drawPoints[0][0]))
+    .attr("rightx", p => newX(p.drawPoints[p.drawPoints.length-1][0]))
+    ;
+  }
 
   d3.select("#sweepline")
     .attr("x1", d => newX(d.x1))
@@ -728,23 +832,25 @@ function zoomed() {
   // .selectAll('.debug-parabola')
   // .style("stroke-width", g_isoEdgeWidth);
 
-  // update Edges
-  d3.select('#gvd')
-  .selectAll('.gvd-surface-parabola')
-  .attr("d", p => line(p.drawPoints))
-  .style("stroke-width", e => getSurfaceWidth(e.splitSite))
-  ;
+  if (g_settings.showGVDSeg.value) {
+    // update Edges
+    d3.select('#gvd')
+    .selectAll('.gvd-surface-parabola')
+    .attr("d", p => line(p.drawPoints))
+    .style("stroke-width", g_isoEdgeWidth * 4)
+    ;
 
-  d3.select('#gvd')
-  .selectAll('.gvd-surface')
-  .attr('x1', e => newX(e.origin.point[0]))
-  .attr('y1', e => newY(e.origin.point[1]))
-  .attr('x2', e => newX(e.dest.point[0]))
-  .attr('y2', e => newY(e.dest.point[1]))
-  .style("stroke-width", e => getSurfaceWidth(e.splitSite))
-  ;
+    d3.select('#gvd')
+    .selectAll('.gvd-surface')
+    .attr('x1', e => newX(e.origin.point[0]))
+    .attr('y1', e => newY(e.origin.point[1]))
+    .attr('x2', e => newX(e.dest.point[0]))
+    .attr('y2', e => newY(e.dest.point[1]))
+    .style("stroke-width", g_isoEdgeWidth * 4)
+    ;
+  }
 
-  if (!g_hide_iso_lines) {
+  if (g_settings.showMedial.value) {
     d3.selectAll(".gvd-iso-surface")
     .attr('x1', e => newX(e.origin.point[0]))
     .attr('y1', e => newY(e.origin.point[1]))
