@@ -55,7 +55,7 @@ function getDiff(left, node, right, p, directrix) {
 
 function radiusTest(left, node, right, closePoint) {
   // WATCH VALUE
-  var thresh = 5e-5;
+  var thresh = 5e-5; // 0.003?
   if (left.isV && node.isV && right.isV) return true;
   var segments = _.filter([left, node, right], { isV: true });
   var points = _.filter([left, node, right], { isParabola: true });
@@ -290,7 +290,7 @@ function createCloseEvent(arcNode, directrix) {
 
   // TODO needed?
   closePoint = convertToVec3(closePoint);
-  if (!radiusTest(left, arcNode, right, closePoint)) return null;
+  // if (!radiusTest(left, arcNode, right, closePoint)) return null;
 
   radius = getRadius(closePoint, left, arcNode, right);
   if (_.isUndefined(radius)) throw "invalid radius";

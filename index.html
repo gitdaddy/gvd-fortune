@@ -86,12 +86,31 @@
       <span class="title-group">
         y value=<label id="sweeplineLabel"></label>
       </span>
+      <span class="title-group">
+        <button onclick="resetView()">Reset View</button>
+      </span>
       <div id="gvd-settings" class="gvd-switches">
       </div>
-      <div class="column-debug">
-        <svg id="treeTagId"></svg>
-        <div id="tree-debug"></div>
+      <div class="debug-inputs">
+        <div>
+          <div class="debug-input">Draw Inc:<input type="number" name="xIncVal"></div>
+          <div class="debug-input">Shift Inc:<input type="number" name="incVal"></div>
+        </div>
+        <br>
+        <div>
+          <div class="debug-input">Left Id:<input type="number" name="leftId"></div>
+          <div class="debug-input">Middle Id:<input type="number" name="middleId"></div>
+          <div class="debug-input">Right Id:<input type="number" name="rightId"></div>
+        </div>
+        <div><button onclick="updateDebugVars()">Update</button></div>
       </div>
+      <!-- <div class="debug-events">
+        <label>Events:</label>
+        <br>
+        <textarea class="events-box" id="events"></textarea>
+      </div> -->
+      <svg id="treeTagId"></svg>
+      <div id="tree-debug"></div>
     </div>
   </div>
 

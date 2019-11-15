@@ -23,8 +23,11 @@ body {
 
 .settings-col {
     width: 30%;
+    overflow-x: scroll;
+    overflow-y: scroll;
+    /* height: 100%; */
     z-index: 1;
-    top: 50px;
+    /* top: 50px; */
     left: 0;
     /* background-color: lightblue; */
     /* overflow-x: hidden; */
@@ -230,10 +233,16 @@ path.beachline {
 }
 
 .debug-inputs {
+    /* visibility: hidden; */
     width: 50%;
     text-align: right;
 }
 
 .debug-input {
     padding: 5px;
+}
+
+.debug-events {
+    /* visibility: hidden; */
+    text-align: left;
 }

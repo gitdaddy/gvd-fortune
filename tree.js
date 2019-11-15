@@ -1,8 +1,8 @@
 
   // set the dimensions and margins of the diagram
-  let marginT = {top: 20, right: 90, bottom: 90, left: 90},
-  widthT = 660 - marginT.left - marginT.right,
-  heightT = 512 - marginT.top - marginT.bottom;
+  let marginT = {top: 20, right: 20, bottom: 20, left: 20},
+  widthT = 560 - marginT.left - marginT.right,
+  heightT = 550 - marginT.top - marginT.bottom;
 
   let g_viewId = undefined;
 

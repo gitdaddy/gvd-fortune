@@ -1,4 +1,4 @@
-let g_zoomScale = 1;
+let g_zoomed = false;
 
 let g_siteRadius = 3;
 let g_isoEdgeWidth = 1;
@@ -25,7 +25,15 @@ let xRev = d3.scaleLinear()
     .domain([-1.1, 1.1])
     .range([0, width]);
 
+let xRevOrigin = d3.scaleLinear()
+    .domain([-1.1, 1.1])
+    .range([0, width]);
+
 let yRev = d3.scaleLinear()
+    .domain([1.1, -1.1])
+    .range([0, height]);
+
+let yRevOrigin = d3.scaleLinear()
     .domain([1.1, -1.1])
     .range([0, height]);
 
@@ -100,9 +108,12 @@ function onEdgeVertexMouseOut(d, i) {
 
 ///////////////////////////////////////////////////
 
+function resetView() {
+  g_zoomed = false;
+  rescaleView(xRevOrigin, yRevOrigin);
+}
 
-function drawInit(sweepline, settings)
-{
+function drawInit(sweepline, settings) {
   svg = d3.select('#mainView')
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom)
@@ -110,9 +121,11 @@ function drawInit(sweepline, settings)
   .attr("id", "gvd")
   .attr("transform", `translate(${margin.left} ,${margin.top})`)
   .on("click", function() {
-    var coords = d3.mouse(this);
-    var y = yToGVD(coords[1]);
-    moveSweepline(y);
+    if (!g_zoomed) {
+      var coords = d3.mouse(this);
+      var y = yToGVD(coords[1]);
+      moveSweepline(y);
+    }
   })
   ;
 
@@ -140,8 +153,10 @@ function drawInit(sweepline, settings)
   svg.append("defs").append("svg:clipPath")
   .attr("id", "clip")
   .append("svg:rect")
-  .attr("width", width + margin.left + margin.right)
-  .attr("height", height + margin.top + margin.bottom)
+  .attr("width", width - (margin.left + margin.right))
+  // .attr("width", width + margin.left + margin.right)
+  .attr("height", height + 20)
+  // .attr("height", height + margin.top + margin.bottom)
   .attr("x", 0)
   .attr("y", 0);
 
@@ -187,6 +202,15 @@ function enforceSettings() {
   // show events
   d3.selectAll(".close-event")
   .attr('visibility', g_settings.showEvents.value ? null : 'hidden');
+
+  // d3.selectAll(".debug-events")
+  // .style('height', g_settings.showEvents.value ? 100 : 0)
+  // .style('visibility', g_settings.showEvents.value ? null : 'hidden');
+
+  // debug items
+  d3.selectAll(".debug-inputs")
+  .style('height', g_settings.showDebugObjs.value ? 100 : 0)
+  .style('visibility', g_settings.showDebugObjs.value ? null : 'hidden');
 
   // show gvd vertices
   d3.select("#gvd")
@@ -749,18 +773,10 @@ function drawBeachline(beachline, directrix) {
   // drawDebugObjs(g_debugObjs);
 }
 
-function zoomed() {
-
-  // recover the new scale
-  var newX = d3.event.transform.rescaleX(xRev);
-  var newY = d3.event.transform.rescaleY(yRev);
-
+function rescaleView(newX, newY) {
   // update axes with these new boundaries
   xAxis.call(d3.axisBottom(newX));
   yAxis.call(d3.axisLeft(newY));
-
-  // rescale all objects
-  g_zoomScale = d3.event.transform.k;
 
   let line = d3.line()
   .x(function (d) {return newX(d[0]);})
@@ -874,4 +890,17 @@ function zoomed() {
     .style("stroke-width", e => getSurfaceWidth(e.splitSite))
     ;
   }
+
+  xRev = newX;
+  yRev = newY;
+}
+
+function zoomed() {
+  g_zoomed = true;
+
+  // recover the new scale
+  var newX = d3.event.transform.rescaleX(xRevOrigin);
+  var newY = d3.event.transform.rescaleY(yRevOrigin);
+
+  rescaleView(newX, newY);
 }

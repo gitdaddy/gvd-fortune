@@ -18,8 +18,17 @@ V = function(line, directrix, id) {
   lineSegment = _.sortBy(line, [function(i) { return i[1]; }]);
   this.y1 = lineSegment[1];
   this.y0 = lineSegment[0];
-  this.p = intersectLines(
-    lineSegment[0], lineSegment[1], vec3(-100, directrix, 0), vec3(100, directrix, 0));
+  // slope the amount of change in x per 1 y
+  // new x = the y diff from p *
+  var slope = (this.y0[0] - this.y1[0])/(this.y0[1] - this.y1[1]);
+  if (slope === 0) {
+    this.p = vec3(this.y0[0], directrix, 0);
+  } else {
+    var diff = (directrix - this.y0[1]);
+    var yDiff = diff * slope;
+    this.p = vec3(this.y0[0] + yDiff, directrix, 0);
+  }
+
   this.focus = this.p;
   var theta =
     getSegmentsBisectorAngle([vec3(-1, directrix, 0), vec3(1, directrix, 0)], lineSegment);
@@ -117,7 +126,7 @@ V.prototype.intersect = function(obj) {
   if (obj instanceof Parabola) {
     ret = [];
     var p = this.p;
-    this.vectors.forEach(function(v) {
+    this.vectors.forEach(function(v) { // Performance - we shouldn't need to test both sides?
       // collect all intersection points (0 - 4)
       ret = ret.concat(obj.intersectRay(p, v));
     });

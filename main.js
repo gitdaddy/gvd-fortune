@@ -45,12 +45,12 @@ let g_xInc = 0.01;
 
 let g_settings = {
   showEvents: {label: "Show Events", value: false},
-  showGVDVer: {label: "Show edge vertices", value: true},
+  showGVDVer: {label: "Show edge vertices", value: false},
   showGVDSeg: {label: "Show edge segments", value: true},
-  showObjVer: {label: "Show object vertices", value: true},
+  showObjVer: {label: "Show object vertices", value: false},
   showObjSeg: {label: "Show object segments", value: true},
   showMedial: {label: "Show Medial Axis", value: false},
-  showDebugObjs: {label: "Show debug objects", value: false},
+  showDebugObjs: {label: "Show debug objects", value: true},
   showTree: {label: "Show Tree", value: false},
   showBeachLine: {label: "Show beach-line", value: true}
 };
@@ -117,8 +117,8 @@ function init() {
     g_sweepline.y = parseFloat(localStorage.sweepline);
   }
 
-  // document.getElementsByName("xIncVal")[0].valueAsNumber = g_xInc;
-  // document.getElementsByName("incVal")[0].valueAsNumber = g_sInc;
+  document.getElementsByName("xIncVal")[0].valueAsNumber = g_xInc;
+  document.getElementsByName("incVal")[0].valueAsNumber = g_sInc;
 
   drawInit(g_sweepline, g_settings);
 

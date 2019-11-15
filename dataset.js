@@ -97,13 +97,12 @@ function sanitizeData(orderedPoints, optTolerance, optXoffset) {
     orderedPoints = removeCAS(orderedPoints, optTolerance);
   }
 
-
   var match = getMatch(orderedPoints);
   while(match) {
     orderedPoints[match.s2Idx].y -= getRandomAdjustment(orderedPoints, match);
-    if (optXoffset) {
-      orderedPoints[match.s2Idx].x += Math.random() < 0.5 ? -optXoffset : optXoffset;
-    }
+    // if (optXoffset) {
+    //   orderedPoints[match.s2Idx].x += Math.random() < 0.5 ? -optXoffset : optXoffset;
+    // }
     match = getMatch(orderedPoints);
   }
 
@@ -315,8 +314,9 @@ function parseInputMap(jsonStr) {
   }
 
   // testing only
-  // debug ids: 21,33,35 38 37 39 30 34
-  // var few = [objs[21]]; // 27
+  // 298 307 394
+  // 1052 1016 1017
+  // var few = [objs[13], objs[14]]; // 27
   // return canvasToPolygons(few, width, height);
   return canvasToPolygons(objs, data.width, data.height);
 }
