@@ -314,7 +314,7 @@ function parseInputMap(jsonStr) {
   }
 
   // testing only
-  // 298 307 394
+  // Sydney - 298 307 394, 1133 1081 1085 / 7311, 7312, 7182
   // 1052 1016 1017
   // var few = [objs[13], objs[14]]; // 27
   // return canvasToPolygons(few, width, height);

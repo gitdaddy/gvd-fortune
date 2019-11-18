@@ -5,9 +5,9 @@ function parabola_f(x, h, k, p) {
 }
 
 // Computes the inverse of f
-// function f_(y, h, k, p) {
-//   return quadratic(1 / (4 * p), -2 * h / (4 * p), h * h / (4 * p) + k - y);
-// }
+function parabola_f_(y, h, k, p) {
+  return quadratic(1 / (4 * p), -2 * h / (4 * p), h * h / (4 * p) + k - y);
+}
 
 //------------------------------------------------------------
 // Parabola class
@@ -327,16 +327,16 @@ GeneralParabola.prototype.intersect = function (object) {
 // If there are two intersections, the intersections will
 // be returned in order of t value.
 // The ray is given in parametric form p(t) = p + tv
-GeneralParabola.prototype.intersectRay = function (p, v) {
-  p = this.transformPoint(p);
-  v = this.transformVector(v);
+GeneralParabola.prototype.intersectRay = function (pOrigin, vOrigin) {
+  var p = this.transformPoint(pOrigin);
+  var v = this.transformVector(vOrigin);
 
   // WATCH VALUE
-  var xDiffThresh = 1e-14;
-  if (Math.abs(v[0]) < xDiffThresh) {
-    // this intersection won't work...??
-    console.log("testing ....");
-  }
+  // var xDiffThresh = 1e-14;
+  // if (Math.abs(v[0]) < xDiffThresh) {
+  //   // this intersection won't work...??
+  //   console.log("testing ....");
+  // }
 
   // if (v[0] === 0) {
   //   console.error("Horizontal vector detected");
@@ -352,10 +352,33 @@ GeneralParabola.prototype.intersectRay = function (p, v) {
   pthis = this;
   var ret = [];
   tvals.forEach(function (t) {
-    var q = vec3(p[0] + (v[0] * t), p[1] + (v[1] * t), 0);
-    // var q = add(p, mult(v, t));
-    q = pthis.untransformPoint(q);
-    ret.push(q);
+    if (t === 0) {
+      console.log("zero tval");
+      //parabola_f(x, h, k, p) {
+      //parabola_f_(y, h, k, p) {
+      // horizontal or vertical direction
+      var pt;
+      if (Math.abs(pthis.theta) < 1.6 && Math.abs(pthis.theta) > 1.5) {
+        // derive y
+        var y = parabola_f(p[0], pthis.parabola.h, pthis.parabola.k, pthis.parabola.p);
+        pt = vec3(p[0], y, 0);
+      } else {
+        // derive x
+        // var xVals = parabola_f_(p[1], pthis.parabola.h, pthis.parabola.k, pthis.parabola.p);
+        // pt = vec3(xVals[0], p[1], 0);
+        // TODO FIX
+        var xVals = parabola_f_(p[1], pthis.parabola.h, pthis.parabola.k, pthis.parabola.p);
+        pt = vec3(xVals[0], p[1], 0);
+      }
+      pt = pthis.untransformPoint(pt);
+      ret.push(pt);
+    } else if (Math.abs(t < 1e10)) {
+      var q = vec3(p[0] + (v[0] * t), p[1] + (v[1] * t), 0);
+      // var q = add(p, mult(v, t));
+      q = pthis.untransformPoint(q);
+      ret.push(q);
+    }
+
     // Taking this guard out allows computing close points with negative tvals
     // if (t >= 0) {
     //   var q = add(p, mult(v, t));

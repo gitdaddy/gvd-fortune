@@ -274,6 +274,8 @@ function createCloseEvent(arcNode, directrix) {
     points = node.isV ? filterVisiblePoints(node.site, points) : points;
   });
 
+  if (points == null || points.length == 0) return null;
+
   // filter by site association
   points = filterBySiteAssociation(left, arcNode, right, points);
 

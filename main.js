@@ -63,8 +63,11 @@ function updateDebugVars() {
   var i = document.getElementsByName("incVal")[0].valueAsNumber;
   g_sInc = _.isNaN(i) ? g_sInc : i;
   g_debugIdLeft = document.getElementsByName("leftId")[0].valueAsNumber;
+  // localStorage.g_debugIdLeft = g_debugIdLeft;
   g_debugIdMiddle = document.getElementsByName("middleId")[0].valueAsNumber;
+  // localStorage.g_debugIdMiddle = g_debugIdMiddle;
   g_debugIdRight = document.getElementsByName("rightId")[0].valueAsNumber;
+  // localStorage.g_debugIdRight = g_debugIdRight;
 }
 
 function setSweepline(d) {
@@ -123,7 +126,6 @@ function init() {
   drawInit(g_sweepline, g_settings);
 
   document.onkeydown = keydown;
-  // document.getElementById("fullscreenToggle").onclick = toggleFS;
   document.getElementById("sweeplineLabel").innerHTML = g_sweepline.y.toFixed(10);
 
   _.forEach(g_fileDatasets, function (p) {

@@ -262,9 +262,12 @@ function enforceSettings() {
   .attr('visibility', g_settings.showDebugObjs.value ? null : 'hidden');
   d3.selectAll(".debug-parabola")
   .attr('visibility', g_settings.showDebugObjs.value ? null : 'hidden');
+  d3.selectAll(".debug-point")
+  .attr('visibility', g_settings.showDebugObjs.value ? null : 'hidden');
 
   // Tree
   d3.select(g_treeId)
+  // .attr('visibility', g_settings.showTree.value ? null : 'hidden');
   .attr('width', g_settings.showTree.value ? widthT : 0)
   .attr('height', g_settings.showTree.value ? heightT : 0);
 
@@ -363,7 +366,7 @@ function hideDebugCircumcircle() {
 // .on("end", function() { onSiteDrag(); });
 
 function drawDebugObjs(objs) {
- 
+
   // Lines
   var lines = _.filter(objs, function (o) {
     return o instanceof Line;
@@ -393,10 +396,12 @@ function drawDebugObjs(objs) {
 
   var idStr = "pId";
   var originPt = {point:vec3(-1, 1, 0)};
-  var destPt = {point:vec3(1, 1, 0)};
+  var destPt = {point:vec3(1, 0, 0)};
+  var count = 0;
   parabolas = _.map(parabolas, function (p) {
-    p.para.prepDraw(idStr, originPt, destPt); 
-    return p.para; 
+    idStr = idStr + count++;
+    p.para.prepDraw(idStr, originPt, destPt);
+    return p.para;
   });
 
   let line = d3.line()
@@ -880,7 +885,7 @@ function rescaleView(newX, newY) {
     // .attr('x2', e => newX(e.dest.point[0]))
     // .attr('y2', e => newY(e.dest.point[1]))
     // ;
-  
+
     d3.select('#gvd')
     .selectAll('.debug-parabola')
     .attr("d", p => line(p.drawPoints));

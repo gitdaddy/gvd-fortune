@@ -206,13 +206,9 @@ function labelConnectedComponents(src, height, width) {
             // conflict - remember them for later
             if (src[idxBehind] < src[idxAbove]) {
               src[idx] = src[idxBehind];
-              // conflicts.push({a: src[idxAbove], b:src[idxBehind] });
-              // conflicts[src[idxBehind]] = src[idxAbove];
               conflicts[src[idxAbove]] = src[idxBehind];
             } else {
               src[idx] = src[idxAbove];
-              // conflicts.push({a: src[idxBehind], b:src[idxAbove] });
-              // conflicts[src[idxAbove]] = src[idxBehind];
               conflicts[src[idxBehind]] = src[idxAbove];
             }
           }
@@ -265,16 +261,6 @@ function labelConnectedComponents(src, height, width) {
       }
     }
   }
-  // conflicts = _.uniq(conflicts);
-  // conflicts = _.sortBy(conflicts, 'a');
-  // _.each(_.reverse(conflicts), function (c) {
-  // for (var i = 0; i < len; i++){
-  //       if (src[i] === c.a) {
-  //         src[i] = c.b;
-  //       }
-  //     }
-  // });
-  console.log("done re-labeling");
   return src;
 }
 
