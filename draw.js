@@ -362,57 +362,84 @@ function hideDebugCircumcircle() {
 // })
 // .on("end", function() { onSiteDrag(); });
 
-// function drawDebugObjs(objs) {
-//   var parabolas = _.filter(objs, function (o) {
-//     return !_.isUndefined(o.para);
-//   });
-//   parabolas = _.map(parabolas, function (p) { return p.para; });
+function drawDebugObjs(objs) {
+ 
+  // Lines
+  var lines = _.filter(objs, function (o) {
+    return o instanceof Line;
+  });
+  let selB = d3.select("#gvd")
+  .selectAll(".debug-line")
+  .data(lines);
 
-//   var lines = _.filter(objs, function (o) {
-//     return o instanceof Line;
-//   });
+  selB.exit().remove();
+  selB
+    .enter()
+    .append("line")
+    .attr("class", "debug-line")
+    .attr("vector-effect", "non-scaling-stroke")
+    .merge(selB)
+    .attr("x1", l => xRev(l.p1[0]))
+    .attr("y1", l => yRev(l.p1[1]))
+    .attr("x2", l => xRev(l.p2[0]))
+    .attr("y2", l => yRev(l.p2[1]))
+    .attr('visibility', g_settings.showDebugObjs.value ? null : 'hidden')
+  ;
 
-//   let selB = d3.select("#gvd")
-//   .selectAll(".debug-line")
-//   .data(lines);
+  // parabolas
+  var parabolas = _.filter(objs, function (o) {
+    return !_.isUndefined(o.para);
+  });
 
-//   selB.exit().remove();
-//   selB
-//     .enter()
-//     .append("line")
-//     .attr("class", "debug-line")
-//     .attr("vector-effect", "non-scaling-stroke")
-//     .merge(selB)
-//     .attr("x1", l => l.p1.x)
-//     .attr("y1", l => l.p1.y)
-//     .attr("x2", l => l.p2.x)
-//     .attr("y2", l => l.p2.y)
-//     .attr('visibility', showDebugObjs ? null : 'hidden')
-//   ;
+  var idStr = "pId";
+  var originPt = {point:vec3(-1, 1, 0)};
+  var destPt = {point:vec3(1, 1, 0)};
+  parabolas = _.map(parabolas, function (p) {
+    p.para.prepDraw(idStr, originPt, destPt); 
+    return p.para; 
+  });
 
-//   let line = d3.line()
-//   .x(function (d) {return d.x;})
-//   .y(function (d) {return d.y;})
-//   .curve(d3.curveLinear)
-//   ;
-//   let d3generalEdges = d3.select('#gvd')
-//     .selectAll('.debug-parabola')
-//     .data(parabolas)
-//   ;
-//   d3generalEdges.exit().remove();
-//   d3generalEdges.enter()
-//     .append("path")
-//     .style("fill","none")
-//     .attr("class", "debug-parabola")
-//     .attr("vector-effect", "non-scaling-stroke")
-//     .merge(d3generalEdges)
-//     .style("stroke-width", g_isoEdgeWidth * 5)
-//     .attr("d", p => line(p.drawPoints))
-//     .attr("id", p => p.id)
-//     .attr("transform", p => p.transform)
-//     .attr('visibility', showDebugObjs ? null : 'hidden')
-//   ;
-// }
+  let line = d3.line()
+  .x(function (d) {return xRev(d[0]);})
+  .y(function (d) {return yRev(d[1]);})
+  .curve(d3.curveLinear)
+  ;
+  let debugSelectionPara = d3.select('#gvd')
+    .selectAll('.debug-parabola')
+    .data(parabolas)
+  ;
+  debugSelectionPara.exit().remove();
+  debugSelectionPara.enter()
+    .append("path")
+    .style("fill","none")
+    .attr("class", "debug-parabola")
+    .attr("vector-effect", "non-scaling-stroke")
+    .merge(debugSelectionPara)
+    .style("stroke-width", g_isoEdgeWidth * 5)
+    .attr("d", p => line(p.drawPoints))
+    .attr("transform", p => p.transform)
+    .attr('visibility', g_settings.showDebugObjs.value ? null : 'hidden')
+  ;
+
+  // debug points
+  var pts = _.filter(objs, function (o) {
+    return o.type && o.type === "vec";
+  });
+  let ptsSelection = d3.select('#gvd')
+  .selectAll('.debug-point')
+  .data(pts)
+  ;
+  ptsSelection.exit().remove();
+
+  ptsSelection.enter()
+    .append("circle")
+    .attr("class", "debug-point")
+    .attr("r", g_siteRadius * 2)
+    .merge(ptsSelection)
+    .attr("cx", p => xRev(p[0]))
+    .attr("cy", p => yRev(p[1]))
+  ;
+}
 
 function drawSites(points) {
   d3.select("#gvd").selectAll(".point-site").remove();
@@ -770,7 +797,8 @@ function drawBeachline(beachline, directrix) {
   //------------------------------
   // Render the debug objects
   //------------------------------
-  // drawDebugObjs(g_debugObjs);
+  // debugging only
+  drawDebugObjs(g_debugObjs);
 }
 
 function rescaleView(newX, newY) {
@@ -836,17 +864,27 @@ function rescaleView(newX, newY) {
     ;
 
   // debug
-  // d3.select("#gvd")
-  // .selectAll(".close-event")
-  // .attr("r", g_siteRadius);
+  if (g_settings.showEvents.value) {
+    d3.select("#gvd")
+    .selectAll(".close-event")
+    .attr('cx', d => newX(d.x))
+    .attr('cy', d => newY(d.y))
+    ;
+  }
 
-  // d3.select('#gvd')
-  // .selectAll('.debug-line')
-  // .style("stroke-width", g_isoEdgeWidth);
-
-  // d3.select('#gvd')
-  // .selectAll('.debug-parabola')
-  // .style("stroke-width", g_isoEdgeWidth);
+  if (g_settings.showEvents.value) {
+    // d3.select('#gvd')
+    // .selectAll('.debug-line')
+    // .attr('x1', e => newX(e.origin.point[0]))
+    // .attr('y1', e => newY(e.origin.point[1]))
+    // .attr('x2', e => newX(e.dest.point[0]))
+    // .attr('y2', e => newY(e.dest.point[1]))
+    // ;
+  
+    d3.select('#gvd')
+    .selectAll('.debug-parabola')
+    .attr("d", p => line(p.drawPoints));
+  }
 
   if (g_settings.showGVDSeg.value) {
     // update Edges

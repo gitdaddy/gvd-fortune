@@ -263,11 +263,11 @@ function createCloseEvent(arcNode, directrix) {
   var points = equidistant(left.site, arcNode.site, right.site);
 
   // debugging only
-  // if (g_addDebug) {
-  //   _.forEach(points, function(p) {
-  //     g_debugObjs.push(p);
-  //   });
-  // }
+  if (g_addDebug) {
+    _.forEach(points, function(p) {
+      g_debugObjs.push(p);
+    });
+  }
 
   // guilty by association
   _.forEach([left, arcNode, right], function(node) {

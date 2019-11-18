@@ -331,10 +331,17 @@ GeneralParabola.prototype.intersectRay = function (p, v) {
   p = this.transformPoint(p);
   v = this.transformVector(v);
 
-  if (v[0] === 0) {
-    console.error("Horizontal vector detected");
-    return [];
+  // WATCH VALUE
+  var xDiffThresh = 1e-14;
+  if (Math.abs(v[0]) < xDiffThresh) {
+    // this intersection won't work...??
+    console.log("testing ....");
   }
+
+  // if (v[0] === 0) {
+  //   console.error("Horizontal vector detected");
+  //   return [];
+  // }
 
   var tvals = lpIntersect(this.parabola.h, this.parabola.k, this.parabola.p, p, v);
   // Sort tvals in increasing order

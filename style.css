@@ -122,7 +122,7 @@ line#sweepline {
 }
 
 .debug-parabola {
-    stroke: green;
+    stroke: rgb(63, 226, 63);
     /* stroke-dasharray: 3, 3; */
 }
 
