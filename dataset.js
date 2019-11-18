@@ -100,6 +100,8 @@ function sanitizeData(orderedPoints, optTolerance, optXoffset) {
   var match = getMatch(orderedPoints);
   while(match) {
     orderedPoints[match.s2Idx].y -= getRandomAdjustment(orderedPoints, match);
+
+    // TODO apply random adjustment to x until there are no overlapping sites
     // if (optXoffset) {
     //   orderedPoints[match.s2Idx].x += Math.random() < 0.5 ? -optXoffset : optXoffset;
     // }
@@ -315,7 +317,7 @@ function parseInputMap(jsonStr) {
 
   // testing only
   // Sydney - 298 307 394, 1133 1081 1085 / 7311, 7312, 7182
-  // 1052 1016 1017
+  // Berlin - 1052 1016 1017
   // var few = [objs[13], objs[14]]; // 27
   // return canvasToPolygons(few, width, height);
   return canvasToPolygons(objs, data.width, data.height);

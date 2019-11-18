@@ -5,9 +5,9 @@ function parabola_f(x, h, k, p) {
 }
 
 // Computes the inverse of f
-function parabola_f_(y, h, k, p) {
-  return quadratic(1 / (4 * p), -2 * h / (4 * p), h * h / (4 * p) + k - y);
-}
+// function parabola_f_(y, h, k, p) {
+//   return quadratic(1 / (4 * p), -2 * h / (4 * p), h * h / (4 * p) + k - y);
+// }
 
 //------------------------------------------------------------
 // Parabola class
@@ -331,18 +331,6 @@ GeneralParabola.prototype.intersectRay = function (pOrigin, vOrigin) {
   var p = this.transformPoint(pOrigin);
   var v = this.transformVector(vOrigin);
 
-  // WATCH VALUE
-  // var xDiffThresh = 1e-14;
-  // if (Math.abs(v[0]) < xDiffThresh) {
-  //   // this intersection won't work...??
-  //   console.log("testing ....");
-  // }
-
-  // if (v[0] === 0) {
-  //   console.error("Horizontal vector detected");
-  //   return [];
-  // }
-
   var tvals = lpIntersect(this.parabola.h, this.parabola.k, this.parabola.p, p, v);
   // Sort tvals in increasing order
   if (tvals.length == 2 && tvals[1] < tvals[0]) {
@@ -353,23 +341,11 @@ GeneralParabola.prototype.intersectRay = function (pOrigin, vOrigin) {
   var ret = [];
   tvals.forEach(function (t) {
     if (t === 0) {
-      console.log("zero tval");
-      //parabola_f(x, h, k, p) {
-      //parabola_f_(y, h, k, p) {
       // horizontal or vertical direction
       var pt;
-      if (Math.abs(pthis.theta) < 1.6 && Math.abs(pthis.theta) > 1.5) {
-        // derive y
-        var y = parabola_f(p[0], pthis.parabola.h, pthis.parabola.k, pthis.parabola.p);
-        pt = vec3(p[0], y, 0);
-      } else {
-        // derive x
-        // var xVals = parabola_f_(p[1], pthis.parabola.h, pthis.parabola.k, pthis.parabola.p);
-        // pt = vec3(xVals[0], p[1], 0);
-        // TODO FIX
-        var xVals = parabola_f_(p[1], pthis.parabola.h, pthis.parabola.k, pthis.parabola.p);
-        pt = vec3(xVals[0], p[1], 0);
-      }
+      // derive y
+      var y = parabola_f(p[0], pthis.parabola.h, pthis.parabola.k, pthis.parabola.p);
+      pt = vec3(p[0], y, 0);
       pt = pthis.untransformPoint(pt);
       ret.push(pt);
     } else if (Math.abs(t < 1e10)) {
@@ -378,7 +354,6 @@ GeneralParabola.prototype.intersectRay = function (pOrigin, vOrigin) {
       q = pthis.untransformPoint(q);
       ret.push(q);
     }
-
     // Taking this guard out allows computing close points with negative tvals
     // if (t >= 0) {
     //   var q = add(p, mult(v, t));
@@ -388,29 +363,6 @@ GeneralParabola.prototype.intersectRay = function (pOrigin, vOrigin) {
   });
   return ret.length == 1 ? ret[0] : ret;
 }
-
-// Intersect all intersections of a general parabola and a general parabola.
-// If there are two intersections, the intersections will
-// be returned in order of t value.
-// The line is given in parametric form p(t) = p + tv
-// GeneralParabola.prototype.intersectPara = function (genPara) {
-
-//   var resultPoints = [];
-//   var r = [];
-//   resultPoints = this.parabola.intersect(genPara.parabola);
-//   // resultPoints = ppIntersect(h1, k1, p1, h2, k2, p2);
-//   var thisp = this;
-//   var genp = genPara;
-//   _.forEach(resultPoints, function (p) {
-//     p = genp.untransformPoint(p);
-//     // p = thisp.untransformPoint(p);
-//     if (!_.isNaN(p.x)) {
-//       r.push(p);
-//     }
-//     console.log("gen-gen point:" + p);
-//   });
-//   return r;
-// }
 
 // Prepares this parabola for drawing
 GeneralParabola.prototype.prepDraw = function (id, origin, dest) {

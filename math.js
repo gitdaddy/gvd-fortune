@@ -782,7 +782,7 @@ function pointAngleBisect(s, p1) {
     var bData = smallAngleBisectSegments(s, sd, s.a);
     return bData.line;
   }
-   
+
   // return smAngleBi s1(s.b -> p1) and s
   var sd = makeSegment(s.b, p1, true);
   // var sb = makeSegment(s.b, s.a, true);
@@ -851,25 +851,42 @@ function equidistant(left, arc, right) {
   // Bisecting types can be either lines or parabolas - lines are preferred
   if (points.length == 1) {
     if (parallelTest(segments[0], segments[1])) {
-      // console.log("parallel sites");
       b1 = getAverage(segments[0], segments[1]);
       b2 = bisect(segments[0], points[0]);
     } else {
       if (points[0] == segments[0].a || points[0] == segments[0].b) {
         b1 = bisect(segments[0], points[0]);
-        b2 = bisect(points[0], segments[1]);
-      } else if (points[0] == segments[1].a || points[0] == segments[1].b) {
-        b1 = bisect(segments[1], points[0]); 
-        b2 = bisect(points[0], segments[0]);
-      } else {
-        b1 = bisect(segments[0], points[0]);
-        // debugging only
-        // if (g_addDebug) g_debugObjs.push(b1);
         var blines = bisectSegments2(segments[0], segments[1]);
         var ii = [];
         _.forEach(blines, function(line) {
-          // debugging only
-          // if (g_addDebug) g_debugObjs.push(line);
+          var i = intersect(line, b1);
+          if (i) {
+            if (i.type && i.type === "vec")
+            ii.push(i);
+           else
+            ii = _.concat(ii, i);
+          }
+        });
+        return ii;
+      } else if (points[0] == segments[1].a || points[0] == segments[1].b) {
+        b1 = bisect(segments[1], points[0]);
+        var blines = bisectSegments2(segments[0], segments[1]);
+        var ii = [];
+        _.forEach(blines, function(line) {
+          var i = intersect(line, b1);
+          if (i) {
+            if (i.type && i.type === "vec")
+             ii.push(i);
+            else
+             ii = _.concat(ii, i);
+          }
+        });
+        return ii;
+      } else {
+        b1 = bisect(segments[0], points[0]);
+        var blines = bisectSegments2(segments[0], segments[1]);
+        var ii = [];
+        _.forEach(blines, function(line) {
           var i = intersect(line, b1);
           ii = _.concat(ii, i);
         });
@@ -885,21 +902,7 @@ function equidistant(left, arc, right) {
       b2 = bisect(points[0], points[1]);
     } else {
       b1 = bisect(segments[0], points[0]);
-      // var line1 = pointAngleBisect(segments[0], points[0]);
-      // var line2 = pointAngleBisect(segments[0], points[1]);
       b2 = bisect(points[0], points[1]);
-      // var ret = [];
-      // _.each([line1, line2], function (l) {
-      //   ret.push(intersectLines(b2.p1, b2.p2, l.p1, l.p2));
-      // });
-      // return ret;
-      // in some cases if the transformed vector of the line
-      // is too vertical thier will be problems when using the intersection
-      // with a general parabola
-      // if (b1 instanceof PointSegmentBisector && b1.para.transformVector(b2.v)[0] < 1e-14) {
-      //   // reset b1 to something else
-      //   b1 = bisect(segments[0], points[1]);
-      // }
     }
   } else if (segments.length == 3) {
     var blines = bisectSegments4(left, arc, right);
