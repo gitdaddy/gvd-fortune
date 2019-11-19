@@ -114,7 +114,6 @@ function processNewDataset() {
   var segments = [];
   var points = [];
   g_polygons.forEach(function(poly) {
-    // markSiteRelations(poly.segments);
     segments = segments.concat(poly.segments);
     points = points.concat(poly.points);
   });

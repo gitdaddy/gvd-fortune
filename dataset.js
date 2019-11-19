@@ -19,6 +19,136 @@ var NODE_RELATION = {
   NONE: 5
 }
 
+function sameSign(a,b) {
+  return (a * b) > 0;
+}
+
+function crossZ(v1, v2) {
+  return (v1.x*v2.y) - (v1.y*v1.x);
+}
+
+function isOverlapColinear(p1, p2, p3) {
+  var v1 = {x:p2.x - p1.x, y:p2.y - p1.y};
+  var v2 = {x:p3.x - p1.x, y:p3.y - p1.y};
+  return crossZ(v1, v2) === 0;
+}
+
+function overlap(x1, y1, x2, y2, x3, y3, x4, y4){
+	var a1, a2, b1, b2, c1, c2;
+	var r1, r2 , r3, r4;
+	var denom;
+
+	// a1, b1, c1, where line joining points 1 and 2
+	// is "a1 x + b1 y + c1 = 0".
+	a1 = y2 - y1;
+	b1 = x1 - x2;
+	c1 = (x2 * y1) - (x1 * y2);
+
+	// r3 and r4.
+	r3 = ((a1 * x3) + (b1 * y3) + c1);
+  r4 = ((a1 * x4) + (b1 * y4) + c1);
+
+  // check co-linear isColinear(p1,p2,p3)
+  var np0 = {x: x1, y: y1};
+  var np1 = {x: x2, y: y2};
+  var lp0 = {x: x3, y: y3};
+  var lp1 = {x: x4, y: y4};
+  if (isOverlapColinear(lp0, lp1, np0) || isOverlapColinear(lp0, lp1, np1)) return true;
+
+	// Check signs of r3 and r4. If both point 3 and point 4 lie on
+	// same side of line 1, the line segments do not intersect.
+	if ((r3 !== 0) && (r4 !== 0) && sameSign(r3, r4)){
+		return false; //return that they do not intersect
+	}
+
+	// a2, b2, c2
+	a2 = y4 - y3;
+	b2 = x3 - x4;
+	c2 = (x4 * y3) - (x3 * y4);
+
+	// r1 and r2
+	r1 = (a2 * x1) + (b2 * y1) + c2;
+	r2 = (a2 * x2) + (b2 * y2) + c2;
+
+	// Check signs of r1 and r2. If both point 1 and point 2 lie
+	// on same side of second line segment, the line segments do
+	// not intersect.
+	if ((r1 !== 0) && (r2 !== 0) && (sameSign(r1, r2))){
+		return false; //return that they do not intersect
+	}
+
+	//Line segments intersect: intersection point.
+	denom = (a1 * b2) - (a2 * b1);
+
+	if (denom === 0) {
+		return true; //collinear
+	}
+
+	// lines_intersect
+	return true; //lines intersect, return true
+}
+
+// perhaps this could return the
+// nature of the overlap to better apply an adjustment
+function overlapsAny(x0, y0, x1, y1, segments) {
+  var rslt = null;
+  _.forEach(segments, function (s) {
+    var sx0 = s.a[0];
+    var sy0 = s.a[1];
+    var sx1 = s.b[0];
+    var sy1 = s.b[1];
+    if (overlap(x0, y0, x1, y1, sx0, sy0, sx1, sy1)){
+      rslt = {
+        iPt: intersectLines([x0, y0],[x1, y1],[sx0, sy0],[sx1, sy1]),
+        seg: s
+      };
+      return;
+    }
+  });
+  return rslt;
+}
+
+function overlapCorrection(polygons) {
+  // TODO correct overlapping sites
+  for (var i = 0; i < polygons.length; i++) {
+    var vSet = _.filter(polygons, function (p, idx) {return idx !== i; });
+    _.each(polygons[i].segments, function (s) {
+      if (s.adjusted) {
+        _.each(vSet, function (poly) {
+          var iData = overlapsAny(s.a[0], s.a[1], s.b[0], s.b[1], poly.segments);
+          if (iData) {
+            // apply adjustment in the direction of
+            // its other endpoint
+            // look up points and segments attached to point
+            var d1 = dist(s.a, iData.pt);
+            var d2 = dist(s.b, iData.pt);
+            var origin = d1 > d2 ? s.a: s.b;
+            var rPt = _.find(polygons[i].points, function(p) {
+              return fastFloorEqual(origin, p);
+            });
+            var rSegPts = [];
+            _.each(polygons[i].segments, function(s) {
+              if (fastFloorEqual(origin, s.a)) {
+                rSegPts.push(s.a);
+              } else if (fastFloorEqual(origin, s.b)) {
+                rSegPts.push(s.b);
+              }
+            });
+            // move away from the offending segment
+            // var v = vec3((to[0] - from[0]) * 0.1, (to[1] - from[1]) * 0.1);
+            var v = mult(negate(add(iData.seg.a, iData.seg.b)), 0.0001);
+            _.each(_.concat([rPt], rSegPts), function (pt) {
+              // move pt in the direction of v
+              pt[0] += v[0];
+              pt[1] += v[1];
+            });
+          }
+        });
+      }
+    });
+  }
+}
+
 function getRandomAdjustment(dataPoints, match) {
   var xDiff = Math.abs(dataPoints[match.s1Idx].x - dataPoints[match.s2Idx].x);
   var value = xDiff * 0.007;
@@ -100,7 +230,7 @@ function sanitizeData(orderedPoints, optTolerance, optXoffset) {
   var match = getMatch(orderedPoints);
   while(match) {
     orderedPoints[match.s2Idx].y -= getRandomAdjustment(orderedPoints, match);
-
+    orderedPoints[match.s2Idx].adjusted = true;
     // TODO apply random adjustment to x until there are no overlapping sites
     // if (optXoffset) {
     //   orderedPoints[match.s2Idx].x += Math.random() < 0.5 ? -optXoffset : optXoffset;
@@ -124,10 +254,11 @@ Polygon.prototype.addPoint = function (point) {
   this.points.push(point);
 }
 
-Polygon.prototype.createSegment = function (pIdxStart, pIdxEnd) {
+Polygon.prototype.createSegment = function (pIdxStart, pIdxEnd, adjusted = false) {
   var s = makeSegment(this.points[pIdxStart], this.points[pIdxEnd]);
   s.id = g_id++;
   s.label = this.label;
+  s.adjusted = adjusted;
   this.segments.push(s);
   if (this.points[pIdxStart][1] == this.points[pIdxEnd][1]) {
     console.error("Horizontal segment detected with y values of: " + this.points[pIdxEnd][1]);
@@ -136,93 +267,13 @@ Polygon.prototype.createSegment = function (pIdxStart, pIdxEnd) {
   this.points[pIdxEnd].flipped = isFlipped(this.points[pIdxEnd], this.segments);
 }
 
-function getNextSeg(p, segments, segId) {
-  var next = _.find(segments, function(s) {
-    if (fastFloorEqual(p, s.a) || fastFloorEqual(p, s.b))
-      return segId !== s.id;
-  });
-  if (!next) return;
-  if (fastFloorEqual(p, next.a)) {
-    return {side: 'a', seg: next};
-  } else {
-    return {side: 'b', seg: next};
-  }
-}
-
-function setRelationTop(cur, next) {
-  if (!_.isUndefined(cur.a.relation)) return;
-  if (next.side == 'a') {
-    cur.a.relation = NODE_RELATION.TOP;
-    next.seg.a.relation = NODE_RELATION.TOP;
-  } else {
-    // either a left or right bend
-    // var v0 = subtract(cur.b, cur.a);
-    // var v1 = subtract(cur.b, next.seg.a);
-    var v0 = vec3(cur.b[0] - cur.a[0], cur.b[1] - cur.a[1], 0);
-    var v1 = vec3(cur.b[0] - next.seg.a[0], cur.b[1] - next.seg.a[1], 0);
-    if (cross(v0, v1)[2] < 0) {
-      // right
-      cur.a.relation = NODE_RELATION.CHILD_LEFT_HULL;
-      next.seg.b.relation = NODE_RELATION.CHILD_LEFT_HULL;
-    } else {
-      // left
-      cur.a.relation = NODE_RELATION.CHILD_RIGHT_HULL;
-      next.seg.b.relation = NODE_RELATION.CHILD_RIGHT_HULL;
-    }
-  }
-}
-
-function setRelationBottom(cur, next) {
-  if (!_.isUndefined(cur.b.relation)) return;
-  if (next.side == 'b') {
-    cur.b.relation = NODE_RELATION.CLOSING;
-    next.seg.b.relation = NODE_RELATION.CLOSING;
-  } else {
-    // either a left or right bend
-    // var v0 = subtract(cur.b, cur.a);
-    // var v1 = subtract(cur.b, next.seg.b);
-    var v0 = vec3(cur.b[0] - cur.a[0], cur.b[1] - cur.a[1], 0);
-    var v1 = vec3(cur.b[0] - next.seg.b[0], cur.b[1] - next.seg.b[1], 0);
-    if (cross(v0, v1)[2] < 0) {
-      // right
-      cur.b.relation = NODE_RELATION.CHILD_LEFT_HULL;
-      next.seg.a.relation = NODE_RELATION.CHILD_LEFT_HULL;
-    } else {
-      // left
-      cur.b.relation = NODE_RELATION.CHILD_RIGHT_HULL;
-      next.seg.a.relation = NODE_RELATION.CHILD_RIGHT_HULL;
-    }
-  }
-}
-
-function markSiteRelations(segments) {
-  if (segments.length == 0) return;
-  var findNext = function(s){ return _.isUndefined(s.a.relation) || _.isUndefined(s.b.relation); };
-  var cur = _.find(segments, findNext);
-  while(cur) {
-    var fromA = getNextSeg(cur.a, segments, cur.id);
-    if (!fromA) {
-      cur.a.relation = NODE_RELATION.NONE;
-    } else {
-      setRelationTop(cur, fromA);
-    }
-    var fromB = getNextSeg(cur.b, segments, cur.id);
-    if (!fromB) {
-      cur.b.relation = NODE_RELATION.NONE;
-    } else {
-      setRelationBottom(cur, fromB);
-    }
-    var cur = _.find(segments, findNext);
-  }
-}
-
 // testing only
-function renderOutline(outlinePoints, context){
-  context.fillStyle = "#0000FF";
-  for(var i=0; i<outlinePoints.length; i+=2){
-      context.fillRect(outlinePoints[i], outlinePoints[i+1], 1, 1);
-  }
-}
+// function renderOutline(outlinePoints, context){
+//   context.fillStyle = "#0000FF";
+//   for(var i=0; i<outlinePoints.length; i+=2){
+//       context.fillRect(outlinePoints[i], outlinePoints[i+1], 1, 1);
+//   }
+// }
 
 function canvasToPolygons(srcArray, width, height){
   // console.log("canvas to polygon width:" + width + " height:" + height);
@@ -240,7 +291,6 @@ function canvasToPolygons(srcArray, width, height){
     var poly = new Polygon();
 
     var stdPoints = [];
-
     for(var i=0; i<cPoints.length; i+=2){
       var x = xScale(cPoints[i]);
       var y = yScale(cPoints[i+1]);
@@ -253,7 +303,7 @@ function canvasToPolygons(srcArray, width, height){
     }
 
     // WATCH VALUE
-    stdPoints = sanitizeData(stdPoints, 1e-7, 1e-4);
+    stdPoints = sanitizeData(stdPoints, 1e-7);
 
     // rotate canvas points
     // for better accuracy
@@ -263,7 +313,7 @@ function canvasToPolygons(srcArray, width, height){
       // y' = xsin(theta) + ycos(theta)
       var xP = p.x*Math.cos(theta) - p.y*Math.sin(theta);
       var yP = p.x*Math.sin(theta) + p.y*Math.cos(theta);
-      result.push({x:xP, y:yP});
+      result.push({x:xP, y:yP, adjusted:p.adjusted});
     }, []);
 
     for(var i = 0; i < stdPoints.length; i++){
@@ -271,14 +321,18 @@ function canvasToPolygons(srcArray, width, height){
       point.fileId = debugIdx.toString();
       poly.addPoint(point);
       if (i === stdPoints.length - 1) {
-        poly.createSegment(i-1, 0);
+        var adjusted = stdPoints[i].adjusted || stdPoints[0].adjusted;
+        poly.createSegment(i-1, 0, adjusted);
       } else if (i !== 0) {
-        poly.createSegment(i-1, i);
+        var adjusted = stdPoints[i-1].adjusted || stdPoints[i].adjusted;
+        poly.createSegment(i-1, i, adjusted);
       }
     }
     polygons.push(poly);
     debugIdx++;
   });
+
+  overlapCorrection(polygons);
   return polygons;
 }
 
@@ -318,7 +372,9 @@ function parseInputMap(jsonStr) {
   // testing only
   // Sydney - 298 307 394, 1133 1081 1085 / 7311, 7312, 7182
   // Berlin - 1052 1016 1017
-  // var few = [objs[13], objs[14]]; // 27
+
+  // Berlin overlap = 13, 7
+  // var few = [objs[7], objs[13]]; //
   // return canvasToPolygons(few, width, height);
   return canvasToPolygons(objs, data.width, data.height);
 }

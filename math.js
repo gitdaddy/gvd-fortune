@@ -592,40 +592,6 @@ function getSegmentsBisectorAngle(s, t, debug=false) {
 // the line. The vector v=q2-q1 will be oriented in the negative y direction.
 //------------------------------------------------------------
 function bisectPoints(p1, p2) {
-  // if the point sites are equal then
-  // we must rely on the external segments for an accurate bisector
-  // THIS CASE SHOULD NEVER occur
-  // if (fastFloorEqual(p1, p2)) {
-  //   console.log("!!!!!!!!!! Bisecting equal point sites...");
-  //   // get external segments
-  //   var ss1 = findConnectedSegments(p1);
-  //   var ss2 = findConnectedSegments(p2);
-
-  //   if (ss1.length !== 2 || ss2.length !== 2) {
-  //     throw "Invalid bisect points - data contains overlapping point sites";
-  //   }
-
-  //   // find the two segments with the smallest angle from p1 and p2
-  //   var smallestAnglePair = { angle: 1e10 };
-  //   _.forEach(ss1, function(s1){
-  //     _.forEach(ss2, function(s2) {
-  //       // if angle < sp.angle - set the smallest pair
-  //       var beta = getSegmentsBisectorAngle(s1, s2);
-  //       if (beta < smallestAnglePair.angle) {
-  //         smallestAnglePair.angle = beta;
-  //         smallestAnglePair.s1 = s1;
-  //         smallestAnglePair.s2 = s2;
-  //       }
-  //     });
-  //   });
-  //   // get the bisector between the two segments
-  //   var data = smallAngleBisectSegments(smallestAnglePair.s1, smallestAnglePair.s2, p1);
-  //   // debugging only
-  //   // if (g_addDebug) g_debugObjs.push(data.line);
-  //   return data.line;
-  // }
-
-  // var v = subtract(p2, p1);
   var v = vec3(p2[0] - p1[0], p2[1] - p1[1], 0);
 
   // var q = add(p1, mult(v, 0.5));
