@@ -80,6 +80,11 @@ function incSweepline(inc) {
   setSweepline(g_sweepline.y);
 }
 
+function updateSweepline() {
+  var elem = document.getElementById("sweeplineInput");
+  moveSweepline(parseFloat(elem.value));
+}
+
 function keydown(event) {
   var x = event.keyCode;
   var key = event.key;
@@ -109,7 +114,7 @@ function keydown(event) {
   if (changed) {
     // Prevent scroll
     event.preventDefault();
-    document.getElementById("sweeplineLabel").innerHTML = g_sweepline.y.toFixed(10);
+    document.getElementById("sweeplineInput").value = g_sweepline.y.toFixed(10);
     render();
   }
 }
@@ -126,7 +131,7 @@ function init() {
   drawInit(g_sweepline, g_settings);
 
   document.onkeydown = keydown;
-  document.getElementById("sweeplineLabel").innerHTML = g_sweepline.y.toFixed(10);
+  document.getElementById("sweeplineInput").value = g_sweepline.y.toFixed(10);
 
   _.forEach(g_fileDatasets, function (p) {
     var option = document.createElement("option");
@@ -265,9 +270,7 @@ function fortune(reorder) {
 }
 
 function moveSweepline(y) {
-
   setSweepline(y);
-  document.getElementById("sweeplineLabel").innerHTML = g_sweepline.y.toFixed(10);
   render();
 }
 

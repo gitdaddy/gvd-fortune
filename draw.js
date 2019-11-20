@@ -53,6 +53,13 @@ let gvdToPixelYScale =  d3.scaleLinear()
 .domain([1, -1])
 .range([0, height]);
 
+  // Set the zoom and Pan features: how much you can zoom, on which part, and what to do when there is a zoom
+let zoom = d3.zoom()
+  .scaleExtent([.5, ZOOM_EXTENT])
+  .extent([[0, 0], [width, height]])
+  .on("zoom", zoomed);
+
+
 /////////////// Handler Functions /////////////////
 
 function getEdgeId(d) {
@@ -110,23 +117,47 @@ function onEdgeVertexMouseOut(d, i) {
 
 function resetView() {
   g_zoomed = false;
-  rescaleView(xRevOrigin, yRevOrigin);
+  d3.zoomIdentity.x = 0;
+  d3.zoomIdentity.y = 0;
+  d3.select('#mainView').call(zoom.transform, d3.zoomIdentity.scale(1));
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function startVideo() {
+  // var scale = 1;
+  // var toPoint = [478, 440];
+  var toPoint = [468, 430];
+  // var point = [0, 0];
+  var totalExtent = 50;
+  for (var k = 2; k < totalExtent; k += 0.2) {
+
+    // var xWinVal = k/totalExtent * toPoint[0];
+    // var yWinVal = k/totalExtent * toPoint[0];
+    // var x = k * -xWinVal;
+    // var y = k * -yWinVal;
+
+    var x = k * -toPoint[0];
+    var y = k * -toPoint[1];
+    console.log(`Scale: ${k}, x: ${x}, y:${y}`);
+    d3.zoomIdentity.x = x;
+    d3.zoomIdentity.y = y;
+    d3.select('#mainView').transition().duration(50).call(zoom.transform, d3.zoomIdentity.scale(k));
+    await sleep(50);
+  }
 }
 
 function drawInit(sweepline, settings) {
   svg = d3.select('#mainView')
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom)
+  .style("pointer-events", "mousedown, dbclick, wheel.zoom")
+  .call(zoom)
   .append("g")
   .attr("id", "gvd")
   .attr("transform", `translate(${margin.left} ,${margin.top})`)
-  .on("click", function() {
-    if (!g_zoomed) {
-      var coords = d3.mouse(this);
-      var y = yToGVD(coords[1]);
-      moveSweepline(y);
-    }
-  })
   ;
 
   svg.selectAll("line")
@@ -162,20 +193,13 @@ function drawInit(sweepline, settings) {
 
   svg.attr("clip-path", "url(#clip)");
 
-  // Set the zoom and Pan features: how much you can zoom, on which part, and what to do when there is a zoom
-  var zoom = d3.zoom()
-  .scaleExtent([.5, ZOOM_EXTENT])  // This control how much you can unzoom (x0.5) and zoom (x20)
-  .extent([[0, 0], [width, height]])
-  .on("zoom", zoomed);
-
-  // This add an invisible rect on top of the chart area. This rect can recover pointer events: necessary to understand when the user zoom
-  svg.append("rect")
-    .attr("width", width)
-    .attr("height", height)
-    .style("fill", "none")
-    .style("pointer-events", "all")
-    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-    .call(zoom);
+    // mainView.append("rect")
+  // .attr("width", width)
+  // .attr("height", height)
+  // .style("fill", "none")
+  // .style("pointer-events", "all")
+  // .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+  // .call(zoom);
 
   // add settings
   var settings = _.map(g_settings, function (val, key) {
@@ -285,6 +309,7 @@ function enforceSettings() {
 
 function onSettingChecked(event) {
   g_settings[event.value].value = event.checked;
+  rescaleView(xRev, yRev);
   enforceSettings();
 }
 
@@ -940,6 +965,8 @@ function rescaleView(newX, newY) {
 
 function zoomed() {
   g_zoomed = true;
+
+  console.log(`Zoom scale: ${d3.event.transform.k}, x: ${d3.event.transform.x}, y:${d3.event.transform.y}`);
 
   // recover the new scale
   var newX = d3.event.transform.rescaleX(xRevOrigin);

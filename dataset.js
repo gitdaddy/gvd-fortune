@@ -109,7 +109,6 @@ function overlapsAny(x0, y0, x1, y1, segments) {
 }
 
 function overlapCorrection(polygons) {
-  // TODO correct overlapping sites
   for (var i = 0; i < polygons.length; i++) {
     var vSet = _.filter(polygons, function (p, idx) {return idx !== i; });
     _.each(polygons[i].segments, function (s) {
@@ -373,10 +372,10 @@ function parseInputMap(jsonStr) {
   // Sydney - 298 307 394, 1133 1081 1085 / 7311, 7312, 7182
   // Berlin - 1052 1016 1017
 
-  // Berlin overlap = 13, 7
-  // var few = [objs[7], objs[13]]; //
-  // return canvasToPolygons(few, width, height);
-  return canvasToPolygons(objs, data.width, data.height);
+  // Berlin overlap = 13, 7, 14
+  var few = [objs[7], objs[13], objs[14]]; //
+  return canvasToPolygons(few, width, height);
+  // return canvasToPolygons(objs, data.width, data.height);
 }
 
 function parseInputJSON(jsonStr) {
