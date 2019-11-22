@@ -141,7 +141,7 @@ async function startVideo() {
 
     var x = k * -toPoint[0];
     var y = k * -toPoint[1];
-    console.log(`Scale: ${k}, x: ${x}, y:${y}`);
+    // console.log(`Scale: ${k}, x: ${x}, y:${y}`);
     d3.zoomIdentity.x = x;
     d3.zoomIdentity.y = y;
     d3.select('#mainView').transition().duration(50).call(zoom.transform, d3.zoomIdentity.scale(k));
@@ -966,7 +966,7 @@ function rescaleView(newX, newY) {
 function zoomed() {
   g_zoomed = true;
 
-  console.log(`Zoom scale: ${d3.event.transform.k}, x: ${d3.event.transform.x}, y:${d3.event.transform.y}`);
+  // console.log(`Zoom scale: ${d3.event.transform.k}, x: ${d3.event.transform.x}, y:${d3.event.transform.y}`);
 
   // recover the new scale
   var newX = d3.event.transform.rescaleX(xRevOrigin);

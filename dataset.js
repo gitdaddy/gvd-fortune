@@ -53,7 +53,7 @@ function overlap(x1, y1, x2, y2, x3, y3, x4, y4){
   var np1 = {x: x2, y: y2};
   var lp0 = {x: x3, y: y3};
   var lp1 = {x: x4, y: y4};
-  if (isOverlapColinear(lp0, lp1, np0) || isOverlapColinear(lp0, lp1, np1)) return true;
+  if (isOverlapColinear(lp0, lp1, np0) || isOverlapColinear(lp0, lp1, np1)) return false; // true/false?
 
 	// Check signs of r3 and r4. If both point 3 and point 4 lie on
 	// same side of line 1, the line segments do not intersect.
@@ -90,62 +90,80 @@ function overlap(x1, y1, x2, y2, x3, y3, x4, y4){
 
 // perhaps this could return the
 // nature of the overlap to better apply an adjustment
-function overlapsAny(x0, y0, x1, y1, segments) {
-  var rslt = null;
-  _.forEach(segments, function (s) {
-    var sx0 = s.a[0];
-    var sy0 = s.a[1];
-    var sx1 = s.b[0];
-    var sy1 = s.b[1];
-    if (overlap(x0, y0, x1, y1, sx0, sy0, sx1, sy1)){
-      rslt = {
-        iPt: intersectLines([x0, y0],[x1, y1],[sx0, sy0],[sx1, sy1]),
-        seg: s
-      };
+function overlapsAny(x0, y0, x1, y1, lines) {
+  var rslt = false;
+  _.forEach(lines, function (l) {
+    if (overlap(x0, y0, x1, y1, l.x0, l.y0, l.x1, l.y1)){
+      rslt = true;
       return;
     }
   });
   return rslt;
 }
 
-function overlapCorrection(polygons) {
-  for (var i = 0; i < polygons.length; i++) {
-    var vSet = _.filter(polygons, function (p, idx) {return idx !== i; });
-    _.each(polygons[i].segments, function (s) {
-      if (s.adjusted) {
-        _.each(vSet, function (poly) {
-          var iData = overlapsAny(s.a[0], s.a[1], s.b[0], s.b[1], poly.segments);
-          if (iData) {
-            // apply adjustment in the direction of
-            // its other endpoint
-            // look up points and segments attached to point
-            var d1 = dist(s.a, iData.pt);
-            var d2 = dist(s.b, iData.pt);
-            var origin = d1 > d2 ? s.a: s.b;
-            var rPt = _.find(polygons[i].points, function(p) {
-              return fastFloorEqual(origin, p);
-            });
-            var rSegPts = [];
-            _.each(polygons[i].segments, function(s) {
-              if (fastFloorEqual(origin, s.a)) {
-                rSegPts.push(s.a);
-              } else if (fastFloorEqual(origin, s.b)) {
-                rSegPts.push(s.b);
-              }
-            });
-            // move away from the offending segment
-            // var v = vec3((to[0] - from[0]) * 0.1, (to[1] - from[1]) * 0.1);
-            var v = mult(negate(add(iData.seg.a, iData.seg.b)), 0.0001);
-            _.each(_.concat([rPt], rSegPts), function (pt) {
-              // move pt in the direction of v
-              pt[0] += v[0];
-              pt[1] += v[1];
-            });
-          }
-        });
-      }
+
+
+// input data is an array of point objects [[x, y, x1,y1, x2,y2], ..]
+function dataCorrection(srcArray) {
+  // get the lines
+  var objs = [];
+  for (var i = 0; i < srcArray.length; i++) {
+    var lines = [];
+    var pts = srcArray[i];
+    for(var j = 0; j < pts.length-1; j++){
+      lines.push({x0:pts[j].x, y0:pts[j].y, x1:pts[j+1].x, y1:pts[j+1].y});
+
+      // var x0 = j === 0 ? pts[pts.length - 2] : pts[j-2];
+      // var y0 = j === 0 ? pts[pts.length - 1] : pts[j-1];
+      // var x1 = pts[j];
+      // var y1 = pts[j+1];
+
+      // x = event, y = odd
+      // var x0 = pts[j];
+      // var y0 = pts[j+1];
+      // var tmpIdx = j + 2;
+      // if (j === pts.length - 2) {
+      //   tmpIdx = pts.length % (j+2);
+      // }
+      // var x1 = pts[tmpIdx]; // mod for the wrap around
+      // var y1 = pts[tmpIdx + 1];
+    }
+    objs.push(lines);
+  }
+
+  var mult = 0.002;
+  for (var k = 0; k < objs.length; k++) {
+    var vSet = _.filter(objs, function (p, idx) {return idx !== k; });
+    // for all segments /_\
+    _.each(objs[k], function (curLine) {
+      // if a larger length overlaps anyone
+      var tolerance = 1 + mult;
+      var A = vec3(
+        ((curLine.x0-curLine.x1) * tolerance) + curLine.x1,
+        ((curLine.y0-curLine.y1) * tolerance) + curLine.y1,
+        0);
+
+      var B = vec3(
+        ((curLine.x1-curLine.x0) * tolerance) + curLine.x0,
+        ((curLine.y1-curLine.y0) * tolerance) + curLine.y0,
+        0);
+
+      // does the current line overlap any other lines
+      _.each(vSet, function (otherObj) {
+        if (overlapsAny(A[0], A[1], B[0], B[1], otherObj)) {
+          var v01 = {x:(curLine.x1-curLine.x0)*mult, y:(curLine.y1-curLine.y0)*mult};
+          var v10 = {x:(curLine.x0-curLine.x1)*mult, y:(curLine.y0-curLine.y1)*mult};
+          // move each point towards the other slightly
+          // by added the pull vectors
+          curLine.x0 += v01.x;
+          curLine.y0 += v01.y;
+          curLine.x1 += v10.x;
+          curLine.y1 += v10.y;
+        }
+      });
     });
   }
+  return objs;
 }
 
 function getRandomAdjustment(dataPoints, match) {
@@ -253,11 +271,10 @@ Polygon.prototype.addPoint = function (point) {
   this.points.push(point);
 }
 
-Polygon.prototype.createSegment = function (pIdxStart, pIdxEnd, adjusted = false) {
+Polygon.prototype.createSegment = function (pIdxStart, pIdxEnd) {
   var s = makeSegment(this.points[pIdxStart], this.points[pIdxEnd]);
   s.id = g_id++;
   s.label = this.label;
-  s.adjusted = adjusted;
   this.segments.push(s);
   if (this.points[pIdxStart][1] == this.points[pIdxEnd][1]) {
     console.error("Horizontal segment detected with y values of: " + this.points[pIdxEnd][1]);
@@ -284,25 +301,17 @@ function canvasToPolygons(srcArray, width, height){
     .domain([0, height])
     .range([1, -1]);
 
-  var polygons = [];
-  var debugIdx = 0;
-  _.each(srcArray, function(cPoints){
-    var poly = new Polygon();
 
+  var stdObjs = [];
+  _.each(srcArray, function (pts) {
     var stdPoints = [];
-    for(var i=0; i<cPoints.length; i+=2){
-      var x = xScale(cPoints[i]);
-      var y = yScale(cPoints[i+1]);
-      var idx = _.findIndex(stdPoints, function (p){
-        return p.x === x && p.y === y;
-      });
-      if (idx === -1) {
-        stdPoints.push({x:x, y:y});
-      }
+    if (pts.length % 2 !== 0) throw "invalid data";
+    for(var i = 0; i < pts.length - 1; i+=2){
+      // x even, y odd
+      stdPoints.push({x:pts[i], y:pts[i+1]});
     }
 
-    // WATCH VALUE
-    stdPoints = sanitizeData(stdPoints, 1e-7);
+    stdPoints = removeCAS(stdPoints);
 
     // rotate canvas points
     // for better accuracy
@@ -312,26 +321,47 @@ function canvasToPolygons(srcArray, width, height){
       // y' = xsin(theta) + ycos(theta)
       var xP = p.x*Math.cos(theta) - p.y*Math.sin(theta);
       var yP = p.x*Math.sin(theta) + p.y*Math.cos(theta);
-      result.push({x:xP, y:yP, adjusted:p.adjusted});
+      result.push({x:xP, y:yP});
     }, []);
+    stdObjs.push(stdPoints);
+  });
 
-    for(var i = 0; i < stdPoints.length; i++){
-      var point = new vec3(stdPoints[i].x, stdPoints[i].y, 0);
-      point.fileId = debugIdx.toString();
-      poly.addPoint(point);
-      if (i === stdPoints.length - 1) {
-        var adjusted = stdPoints[i].adjusted || stdPoints[0].adjusted;
-        poly.createSegment(i-1, 0, adjusted);
-      } else if (i !== 0) {
-        var adjusted = stdPoints[i-1].adjusted || stdPoints[i].adjusted;
-        poly.createSegment(i-1, i, adjusted);
+  var objects = dataCorrection(stdObjs);
+
+  var polygons = [];
+  var debugIdx = 0;
+  _.each(objects, function(linesArray){
+    var poly = new Polygon();
+
+    // for(var i = 0; i < stdPoints.length; i++){
+    //   var point = new vec3(stdPoints[i].x, stdPoints[i].y, 0);
+    //   point.fileId = debugIdx.toString();
+    //   poly.addPoint(point);
+    //   if (i === stdPoints.length - 1) {
+    //     var adjusted = stdPoints[i].adjusted || stdPoints[0].adjusted;
+    //     poly.createSegment(i-1, 0, adjusted);
+    //   } else if (i !== 0) {
+    //     var adjusted = stdPoints[i-1].adjusted || stdPoints[i].adjusted;
+    //     poly.createSegment(i-1, i, adjusted);
+    //   }
+    // }
+    var startPt = new vec3(xScale(linesArray[0].x0), yScale(linesArray[0].y0), 0);
+    poly.addPoint(startPt);
+    for(var idx = 1; idx < linesArray.length; idx++){
+      // var p1 = new vec3(xScale(linesArray[idx].x0), yScale(linesArray[idx].y0), 0);
+      var pt = new vec3(xScale(linesArray[idx].x1), yScale(linesArray[idx].y1), 0);
+      pt.fileId = debugIdx;
+      if (idx === linesArray.length - 1) {
+        poly.createSegment(idx-1, 0);
+      } else if (idx !== 0) {
+        poly.addPoint(pt);
+        poly.createSegment(idx-1, idx);
       }
     }
     polygons.push(poly);
     debugIdx++;
   });
 
-  overlapCorrection(polygons);
   return polygons;
 }
 
@@ -363,6 +393,7 @@ function parseInputMap(jsonStr) {
   // ctx.clearRect(0, 0, canvas.width, canvas.height);
   // _.each(objs, function(o) { renderOutline(o, ctx) });
 
+  // TODO FIND A better way to get rid of this
   var found = _.find(g_fileDatasets, function(f) { return f.label === "dataset7 - Berlin city dataset"; });
   if (found) {
     objs.splice(27, 1);
@@ -370,12 +401,12 @@ function parseInputMap(jsonStr) {
 
   // testing only
   // Sydney - 298 307 394, 1133 1081 1085 / 7311, 7312, 7182
-  // Berlin - 1052 1016 1017
+  // Berlin - 1052 1016 1017, 4026
 
   // Berlin overlap = 13, 7, 14
-  var few = [objs[7], objs[13], objs[14]]; //
-  return canvasToPolygons(few, width, height);
-  // return canvasToPolygons(objs, data.width, data.height);
+  // var few = [objs[7], objs[13], objs[14]]; //
+  // return canvasToPolygons(few, width, height);
+  return canvasToPolygons(objs, data.width, data.height);
 }
 
 function parseInputJSON(jsonStr) {

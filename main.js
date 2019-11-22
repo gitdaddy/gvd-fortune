@@ -45,8 +45,8 @@ let g_xInc = 0.01;
 
 let g_settings = {
   showEvents: {label: "Show Events", value: false},
-  showGVDVer: {label: "Show edge vertices", value: false},
-  showGVDSeg: {label: "Show edge segments", value: true},
+  showGVDVer: {label: "Show GVD vertices", value: false},
+  showGVDSeg: {label: "Show GVD segments", value: true},
   showObjVer: {label: "Show object vertices", value: false},
   showObjSeg: {label: "Show object segments", value: true},
   showMedial: {label: "Show Medial Axis", value: false},
