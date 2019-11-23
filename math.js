@@ -91,7 +91,7 @@ Line = function(p1, p2) {
 function quadratic(a, b, c) {
   // WATCH VALUE
   var thresh = 1e-3;
-  if (a == 0) return [];
+  if (a == 0) return [0];
   // var disc = Math.sqrt(b*b-4*a*c);
   var disc = b*b-4*a*c;
   if (disc < -thresh) {

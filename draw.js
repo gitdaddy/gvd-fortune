@@ -897,8 +897,8 @@ function rescaleView(newX, newY) {
   if (g_settings.showEvents.value) {
     d3.select("#gvd")
     .selectAll(".close-event")
-    .attr('cx', d => newX(d.x))
-    .attr('cy', d => newY(d.y))
+    .attr('cx', d => newX(d.point[0]))
+    .attr('cy', d => newY(d.point[1]))
     ;
   }
 

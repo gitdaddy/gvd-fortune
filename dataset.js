@@ -332,19 +332,6 @@ function canvasToPolygons(srcArray, width, height){
   var debugIdx = 0;
   _.each(objects, function(linesArray){
     var poly = new Polygon();
-
-    // for(var i = 0; i < stdPoints.length; i++){
-    //   var point = new vec3(stdPoints[i].x, stdPoints[i].y, 0);
-    //   point.fileId = debugIdx.toString();
-    //   poly.addPoint(point);
-    //   if (i === stdPoints.length - 1) {
-    //     var adjusted = stdPoints[i].adjusted || stdPoints[0].adjusted;
-    //     poly.createSegment(i-1, 0, adjusted);
-    //   } else if (i !== 0) {
-    //     var adjusted = stdPoints[i-1].adjusted || stdPoints[i].adjusted;
-    //     poly.createSegment(i-1, i, adjusted);
-    //   }
-    // }
     var startPt = new vec3(xScale(linesArray[0].x0), yScale(linesArray[0].y0), 0);
     poly.addPoint(startPt);
     for(var idx = 1; idx < linesArray.length; idx++){
@@ -402,9 +389,10 @@ function parseInputMap(jsonStr) {
   // testing only
   // Sydney - 298 307 394, 1133 1081 1085 / 7311, 7312, 7182
   // Berlin - 1052 1016 1017, 4026
+  // BOSTON - 32
 
   // Berlin overlap = 13, 7, 14
-  // var few = [objs[7], objs[13], objs[14]]; //
+  // var few = [objs[31]]; //
   // return canvasToPolygons(few, width, height);
   return canvasToPolygons(objs, data.width, data.height);
 }
