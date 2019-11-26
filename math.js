@@ -4,6 +4,8 @@
 //------------------------------------------------------------
 //------------------------------------------------------------
 
+let g_bisectorsMemo = {};
+
 function getEventY(event)
 {
   if (event.yval) return event.yval;
@@ -631,6 +633,12 @@ var l = [];
 // NOTE: this bisects LINES not SEGMENTS.
 //------------------------------------------------------------
 function bisectSegments2(s1, s2) {
+  var combineId = s1.id.toString() + s2.id.toString();
+  if (g_bisectorsMemo[combineId])
+  {
+    return g_bisectorsMemo[combineId];
+  }
+
   // if connected segments
   var optCon = connected(s1, s2);
   if (optCon){ // || !intersectsTargetSegments(s1, s2)){
@@ -650,13 +658,15 @@ function bisectSegments2(s1, s2) {
   var v1CounterClockwise = new vec3(-AB[1], AB[0], 0);
   var intersect = bisectData.optPoint ? bisectData.optPoint : intersectLines(s1.a, s1.b, s2.a, s2.b);
   if (!intersect) {
-    return [s];
+    g_bisectorsMemo[combineId] = [s];
+    return g_bisectorsMemo[combineId];
   }
   var v1 = vec3(v1Clockwise[0] + intersect[0], v1Clockwise[1] + intersect[1], 0);
   var v2 = vec3(v1CounterClockwise[0] + intersect[0], v1CounterClockwise[1] + intersect[1], 0);
   // var l = new Line(add(v1Clockwise, intersect), add(v1CounterClockwise, intersect));
   var l = new Line(v1, v2);
-  return [s, l];
+  g_bisectorsMemo[combineId] = [s, l];
+  return g_bisectorsMemo[combineId];
 }
 
 function fastFloorEqual(f1, f2) {
@@ -737,25 +747,6 @@ function smallAngleBisectSegments(s1, s2, optIntersect) {
   };
 }
 
-// TODO FIX
-function pointAngleBisect(s, p1) {
-  // var cpt = dist(s, p1) < dist(s, p2) ? p1 : p2;
-  var d1 = dist(p1, s.a);
-  var d2 = dist(p1, s.b);
-  if (d1 < d2) {
-    // return smAngleBi s1(s.a -> p1) and s
-    var sd = makeSegment(s.a, p1, true);
-    var bData = smallAngleBisectSegments(s, sd, s.a);
-    return bData.line;
-  }
-
-  // return smAngleBi s1(s.b -> p1) and s
-  var sd = makeSegment(s.b, p1, true);
-  // var sb = makeSegment(s.b, s.a, true);
-  var bData = smallAngleBisectSegments(s, sd, s.b);
-  return bData.line;
-}
-
 //------------------------------------------------------------
 //------------------------------------------------------------
 // General bisect/intersect functions
@@ -769,6 +760,11 @@ function pointAngleBisect(s, p1) {
 // segments or points.
 //------------------------------------------------------------
 function bisect(a, b) {
+  var abId = a.id.toString() + b.id.toString();
+  if (g_bisectorsMemo[abId])
+  {
+    return g_bisectorsMemo[abId];
+  }
   var bisector = null;
   if (a.type == 'vec' && b.type == 'vec') {
     // Returns a line
@@ -778,6 +774,7 @@ function bisect(a, b) {
   } else if (b.type == 'vec') {
     bisector = bisectPointSegment(b, a);
   }
+  g_bisectorsMemo[abId] = bisector;
   return bisector;
 }
 

@@ -510,7 +510,11 @@ function drawSegments(segments) {
       .attr("y1", s => yRev(s[0][1]))
       .attr("x2", s => xRev(s[1][0]))
       .attr("y2", s => yRev(s[1][1]))
-      .attr("stroke", (d) => siteColorSvg(d.label))
+      .attr("stroke", (d) => {
+        return siteColorSvg(d.label);
+        // if (!d.color) return siteColorSvg(d.label);
+        // return d.color;
+      })
     ;
   }
 }

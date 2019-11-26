@@ -102,6 +102,37 @@ function overlapsAny(x0, y0, x1, y1, lines) {
 }
 
 
+// return the lines that were targeted
+// target lines -> the current lines to look at
+// vSet all the other lines in the set
+function getOverlappingLines(targetLines, vSet) {
+  var rslts = [];
+  // for all segments /_\
+  _.each(targetLines, function (curLine) {
+    // if a larger length overlaps anyone
+    var tolerance = 1.0001;
+    var A = vec3(
+      ((curLine.x0-curLine.x1) * tolerance) + curLine.x1,
+      ((curLine.y0-curLine.y1) * tolerance) + curLine.y1,
+      0);
+
+    var B = vec3(
+      ((curLine.x1-curLine.x0) * tolerance) + curLine.x0,
+      ((curLine.y1-curLine.y0) * tolerance) + curLine.y0,
+      0);
+
+    // does the current line overlap any other lines
+    _.each(vSet, function (otherObj) {
+      if (overlapsAny(A[0], A[1], B[0], B[1], otherObj)) {
+        rslts.push(curLine);
+        // debugging only
+        // curLine.color = "red";
+      }
+    });
+  });
+  return rslts;
+}
+
 
 // input data is an array of point objects [[x, y, x1,y1, x2,y2], ..]
 function dataCorrection(srcArray) {
@@ -112,57 +143,37 @@ function dataCorrection(srcArray) {
     var pts = srcArray[i];
     for(var j = 0; j < pts.length-1; j++){
       lines.push({x0:pts[j].x, y0:pts[j].y, x1:pts[j+1].x, y1:pts[j+1].y});
-
-      // var x0 = j === 0 ? pts[pts.length - 2] : pts[j-2];
-      // var y0 = j === 0 ? pts[pts.length - 1] : pts[j-1];
-      // var x1 = pts[j];
-      // var y1 = pts[j+1];
-
-      // x = event, y = odd
-      // var x0 = pts[j];
-      // var y0 = pts[j+1];
-      // var tmpIdx = j + 2;
-      // if (j === pts.length - 2) {
-      //   tmpIdx = pts.length % (j+2);
-      // }
-      // var x1 = pts[tmpIdx]; // mod for the wrap around
-      // var y1 = pts[tmpIdx + 1];
     }
     objs.push(lines);
   }
 
-  var mult = 0.002;
+  var linesToUpdate = [];
   for (var k = 0; k < objs.length; k++) {
     var vSet = _.filter(objs, function (p, idx) {return idx !== k; });
-    // for all segments /_\
-    _.each(objs[k], function (curLine) {
-      // if a larger length overlaps anyone
-      var tolerance = 1 + mult;
-      var A = vec3(
-        ((curLine.x0-curLine.x1) * tolerance) + curLine.x1,
-        ((curLine.y0-curLine.y1) * tolerance) + curLine.y1,
-        0);
-
-      var B = vec3(
-        ((curLine.x1-curLine.x0) * tolerance) + curLine.x0,
-        ((curLine.y1-curLine.y0) * tolerance) + curLine.y0,
-        0);
-
-      // does the current line overlap any other lines
-      _.each(vSet, function (otherObj) {
-        if (overlapsAny(A[0], A[1], B[0], B[1], otherObj)) {
-          var v01 = {x:(curLine.x1-curLine.x0)*mult, y:(curLine.y1-curLine.y0)*mult};
-          var v10 = {x:(curLine.x0-curLine.x1)*mult, y:(curLine.y0-curLine.y1)*mult};
-          // move each point towards the other slightly
-          // by added the pull vectors
-          curLine.x0 += v01.x;
-          curLine.y0 += v01.y;
-          curLine.x1 += v10.x;
-          curLine.y1 += v10.y;
-        }
+    linesToUpdate = objs[k];
+    var iteration = 1;
+    while(linesToUpdate.length > 0) {
+      linesToUpdate = getOverlappingLines(linesToUpdate, vSet);
+      console.log("iteration:" + iteration++);
+      // update the lines
+      _.each(linesToUpdate, function(curLine) {
+        var mult = 0.1; // 0.01
+        // move each point towards the other slightly
+        // by added the pull vectors
+        var x0 = curLine.x0;
+        var y0 = curLine.y0;
+        var x1 = curLine.x1;
+        var y1 = curLine.y1;
+        curLine.x0 = ((x1-x0)*mult) + curLine.x0;
+        curLine.y0 = ((y1-y0)*mult) + curLine.y0;
+        curLine.x1 = ((x0-x1)*mult) + curLine.x1;
+        curLine.y1 = ((y0-y1)*mult) + curLine.y1;
       });
-    });
+    }
   }
+
+
+  // TODO repeat the process until there are no more linesToUpdate
   return objs;
 }
 
@@ -271,10 +282,11 @@ Polygon.prototype.addPoint = function (point) {
   this.points.push(point);
 }
 
-Polygon.prototype.createSegment = function (pIdxStart, pIdxEnd) {
+Polygon.prototype.createSegment = function (pIdxStart, pIdxEnd, optColor = null) {
   var s = makeSegment(this.points[pIdxStart], this.points[pIdxEnd]);
   s.id = g_id++;
   s.label = this.label;
+  s.color = optColor;
   this.segments.push(s);
   if (this.points[pIdxStart][1] == this.points[pIdxEnd][1]) {
     console.error("Horizontal segment detected with y values of: " + this.points[pIdxEnd][1]);
@@ -339,10 +351,10 @@ function canvasToPolygons(srcArray, width, height){
       var pt = new vec3(xScale(linesArray[idx].x1), yScale(linesArray[idx].y1), 0);
       pt.fileId = debugIdx;
       if (idx === linesArray.length - 1) {
-        poly.createSegment(idx-1, 0);
+        poly.createSegment(idx-1, 0, linesArray[idx].color);
       } else if (idx !== 0) {
         poly.addPoint(pt);
-        poly.createSegment(idx-1, idx);
+        poly.createSegment(idx-1, idx, linesArray[idx].color);
       }
     }
     polygons.push(poly);
@@ -389,10 +401,10 @@ function parseInputMap(jsonStr) {
   // testing only
   // Sydney - 298 307 394, 1133 1081 1085 / 7311, 7312, 7182
   // Berlin - 1052 1016 1017, 4026
-  // BOSTON - 32
+  // BOSTON - 32, 45, 40
 
   // Berlin overlap = 13, 7, 14
-  // var few = [objs[31]]; //
+  // var few = [objs[40], objs[45]]; //
   // return canvasToPolygons(few, width, height);
   return canvasToPolygons(objs, data.width, data.height);
 }
