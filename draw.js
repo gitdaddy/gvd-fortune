@@ -549,9 +549,7 @@ function drawSurface(dcel) {
   let generalEdges = [];
   while (!result.done) {
     var edge = result.value;
-    nanInOrigin = _.find(edge.origin.point, function (value) { return _.isNaN(value); });
-    nanInDest = _.find(edge.dest.point, function (value) { return _.isNaN(value); });
-    if (edge.origin.point && edge.dest.point && !_.isNaN(nanInOrigin) && !_.isNaN(nanInDest)) {
+    if (edge.origin.point && edge.dest.point) {
       if (edge.generalEdge) {
         var point;
         var segment;
@@ -719,7 +717,7 @@ function drawBeachline(beachline, directrix) {
   let lines = [];
   var generalSurfaces = [];
   let events = [];
-  beachline.prepDraw(directrix, beachline.root, -1e15, 1e15, arcElements, lines, generalSurfaces, events);
+  beachline.prepDraw(directrix, beachline.root, -100, 100, arcElements, lines, generalSurfaces, events);
 
   let parabolas = arcElements.filter(d => d.type == "parabola");
   let vs = arcElements.filter(d => d.type == "v");

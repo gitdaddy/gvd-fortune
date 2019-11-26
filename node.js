@@ -215,9 +215,16 @@ Object.defineProperty(EdgeNode.prototype, "flipped", {
   },
 });
 
-EdgeNode.prototype.updateEdge = function (vertex, dcel) {
+EdgeNode.prototype.updateEdge = function (vertex, dcel, optEndingEdges = null) {
   this.dcelEdge = dcel.makeEdge();
   this.dcelEdge.origin.point = vertex;
+  if (optEndingEdges) {
+    this.dcelEdge.origin.connectedEdges = optEndingEdges;
+    var rConnectedArray = this.dcelEdge.origin.connectedEdges;
+    _.each(optEndingEdges, function (e) {
+      setEdgeDestination(e, vertex, rConnectedArray);
+    });
+  }
   var next = this.nextArc();
   var prev = this.prevArc();
   this.dcelEdge.a = prev.id;

@@ -25,7 +25,6 @@ function setSortedDatasets(allEdges){
       id: getEdgeId(e),
       cost: distance(e),
       tCost: undefined,
-      previousEdge: undefined // may not need this anymore
     };
     dataset.push(obj);
   });
@@ -55,63 +54,6 @@ function distance(dcelEdge) {
   var dy = y0 - y1;
   return Math.sqrt((dx*dx)+(dy*dy));
 }
-
-// function pathFromVisited(visited, endId) {
-//   var path = [endId];
-//   var curId = endId;
-//   var curIdx = _.findIndex(visited, function (v) {
-//     return v.id === curId;
-//   });
-//   while(curIdx !== -1) {
-//     var edge = visited.splice(curIdx, 1)[0];
-//     curId = edge.previousEdge;
-//     if (!curId) break;
-//     path.push(curId);
-//     curIdx = _.findIndex(visited, function (v) {
-//       return v.id === curId;
-//     });
-//   }
-//   return path;
-// }
-
-// set idx
-// function enqueue(queue, edge, prevId) {
-//   var sortFunc = function(edge) {
-//     // inverted sort order - largest [....] smallest
-//     return (1/edge.tCost);
-//   };
-
-//   // if the queue contains the edge already
-//   // update the tCost if it is less than the
-//   // current cost
-//   var existingIdx = _.findIndex(queue, function(e) {
-//     return e.id === edge.id;
-//   });
-//   if (existingIdx !== -1) { // if found
-//     if (queue[existingIdx].tCost > edge.tCost) {
-//       queue[existingIdx].tCost = edge.tCost;
-//       queue[existingIdx].previousEdge = prevId;
-//       _.sortBy(queue, sortFunc);
-//     }
-//     return;
-//   }
-
-//   var idx = _.sortedIndexBy(queue, edge, sortFunc);
-//   // update the previous edge
-//   edge.previousEdge = prevId;
-//   // insert the in order or on top
-//   if (idx === -1) {
-//     queue.push(edge);
-//   } else {
-//     queue.splice(idx, 0, edge);
-//   }
-// }
-
-// return idx
-// function dequeue(queue) {
-//   // return the smallest tCost
-//   return queue.pop();
-// }
 
 // only return the edges of the unvisited neighbors
 function getConnectedEdges(x, y, optStartId) {
@@ -228,7 +170,9 @@ function highlightPath(path, color) {
 function unHighlightPaths() {
   _.each(g_currentHighlightedPaths, function (pId) {
     var selected = d3.select(`#${pId}`);
-    selected.style('stroke', 'black')
+    selected.style('stroke', (d) => {
+      return g_settings.showGVDSeg.value ? 'black' : 'none';
+    })
     selected.style("stroke-width", 4)
     ;
 
@@ -258,133 +202,4 @@ function onNodeHighlight(pt) {
   // TODO perhaps highlight the second or third routes
   if (paths.length > 0)
     highlightPath(paths[0].route, "blue");
-
-  // for (var i = 0; i < paths.length; i++){
-  //   if (i === 0) {
-  //     highlightPath(paths[i].route, "blue");
-  //   }
-  //   highlightPath(paths[i].route, "gray");
-  // }
 }
-
-// function onBeginPathAlgorithm() {
-//   var t0 = performance.now();
-//   clearPaths();
-//   g_pathIds = [];
-//   g_vertexIds = [];
-//   if (!(g_pathStartElem.value && g_pathEndElem.value)) {
-//     // console.error("Please select a path start and finish");
-//     return;
-//   }
-
-//   var start = {
-//     x: g_pathStartElem.value.x,
-//     y: g_pathStartElem.value.y
-//   };
-
-//   var destX = g_pathEndElem.value.x;
-//   var destY = g_pathEndElem.value.y;
-
-//   queue = [];
-//   // var visited = [];
-//   // var dataset = [...g_edgeDataset];
-//   var dataset = [];
-//   _.forEach(g_allEdges, function (e) {
-//     if (!e.origin.point || !e.dest.point) throw "invalid edge detected";
-//     var obj = {
-//       x0: e.origin.point[0],
-//       x1: e.dest.point[0],
-//       y0: e.origin.point[1],
-//       y1: e.dest.point[1],
-//       id: getEdgeId(e),
-//       cost: distance(e),
-//       tCost: undefined,
-//       previousEdge: undefined
-//     };
-//     dataset.push(obj);
-//   });
-
-//   // perhaps this can be done pre-processing?
-//   g_edgex0SortedDataset = _.sortBy(dataset, 'x0');
-//   g_edgex1SortedDataset = _.sortBy(dataset, 'x1');
-
-//   // initialize the start edge
-//   var indexes = getConnectedEdges(start.x, start.y);
-
-//   _.forEach(indexes.oSortedIndexes, function (idx) {
-//     g_edgex0SortedDataset[idx].endX = g_edgex0SortedDataset[idx].x1;
-//     g_edgex0SortedDataset[idx].endY = g_edgex0SortedDataset[idx].y1;
-//     g_edgex0SortedDataset[idx].tCost = g_edgex0SortedDataset[idx].cost;
-//     enqueue(queue,  g_edgex0SortedDataset[idx], undefined);
-//   });
-
-//   _.forEach(indexes.dSortedIndexes, function (idx) {
-//     g_edgex1SortedDataset[idx].endX = g_edgex1SortedDataset[idx].x0;
-//     g_edgex1SortedDataset[idx].endY = g_edgex1SortedDataset[idx].y0;
-//     g_edgex1SortedDataset[idx].tCost = g_edgex1SortedDataset[idx].cost;
-//     enqueue(queue,  g_edgex1SortedDataset[idx], undefined);
-//   });
-
-//   var curEdge = dequeue(queue);
-//   curEdge.visited = true;
-
-//   while (curEdge.endX !== destX && curEdge.endY !== destY) {
-
-//     var endX = curEdge.endX;
-//     var endY = curEdge.endY;
-//     var curId = curEdge.id;
-
-//     var indexes = getConnectedEdges(endX, endY, curId);
-//     // evaluate connected neighbors and update the tCost
-//     // set the previous vertex
-//     _.forEach(indexes.oSortedIndexes, function (idx) {
-//       g_edgex0SortedDataset[idx].endX = g_edgex0SortedDataset[idx].x1;
-//       g_edgex0SortedDataset[idx].endY = g_edgex0SortedDataset[idx].y1;
-//       g_edgex0SortedDataset[idx].tCost = curEdge.tCost + g_edgex0SortedDataset[idx].cost;
-//       enqueue(queue,  g_edgex0SortedDataset[idx], curId);
-//     });
-//     _.forEach(indexes.dSortedIndexes, function (idx) {
-//       g_edgex1SortedDataset[idx].endX = g_edgex1SortedDataset[idx].x0;
-//       g_edgex1SortedDataset[idx].endY = g_edgex1SortedDataset[idx].y0;
-//       g_edgex1SortedDataset[idx].tCost = curEdge.tCost + g_edgex1SortedDataset[idx].cost;
-//       enqueue(queue,  g_edgex1SortedDataset[idx], curId);
-//     });
-//     // Visit the unvisited vertex with the smallest tCost
-//     var nextEdge = dequeue(queue);
-
-//     if (!nextEdge) {
-//       console.error("Invalid EDGE");
-//     }
-//     // keep trying to visit new neighbors until we've
-//     // reached one we haven't visited
-//     while(nextEdge.visited) {
-//       nextEdge = dequeue(queue);
-//       if (!nextEdge) {
-//         console.error("Invalid EDGE");
-//       }
-//     }
-//     nextEdge.visited = true;
-//     curEdge = nextEdge;
-//   }
-
-//   var allVisited = _.filter(dataset, function(elem) {
-//     return elem.visited;
-//   });
-
-//   // testing only - show all paths visited
-//   // _.forEach(allVisited, function(edge) {
-//   //   var selected = d3.select(`#${edge.id}`);
-//   //   selected.style('stroke', highlightColor);
-//   // });
-
-
-//   g_pathIds = pathFromVisited(allVisited, curEdge.id);
-//   _.forEach(g_pathIds, function(id) {
-//     var selected = d3.select(`#${id}`);
-//     selected.style('stroke', highlightColor);
-//   });
-
-//   var t1 = performance.now();
-//   var processTime = t1 - t0;
-//   console.log("Path Processing Time:" + processTime.toFixed(6) + "(ms)");
-// }

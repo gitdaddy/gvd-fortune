@@ -19,6 +19,12 @@ function DCELHalfEdge() {
   this._left = null;
 }
 
+function setEdgeDestination(edge, pt, destEdges = []) {
+  edge.dest.point = pt;
+  edge.dest.connectedEdges = destEdges;
+  edge.origin.connectedEdges.push(edge);
+}
+
 /* Returns the symmetric of this half-edge, that is the half-edge with the
  * opposite direction as this half-edge.
  */
@@ -168,6 +174,7 @@ function DCELVertex(edge) {
   this._next = null;
   this._prev = null;
   this._edge = edge;
+  this.connectedEdges = [];
 }
 
 /* Returns a half-edge with this vertex as its origin vertex.
@@ -417,37 +424,37 @@ DCEL.prototype.deleteEdge = function (edel) {
 };
 
 /* Given a half-edge `e`, adds a new edge to this doubly connected edge list
- * such that its origin vertex is the destination vertex of `e`, and its 
+ * such that its origin vertex is the destination vertex of `e`, and its
  * destination vertex is a new vertex.
  */
-DCEL.prototype.addEdgeVertex = function (e) {
-  var enew = this._makeEdge();
-  var enewsym = enew._sym;
-  this._splice(enew, e._lnext);
+// DCEL.prototype.addEdgeVertex = function (e) {
+//   var enew = this._makeEdge();
+//   var enewsym = enew._sym;
+//   this._splice(enew, e._lnext);
 
-  enew._origin = e._sym._origin;
-  enew._left = e._left;
-  this._makeVertex(enewsym);
-  enewsym._left = e._left;
+//   enew._origin = e._sym._origin;
+//   enew._left = e._left;
+//   this._makeVertex(enewsym);
+//   enewsym._left = e._left;
 
-  return enew;
-};
+//   return enew;
+// };
 
 /* Given a half-edge `e`, splits `e` into two edges `e` and `enew`, such
  * that the origin vertex of `enew` is the new destination vertex of `e`, and
  * the destination vertex of `enew` is the old destination vertex of `e`.
  */
-DCEL.prototype.splitEdge = function (e) {
-  var enew = this.addEdgeVertex(e);
-  this._splice(e._sym, e._lnext);
-  this._splice(e._sym, enew._sym);
+// DCEL.prototype.splitEdge = function (e) {
+//   var enew = this.addEdgeVertex(e);
+//   this._splice(e._sym, e._lnext);
+//   this._splice(e._sym, enew._sym);
 
-  e._sym._origin = enew._sym._origin;
-  enew._origin._edge = enew;
-  enew._left = e._sym._left;
+//   e._sym._origin = enew._sym._origin;
+//   enew._origin._edge = enew;
+//   enew._left = e._sym._left;
 
-  return enew._sym;
-};
+//   return enew._sym;
+// };
 
 DCEL.prototype._makeEdge = function () {
   var enew = new DCELHalfEdge();

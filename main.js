@@ -195,19 +195,20 @@ function fortune(reorder) {
     if (event.isCloseEvent) {
       if (event.live && event.arcNode.closeEvent.live) {
 
+        // only set if not overridden // TODO Performance
         var prevEdge = event.arcNode.prevEdge();
         var nextEdge = event.arcNode.nextEdge();
 
-        // only set if not overridden // TODO Performance
+        var endingEdges = [];
         if (!prevEdge.dcelEdge.dest.overridden && !neighborSites(prevEdge)) {
-          prevEdge.dcelEdge.dest.point = event.point;
+          endingEdges.push(prevEdge.dcelEdge);
         }
         if (!nextEdge.dcelEdge.dest.overridden && !neighborSites(nextEdge)) {
-          nextEdge.dcelEdge.dest.point = event.point;
+          endingEdges.push(nextEdge.dcelEdge);
         }
 
         var curY = getEventY(event);
-        var newEvents = beachline.remove(event.arcNode, event.point,curY);
+        var newEvents = beachline.remove(event.arcNode, event.point, curY, endingEdges);
         newEvents.forEach(function (ev) {
             var newY = getEventY(ev);
             if (newY < curY - 0.000001 || Math.abs(newY - curY) < g_eventThresh) {
