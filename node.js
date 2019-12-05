@@ -215,10 +215,23 @@ Object.defineProperty(EdgeNode.prototype, "flipped", {
   },
 });
 
-EdgeNode.prototype.updateEdge = function (vertex, dcel, optEndingEdges = null) {
+EdgeNode.prototype.updateEdge = function (vertex, dcel, optEndingEdges = []) {
   this.dcelEdge = dcel.makeEdge();
   this.dcelEdge.origin.point = vertex;
   if (optEndingEdges) {
+    /*
+    // all edges must share the same vertex node
+    // which connects them all
+    setEdgeDestination(optEndingEdges[0], vertex);
+    var chosenVertex = optEndingEdges[0].dest;
+    if (optEndingEdges[1]) {
+      setEdgeDestination(optEndingEdges[1], vertex);
+      chosenVertex.connectedEdges
+      = _.concat(optEndingEdges[1].dest.connectedEdges, chosenVertex.connectedEdges);
+      optEndingEdges[1].dest = chosenVertex;
+    }
+    this.dcelEdge.origin = chosenVertex;
+     */
     this.dcelEdge.origin.connectedEdges = optEndingEdges;
     var rConnectedArray = this.dcelEdge.origin.connectedEdges;
     _.each(optEndingEdges, function (e) {

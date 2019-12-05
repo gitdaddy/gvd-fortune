@@ -19,9 +19,11 @@ function DCELHalfEdge() {
   this._left = null;
 }
 
-function setEdgeDestination(edge, pt, destEdges = []) {
+function setEdgeDestination(edge, pt) {
   edge.dest.point = pt;
-  edge.dest.connectedEdges = destEdges;
+  edge.dest.connectedEdges.push(edge);
+  // once the destination has been set we can update the origin to
+  // also be set
   edge.origin.connectedEdges.push(edge);
 }
 

@@ -4,9 +4,8 @@ let g_siteRadius = 3;
 let g_isoEdgeWidth = 1;
 
 // dijkstra's controls
-let g_pathStartElem = {};
-let g_allEdges = [];
-// let g_allVertices = [];
+let g_pathStartElemIdx = undefined;
+var g_gvdVertices = [];
 
 // start, end, default
 let g_edgeColors = [ 'darkkhaki', 'limegreen', 'red', 'black'];
@@ -66,7 +65,8 @@ function getEdgeId(d) {
   if (d.type === "general_parabola") {
     return `edge${d.id}`;
   }
-  return `edge${d.siteA.id}-${d.siteB.id}`;
+  return `edge${d.a}-${d.b}`;
+  // return `edge${d.siteA.id}-${d.siteB.id}`;
 }
 
 function getEdgeVertexId(i) {
@@ -77,27 +77,22 @@ function onEdgeVertexClick(d, i) {
   // Stop the event from propagating to the SVG
   d3.event.stopPropagation();
 
-  if (g_pathStartElem) {
-    d3.select('#' + getEdgeVertexId(g_pathStartElem.idx))
+  if (g_pathStartElemIdx) {
+    d3.select('#' + getEdgeVertexId(g_pathStartElemIdx))
       .style("fill", g_edgeColors[3]);
   }
   this.style["fill"] = g_edgeColors[1];
-  g_pathStartElem.value = d;
-  g_pathStartElem.idx = i;
-  var t0 = performance.now();
-  clearPathInfo();
-  // shortestPath({
-  //   x: g_pathStartElem.value.x,
-  //   y: g_pathStartElem.value.y,
-  //   tc: 0,
-  //   path: []
+  g_pathStartElemIdx = i;
+  // var t0 = performance.now();
+  // // clear all path info
+  // _.each(g_gvdVertices, function(v) {
+  //   v.path = [];
+  //   v.tCost = 0;
   // });
-  d.tCost = 0;
-  d.path = [];
-  shortestPath(d);
-  var t1 = performance.now();
-  var processTime = t1 - t0;
-  console.log("Path Processing Time:" + processTime.toFixed(6) + "(ms)");
+  // shortestPath(d);
+  // var t1 = performance.now();
+  // var processTime = t1 - t0;
+  // console.log("Path Processing Time:" + processTime.toFixed(6) + "(ms)");
 }
 
 function onEdgeVertexMouseOver(d, i) {
@@ -196,14 +191,6 @@ function drawInit(sweepline, settings) {
   .attr("y", 0);
 
   svg.attr("clip-path", "url(#clip)");
-
-    // mainView.append("rect")
-  // .attr("width", width)
-  // .attr("height", height)
-  // .style("fill", "none")
-  // .style("pointer-events", "all")
-  // .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-  // .call(zoom);
 
   // add settings
   var settings = _.map(g_settings, function (val, key) {
@@ -577,10 +564,7 @@ function drawSurface(dcel) {
     result = iter.next();
   }
 
-  // for path algorithm
-  setSortedDatasets(edges.concat(generalEdges));
-
-  g_pathStartElem = {};
+  g_pathStartElemIdx = undefined;
 
   let line = d3.line()
   .x(function (d) {return xRev(d[0]);})
@@ -610,7 +594,7 @@ function drawSurface(dcel) {
     .append('line')
     .attr('class', e => getSurfaceClass(e.splitSite))
     .attr("vector-effect", "non-scaling-stroke")
-    .attr("id", (d) => getEdgeId(d))
+    .attr("id", d => getEdgeId(d))
     .merge(d3edges)
     .attr('x1', e => xRev(e.origin.point[0]))
     .attr('y1', e => yRev(e.origin.point[1]))
@@ -621,11 +605,20 @@ function drawSurface(dcel) {
 
   d3.select('#gvd').selectAll(".gvd-edge-vertex").remove();
 
+  /**
+   *   g_gvdVertices = [];
+  var t0 = performance.now();
+  g_gvdVertices = getMergedVertices(dcel.vertices);
+  var t1 = performance.now();
+  var processTime = t1 - t0;
+  console.log("Vertex resolve Time:" + processTime.toFixed(6) + "(ms)");
+   */
+
   var vertices = [];
   var vertexItr = dcel.vertices;
   var vecRslt = vertexItr.next();
   while (!vecRslt.done) {
-    if (vecRslt.value.point && vecRslt.value.edge.generalEdge)
+    if (vecRslt.value.point && vecRslt.value.edge.splitSite)
       vertices.push(vecRslt.value);
     vecRslt = vertexItr.next();
   }

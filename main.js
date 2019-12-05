@@ -30,8 +30,8 @@ let g_fileDatasets = [
   {key:"dataset9", label:"dataset9 - Moscow city dataset", isMap: true, filename:"Moscow_1_256.map"}
  ];
 
-var closeEventPoints = [];
-var dcel;
+let closeEventPoints = [];
+let dcel;
 
 // Debug options
 let g_debugObjs = [];
@@ -50,7 +50,7 @@ let g_settings = {
   showObjVer: {label: "Show object vertices", value: false},
   showObjSeg: {label: "Show object segments", value: true},
   showMedial: {label: "Show Medial Axis", value: false},
-  showDebugObjs: {label: "Show debug objects", value: true},
+  showDebugObjs: {label: "Show debug objects", value: false}, // debug only
   showTree: {label: "Show Tree", value: false},
   showBeachLine: {label: "Show beach-line", value: true}
 };
