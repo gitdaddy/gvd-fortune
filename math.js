@@ -877,10 +877,10 @@ function equidistant(left, arc, right) {
   }
 
   // debugging only
-  if (g_addDebug) {
-    g_debugObjs.push(b1);
-    g_debugObjs.push(b2);
-  }
+  // if (g_addDebug) {
+  //   g_debugObjs.push(b1);
+  //   g_debugObjs.push(b2);
+  // }
   // always return an array or nil
   var i = intersect(b1, b2);
   if (!i || i.length === 0) return null;

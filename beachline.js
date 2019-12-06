@@ -50,11 +50,11 @@ Beachline.prototype.add = function (eventPacket) {
   var directrix = eventPacket.site[1];
 
   // debugging only
-  if (arcNode.id === g_debugIdMiddle) {
-    g_addDebug = true;
-  } else {
-    g_addDebug = false;
-  }
+  // if (arcNode.id === g_debugIdMiddle) {
+  //   g_addDebug = true;
+  // } else {
+  //   g_addDebug = false;
+  // }
 
   if (this.root == null) {
     var subTreeData = generateSubTree(eventPacket, arcNode, this.dcel);

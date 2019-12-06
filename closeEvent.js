@@ -223,11 +223,11 @@ function createCloseEvent(arcNode, directrix) {
   var closePoint;
 
   // debugging only
-  if (left.id === g_debugIdLeft && right.id === g_debugIdRight) {
-    g_addDebug = true;
-  } else {
-    g_addDebug = false;
-  }
+  // if (left.id === g_debugIdLeft && right.id === g_debugIdRight) {
+  //   g_addDebug = true;
+  // } else {
+  //   g_addDebug = false;
+  // }
 
   if (arcNode.isParabola && left.isParabola && right.isParabola) {
     // All three are points
@@ -263,11 +263,11 @@ function createCloseEvent(arcNode, directrix) {
   var points = equidistant(left.site, arcNode.site, right.site);
 
   // debugging only
-  if (g_addDebug) {
-    _.forEach(points, function(p) {
-      g_debugObjs.push(p);
-    });
-  }
+  // if (g_addDebug) {
+  //   _.forEach(points, function(p) {
+  //     g_debugObjs.push(p);
+  //   });
+  // }
 
   // guilty by association
   _.forEach([left, arcNode, right], function(node) {

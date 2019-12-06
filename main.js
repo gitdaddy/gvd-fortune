@@ -50,7 +50,7 @@ let g_settings = {
   showObjVer: {label: "Show object vertices", value: false},
   showObjSeg: {label: "Show object segments", value: true},
   showMedial: {label: "Show Medial Axis", value: false},
-  showDebugObjs: {label: "Show debug objects", value: false}, // debug only
+  // showDebugObjs: {label: "Show debug objects", value: false}, // debug only
   showTree: {label: "Show Tree", value: false},
   showBeachLine: {label: "Show beach-line", value: true}
 };
