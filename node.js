@@ -163,8 +163,8 @@ var EdgeNode = function (left, right, vertex, dcel) {
   this.left.side = LEFT_CHILD;
   this.right = right;
   this.right.size = RIGHT_CHILD;
-
-  this.updateEdge(vertex, dcel);
+  var neighborEdges = _.filter([left, right], e => { return e.isEdge; });
+  this.updateEdge(vertex, dcel, neighborEdges);
 
   left.parent = this;
   right.parent = this;
@@ -215,27 +215,25 @@ Object.defineProperty(EdgeNode.prototype, "flipped", {
   },
 });
 
-EdgeNode.prototype.updateEdge = function (vertex, dcel, optEndingEdges = []) {
+EdgeNode.prototype.updateEdge = function (vertex, dcel, optNeighborEdges = [], optEndingEdges = []) {
   this.dcelEdge = dcel.makeEdge();
   this.dcelEdge.origin.point = vertex;
-  if (optEndingEdges) {
-    /*
-    // all edges must share the same vertex node
-    // which connects them all
-    setEdgeDestination(optEndingEdges[0], vertex);
-    var chosenVertex = optEndingEdges[0].dest;
-    if (optEndingEdges[1]) {
-      setEdgeDestination(optEndingEdges[1], vertex);
-      chosenVertex.connectedEdges
-      = _.concat(optEndingEdges[1].dest.connectedEdges, chosenVertex.connectedEdges);
-      optEndingEdges[1].dest = chosenVertex;
-    }
-    this.dcelEdge.origin = chosenVertex;
-     */
-    this.dcelEdge.origin.connectedEdges = optEndingEdges;
-    var rConnectedArray = this.dcelEdge.origin.connectedEdges;
+  if (optEndingEdges.length > 0) {
+    // testing only remove after tested
+    if (optEndingEdges.length > 2) throw "MORE THAN 2";
+
+    // All of the nodes share a reference to the connectedEdges array
+    if (optEndingEdges[1]) optEndingEdges[1].dest.connectedEdges = optEndingEdges[0].dest.connectedEdges;
+    // this.dcelEdge.origin = destVertex;
+    this.dcelEdge.origin.connectedEdges = optEndingEdges[0].dest.connectedEdges;
+    this.dcelEdge.origin.point = vertex;
+    var sharedArray = this.dcelEdge.origin.connectedEdges;
     _.each(optEndingEdges, function (e) {
-      setEdgeDestination(e, vertex, rConnectedArray);
+      sharedArray.push(e);
+      e.dest.point = vertex;
+      // set the edges origin with itself
+      e.origin.connectedEdges.push(e);
+      // setEdgeDestination(e, vertex, optEndingEdges);
     });
   }
   var next = this.nextArc();
@@ -245,6 +243,32 @@ EdgeNode.prototype.updateEdge = function (vertex, dcel, optEndingEdges = []) {
   this.dcelEdge.b = next.id;
   this.dcelEdge.siteB = next.site;
   this.dcelEdge.splitSite = prev.site.label !== next.site.label;
+  if (this.dcelEdge.splitSite && optNeighborEdges.length > 0 && optEndingEdges.length === 0) {
+    // var sharedO = this.dcelEdge.origin.connectedEdges;
+    // var sharedD = this.dcelEdge.dest.connectedEdges;
+    var thisOVertex = this.dcelEdge.origin;
+    var thisDVertex = this.dcelEdge.dest;
+    var thisEdge = this.dcelEdge;
+    _.each(optNeighborEdges, e => {
+      var sharedArray = [e.dcelEdge, thisEdge];
+      var nPtO = e.dcelEdge.origin.point;
+      var nPtD = e.dcelEdge.origin.dest;
+
+      if (fastFloorEqual(nPtO, thisOVertex.point)) {
+        e.dcelEdge.origin.connectedEdges = sharedArray;
+        thisOVertex.connectedEdges = sharedArray;
+      } else if (fastFloorEqual(nPtD, thisOVertex.point)) {
+        e.dcelEdge.dest.connectedEdges = sharedArray;
+        thisOVertex.connectedEdges = sharedArray;
+      } else if (fastFloorEqual(nPtO, thisDVertex.point)) {
+        e.dcelEdge.origin.connectedEdges = sharedArray;
+        thisDVertex.connectedEdges = sharedArray;
+      } else if (fastFloorEqual(nPtD, thisDVertex.point)) {
+        e.dcelEdge.dest.connectedEdges = sharedArray;
+        thisDVertex.connectedEdges = sharedArray;
+      }
+    });
+  }
   this.dcelEdge.generalEdge = prev.isParabola && next.isV || prev.isV && next.isParabola
 }
 

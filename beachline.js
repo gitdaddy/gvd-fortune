@@ -133,7 +133,7 @@ Beachline.prototype.remove = function (arcNode, point, directrix, endingEdges) {
   grandparent.setChild(sibling, parentSide);
   sibling.parent = grandparent;
 
-  newEdge.updateEdge(point, this.dcel, _.filter(endingEdges, 'splitSite'));
+  newEdge.updateEdge(point, this.dcel, [], _.filter(endingEdges, 'splitSite'));
   if(arcNode.closeEvent)
     arcNode.closeEvent.live = false;
 

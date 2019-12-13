@@ -19,13 +19,15 @@ function DCELHalfEdge() {
   this._left = null;
 }
 
-function setEdgeDestination(edge, pt) {
-  edge.dest.point = pt;
-  edge.dest.connectedEdges.push(edge);
-  // once the destination has been set we can update the origin to
-  // also be set
-  edge.origin.connectedEdges.push(edge);
-}
+// function setEdgeDestination(edge, pt, destEdges = []) {
+//   edge.dest.point = pt;
+//   _.each(destEdges, e => {
+//     edge.dest.connectedEdges.push(e);
+//   });
+//   // once the destination has been set we can update the origin to
+//   // also be set
+//   edge.origin.connectedEdges.push(edge);
+// }
 
 /* Returns the symmetric of this half-edge, that is the half-edge with the
  * opposite direction as this half-edge.

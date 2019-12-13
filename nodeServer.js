@@ -9,7 +9,7 @@ var _ = require('lodash');
 const hostname = 'localhost';
 const port = 8082;
 
-/* function sameSign(a,b) {
+function sameSign(a,b) {
   return (a * b) > 0;
 }
 
@@ -89,69 +89,178 @@ function overlapsAny(x0, y0, x1, y1, lines) {
   return rslt;
 }
 
-function writeRandom(size, datasetFile) {
+// function writeRandom(size, datasetFile) {
+//   // all bounds are within -1, 1
+//   var sibDir = "./data/random_" + size;
+
+//   var path = './data/' + datasetFile + '.txt';
+
+//   // add a line that doesn't intersect any previous line
+//   var lines = [];
+//   var i = 0;
+//   var isOverLapping = false;
+//   while (i < size || isOverLapping) {
+//     var negativeY = Math.random() > 0.5;
+//     var negativeX = Math.random() > 0.5;
+//     var x0 = Math.random();
+//     if (negativeX) x0 = -x0;
+//     var x1 = Math.random();
+//     if (negativeX) x1 = -x1;
+//     var y0 = Math.random();
+//     if (negativeY) y0 = -y0;
+//     var y1 = Math.random();
+//     if (negativeY) y1 = -y1;
+//     if (overlapsAny(x0, y0, x1, y1, lines)) {
+//       console.log("overlapped i:" + i)
+//       isOverLapping = true;
+//     } else {
+//       isOverLapping = false;
+//       lines.push({x0: x0, y0: y0, x1: x1, y1: y1});
+//       i++;
+//     }
+//   }
+
+//   var count = 1;
+//   _.forEach(lines, function (l) {
+//     l.fileId = "line" + count++ + ".txt";
+//     // lines are in the format of (p1.p2..p1) start .. point ... start
+//     var data = `${l.x0} ${l.y0}\n${l.x1} ${l.y1}\n${l.x0} ${l.y0}`;
+//     var newPath = sibDir + '/' + l.fileId;
+//     fs.writeFile(newPath, data, function (err) {
+//       if (err) throw err;
+//     })
+//   });
+
+//   // write the new file references in dataset#.text
+//   fs.open(path, 'w', function(err, fd) {
+//     if (err) {
+//       throw 'could not open file: ' + err;
+//     }
+//     var data = "";
+//     _.forEach(lines, function(l, idx) {
+//       if (idx !== 0) data += "\n";
+//       data +=  sibDir + '/' + l.fileId;
+//     });
+//     var buffer = new Buffer(data);
+
+//     // write the contents of the buffer, from position 0 to the end, to the file descriptor returned in opening our file
+//     fs.write(fd, buffer, 0, buffer.length, null, function(err) {
+//         if (err) throw 'error writing file: ' + err;
+//         fs.close(fd, function() {
+//             console.log('wrote the file successfully');
+//         });
+//     });
+//   });
+// }
+
+// approach not useful for over 40 sided polygon
+// function rpgWrite(size) {
+//   // all bounds are within -1, 1
+//   var outputFile = "./data/RPG/rpg_" + size + ".txt";
+
+//   // add a line that doesn't intersect any previous line
+//   var lines = [];
+//   var points = [];
+//   var i = 0;
+//   var isOverLapping = false;
+//   while (i < size || isOverLapping) {
+//     var negativeY = Math.random() > 0.5;
+//     var negativeX = Math.random() > 0.5;
+//     var x = Math.random();
+//     if (negativeX) x = -x;
+//     var y = Math.random();
+//     if (negativeY) y = -y;
+//     if (i !== 0) {
+//       var xPrev = points[i-1][0];
+//       var yPrev = points[i-1][1];
+//       if (overlapsAny(xPrev, yPrev, x, y, lines)) {
+//         console.log("overlapped i:" + i)
+//         isOverLapping = true;
+//       } else {
+//         isOverLapping = false;
+//         lines.push({x0: xPrev, y0: yPrev, x1: x, y1: y});
+//         points.push([x, y]);
+//         i++;
+//       }
+//     } else {
+//       points.push([x, y]);
+//       i++;
+//     }
+//   }
+
+//   var data = "";
+//   _.each(points, pt => {
+//     data += `${pt[0]} ${pt[1]}\n`;
+//   });
+
+//   // complete the cycle
+//   // TODO can we test for overlap here?
+//   data += `${points[0][0]} ${points[0][1]}\n`;
+
+//   fs.writeFile(outputFile, data, function (err) {
+//     if (err) throw err;
+//   });
+// }
+
+function holesWrite(numSegments, datasetIdx) {
   // all bounds are within -1, 1
-  var sibDir = "./data/random_" + size;
+  var dir = "./data/holes/h_" + numSegments + "/";
+  var boxes = [];
 
-  var path = './data/' + datasetFile + '.txt';
+  var outerBox = [
+    [-.95, 0.95],
+    [.95, 0.95],
+    [.95, -0.95],
+    [-.95, -0.95],
+    [-.95, 0.95],
+  ];
+  boxes.push(outerBox);
 
-  // add a line that doesn't intersect any previous line
-  var lines = [];
-  var i = 0;
-  var isOverLapping = false;
-  while (i < size || isOverLapping) {
-    var negativeY = Math.random() > 0.5;
-    var negativeX = Math.random() > 0.5;
-    var x0 = Math.random();
-    if (negativeX) x0 = -x0;
-    var x1 = Math.random();
-    if (negativeX) x1 = -x1;
-    var y0 = Math.random();
-    if (negativeY) y0 = -y0;
-    var y1 = Math.random();
-    if (negativeY) y1 = -y1;
-    if (overlapsAny(x0, y0, x1, y1, lines)) {
-      console.log("overlapped i:" + i)
-      isOverLapping = true;
-    } else {
-      isOverLapping = false;
-      lines.push({x0: x0, y0: y0, x1: x1, y1: y1});
-      i++;
+  var numHoles = (numSegments / 4) - 1;
+  var dim = Math.ceil(Math.sqrt(numHoles));
+  if ((dim + 1) === 0) throw "invalid hole dim";
+  var step = 1.9 / (dim + 1);
+
+  var startCenter = [outerBox[0][0] + step, outerBox[0][1] - step];
+  for (var i = 0; i < dim; i++){
+    for (var j = 0; j < dim; j++){
+      if ((i+1) * (j+1) > numHoles) {
+        // console.log("i * j =" + i * j  +" > " + numHoles)
+        break;
+      }
+      var newCenter = [startCenter[0] + step*i, startCenter[1] - step*j];
+      var nw = [newCenter[0] - (step/3), newCenter[1] + (step/3)];
+      var ne = [newCenter[0] + (step/3), newCenter[1] + (step/3)];
+      var sw = [newCenter[0] + (step/3), newCenter[1] - (step/3)];
+      var se = [newCenter[0] - (step/3), newCenter[1] - (step/3)];
+      var newBox = [nw, ne, sw, se, nw];
+      boxes.push(newBox);
     }
   }
 
+  // TODO rotate?
+
+  var files = "";
   var count = 1;
-  _.forEach(lines, function (l) {
-    l.fileId = "line" + count++ + ".txt";
-    // lines are in the format of (p1.p2..p1) start .. point ... start
-    var data = `${l.x0} ${l.y0}\n${l.x1} ${l.y1}\n${l.x0} ${l.y0}`;
-    var newPath = sibDir + '/' + l.fileId;
-    fs.writeFile(newPath, data, function (err) {
-      if (err) throw err;
-    })
-  });
-
-  // write the new file references in dataset#.text
-  fs.open(path, 'w', function(err, fd) {
-    if (err) {
-      throw 'could not open file: ' + err;
-    }
+  _.each(boxes, b => {
     var data = "";
-    _.forEach(lines, function(l, idx) {
-      if (idx !== 0) data += "\n";
-      data +=  sibDir + '/' + l.fileId;
+    _.each(b, pt => {
+      data += `${pt[0]} ${pt[1]}\n`;
     });
-    var buffer = new Buffer(data);
-
-    // write the contents of the buffer, from position 0 to the end, to the file descriptor returned in opening our file
-    fs.write(fd, buffer, 0, buffer.length, null, function(err) {
-        if (err) throw 'error writing file: ' + err;
-        fs.close(fd, function() {
-            console.log('wrote the file successfully');
-        });
+    var filename = "box_" + count + ".txt";
+    files += dir + filename + "\n";
+    fs.writeFile(dir + filename, data, function (err) {
+      if (err) throw err;
     });
+    count++;
   });
-} */
+
+  console.log("writing holes dataset to file")
+
+  fs.writeFile(`./data/dataset${datasetIdx}.txt`, files, function (err) {
+    if (err) throw err;
+  });
+}
 
 function getDatasetJson(set) {
   // read in the files
@@ -314,6 +423,21 @@ router.get('/map', function(req, res) {
 //   // writeRandom(500, "dataset4");
 //   writeRandom(1000, "dataset5");
 // });
+
+// router.get('/rpg', function(req, res) {
+//   rpgWrite(32);
+// });
+
+router.get('/holes', function(req, res) {
+  // holesWrite(64, 10);
+  // holesWrite(128, 11);
+  holesWrite(1024, 14);
+  // holesWrite(2048, 15);
+  holesWrite(4096, 16);
+  holesWrite(8192, 17);
+  holesWrite(16384, 18);
+  holesWrite(32768, 19);
+});
 
 router.use(express.static(__dirname));
 

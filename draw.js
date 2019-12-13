@@ -83,31 +83,34 @@ function onEdgeVertexClick(d, i) {
   }
   this.style["fill"] = g_edgeColors[1];
   g_pathStartElemIdx = i;
-  // var t0 = performance.now();
-  // // clear all path info
-  // _.each(g_gvdVertices, function(v) {
-  //   v.path = [];
-  //   v.tCost = 0;
-  // });
-  // shortestPath(d);
-  // var t1 = performance.now();
-  // var processTime = t1 - t0;
-  // console.log("Path Processing Time:" + processTime.toFixed(6) + "(ms)");
+  var t0 = performance.now();
+  // clear all path info
+  _.each(g_gvdVertices, v => {
+    _.each(v.connectedEdges, e =>{
+      e.path = [];
+      e.tCost = undefined;
+    });
+  });
+  shortestPath(d);
+  var t1 = performance.now();
+  var processTime = t1 - t0;
+  console.log("Path Processing Time:" + processTime.toFixed(6) + "(ms)");
 }
 
 function onEdgeVertexMouseOver(d, i) {
-  // if (this.style["fill"] !== g_edgeColors[1]
-  //     && this.style["fill"] !== g_edgeColors[2])
-  //   this.style["fill"] = g_edgeColors[0];
+  var edges = _.sortBy(d.connectedEdges, e => {
+    return e.tCost;
+  });
   d3.select(`#${this.id}`).attr("r", g_siteRadius * 3);
-  if (d.path && d.path.length > 0)
-    highlightPath(d.path);
+
+  if (i != g_pathStartElemIdx) {
+    if (edges[0].path && edges[0].path.length > 0) {
+      highlightPath(edges[0].path, g_edgeColors[3]);
+    }
+  }
 }
 
 function onEdgeVertexMouseOut(d, i) {
-  // if (this.style["fill"] === g_edgeColors[0]) {
-  //   this.style["fill"] = g_edgeColors[3];
-  // }
   d3.select(`#${this.id}`).attr("r", g_siteRadius);
   unHighlightPaths();
 }
@@ -218,14 +221,13 @@ function enforceSettings() {
   d3.selectAll(".close-event")
   .attr('visibility', g_settings.showEvents.value ? null : 'hidden');
 
-  // d3.selectAll(".debug-events")
-  // .style('height', g_settings.showEvents.value ? 100 : 0)
-  // .style('visibility', g_settings.showEvents.value ? null : 'hidden');
-
-  // debug items
-  // d3.selectAll(".debug-inputs")
-  // .style('height', g_settings.showDebugObjs.value ? 100 : 0)
-  // .style('visibility', g_settings.showDebugObjs.value ? null : 'hidden');
+  // debugging only
+  d3.selectAll(".debug-events")
+  .style('height', g_settings.showEvents.value ? 100 : 0)
+  .style('visibility', g_settings.showEvents.value ? null : 'hidden');
+  d3.selectAll(".debug-inputs")
+  .style('height', g_settings.showDebugObjs.value ? 100 : 0)
+  .style('visibility', g_settings.showDebugObjs.value ? null : 'hidden');
 
   // show gvd vertices
   d3.select("#gvd")
@@ -272,13 +274,13 @@ function enforceSettings() {
   .style("stroke-width", g_settings.showMedial.value ? g_isoEdgeWidth : 0)
   ;
 
-  // Show debug
-  // d3.selectAll(".debug-line")
-  // .attr('visibility', g_settings.showDebugObjs.value ? null : 'hidden');
-  // d3.selectAll(".debug-parabola")
-  // .attr('visibility', g_settings.showDebugObjs.value ? null : 'hidden');
-  // d3.selectAll(".debug-point")
-  // .attr('visibility', g_settings.showDebugObjs.value ? null : 'hidden');
+  // debugging only Show debug
+  d3.selectAll(".debug-line")
+  .attr('visibility', g_settings.showDebugObjs.value ? null : 'hidden');
+  d3.selectAll(".debug-parabola")
+  .attr('visibility', g_settings.showDebugObjs.value ? null : 'hidden');
+  d3.selectAll(".debug-point")
+  .attr('visibility', g_settings.showDebugObjs.value ? null : 'hidden');
 
   // Tree
   d3.select(g_treeId)
@@ -380,88 +382,87 @@ function hideDebugCircumcircle() {
 // })
 // .on("end", function() { onSiteDrag(); });
 
-// debug only
+// debugging only
+function drawDebugObjs(objs) {
 
-// function drawDebugObjs(objs) {
+  // Lines
+  var lines = _.filter(objs, function (o) {
+    return o instanceof Line;
+  });
+  let selB = d3.select("#gvd")
+  .selectAll(".debug-line")
+  .data(lines);
 
-//   // Lines
-//   var lines = _.filter(objs, function (o) {
-//     return o instanceof Line;
-//   });
-//   let selB = d3.select("#gvd")
-//   .selectAll(".debug-line")
-//   .data(lines);
+  selB.exit().remove();
+  selB
+    .enter()
+    .append("line")
+    .attr("class", "debug-line")
+    .attr("vector-effect", "non-scaling-stroke")
+    .merge(selB)
+    .attr("x1", l => xRev(l.p1[0]))
+    .attr("y1", l => yRev(l.p1[1]))
+    .attr("x2", l => xRev(l.p2[0]))
+    .attr("y2", l => yRev(l.p2[1]))
+    .attr('visibility', g_settings.showDebugObjs.value ? null : 'hidden')
+  ;
 
-//   selB.exit().remove();
-//   selB
-//     .enter()
-//     .append("line")
-//     .attr("class", "debug-line")
-//     .attr("vector-effect", "non-scaling-stroke")
-//     .merge(selB)
-//     .attr("x1", l => xRev(l.p1[0]))
-//     .attr("y1", l => yRev(l.p1[1]))
-//     .attr("x2", l => xRev(l.p2[0]))
-//     .attr("y2", l => yRev(l.p2[1]))
-//     .attr('visibility', g_settings.showDebugObjs.value ? null : 'hidden')
-//   ;
+  // parabolas
+  var parabolas = _.filter(objs, function (o) {
+    return !_.isUndefined(o.para);
+  });
 
-//   // parabolas
-//   var parabolas = _.filter(objs, function (o) {
-//     return !_.isUndefined(o.para);
-//   });
+  var idStr = "pId";
+  var originPt = {point:vec3(-1, 1, 0)};
+  var destPt = {point:vec3(1, 0, 0)};
+  var count = 0;
+  parabolas = _.map(parabolas, function (p) {
+    idStr = idStr + count++;
+    p.para.prepDraw(idStr, originPt, destPt);
+    return p.para;
+  });
 
-//   var idStr = "pId";
-//   var originPt = {point:vec3(-1, 1, 0)};
-//   var destPt = {point:vec3(1, 0, 0)};
-//   var count = 0;
-//   parabolas = _.map(parabolas, function (p) {
-//     idStr = idStr + count++;
-//     p.para.prepDraw(idStr, originPt, destPt);
-//     return p.para;
-//   });
+  let line = d3.line()
+  .x(function (d) {return xRev(d[0]);})
+  .y(function (d) {return yRev(d[1]);})
+  .curve(d3.curveLinear)
+  ;
+  let debugSelectionPara = d3.select('#gvd')
+    .selectAll('.debug-parabola')
+    .data(parabolas)
+  ;
+  debugSelectionPara.exit().remove();
+  debugSelectionPara.enter()
+    .append("path")
+    .style("fill","none")
+    .attr("class", "debug-parabola")
+    .attr("vector-effect", "non-scaling-stroke")
+    .merge(debugSelectionPara)
+    .style("stroke-width", g_isoEdgeWidth * 5)
+    .attr("d", p => line(p.drawPoints))
+    .attr("transform", p => p.transform)
+    .attr('visibility', g_settings.showDebugObjs.value ? null : 'hidden')
+  ;
 
-//   let line = d3.line()
-//   .x(function (d) {return xRev(d[0]);})
-//   .y(function (d) {return yRev(d[1]);})
-//   .curve(d3.curveLinear)
-//   ;
-//   let debugSelectionPara = d3.select('#gvd')
-//     .selectAll('.debug-parabola')
-//     .data(parabolas)
-//   ;
-//   debugSelectionPara.exit().remove();
-//   debugSelectionPara.enter()
-//     .append("path")
-//     .style("fill","none")
-//     .attr("class", "debug-parabola")
-//     .attr("vector-effect", "non-scaling-stroke")
-//     .merge(debugSelectionPara)
-//     .style("stroke-width", g_isoEdgeWidth * 5)
-//     .attr("d", p => line(p.drawPoints))
-//     .attr("transform", p => p.transform)
-//     .attr('visibility', g_settings.showDebugObjs.value ? null : 'hidden')
-//   ;
+  // debug points
+  var pts = _.filter(objs, function (o) {
+    return o.type && o.type === "vec";
+  });
+  let ptsSelection = d3.select('#gvd')
+  .selectAll('.debug-point')
+  .data(pts)
+  ;
+  ptsSelection.exit().remove();
 
-//   // debug points
-//   var pts = _.filter(objs, function (o) {
-//     return o.type && o.type === "vec";
-//   });
-//   let ptsSelection = d3.select('#gvd')
-//   .selectAll('.debug-point')
-//   .data(pts)
-//   ;
-//   ptsSelection.exit().remove();
-
-//   ptsSelection.enter()
-//     .append("circle")
-//     .attr("class", "debug-point")
-//     .attr("r", g_siteRadius * 2)
-//     .merge(ptsSelection)
-//     .attr("cx", p => xRev(p[0]))
-//     .attr("cy", p => yRev(p[1]))
-//   ;
-// }
+  ptsSelection.enter()
+    .append("circle")
+    .attr("class", "debug-point")
+    .attr("r", g_siteRadius * 2)
+    .merge(ptsSelection)
+    .attr("cx", p => xRev(p[0]))
+    .attr("cy", p => yRev(p[1]))
+  ;
+}
 
 function drawSites(points) {
   d3.select("#gvd").selectAll(".point-site").remove();
@@ -606,27 +607,18 @@ function drawSurface(dcel) {
 
   d3.select('#gvd').selectAll(".gvd-edge-vertex").remove();
 
-  /**
-   *   g_gvdVertices = [];
-  var t0 = performance.now();
-  g_gvdVertices = getMergedVertices(dcel.vertices);
-  var t1 = performance.now();
-  var processTime = t1 - t0;
-  console.log("Vertex resolve Time:" + processTime.toFixed(6) + "(ms)");
-   */
-
-  var vertices = [];
+  g_gvdVertices = [];
   var vertexItr = dcel.vertices;
   var vecRslt = vertexItr.next();
   while (!vecRslt.done) {
     if (vecRslt.value.point && vecRslt.value.edge.splitSite)
-      vertices.push(vecRslt.value);
+    g_gvdVertices.push(vecRslt.value);
     vecRslt = vertexItr.next();
   }
 
   let edgeVertices = d3.select('#gvd')
     .selectAll(".gvd-edge-vertex")
-    .data(vertices);
+    .data(g_gvdVertices);
   edgeVertices.enter()
     .append("circle")
     .attr("class", "gvd-edge-vertex")
@@ -809,7 +801,7 @@ function drawBeachline(beachline, directrix) {
   // Render the debug objects
   //------------------------------
   // debugging only
-  // drawDebugObjs(g_debugObjs);
+  drawDebugObjs(g_debugObjs);
 }
 
 function rescaleView(newX, newY) {

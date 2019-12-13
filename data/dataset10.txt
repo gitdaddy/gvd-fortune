@@ -1,0 +1,16 @@
+./data/holes/h_64/box_1.txt
+./data/holes/h_64/box_2.txt
+./data/holes/h_64/box_3.txt
+./data/holes/h_64/box_4.txt
+./data/holes/h_64/box_5.txt
+./data/holes/h_64/box_6.txt
+./data/holes/h_64/box_7.txt
+./data/holes/h_64/box_8.txt
+./data/holes/h_64/box_9.txt
+./data/holes/h_64/box_10.txt
+./data/holes/h_64/box_11.txt
+./data/holes/h_64/box_12.txt
+./data/holes/h_64/box_13.txt
+./data/holes/h_64/box_14.txt
+./data/holes/h_64/box_15.txt
+./data/holes/h_64/box_16.txt

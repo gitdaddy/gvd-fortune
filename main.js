@@ -13,6 +13,16 @@ let g_datasets = {
   'dataset7' : [],
   'dataset8' : [],
   'dataset9' : [],
+  'dataset10' : [],
+  'dataset11' : [],
+  'dataset12' : [],
+  'dataset13' : [],
+  'dataset14' : [],
+  'dataset15' : [],
+  'dataset16' : [],
+  'dataset17' : [],
+  'dataset18' : [],
+  'dataset19' : [],
 };
 
 let g_polygons = [];
@@ -27,7 +37,17 @@ let g_fileDatasets = [
   {key:"dataset6", label:"dataset6 - Sydney city dataset", isMap: true, filename:"Sydney_2_512.map"},
   {key:"dataset7", label:"dataset7 - Berlin city dataset", isMap: true, filename:"Berlin_0_256.map"},
   {key:"dataset8", label:"dataset8 - Boston city dataset", isMap: true, filename:"Boston_0_256.map"},
-  {key:"dataset9", label:"dataset9 - Moscow city dataset", isMap: true, filename:"Moscow_1_256.map"}
+  {key:"dataset9", label:"dataset9 - Moscow city dataset", isMap: true, filename:"Moscow_1_256.map"},
+  {key:"dataset10", label:"dataset10 - Holes-64"},
+  {key:"dataset11", label:"dataset11 - Holes-128"},
+  {key:"dataset12", label:"dataset12 - Holes-256"},
+  {key:"dataset13", label:"dataset13 - Holes-512"},
+  {key:"dataset14", label:"dataset14 - Holes-1024"},
+  {key:"dataset15", label:"dataset15 - Holes-2048"},
+  {key:"dataset16", label:"dataset16 - Holes-4096"},
+  {key:"dataset17", label:"dataset17 - Holes-8192"},
+  {key:"dataset18", label:"dataset18 - Holes-16384"},
+  {key:"dataset19", label:"dataset19 - Holes-32768"}
  ];
 
 let closeEventPoints = [];
@@ -41,7 +61,7 @@ let g_debugIdMiddle = undefined;
 let g_debugIdRight = undefined;
 
 let g_sInc = 0.01;
-let g_xInc = 0.01;
+let g_xInc = 0.001;
 
 let g_settings = {
   showEvents: {label: "Show Events", value: false},
@@ -50,13 +70,14 @@ let g_settings = {
   showObjVer: {label: "Show object vertices", value: false},
   showObjSeg: {label: "Show object segments", value: true},
   showMedial: {label: "Show Medial Axis", value: false},
-  // showDebugObjs: {label: "Show debug objects", value: false}, // debug only
+  showDebugObjs: {label: "Show debug objects", value: false}, // debugging only
   showTree: {label: "Show Tree", value: false},
   showBeachLine: {label: "Show beach-line", value: true}
 };
 
 let g_treeId = "#treeTagId";
 
+// debugging only
 function updateDebugVars() {
   var p = document.getElementsByName("xIncVal")[0].valueAsNumber;
   g_xInc = _.isNaN(p) ? g_xInc : p;
@@ -84,6 +105,12 @@ function updateSweepline() {
   var elem = document.getElementById("sweeplineInput");
   moveSweepline(parseFloat(elem.value));
 }
+
+function callServer() {
+  var query = '/holes';
+  $.get(query)
+}
+
 
 function keydown(event) {
   var x = event.keyCode;
@@ -125,6 +152,7 @@ function init() {
     g_sweepline.y = parseFloat(localStorage.sweepline);
   }
 
+  // debugging only
   document.getElementsByName("xIncVal")[0].valueAsNumber = g_xInc;
   document.getElementsByName("incVal")[0].valueAsNumber = g_sInc;
 

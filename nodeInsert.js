@@ -98,8 +98,6 @@ function splitArcNode(toSplit, node, dcel, optNodesToClose) {
     } else {
       y = new V(toSplit.site, node.site[1], toSplit.id).f(x);
     }
-    if (!_.isFinite(y))
-      console.log("Infinite vertex detected!");
     vertex = vec3(x, y, 0);
   }
   var left = toSplit;
@@ -153,13 +151,13 @@ function ParaInsert(child, arcNode, dcel, nodesToClose) {
   if (closingData) {
     if (!child.isV) throw "Invalid node insertion";
     // var sRight = child.nextArc();
-    var updateEdge = child.prevEdge();
+    var edgeToUpdate = child.prevEdge();
     if (closingData.closeRight) {
-      updateEdge = child.nextEdge();
+      edgeToUpdate = child.nextEdge();
     }
-    if (updateEdge) {
-      updateEdge.dcelEdge.dest.overridden = true;
-      updateEdge.dcelEdge.dest.point = arcNode.site;
+    if (edgeToUpdate) {
+      edgeToUpdate.dcelEdge.dest.overridden = true;
+      edgeToUpdate.dcelEdge.dest.point = arcNode.site;
     }
     nodesToClose.push(child);
     if (closingData.closeRight) {
