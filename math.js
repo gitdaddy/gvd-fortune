@@ -8,6 +8,7 @@ let g_bisectorsMemo = {};
 
 function getEventY(event)
 {
+  // if (!_.isUndefined(event.yval)) return event.yval;
   if (event.yval) return event.yval;
 
   if (event.type === "segment") return event[0][1];
