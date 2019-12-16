@@ -70,8 +70,8 @@ Parabola.prototype.intersectRay = function (p, v) {
     var q = vec3(p[0] + (v[0] * t), p[1] + (v[1] * t), 0);
     // var q = add(p, mult(v, t));
 
-    if (!q[0] || _.isNaN(q[0]))
-    console.error("Intersect Ray result Invalid");
+    // if (_.isUndefined(q[0]) || _.isNaN(q[0]))
+    //   console.error("Intersect Ray result Invalid");
 
     ret.push(q);
     // Taking this guard out allows computing close points with negative tvals
