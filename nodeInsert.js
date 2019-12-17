@@ -197,12 +197,18 @@ function generateSubTree(eventPacket, arcNode, dcel, optChild) {
       tree = insertEdge(arcNode, newEdge, arcNode.site, dcel);
     }
   } else if (eventPacket.type === PACKET_TYPE.PARENT) {
-    if (!optChild || !optChild.isV) throw 'Invalid insert operation';
-    childArcNode = new ArcNode(eventPacket.child);
-    tree = splitArcNode(optChild, arcNode, dcel, nodesToClose);
-    var parent = arcNode.parent;
-    var newEdge = VRegularInsert(arcNode, childArcNode, dcel, optChild);
-    parent.setChild(newEdge, LEFT_CHILD);
+    if (optChild) {
+      if (!optChild.isV) throw 'Invalid insert operation';
+      var childArcNode = new ArcNode(eventPacket.child);
+      tree = splitArcNode(optChild, arcNode, dcel, nodesToClose);
+      var parent = arcNode.parent;
+      var newEdge = VRegularInsert(arcNode, childArcNode, dcel, optChild);
+      parent.setChild(newEdge, LEFT_CHILD);
+    } else {
+      // case where site is the root
+      var childArcNode = new ArcNode(eventPacket.child);
+      tree = splitArcNode(arcNode, childArcNode, dcel, nodesToClose);
+    }
   } else {
     if (optChild) {
       tree = ParaInsert(optChild, arcNode, dcel, nodesToClose);

@@ -490,117 +490,35 @@ function isColinear(p1, p2, p3, optTolerance) {
   return zVal === 0;
 }
 
-/* function createDatasets() {
-  bounding box
-  var polygons1 = [];
-  g_boundingBox = new Polygon();
-  g_boundingBox.addPoint(vec3(0.002, 2.71, 0));
-  g_boundingBox.addPoint(vec3(2.8235, -0.0051, 0));
-  g_boundingBox.addPoint(vec3(-0.001, -2.656, 0));
-  g_boundingBox.addPoint(vec3(-2.443, 0.007, 0));
-  g_boundingBox.createSegment(0,1);
-  g_boundingBox.createSegment(1,2);
-  g_boundingBox.createSegment(2,3);
-  g_boundingBox.createSegment(3,0);
+ function setExampleDataset() {
+   var polygons = [];
+
+  // bounding box
+  // g_boundingBox = new Polygon();
+  // g_boundingBox.addPoint(vec3(0.002, 2.71, 0));
+  // g_boundingBox.addPoint(vec3(2.8235, -0.0051, 0));
+  // g_boundingBox.addPoint(vec3(-0.001, -2.656, 0));
+  // g_boundingBox.addPoint(vec3(-2.443, 0.007, 0));
+  // g_boundingBox.createSegment(0,1);
+  // g_boundingBox.createSegment(1,2);
+  // g_boundingBox.createSegment(2,3);
+  // g_boundingBox.createSegment(3,0);
 
   var p11 = new Polygon();
-  p11.addPoint(vec3(-0.572, -0.61, 0)); // colinear test
-  p11.addPoint(vec3(-0.572, -0.31, 0));
-  p11.addPoint(vec3(-0.572, 0.4209, 0));
-  // p11.addPoint(vec3(-0.272, 0.420001, 0));
-  p11.addPoint(vec3(0.42, 0.42, 0)); // +1e-7
-  p11.addPoint(vec3(0.42, -0.61, 0));
-
-  removeCAS(p11.points);
+  p11.addPoint(vec3(-0.27, 0.61, 0));
+  p11.addPoint(vec3(0.32, -0.31, 0));
 
   p11.createSegment(0, 1);
-  p11.createSegment(1, 2);
-  p11.createSegment(2, 3);
 
-  polygons1.push(p11);
-  polygons1.push(g_boundingBox);
+  var p12 = new Polygon();
+  p12.addPoint(vec3(0.17, -0.152, 0));
 
-  var polygons2 = [];
-  var p21 = new Polygon();
-  p21.addPoint(vec3(-0.572, 0.342, 0)); // t1
-  p21.addPoint(vec3(0.02, 0.02, 0)); // cmid
-  p21.addPoint(vec3(0.372, 0.31, 0)); // t2
-  p21.addPoint(vec3(0.64,0.08, 0)); // right
-  p21.addPoint(vec3(0.14, -0.02, 0)); // right2
-  p21.addPoint(vec3(0.5, -0.11, 0)); // right3
-  p21.addPoint(vec3(0.23, -0.51, 0)); // c2
-  p21.addPoint(vec3(0.01, -0.27, 0)); // t3
-  p21.addPoint(vec3(-0.43, -0.65, 0)); // c 1
-  p21.addPoint(vec3(-0.5,-0.48, 0)); // left3
-  p21.addPoint(vec3(-0.14, 0.001, 0)); // left2
-  p21.addPoint(vec3(-0.54,0.18, 0)); // left
-  p21.createSegment(0, 1);
-  p21.createSegment(1, 2);
-  p21.createSegment(2, 3);
-  p21.createSegment(3, 4);
-  p21.createSegment(4, 5);
-  p21.createSegment(5, 6);
-  p21.createSegment(6, 7);
-  p21.createSegment(7, 8);
-  p21.createSegment(8, 9);
-  p21.createSegment(9, 10);
-  p21.createSegment(10,11);
-  p21.createSegment(11,0);
-  polygons2.push(p21);
-  polygons2.push(g_boundingBox);
+  var p13 = new Polygon();
+  p13.addPoint(vec3(-0.12, -0.21, 0));
 
-  var polygons3 = [];
-  var p31 = new Polygon();
-  Math.seedrandom('6');
-  var numRandom1 = 8;
-  for (var i = 0; i < numRandom1; ++i) {
-    p31.addPoint(vec3(Math.random()*2-1, Math.random()*2-1, 0));
-  }
-  p31.createSegment(3,4);
-  polygons3.push(p31);
-  polygons3.push(g_boundingBox);
+  polygons.push(p11);
+  polygons.push(p12);
+  polygons.push(p13);
 
-  var polygons4 = [];
-  var p41 = new Polygon();
-  var p42 = new Polygon();
-
-  p41.addPoint(vec3(-0.41, 0.45, 0)); // shared point
-  p41.addPoint(vec3(-0.56, 0.33, 0));
-  p41.addPoint(vec3(-0.62, 0.57, 0));
-
-  p42.addPoint(vec3(-0.41, 0.45, 0));
-  p42.addPoint(vec3(-0.12,0.53, 0));
-  p42.addPoint(vec3(0.32, 0.21, 0));
-
-  p41.createSegment(0, 1);
-  p41.createSegment(1, 2);
-  p41.createSegment(2, 0);
-  polygons4.push(p41);
-
-  p42.createSegment(0, 1);
-  p42.createSegment(1, 2);
-  p42.createSegment(2, 0);
-  polygons4.push(p42);
-  polygons4.push(g_boundingBox);
-
-  Math.seedrandom('3');
-  var numRandom2 = 100;
-  var polygons5 = [];
-  for (var i = 0; i < numRandom2; ++i) {
-    var p = new Polygon();
-  	p.addPoint(vec3(Math.random()*2-1, Math.random()*2-1, 0));
-  	polygons5.push(p);
-  }
-  polygons5.push(g_boundingBox);
-
-  initialize the datasets
-  g_datasets = {
-    'dataset1' : [], // file dataset loaded asynchronously
-    'dataset2' : [],
-    'dataset3' : [],
-    'dataset4' : [],
-    'dataset5' : [],
-  };
-
-  g_datasets["dataset7"] = polygons4;
-} */
+  g_datasets["dataset20"] = polygons;
+}

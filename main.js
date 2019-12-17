@@ -23,6 +23,7 @@ let g_datasets = {
   'dataset17' : [],
   'dataset18' : [],
   'dataset19' : [],
+  'dataset20' : []
 };
 
 let g_polygons = [];
@@ -47,7 +48,8 @@ let g_fileDatasets = [
   {key:"dataset16", label:"dataset16 - Holes-4096"},
   {key:"dataset17", label:"dataset17 - Holes-8192"},
   {key:"dataset18", label:"dataset18 - Holes-16384"},
-  {key:"dataset19", label:"dataset19 - Holes-32768"}
+  {key:"dataset19", label:"dataset19 - Holes-32768"},
+  {key:"dataset20", label:"dataset20"}
  ];
 
 let closeEventPoints = [];
@@ -147,6 +149,7 @@ function keydown(event) {
 }
 
 function init() {
+  setExampleDataset();
   if (localStorage.sweepline && !_.isNaN(localStorage.sweepline)
   && localStorage.sweepline !== "NaN") {
     g_sweepline.y = parseFloat(localStorage.sweepline);
