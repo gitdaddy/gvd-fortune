@@ -197,12 +197,18 @@ function generateSubTree(eventPacket, arcNode, dcel, optChild) {
       tree = insertEdge(arcNode, newEdge, arcNode.site, dcel);
     }
   } else if (eventPacket.type === PACKET_TYPE.PARENT) {
-    if (optChild) {
-      if (!optChild.isV) throw 'Invalid insert operation';
+    if (optChild && optChild.isV) {
+      // if (!optChild.isV) throw 'Invalid insert operation';
       var childArcNode = new ArcNode(eventPacket.child);
       tree = splitArcNode(optChild, arcNode, dcel, nodesToClose);
       var parent = arcNode.parent;
       var newEdge = VRegularInsert(arcNode, childArcNode, dcel, optChild);
+      parent.setChild(newEdge, LEFT_CHILD);
+    } else if (optChild) {
+      tree = splitArcNode(optChild, arcNode, dcel, nodesToClose);
+      var parent = arcNode.parent;
+      var childArcNode = new ArcNode(eventPacket.child);
+      var newEdge = splitArcNode(arcNode, childArcNode, dcel, nodesToClose);
       parent.setChild(newEdge, LEFT_CHILD);
     } else {
       // case where site is the root

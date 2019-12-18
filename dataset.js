@@ -516,9 +516,13 @@ function isColinear(p1, p2, p3, optTolerance) {
   var p13 = new Polygon();
   p13.addPoint(vec3(-0.12, -0.21, 0));
 
+  var p14 = new Polygon();
+  p14.addPoint(vec3(-0.12, 0.81, 0));
+
   polygons.push(p11);
   polygons.push(p12);
   polygons.push(p13);
+  polygons.push(p14);
 
   g_datasets["dataset20"] = polygons;
 }
