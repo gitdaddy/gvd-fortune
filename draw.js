@@ -86,7 +86,7 @@ function onEdgeVertexClick(d, i) {
   var t0 = performance.now();
   // clear all path info
   _.each(g_gvdVertices, v => {
-    _.each(v.connectedEdges, e =>{
+    _.each(_.values(v.connectedEdges), e =>{
       e.path = [];
       e.tCost = undefined;
     });
@@ -98,10 +98,11 @@ function onEdgeVertexClick(d, i) {
 }
 
 function onEdgeVertexMouseOver(d, i) {
-  var edges = _.sortBy(d.connectedEdges, e => {
+  d3.select(`#${this.id}`).attr("r", g_siteRadius * 3);
+  if (_.isUndefined(g_pathStartElemIdx)) return;
+  var edges = _.sortBy(_.values(d.connectedEdges), e => {
     return e.tCost;
   });
-  d3.select(`#${this.id}`).attr("r", g_siteRadius * 3);
 
   if (i != g_pathStartElemIdx) {
     if (edges[0].path && edges[0].path.length > 0) {

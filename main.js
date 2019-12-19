@@ -67,7 +67,7 @@ let g_xInc = 0.001;
 
 let g_settings = {
   showEvents: {label: "Show Events", value: false},
-  showGVDVer: {label: "Show GVD vertices", value: false},
+  showGVDVer: {label: "Show GVD vertices", value: true},
   showGVDSeg: {label: "Show GVD segments", value: true},
   showObjVer: {label: "Show object vertices", value: false},
   showObjSeg: {label: "Show object segments", value: true},

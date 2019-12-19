@@ -227,12 +227,12 @@ EdgeNode.prototype.updateEdge = function (vertex, dcel, optNeighborEdges = [], o
     // this.dcelEdge.origin = destVertex;
     this.dcelEdge.origin.connectedEdges = optEndingEdges[0].dest.connectedEdges;
     this.dcelEdge.origin.point = vertex;
-    var sharedArray = this.dcelEdge.origin.connectedEdges;
+    var sharedEdges = this.dcelEdge.origin.connectedEdges;
     _.each(optEndingEdges, function (e) {
-      sharedArray.push(e);
+      sharedEdges[getEdgeId(e)] = e;
       e.dest.point = vertex;
       // set the edges origin with itself
-      e.origin.connectedEdges.push(e);
+      e.origin.connectedEdges[getEdgeId(e)] = e;
       // setEdgeDestination(e, vertex, optEndingEdges);
     });
   }
@@ -250,22 +250,24 @@ EdgeNode.prototype.updateEdge = function (vertex, dcel, optNeighborEdges = [], o
     var thisDVertex = this.dcelEdge.dest;
     var thisEdge = this.dcelEdge;
     _.each(optNeighborEdges, e => {
-      var sharedArray = [e.dcelEdge, thisEdge];
+      var sharedEdges = {};
+      sharedEdges[getEdgeId(e.dcelEdge)] = e.dcelEdge;
+      sharedEdges[getEdgeId(thisEdge)] = thisEdge;
       var nPtO = e.dcelEdge.origin.point;
       var nPtD = e.dcelEdge.origin.dest;
 
       if (fastFloorEqual(nPtO, thisOVertex.point)) {
-        e.dcelEdge.origin.connectedEdges = sharedArray;
-        thisOVertex.connectedEdges = sharedArray;
+        e.dcelEdge.origin.connectedEdges = sharedEdges;
+        thisOVertex.connectedEdges = sharedEdges;
       } else if (fastFloorEqual(nPtD, thisOVertex.point)) {
-        e.dcelEdge.dest.connectedEdges = sharedArray;
-        thisOVertex.connectedEdges = sharedArray;
+        e.dcelEdge.dest.connectedEdges = sharedEdges;
+        thisOVertex.connectedEdges = sharedEdges;
       } else if (fastFloorEqual(nPtO, thisDVertex.point)) {
-        e.dcelEdge.origin.connectedEdges = sharedArray;
-        thisDVertex.connectedEdges = sharedArray;
+        e.dcelEdge.origin.connectedEdges = sharedEdges;
+        thisDVertex.connectedEdges = sharedEdges;
       } else if (fastFloorEqual(nPtD, thisDVertex.point)) {
-        e.dcelEdge.dest.connectedEdges = sharedArray;
-        thisDVertex.connectedEdges = sharedArray;
+        e.dcelEdge.dest.connectedEdges = sharedEdges;
+        thisDVertex.connectedEdges = sharedEdges;
       }
     });
   }

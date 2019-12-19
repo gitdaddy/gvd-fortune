@@ -178,7 +178,8 @@ function DCELVertex(edge) {
   this._next = null;
   this._prev = null;
   this._edge = edge;
-  this.connectedEdges = [];
+  // this.connectedEdges = [];
+  this.connectedEdges = {};
 }
 
 /* Returns a half-edge with this vertex as its origin vertex.

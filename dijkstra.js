@@ -17,8 +17,11 @@ function edgeEqual(e1, e2) {
 }
 
 function getNextLinks(possibleConnections, optFromEdge) {
-  if (!optFromEdge) return possibleConnections;
-  return _.filter(possibleConnections, function (e) {
+  var edges = _.filter(_.values(possibleConnections), e => {
+    return e.dest.point && e.origin.point;
+  });
+  if (!optFromEdge) return edges;
+  return _.filter(edges, e => {
     return !edgeEqual(e, optFromEdge);
   });
 }
