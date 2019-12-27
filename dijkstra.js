@@ -2,6 +2,9 @@
 
 let g_currentHighlightedPaths = [];
 
+// the queue of unvisited places
+let g_sortedQueue = [];
+
 /*
   IE 11: 12,064
   Firefox 65: 20,614
@@ -34,72 +37,50 @@ function getDestVertex(originPt, edge) {
   }
 }
 
-// THIS will only work if EVERY vertex is set
-// with the correct connected edges
-// single point implementation
-function shortestPath(gvdVertex, rLevel = 0, optFromEdge = null) {
-  // don't go past the max recursion level
-  if (rLevel >= MAX_RECURSION_LEVEL) {
-    console.log("Shortest path: max recursion level reached");
-    return;
+function sortedInsert(newDest) {
+  var idx = _.sortedIndexBy(g_sortedQueue, newDest, 'tCost');
+
+  // insert the new destination in order or on top
+  if (idx === -1) {
+    g_sortedQueue.push(newDest);
+  } else {
+    g_sortedQueue.splice(idx, 0, newDest);
   }
+}
 
-  // debugging
-  // if (rLevel % 10 === 0) {
-  //   console.log("recursion level:" + rLevel);
-  // }
+function shortestPath(gvdVertex) {
+  g_sortedQueue = [];
+  var nextLinks = getNextLinks(gvdVertex.connectedEdges, null);
+  var currentVertex = gvdVertex;
 
-
-  // get closest links
-  // visit each closest line if the total cost is less than the current cost
-  // update the path to the current node
-  var nextLinks = getNextLinks(gvdVertex.connectedEdges, optFromEdge);
-  var currentPoint = gvdVertex;
-
-  // loop for linear vertex with degree 2
-  if (nextLinks.length === 1) {
-    while(nextLinks.length === 1) {
-      // mark the next vertex in line with a path
-      // nextLinks = getNextLinks(gvdVertex.connectedEdges, optIncomingEdge);
-      var destVertex = getDestVertex(currentPoint.point, nextLinks[0]);
-      // cost to travel the edge plus the total cost
-      var costSoFar = optFromEdge && optFromEdge.tCost ? optFromEdge.tCost : 0;
-      var newCost = dist(destVertex.point, currentPoint.point) + costSoFar;
-      // if we should take it
-      if (!nextLinks[0].tCost || newCost < nextLinks[0].tCost) {
-        // take the route
-        nextLinks[0].tCost = newCost;
-        nextLinks[0].path = optFromEdge ? getEdgeId(optFromEdge) : "";
-        // var pathSoFar = optFromEdge ? optFromEdge.path : [];
-        // nextLinks[0].path = _.concat(pathSoFar, [getEdgeId(nextLinks[0])]);
-        currentPoint = destVertex;
-      } else {
-        // path already has a shorter route
-        return;
-      }
-      optFromEdge = nextLinks[0];
-      nextLinks = getNextLinks(currentPoint.connectedEdges, nextLinks[0]);
-    }
-  }
-
-  // recursive approach for branching vertex with degree > 2
+  // initialize the queue
   _.each(nextLinks, edgeLink => {
-    var destVertex = getDestVertex(currentPoint.point, edgeLink);
-    var costSoFar = optFromEdge && optFromEdge.tCost ? optFromEdge.tCost : 0;
-    var newCost = dist(destVertex.point, currentPoint.point) + costSoFar;
-    // if we should take it
-    if (!edgeLink.tCost || newCost < edgeLink.tCost) {
-      // take the route
-      edgeLink.tCost = newCost;
-      edgeLink.path = optFromEdge ? getEdgeId(optFromEdge) : "";
-
-      // var pathSoFar = optFromEdge ? optFromEdge.path : [];
-      // edgeLink.path = _.concat(pathSoFar, [getEdgeId(edgeLink)]);
-      // console.log("recursion level:" + rLevel);
-      rLevel++;
-      shortestPath(destVertex, rLevel, edgeLink);
-    }
+    var destVertex = getDestVertex(currentVertex.point, edgeLink);
+    edgeLink.tCost = dist(destVertex.point, currentVertex.point);
+    edgeLink.path = "";
+    // edgeLink.path = getEdgeId(edgeLink);
+    edgeLink.destVertex = destVertex;
+    sortedInsert(edgeLink);
   });
+
+  var destEdge;
+  while (g_sortedQueue.length > 0) {
+    destEdge = g_sortedQueue.shift();
+    currentVertex = destEdge.destVertex;
+
+    // discover new unvisited locations or locations we can access sooner
+    nextLinks = getNextLinks(currentVertex.connectedEdges, destEdge);
+    _.each(nextLinks, edgeLink => {
+      var destVertex = getDestVertex(currentVertex.point, edgeLink);
+      var estimatedCost = dist(destVertex.point, currentVertex.point) + destEdge.tCost;
+      if (!edgeLink.tCost || estimatedCost < edgeLink.tCost) {
+        edgeLink.tCost = estimatedCost;
+        edgeLink.path = getEdgeId(destEdge);
+        edgeLink.destVertex = destVertex;
+        sortedInsert(edgeLink);
+      }
+    });
+  }
 }
 
 function highlightPath(oEdge, color) {

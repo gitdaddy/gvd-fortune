@@ -1,5 +1,11 @@
 "use strict";
 
+// TODO 2020
+// bug 200
+// Improve shortest path performance
+// Selected/brushing zoom CTRL+DRAG
+// tCost using curves
+
 var g_sweepline = {x1: -1, x2:1, y: -1};
 var g_eventThresh = 1e-6;
 
