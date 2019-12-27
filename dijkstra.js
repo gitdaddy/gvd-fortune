@@ -34,31 +34,6 @@ function getDestVertex(originPt, edge) {
   }
 }
 
-// function buildNode(pt, cost, path, connectedNodes) {
-//   return { point: pt,
-//           tCost: cost,
-//           path: path,
-//           connectedNodes: connectedNodes
-//   };
-// }
-
-// function insertNode(nodes, pt) {
-//   var foundIdx = _.findIndex(nodes, function (vertex) {
-//     return fastFloorEqual(pt, vertex.point);
-//   });
-//   if (foundIdx === -1) {
-//     nodes.push(buildNode(pt, undefined, [], []));
-//     return { idx: nodes.length-1, new: true };
-//   }
-//   return { idx: foundIdx, new: false };
-// }
-
-// function insertConnectedNode(array, idx, sharedCostPath) {
-//   if (!_.find(array, {nodeIdx: idx, costPath: sharedCostPath})) {
-//     array.push({nodeIdx: idx, costPath: sharedCostPath});
-//   }
-// }
-
 // THIS will only work if EVERY vertex is set
 // with the correct connected edges
 // single point implementation
@@ -68,6 +43,13 @@ function shortestPath(gvdVertex, rLevel = 0, optFromEdge = null) {
     console.log("Shortest path: max recursion level reached");
     return;
   }
+
+  // debugging
+  // if (rLevel % 10 === 0) {
+  //   console.log("recursion level:" + rLevel);
+  // }
+
+
   // get closest links
   // visit each closest line if the total cost is less than the current cost
   // update the path to the current node
@@ -87,8 +69,9 @@ function shortestPath(gvdVertex, rLevel = 0, optFromEdge = null) {
       if (!nextLinks[0].tCost || newCost < nextLinks[0].tCost) {
         // take the route
         nextLinks[0].tCost = newCost;
-        var pathSoFar = optFromEdge ? optFromEdge.path : [];
-        nextLinks[0].path = _.concat(pathSoFar, [getEdgeId(nextLinks[0])]);
+        nextLinks[0].path = optFromEdge ? getEdgeId(optFromEdge) : "";
+        // var pathSoFar = optFromEdge ? optFromEdge.path : [];
+        // nextLinks[0].path = _.concat(pathSoFar, [getEdgeId(nextLinks[0])]);
         currentPoint = destVertex;
       } else {
         // path already has a shorter route
@@ -108,23 +91,34 @@ function shortestPath(gvdVertex, rLevel = 0, optFromEdge = null) {
     if (!edgeLink.tCost || newCost < edgeLink.tCost) {
       // take the route
       edgeLink.tCost = newCost;
-      var pathSoFar = optFromEdge ? optFromEdge.path : [];
-      edgeLink.path = _.concat(pathSoFar, [getEdgeId(edgeLink)]);
-      console.log("recursion level:" + rLevel);
-      shortestPath(destVertex, rLevel++, edgeLink);
+      edgeLink.path = optFromEdge ? getEdgeId(optFromEdge) : "";
+
+      // var pathSoFar = optFromEdge ? optFromEdge.path : [];
+      // edgeLink.path = _.concat(pathSoFar, [getEdgeId(edgeLink)]);
+      // console.log("recursion level:" + rLevel);
+      rLevel++;
+      shortestPath(destVertex, rLevel, edgeLink);
     }
   });
 }
 
-function highlightPath(path, color) {
-  _.each(path, function (pId) {
-    var selected = d3.select(`#${pId}`);
-    selected.style('stroke', color)
-    selected.style("stroke-width", 10)
-    ;
+function highlightPath(oEdge, color) {
+  var s = d3.select(`#${getEdgeId(oEdge)}`);
+  s.style('stroke', color)
+  s.style("stroke-width", g_surfaceHighlightWidth)
+  ;
+  g_currentHighlightedPaths.push(getEdgeId(oEdge));
+  var path = oEdge.path;
 
-    g_currentHighlightedPaths.push(pId);
-  });
+  while(!_.isUndefined(path) && path.length != 0) {
+    var selected = d3.select(`#${path}`);
+    selected.style('stroke', color);
+    selected.style("stroke-width", g_surfaceHighlightWidth);
+    g_currentHighlightedPaths.push(path);
+    selected.each(function(d) {
+      path = d.path;
+    });
+  }
 }
 
 function unHighlightPaths() {
@@ -133,8 +127,6 @@ function unHighlightPaths() {
     selected.style('stroke', (d) => {
       return g_settings.showGVDSeg.value ? 'black' : 'none';
     })
-    selected.style("stroke-width", 4)
-    ;
-
+    selected.style("stroke-width", g_gvdSurfaceWidth);
   });
 }

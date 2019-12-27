@@ -67,12 +67,12 @@ let g_xInc = 0.001;
 
 let g_settings = {
   showEvents: {label: "Show Events", value: false},
-  showGVDVer: {label: "Show GVD vertices", value: true},
+  showGVDVer: {label: "Show GVD vertices", value: false},
   showGVDSeg: {label: "Show GVD segments", value: true},
   showObjVer: {label: "Show object vertices", value: false},
   showObjSeg: {label: "Show object segments", value: true},
   showMedial: {label: "Show Medial Axis", value: false},
-  showDebugObjs: {label: "Show debug objects", value: false}, // debugging only
+  showDebugObjs: {label: "Show Debug Input", value: false}, // debugging only
   showTree: {label: "Show Tree", value: false},
   showBeachLine: {label: "Show beach-line", value: true}
 };
@@ -85,11 +85,11 @@ function updateDebugVars() {
   g_xInc = _.isNaN(p) ? g_xInc : p;
   var i = document.getElementsByName("incVal")[0].valueAsNumber;
   g_sInc = _.isNaN(i) ? g_sInc : i;
-  g_debugIdLeft = document.getElementsByName("leftId")[0].valueAsNumber;
+  // g_debugIdLeft = document.getElementsByName("leftId")[0].valueAsNumber;
   // localStorage.g_debugIdLeft = g_debugIdLeft;
-  g_debugIdMiddle = document.getElementsByName("middleId")[0].valueAsNumber;
+  // g_debugIdMiddle = document.getElementsByName("middleId")[0].valueAsNumber;
   // localStorage.g_debugIdMiddle = g_debugIdMiddle;
-  g_debugIdRight = document.getElementsByName("rightId")[0].valueAsNumber;
+  // g_debugIdRight = document.getElementsByName("rightId")[0].valueAsNumber;
   // localStorage.g_debugIdRight = g_debugIdRight;
 }
 
@@ -108,11 +108,11 @@ function updateSweepline() {
   moveSweepline(parseFloat(elem.value));
 }
 
-function callServer() {
-  var query = '/holes';
-  $.get(query)
-}
-
+// template to call the server
+// function callServer() {
+//   var query = '/holes';
+//   $.get(query)
+// }
 
 function keydown(event) {
   var x = event.keyCode;

@@ -244,8 +244,6 @@ EdgeNode.prototype.updateEdge = function (vertex, dcel, optNeighborEdges = [], o
   this.dcelEdge.siteB = next.site;
   this.dcelEdge.splitSite = prev.site.label !== next.site.label;
   if (this.dcelEdge.splitSite && optNeighborEdges.length > 0 && optEndingEdges.length === 0) {
-    // var sharedO = this.dcelEdge.origin.connectedEdges;
-    // var sharedD = this.dcelEdge.dest.connectedEdges;
     var thisOVertex = this.dcelEdge.origin;
     var thisDVertex = this.dcelEdge.dest;
     var thisEdge = this.dcelEdge;
