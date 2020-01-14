@@ -1,10 +1,8 @@
 "use strict";
 
-// TODO 2020
+// TODO
 // bug 200
-// Improve shortest path performance
 // Selected/brushing zoom CTRL+DRAG
-// tCost using curves
 
 var g_sweepline = {x1: -1, x2:1, y: -1};
 var g_eventThresh = 1e-6;
@@ -80,7 +78,8 @@ let g_settings = {
   showMedial: {label: "Show Medial Axis", value: false},
   showDebugObjs: {label: "Show Debug Input", value: false}, // debugging only
   showTree: {label: "Show Tree", value: false},
-  showBeachLine: {label: "Show beach-line", value: true}
+  showBeachLine: {label: "Show beachline", value: true},
+  showOverview: {label: "Show Overview", value: false},
 };
 
 let g_treeId = "#treeTagId";

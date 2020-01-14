@@ -48,7 +48,7 @@ function highlight(d) {
       let x0 = (+arc.attr('leftx')).toFixed(1);
       let x1 = (+arc.attr('rightx')).toFixed(1);
       var type = d.data.isV ? "V" : "Parabola";
-      setDebug(`x0=${x0} x1=${x1} id=${d.data.id} type=${type}`);
+      setTreeDebug(`x0=${x0} x1=${x1} id=${d.data.id} type=${type}`);
     }
   } else {
     let edge = d.data;
@@ -61,7 +61,7 @@ function highlight(d) {
     let i = edge.selectedIntersection;
     msg = msg + ` (${i[0].toFixed(1)}, ${i[1].toFixed(1)})`;
     msg = msg + ` id=${edge.id}`;
-    setDebug(msg);
+    setTreeDebug(msg);
   }
 }
 
@@ -169,7 +169,6 @@ function showTree(treeData) {
     .on('mouseover', highlight)
     .on("mouseout", function(d, i) {
       d3.select(`#treenode${d.data.id}`).style("stroke-width", g_isoEdgeWidth);
-      setDebug('');
       if (d.data.isArc)
         d3.select(`#site${d.data.site.id}`).attr("r", g_siteRadius);
     })

@@ -44,7 +44,7 @@ let yToGVD = d3.scaleLinear()
 
 let xToGVD = d3.scaleLinear()
     .domain([0, width])
-    .range([1.1, -1.1]);
+    .range([-1.1, 1.1]);
 
 let gvdToPixelXScale =  d3.scaleLinear()
 .domain([-1, 1])
@@ -119,7 +119,15 @@ function resetView() {
   g_zoomed = false;
   d3.zoomIdentity.x = 0;
   d3.zoomIdentity.y = 0;
-  d3.select('#mainView').call(zoom.transform, d3.zoomIdentity.scale(1));
+  // d3.select('#mainView').call(zoom.transform, d3.zoomIdentity.scale(1));
+  xRevOrigin = d3.scaleLinear()
+    .domain([-1.1, 1.1])
+    .range([0, width]);
+
+  yRevOrigin = d3.scaleLinear()
+    .domain([1.1, -1.1])
+    .range([0, height]);
+  rescaleView(xRevOrigin, yRevOrigin);
 }
 
 function sleep(ms) {
@@ -212,6 +220,85 @@ function drawInit(sweepline, settings) {
     ;
 
   initDebugCircumcircle();
+}
+
+function getCurrentImgURL() {
+  var svgMain = document.getElementById('mainView');
+
+  var doctype = '<?xml version="1.0" standalone="no"?>'
+  + '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+
+  // serialize our SVG XML to a string.
+  var source = (new XMLSerializer()).serializeToString(svgMain);
+
+  // create a file blob of our SVG.
+  var blob = new Blob([ doctype + source], { type: 'image/svg+xml;charset=utf-8' });
+
+  return window.URL.createObjectURL(blob);
+}
+
+// TODO this should only be called
+// 1. on a setting change
+// 2. on a dataset change
+// TODO zoom and overview linking
+function updateOverview() {
+    if (g_settings.showOverview.value) {
+
+      var imageWidth = width/2;
+      var imageHeight = height/2;
+
+      var imgSvg = d3.select("#overviewBrushArea");
+          var selection = imgSvg.attr("width", imageWidth)
+          .attr("height", imageHeight)
+          .selectAll("image")
+          .data([0])
+          ;
+
+      selection.enter()
+        .append("svg:image")
+        .attr("xlink:href", getCurrentImgURL())
+        .attr("width", imageWidth)
+        .attr("height", imageHeight)
+        ;
+
+      // zoom brushing
+      imgSvg.call(
+        d3.brush().on("end", function() {
+          var sel = d3.brushSelection(this);
+          var x0 = xToGVD(sel[0][0] * 2);
+          var y0 = yToGVD(sel[0][1] * 2);
+          var x1 = xToGVD(sel[1][0] * 2);
+          var y1 = yToGVD(sel[1][1] * 2);
+          var scale;
+          if (Math.abs(x0 - x1) > Math.abs(y0 - y1)) {
+            scale = Math.abs(x0 - x1) / 2.2;
+          } else {
+            scale = Math.abs(y0 - y1) / 2.2;
+          }
+          console.log("brushed end x min - max:" + x0 + "-" + x1
+            + " y min - max:" + y0 + "-" + y1 + " scale:" + scale);
+
+          xRevOrigin = d3.scaleLinear()
+          .domain([x0, x1])
+          .range([0, width]); // this may need to change
+
+          yRevOrigin = d3.scaleLinear()
+          .domain([y0, y1])
+          .range([0, height]); // this may need to change
+
+          // d3.zoomIdentity.x = 0;
+          // d3.zoomIdentity.y = 0;
+          d3.zoomIdentity.scale(scale)
+
+          rescaleView(xRevOrigin, yRevOrigin);
+        })
+      );
+    } else {
+      d3.select("#overviewBrushArea")
+        .attr("width", 0)
+        .attr("height", 0)
+      ;
+    }
 }
 
 function enforceSettings() {
@@ -313,6 +400,7 @@ function enforceSettings() {
 function onSettingChecked(event) {
   g_settings[event.value].value = event.checked;
   rescaleView(xRev, yRev);
+  updateOverview();
   enforceSettings();
 }
 

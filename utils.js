@@ -235,6 +235,6 @@ function onSiteDrag() {
   render(true);
 }
 
-function setDebug(msg) {
-  document.getElementById("tree-debug").innerHTML = msg;
+function setTreeDebug(msg) {
+  console.log(msg);
 }
