@@ -21,6 +21,7 @@ let margin = {top: 50, right: 50, bottom: 50, left: 50},
 let svg;
 let xAxis;
 let yAxis;
+let g_overviewImg;
 
 let xRev = d3.scaleLinear()
     .domain([-1.1, 1.1])
@@ -223,6 +224,71 @@ function drawInit(sweepline, settings) {
 }
 
 function getCurrentImgURL() {
+  // image prep
+  d3.selectAll(".close-event")
+  .attr('visibility', 'hidden');
+
+  // show gvd vertices
+  d3.select("#gvd")
+  .selectAll(".gvd-edge-vertex")
+  .attr('r', 0);
+
+  // Show gvd segments/parabolas
+  d3.select('#gvd')
+  .selectAll('.gvd-surface-parabola')
+  .style("stroke-width", 0)
+  ;
+
+  d3.select('#gvd')
+  .selectAll('.gvd-surface')
+  .style("stroke-width", 0)
+  ;
+
+  // show sites
+  d3.select("#gvd")
+  .selectAll(".point-site")
+  .attr('r', 0);
+  ;
+
+  // show site segments
+  d3.select("#gvd")
+  .selectAll(".segment-site")
+  .style('stroke-width', g_isoEdgeWidth)
+  ;
+
+  // Medial Axis
+  d3.selectAll(".gvd-iso-surface")
+  .style("stroke-width", 0)
+  ;
+
+  d3.selectAll(".gvd-iso-surface-parabola")
+  .style("stroke-width", 0)
+  ;
+
+  d3.selectAll(".gvd-surface-active-parabola")
+  .style("stroke-width", 0)
+  ;
+
+  d3.selectAll(".gvd-surface-active")
+  .style("stroke-width", 0)
+  ;
+  // Tree
+  d3.select(g_treeId)
+  // .attr('visibility', g_settings.showTree.value ? null : 'hidden');
+  .attr('width', 0)
+  .attr('height', 0);
+
+  // beach line
+  d3.select("#gvd")
+  .selectAll(".beach-parabola")
+  .style("stroke-width", 0);
+  ;
+
+  d3.select("#gvd")
+  .selectAll(".beach-v")
+  .style("stroke-width", 0);
+  ;
+
   var svgMain = document.getElementById('mainView');
 
   var doctype = '<?xml version="1.0" standalone="no"?>'
@@ -234,6 +300,8 @@ function getCurrentImgURL() {
   // create a file blob of our SVG.
   var blob = new Blob([ doctype + source], { type: 'image/svg+xml;charset=utf-8' });
 
+  enforceSettings();
+
   return window.URL.createObjectURL(blob);
 }
 
@@ -242,63 +310,78 @@ function getCurrentImgURL() {
 // 2. on a dataset change
 // TODO zoom and overview linking
 function updateOverview() {
-    if (g_settings.showOverview.value) {
+  if (g_settings.showOverview.value) {
 
-      var imageWidth = width/2;
-      var imageHeight = height/2;
+    // TODO store current zoom settings
+    // reset view - export, restore zoom
 
-      var imgSvg = d3.select("#overviewBrushArea");
-          var selection = imgSvg.attr("width", imageWidth)
-          .attr("height", imageHeight)
-          .selectAll("image")
-          .data([0])
-          ;
+    var imageWidth = width/2;
+    var imageHeight = height/2;
 
-      selection.enter()
-        .append("svg:image")
-        .attr("xlink:href", getCurrentImgURL())
-        .attr("width", imageWidth)
+    g_overviewImg = {
+      w: imageWidth,
+      h: imageHeight,
+      url: getCurrentImgURL()
+    };
+
+    var imgSvg = d3.select("#overviewBrushArea");
+        var selection = imgSvg.attr("width", imageWidth)
         .attr("height", imageHeight)
+        .selectAll("image")
+        .data([g_overviewImg])
         ;
 
-      // zoom brushing
-      imgSvg.call(
-        d3.brush().on("end", function() {
-          var sel = d3.brushSelection(this);
-          var x0 = xToGVD(sel[0][0] * 2);
-          var y0 = yToGVD(sel[0][1] * 2);
-          var x1 = xToGVD(sel[1][0] * 2);
-          var y1 = yToGVD(sel[1][1] * 2);
-          var scale;
-          if (Math.abs(x0 - x1) > Math.abs(y0 - y1)) {
-            scale = Math.abs(x0 - x1) / 2.2;
-          } else {
-            scale = Math.abs(y0 - y1) / 2.2;
-          }
-          console.log("brushed end x min - max:" + x0 + "-" + x1
-            + " y min - max:" + y0 + "-" + y1 + " scale:" + scale);
+    // enter
+    selection.enter()
+    .append("svg:image")
+    .attr("xlink:href", d => d.url)
+    .attr("width", d => d.w)
+    .attr("height", d => d.h);
 
-          xRevOrigin = d3.scaleLinear()
-          .domain([x0, x1])
-          .range([0, width]); // this may need to change
+    // update
+    selection.attr("xlink:href", d => d.url)
+    .attr("width", d => d.w)
+    .attr("height", d => d.h)
+    ;
 
-          yRevOrigin = d3.scaleLinear()
-          .domain([y0, y1])
-          .range([0, height]); // this may need to change
+    // zoom brushing
+    imgSvg.call(
+      d3.brush().on("end", function() {
+        var sel = d3.brushSelection(this);
+        var x0 = xToGVD(sel[0][0] * 2);
+        var y0 = yToGVD(sel[0][1] * 2);
+        var x1 = xToGVD(sel[1][0] * 2);
+        var y1 = yToGVD(sel[1][1] * 2);
+        var scale;
+        if (Math.abs(x0 - x1) > Math.abs(y0 - y1)) {
+          scale = Math.abs(x0 - x1) / 2.2;
+        } else {
+          scale = Math.abs(y0 - y1) / 2.2;
+        }
+        console.log("brushed end x min - max:" + x0 + "-" + x1
+          + " y min - max:" + y0 + "-" + y1 + " scale:" + scale);
 
-          // d3.zoomIdentity.x = 0;
-          // d3.zoomIdentity.y = 0;
-          d3.zoomIdentity.scale(scale)
+        xRevOrigin = d3.scaleLinear()
+        .domain([x0, x1])
+        .range([0, width]); // this may need to change
 
-          rescaleView(xRevOrigin, yRevOrigin);
-        })
-      );
-    } else {
-      d3.select("#overviewBrushArea")
-        .attr("width", 0)
-        .attr("height", 0)
-      ;
-    }
+        yRevOrigin = d3.scaleLinear()
+        .domain([y0, y1])
+        .range([0, height]); // this may need to change
+
+        // d3.zoomIdentity.x = 0;
+        // d3.zoomIdentity.y = 0;
+        d3.zoomIdentity.scale(scale)
+
+        rescaleView(xRevOrigin, yRevOrigin);
+      })
+    );
+  } else {
+    d3.select("#overviewBrushArea")
+      .attr("width", 0)
+      .attr("height", 0)
+    ;
+  }
 }
 
 function enforceSettings() {

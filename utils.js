@@ -126,8 +126,8 @@ function processNewDataset() {
   var t1 = performance.now();
   var processTime = t1 - t0;
   console.log("Pre-process time:" + processTime.toFixed(6) + "(ms)");
-
   render();
+  updateOverview();
 }
 
 function x2win(x) {
