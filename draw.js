@@ -27,13 +27,13 @@ let xRev = d3.scaleLinear()
     .domain([-1.1, 1.1])
     .range([0, width]);
 
-let xRevOrigin = d3.scaleLinear()
-    .domain([-1.1, 1.1])
-    .range([0, width]);
-
 let yRev = d3.scaleLinear()
     .domain([1.1, -1.1])
     .range([0, height]);
+
+let xRevOrigin = d3.scaleLinear()
+    .domain([-1.1, 1.1])
+    .range([0, width]);
 
 let yRevOrigin = d3.scaleLinear()
     .domain([1.1, -1.1])
@@ -47,20 +47,11 @@ let xToGVD = d3.scaleLinear()
     .domain([0, width])
     .range([-1.1, 1.1]);
 
-let gvdToPixelXScale =  d3.scaleLinear()
-.domain([-1, 1])
-.range([0, width]);
-
-let gvdToPixelYScale =  d3.scaleLinear()
-.domain([1, -1])
-.range([0, height]);
-
   // Set the zoom and Pan features: how much you can zoom, on which part, and what to do when there is a zoom
 let zoom = d3.zoom()
   .scaleExtent([.5, ZOOM_EXTENT])
   .extent([[0, 0], [width, height]])
   .on("zoom", zoomed);
-
 
 /////////////// Handler Functions /////////////////
 
@@ -193,7 +184,7 @@ function drawInit(sweepline, settings) {
   svg.append("defs").append("svg:clipPath")
   .attr("id", "clip")
   .append("svg:rect")
-  .attr("width", width - (margin.left + margin.right))
+  .attr("width", width + 20)
   // .attr("width", width + margin.left + margin.right)
   .attr("height", height + 20)
   // .attr("height", height + margin.top + margin.bottom)
@@ -311,7 +302,7 @@ function getCurrentImgURL() {
 // TODO zoom and overview linking
 function updateOverview() {
   if (g_settings.showOverview.value) {
-
+    resetView();
     // TODO store current zoom settings
     // reset view - export, restore zoom
 
@@ -348,25 +339,37 @@ function updateOverview() {
     imgSvg.call(
       d3.brush().on("end", function() {
         var sel = d3.brushSelection(this);
-        var x0 = xToGVD(sel[0][0] * 2);
-        var y0 = yToGVD(sel[0][1] * 2);
-        var x1 = xToGVD(sel[1][0] * 2);
-        var y1 = yToGVD(sel[1][1] * 2);
+        var x0 = (sel[0][0] * 2);
+        var y0 = (sel[0][1] * 2);
+        var x1 = (sel[1][0] * 2);
+        var y1 = (sel[1][1] * 2);
+        // xToGVD, yToGVD
         var scale;
         if (Math.abs(x0 - x1) > Math.abs(y0 - y1)) {
           scale = Math.abs(x0 - x1) / 2.2;
+          // square based off of delta x
+          var delta2 = Math.abs(x0 - x1) / 2;
+          var cenY = (y0 + y1) / 2;
+          y0 = cenY - delta2;
+          y1 = cenY + delta2;
         } else {
           scale = Math.abs(y0 - y1) / 2.2;
+          var delta2 = Math.abs(y0 - y1) / 2;
+          var cenX = (x0 + x1) / 2;
+          x0 = cenX - delta2;
+          x1 = cenX + delta2;
         }
         console.log("brushed end x min - max:" + x0 + "-" + x1
           + " y min - max:" + y0 + "-" + y1 + " scale:" + scale);
 
+        // TODO clip?
+
         xRevOrigin = d3.scaleLinear()
-        .domain([x0, x1])
+        .domain([xToGVD(x0), xToGVD(x1)])
         .range([0, width]); // this may need to change
 
         yRevOrigin = d3.scaleLinear()
-        .domain([y0, y1])
+        .domain([yToGVD(y0), yToGVD(y1)])
         .range([0, height]); // this may need to change
 
         // d3.zoomIdentity.x = 0;
