@@ -168,8 +168,8 @@ function sortedInsertion(queue, newEvent) {
 // Create the queue for the current dataset
 function createDataQueue(reorder) {
   if (!reorder) {
-    if (g_queue[localStorage.g_dataset])
-      return [...g_queue[localStorage.g_dataset]];
+    if (g_queue[localStorage.setIdx.toString()])
+      return [...g_queue[localStorage.setIdx.toString()]];
   }
   var rslt = [];
   var points = [];
@@ -201,7 +201,7 @@ function createDataQueue(reorder) {
   });
 
   // create a clone of the result to access again
-  g_queue[localStorage.g_dataset] = [...rslt];
+  g_queue[localStorage.setIdx.toString()] = [...rslt];
   return rslt;
 }
 

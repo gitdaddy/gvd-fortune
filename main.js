@@ -7,53 +7,37 @@
 var g_sweepline = {x1: -1, x2:1, y: -1};
 var g_eventThresh = 1e-6;
 
-let g_datasets = {
-  'dataset1' : [], // file dataset loaded asynchronously
-  'dataset2' : [],
-  'dataset3' : [],
-  'dataset4' : [],
-  'dataset5' : [],
-  'dataset6' : [],
-  'dataset7' : [],
-  'dataset8' : [],
-  'dataset9' : [],
-  'dataset10' : [],
-  'dataset11' : [],
-  'dataset12' : [],
-  'dataset13' : [],
-  'dataset14' : [],
-  'dataset15' : [],
-  'dataset16' : [],
-  'dataset17' : [],
-  'dataset18' : [],
-  'dataset19' : [],
-  'dataset20' : []
-};
+// let g_datasets = [];
 
 let g_polygons = [];
 let g_queue = {};
 
-let g_fileDatasets = [
-  {key:"dataset1", label:"dataset1"},
-  {key:"dataset2", label:"dataset2 - 100 Random", num:100},
-  {key:"dataset3", label:"dataset3 - 200 Random", num:200},
-  {key:"dataset4", label:"dataset4 - 500 Random", num:500},
-  {key:"dataset5", label:"dataset5 - 1000 Random", num:1000},
-  {key:"dataset6", label:"dataset6 - Sydney city dataset", isMap: true, filename:"Sydney_2_512.map"},
-  {key:"dataset7", label:"dataset7 - Berlin city dataset", isMap: true, filename:"Berlin_0_256.map"},
-  {key:"dataset8", label:"dataset8 - Boston city dataset", isMap: true, filename:"Boston_0_256.map"},
-  {key:"dataset9", label:"dataset9 - Moscow city dataset", isMap: true, filename:"Moscow_1_256.map"},
-  {key:"dataset10", label:"dataset10 - Holes-64"},
-  {key:"dataset11", label:"dataset11 - Holes-128"},
-  {key:"dataset12", label:"dataset12 - Holes-256"},
-  {key:"dataset13", label:"dataset13 - Holes-512"},
-  {key:"dataset14", label:"dataset14 - Holes-1024"},
-  {key:"dataset15", label:"dataset15 - Holes-2048"},
-  {key:"dataset16", label:"dataset16 - Holes-4096"},
-  {key:"dataset17", label:"dataset17 - Holes-8192"},
-  {key:"dataset18", label:"dataset18 - Holes-16384"},
-  {key:"dataset19", label:"dataset19 - Holes-32768"},
-  {key:"dataset20", label:"dataset20"}
+let g_datasetList = [
+  {label:"Maze Dataset", filePath: "./data/maze/_files.txt"},
+  {label:"100 Random", num:100, filePath: "./data/random_100/_files.txt"},
+  {label:"200 Random", num:200, filePath: "./data/random_200/_files.txt"},
+  {label:"500 Random", num:500, filePath: "./data/random_500/_files.txt"},
+  {label:"1000 Random", num:1000, filePath: "./data/random_1000/_files.txt"},
+  {label:"Sydney city dataset", isMap: true, filename:"Sydney_2_512.map"}, // TODO add more versions
+  {label:"Berlin city dataset", isMap: true, filename:"Berlin_0_256.map"},
+  {label:"Boston city dataset", isMap: true, filename:"Boston_0_256.map"},
+  {label:"Moscow city dataset", isMap: true, filename:"Moscow_1_256.map"},
+  // {label:"Denver city dataset", isMap: true, filename:"Denver_0_256.map"}, // TODO FIX
+  // {label:"Milan city dataset", isMap: true, filename:"Milan_0_256.map"}, // TODO FIX
+  // {label:"NewYork city dataset", isMap: true, filename:"NewYork_1_256.map"}, // TODO FIX
+  // {label:"Paris city dataset", isMap: true, filename:"Paris_0_256.map"}, // TODO FIX
+  {label:"Shanghai city dataset", isMap: true, filename:"Shanghai_2_256.map"},
+  {label:"Holes-64", filePath: "./data/holes/h_64/_files.txt"},
+  {label:"Holes-128", filePath: "./data/holes/h_128/_files.txt"},
+  {label:"Holes-256", filePath: "./data/holes/h_256/_files.txt"},
+  {label:"Holes-512", filePath: "./data/holes/h_512/_files.txt"},
+  {label:"Holes-1024", filePath: "./data/holes/h_1024/_files.txt"},
+  {label:"Holes-2048", filePath: "./data/holes/h_2048/_files.txt"},
+  {label:"Holes-4096", filePath: "./data/holes/h_4096/_files.txt"},
+  {label:"Holes-8192", filePath: "./data/holes/h_8192/_files.txt"},
+  {label:"Holes-16384", filePath: "./data/holes/h_16384/_files.txt"},
+  {label:"Holes-32768", filePath: "./data/holes/h_32768/_files.txt"},
+  {label:"Data Testing"}
  ];
 
 let closeEventPoints = [];
@@ -169,50 +153,44 @@ function init() {
   document.onkeydown = keydown;
   document.getElementById("sweeplineInput").value = g_sweepline.y.toFixed(10);
 
-  _.forEach(g_fileDatasets, function (p) {
+  _.forEach(g_datasetList, function (p) {
     var option = document.createElement("option");
     option.text = p.label;
-    document.getElementById("g_dataset").add(option);
+    document.getElementById("dataset-select").add(option);
   });
 
-  // if (localStorage.g_dataset) {
-  //   document.getElementById("g_dataset").value = localStorage.g_dataset;
-  // }
-  document.getElementById("g_dataset").value = "dataset1";
-  datasetChange(document.getElementById("g_dataset").value);
+  var idx = 1;
+  if (localStorage.setIdx) {
+    var idx = localStorage.setIdx;
+  }
+  document.getElementById("dataset-select").selectedIndex = idx;
+  datasetChange(idx);
 }
 
-function datasetChange(value) {
-  console.log(value);
-  localStorage.g_dataset = value;
+function datasetChange(idx) {
+  localStorage.setIdx = idx;
 
-  var found = _.find(g_fileDatasets, function(f) { return f.label === value; });
-  if (found) {
-    if (g_datasets[found.key].length == 0) {
-      if (found.isMap) {
-        var query = '/map/?value=' + './data/maps/' + found.filename;
-        $.get(query).then(function (json) {
-          var polygons = parseInputMap(json);
-          // console.error("error not yet implemented");
-          g_datasets[found.key] = polygons;
-          g_polygons = polygons;
-          processNewDataset();
-        });
-      } else {
-        var query = '/data/?value=' + found.key;
-        $.get(query).then(function (json) {
-          var polygons = parseInputJSON(json);
-          g_datasets[found.key] = polygons;
-          g_polygons = polygons;
-          processNewDataset();
-        });
-      }
+  if (!g_datasetList[idx].data) {
+    if (g_datasetList[idx].isMap) {
+      var query = '/map/?value=' + './data/maps/' + g_datasetList[idx].filename;
+      $.get(query).then(function (json) {
+        var polygons = parseInputMap(json);
+        g_datasetList[idx].data = polygons;
+        g_polygons = polygons;
+        processNewDataset();
+      });
     } else {
-      g_polygons = g_datasets[found.key]; // load the cached data
-      processNewDataset();
+      var query = '/data/?value=' + g_datasetList[idx].filePath;
+      $.get(query).then(function (json) {
+        var polygons = parseInputJSON(json);
+        g_datasetList[idx].data = polygons;
+        g_polygons = polygons;
+        processNewDataset();
+      });
     }
   } else {
-    console.error("Unable to find dataset...");
+    g_polygons = g_datasetList[idx].data; // load the cached data
+    processNewDataset();
   }
 }
 

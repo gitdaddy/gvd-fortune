@@ -172,8 +172,6 @@ function dataCorrection(srcArray) {
     }
   }
 
-
-  // TODO repeat the process until there are no more linesToUpdate
   return objs;
 }
 
@@ -259,10 +257,6 @@ function sanitizeData(orderedPoints, optTolerance, optXoffset) {
   while(match) {
     orderedPoints[match.s2Idx].y -= getRandomAdjustment(orderedPoints, match);
     orderedPoints[match.s2Idx].adjusted = true;
-    // TODO apply random adjustment to x until there are no overlapping sites
-    // if (optXoffset) {
-    //   orderedPoints[match.s2Idx].x += Math.random() < 0.5 ? -optXoffset : optXoffset;
-    // }
     match = getMatch(orderedPoints);
   }
 
@@ -393,7 +387,7 @@ function parseInputMap(jsonStr) {
   // _.each(objs, function(o) { renderOutline(o, ctx) });
 
   // TODO FIND A better way to get rid of this
-  var found = _.find(g_fileDatasets, function(f) { return f.label === "dataset7 - Berlin city dataset"; });
+  var found = _.find(g_datasetList, function(f) { return f.label === "Berlin city dataset"; });
   if (found) {
     objs.splice(27, 1);
   }
@@ -524,5 +518,6 @@ function isColinear(p1, p2, p3, optTolerance) {
   polygons.push(p13);
   polygons.push(p14);
 
-  g_datasets["dataset20"] = polygons;
+  // the final dataset is reserved for manual testing
+  g_datasetList[g_datasetList.length - 1].data = polygons;
 }

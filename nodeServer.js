@@ -238,8 +238,6 @@ function holesWrite(numSegments, datasetIdx) {
     }
   }
 
-  // TODO rotate?
-
   var files = "";
   var count = 1;
   _.each(boxes, b => {
@@ -262,15 +260,14 @@ function holesWrite(numSegments, datasetIdx) {
   });
 }
 
-function getDatasetJson(set) {
+function getDatasetJson(path) {
   // read in the files
   var json = {};
   var polygons = [];
-  var path = './data/' + set + '.txt';
   var files = fs.readFileSync(path, 'utf-8').split('\n');
   files.forEach(file => {
     // comments don't need to be processed
-    if (file[0] !== '#') {
+    if (file[0] !== '#' && file.length !== 0) {
       var inputPoints = fs.readFileSync(file.trim(), 'utf-8').split('\n');
       var dataPoints = [];
       inputPoints = _.compact(inputPoints);
@@ -405,9 +402,8 @@ router.get('/', function(req, res) {
 });
 
 router.get('/data', function(req, res) {
-  var set = req.query.value;
   res.type('json');
-  res.json(getDatasetJson(set));
+  res.json(getDatasetJson(req.query.value));
 });
 
 router.get('/map', function(req, res) {
