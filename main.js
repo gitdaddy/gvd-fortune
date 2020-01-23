@@ -160,9 +160,9 @@ function init() {
   });
 
   var idx = 1;
-  if (localStorage.setIdx) {
-    var idx = localStorage.setIdx;
-  }
+  // if (localStorage.setIdx) {
+  //   var idx = localStorage.setIdx;
+  // }
   document.getElementById("dataset-select").selectedIndex = idx;
   datasetChange(idx);
 }

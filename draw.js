@@ -10,7 +10,7 @@ let g_pathStartElemIdx = undefined;
 var g_gvdVertices = [];
 
 // start, end, default
-let g_edgeColors = [ 'darkkhaki', 'limegreen', 'red', 'black'];
+let g_edgeColors = [ 'blue', 'limegreen', 'red', 'black'];
 
 const ZOOM_EXTENT = 200000;
 
@@ -95,8 +95,7 @@ function onEdgeVertexMouseOver(d, i) {
   });
 
   if (i != g_pathStartElemIdx && edges[0].tCost) {
-    highlightPath(edges[0], g_edgeColors[3]);
-    // highlightPath(edges[0], "blue");
+    highlightPath(edges[0], g_edgeColors[0]);
   }
 }
 
