@@ -202,63 +202,63 @@ function overlapsAny(x0, y0, x1, y1, lines) {
 //   });
 // }
 
-function holesWrite(numSegments, datasetIdx) {
-  // all bounds are within -1, 1
-  var dir = "./data/holes/h_" + numSegments + "/";
-  var boxes = [];
+// function holesWrite(numSegments, datasetIdx) {
+//   // all bounds are within -1, 1
+//   var dir = "./data/holes/h_" + numSegments + "/";
+//   var boxes = [];
 
-  var outerBox = [
-    [-.95, 0.95],
-    [.95, 0.95],
-    [.95, -0.95],
-    [-.95, -0.95],
-    [-.95, 0.95],
-  ];
-  boxes.push(outerBox);
+//   var outerBox = [
+//     [-.95, 0.95],
+//     [.95, 0.95],
+//     [.95, -0.95],
+//     [-.95, -0.95],
+//     [-.95, 0.95],
+//   ];
+//   boxes.push(outerBox);
 
-  var numHoles = (numSegments / 4) - 1;
-  var dim = Math.ceil(Math.sqrt(numHoles));
-  if ((dim + 1) === 0) throw "invalid hole dim";
-  var step = 1.9 / (dim + 1);
+//   var numHoles = (numSegments / 4) - 1;
+//   var dim = Math.ceil(Math.sqrt(numHoles));
+//   if ((dim + 1) === 0) throw "invalid hole dim";
+//   var step = 1.9 / (dim + 1);
 
-  var startCenter = [outerBox[0][0] + step, outerBox[0][1] - step];
-  for (var i = 0; i < dim; i++){
-    for (var j = 0; j < dim; j++){
-      if ((i+1) * (j+1) > numHoles) {
-        // console.log("i * j =" + i * j  +" > " + numHoles)
-        break;
-      }
-      var newCenter = [startCenter[0] + step*i, startCenter[1] - step*j];
-      var nw = [newCenter[0] - (step/3), newCenter[1] + (step/3)];
-      var ne = [newCenter[0] + (step/3), newCenter[1] + (step/3)];
-      var sw = [newCenter[0] + (step/3), newCenter[1] - (step/3)];
-      var se = [newCenter[0] - (step/3), newCenter[1] - (step/3)];
-      var newBox = [nw, ne, sw, se, nw];
-      boxes.push(newBox);
-    }
-  }
+//   var startCenter = [outerBox[0][0] + step, outerBox[0][1] - step];
+//   for (var i = 0; i < dim; i++){
+//     for (var j = 0; j < dim; j++){
+//       if ((i+1) * (j+1) > numHoles) {
+//         // console.log("i * j =" + i * j  +" > " + numHoles)
+//         break;
+//       }
+//       var newCenter = [startCenter[0] + step*i, startCenter[1] - step*j];
+//       var nw = [newCenter[0] - (step/3), newCenter[1] + (step/3)];
+//       var ne = [newCenter[0] + (step/3), newCenter[1] + (step/3)];
+//       var sw = [newCenter[0] + (step/3), newCenter[1] - (step/3)];
+//       var se = [newCenter[0] - (step/3), newCenter[1] - (step/3)];
+//       var newBox = [nw, ne, sw, se, nw];
+//       boxes.push(newBox);
+//     }
+//   }
 
-  var files = "";
-  var count = 1;
-  _.each(boxes, b => {
-    var data = "";
-    _.each(b, pt => {
-      data += `${pt[0]} ${pt[1]}\n`;
-    });
-    var filename = "box_" + count + ".txt";
-    files += dir + filename + "\n";
-    fs.writeFile(dir + filename, data, function (err) {
-      if (err) throw err;
-    });
-    count++;
-  });
+//   var files = "";
+//   var count = 1;
+//   _.each(boxes, b => {
+//     var data = "";
+//     _.each(b, pt => {
+//       data += `${pt[0]} ${pt[1]}\n`;
+//     });
+//     var filename = "box_" + count + ".txt";
+//     files += dir + filename + "\n";
+//     fs.writeFile(dir + filename, data, function (err) {
+//       if (err) throw err;
+//     });
+//     count++;
+//   });
 
-  console.log("writing holes dataset to file")
+//   console.log("writing holes dataset to file")
 
-  fs.writeFile(`./data/dataset${datasetIdx}.txt`, files, function (err) {
-    if (err) throw err;
-  });
-}
+//   fs.writeFile(`./data/dataset${datasetIdx}.txt`, files, function (err) {
+//     if (err) throw err;
+//   });
+// }
 
 function getDatasetJson(path) {
   // read in the files
@@ -424,16 +424,16 @@ router.get('/map', function(req, res) {
 //   rpgWrite(32);
 // });
 
-router.get('/holes', function(req, res) {
-  // holesWrite(64, 10);
-  // holesWrite(128, 11);
-  holesWrite(1024, 14);
-  // holesWrite(2048, 15);
-  holesWrite(4096, 16);
-  holesWrite(8192, 17);
-  holesWrite(16384, 18);
-  holesWrite(32768, 19);
-});
+// router.get('/holes', function(req, res) {
+//   // holesWrite(64, 10);
+//   // holesWrite(128, 11);
+//   holesWrite(1024, 14);
+//   // holesWrite(2048, 15);
+//   holesWrite(4096, 16);
+//   holesWrite(8192, 17);
+//   holesWrite(16384, 18);
+//   holesWrite(32768, 19);
+// });
 
 router.use(express.static(__dirname));
 

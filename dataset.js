@@ -513,10 +513,20 @@ function isColinear(p1, p2, p3, optTolerance) {
   var p14 = new Polygon();
   p14.addPoint(vec3(-0.12, 0.81, 0));
 
+  var p15 = new Polygon();
+  p15.addPoint(vec3(-0.62, 0.1, 0));
+  p15.addPoint(vec3(-0.42, -0.14, 0));
+  p15.addPoint(vec3(-0.82, -0.31, 0));
+
+  p15.createSegment(0,1);
+  p15.createSegment(1,2);
+  p15.createSegment(2,0);
+
   polygons.push(p11);
   polygons.push(p12);
   polygons.push(p13);
   polygons.push(p14);
+  polygons.push(p15);
 
   // the final dataset is reserved for manual testing
   g_datasetList[g_datasetList.length - 1].data = polygons;
