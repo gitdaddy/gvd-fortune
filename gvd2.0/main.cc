@@ -20,7 +20,6 @@ int main(int argc, char** argv)
 
   if (i.substr(i.size() - 4, i.size()) == ".map")
   {
-    // TODO process map
     processInputMap(i);
   }
   else
@@ -28,6 +27,8 @@ int main(int argc, char** argv)
     // Read in the dataset files
     processInputFiles(i);
   }
+
+  // infinite loop
 
   return 0;
 }
