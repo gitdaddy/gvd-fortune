@@ -16,19 +16,13 @@ int main(int argc, char** argv)
     return 0;
   }
 
+  // no map files
+
   std::string i(argv[1]);
+  // Read in the dataset files
+  processInputFiles(i);
 
-  if (i.substr(i.size() - 4, i.size()) == ".map")
-  {
-    processInputMap(i);
-  }
-  else
-  {
-    // Read in the dataset files
-    processInputFiles(i);
-  }
-
-  // infinite loop
+  // infinite loop to adjust the sweepline?
 
   return 0;
 }

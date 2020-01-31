@@ -113,6 +113,6 @@ class Polygon
     std::vector<Site> sites;
 };
 
-void processInputFiles(std::string const& inputFiles);
+std::vector<Polygon> processInputFiles(std::string const& inputFiles);
 
-void processInputMap(std::string const& inputFiles);
+// void processInputMap(std::string const& inputFiles);

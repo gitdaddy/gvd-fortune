@@ -24,9 +24,6 @@ function makeSegment(p1, p2, forceOrder = false) {
   // Always store vertex with greatest y value first.
   if (!forceOrder && p1[1] < p2[1]) {
     s = [p2, p1];
-    p1.isEndPoint = true;
-  } else {
-    p2.isEndPoint = true;
   }
 
   s.a = s[0];
