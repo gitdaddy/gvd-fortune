@@ -2,9 +2,10 @@
 
 #include <algorithm>
 #include <fstream>
-#include <vector>
-#include <sstream>
+#include <iostream>
 #include <memory>
+#include <sstream>
+#include <vector>
 
 namespace
 {
@@ -42,28 +43,20 @@ namespace
     // remove the last element since it is a circular list
     std::vector<vec2> rslt(orderedPoints.begin(), orderedPoints.end() - 1);
 
-    // if (orderedPoints[0].x == orderedPoints[orderedPoints.length-1].x
-    //   && orderedPoints[0].y == orderedPoints[orderedPoints.length-1].y)
-    // {
-    //   orderedPoints.splice(orderedPoints.length-1, 1);
-    // }
-
-    // order points should now be a unique set of points
-    // orderedPoints = _.uniqWith(orderedPoints, _.isEqual); // TODO performance
-
     for (size_t i = 0; i < rslt.size(); i++) {
       bool start = i == 0 ? rslt.size()-1 : i-1;
       auto p1 = rslt[start];
       auto p2 = rslt[i];
       auto p3 = rslt[(i+1)%rslt.size()]; // 2,3,0
-      if (isColinear(p1, p2, p3, optTolerance)) {
-        if (p1.y < p2.y && p1.y > p3.y || p1.y > p2.y && p1.y < p3.y) // p1
-          toRemove.push_back(start);
-        else if (p1.y < p2.y && p1.y > p3.y || p1.y > p2.y && p1.y < p3.y) // p2
-          toRemove.push_back(i);
-        else // use p3
-          toRemove.push_back((i+1)%rslt.size());
-      }
+      // if (isColinear(p1, p2, p3, optTolerance)) 
+      // {
+      //   if (p1.y < p2.y && p1.y > p3.y || p1.y > p2.y && p1.y < p3.y) // p1
+      //     toRemove.push_back(start);
+      //   else if (p1.y < p2.y && p1.y > p3.y || p1.y > p2.y && p1.y < p3.y) // p2
+      //     toRemove.push_back(i);
+      //   else // use p3
+      //     toRemove.push_back((i+1)%rslt.size());
+      // }
     }
 
     if (toRemove.size() > 0) {
@@ -81,7 +74,7 @@ namespace
     // place the ending back on
     // orderedPoints.push(orderedPoints[0]);
     // add the start/end point if it does not create a colinear line
-    return {removed: didRemove, points: orderedPoints};
+    return {didRemove, orderedPoints};
   }
 
   std::vector<vec2> removeCAS(std::vector<vec2> points, std::shared_ptr<double> pOptTolerance = nullptr)
@@ -93,19 +86,6 @@ namespace
     }
     return rslt.points;
   }
-}
-
-SegmentSite makeSegment(vec2 p1, vec2 p2, uint32_t label, bool forceOrder)
-{
-  // check for p1.y == p2.y?
-  // TESTING ONLY
-  if (p1.y == p2.y) throw std::runtime_error("Horizontal segment detected");
-
-  if (forceOrder)
-  {
-    return SegmentSite(label, p1, p2);
-  }
-  return p1.y > p2.y ? SegmentSite(label, p1, p2) : SegmentSite(label, p2, p1);
 }
 
 std::vector<vec2> sanitizeData(std::vector<vec2> orderedPoints, std::shared_ptr<double> pOptTolerance = nullptr)
