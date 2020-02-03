@@ -1,5 +1,9 @@
+#ifndef TYPES_HH
+#define TYPES_HH
+
 #include <string>
 #include <vector>
+#include <iostream>
 
 static uint32_t g_id = 0;
 static uint32_t g_labelCount = 0;
@@ -8,15 +12,23 @@ static uint32_t g_labelCount = 0;
 
 struct vec2
 {
+  vec2(double _x, double _y) : x(_x), y(_y) {}
   double x;
   double y;
+};
+
+enum class EventType_e
+{
+  SEG = 1,
+  POINT = 2,
+  CLOSE = 3
 };
 
 class Event
 {
 public:
-  Event(bool isSegmentSite, uint32_t l)
-      : isSeg(isSegmentSite), id(g_id++), label(l) {}
+  Event(EventType_e _type, uint32_t l)
+      : type(_type), id( 123 /* g_id++ */), label(l) {}
 
   virtual double x() const
   {
@@ -45,7 +57,7 @@ public:
   uint32_t getLabel() { return label; }
 
 private:
-  bool isSeg;
+  EventType_e type;
   uint32_t id;
   uint32_t label;
 };
@@ -53,7 +65,7 @@ private:
 class PointSite : public Event
 {
 public:
-  PointSite(uint32_t label, vec2 loc) : Event(false, label), value(loc) {}
+  PointSite(uint32_t label, vec2 loc) : Event(EventType_e::POINT, label), value(loc) {}
 
   double x() const override
   {
@@ -74,7 +86,7 @@ private:
 class SegmentSite : public Event
 {
 public:
-  SegmentSite(uint32_t label, vec2 _a, vec2 _b) : Event(true, label), locA(_a), locB(_b) {}
+  SegmentSite(uint32_t label, vec2 _a, vec2 _b) : Event(EventType_e::SEG, label), locA(_a), locB(_b) {}
 
   vec2 a() const override
   {
@@ -94,11 +106,16 @@ private:
 class CloseEvent : public Event
 {
 public:
-  CloseEvent(uint32_t label, vec2 _a, vec2 _b) : Event(false, label), locA(_a), locB(_b) {}
+  CloseEvent(uint32_t label, vec2 _a, vec2 _b) : Event(EventType_e::CLOSE, label), locA(_a), locB(_b) {}
 
   vec2 a() const override
   {
     return locA;
+  }
+
+  double y() const override
+  {
+    return std::max(locA.y, locB.y);
   }
 
   vec2 b() const override
@@ -112,24 +129,12 @@ private:
 };
 
 // SegmentSite makeSegment(vec2 p1, vec2 p2, uint32_t label, bool forceOrder = false);
-SegmentSite makeSegment(vec2 p1, vec2 p2, uint32_t label, bool forceOrder = false)
-{
-  // check for p1.y == p2.y?
-  // TESTING ONLY
-  if (p1.y == p2.y)
-    throw std::runtime_error("Horizontal segment detected");
-
-  if (forceOrder)
-  {
-    return SegmentSite(label, p1, p2);
-  }
-  return p1.y > p2.y ? SegmentSite(label, p1, p2) : SegmentSite(label, p2, p1);
-}
+SegmentSite makeSegment(vec2 p1, vec2 p2, uint32_t label, bool forceOrder = false);
 
 class Polygon
 {
 public:
-  Polygon() : label(g_labelCount++) {}
+  Polygon() : label(123/* g_labelCount++ */) {}
 
   void addPoint(vec2 const &loc)
   {
@@ -146,19 +151,4 @@ private:
   std::vector<Event> sites;
 };
 
-struct Line
-{
-  Line(vec2 const &a, vec2 const &b)
-  {
-    p1 = a;
-    p2 = b;
-
-    v.x = b.x - a.x;
-    v.y = b.y - a.y;
-    // TODO normalize v
-  }
-
-  vec2 p1;
-  vec2 p2;
-  vec2 v;
-};
+#endif

@@ -256,7 +256,6 @@ function sanitizeData(orderedPoints, optTolerance, optXoffset) {
   var match = getMatch(orderedPoints);
   while(match) {
     orderedPoints[match.s2Idx].y -= getRandomAdjustment(orderedPoints, match);
-    orderedPoints[match.s2Idx].adjusted = true;
     match = getMatch(orderedPoints);
   }
 

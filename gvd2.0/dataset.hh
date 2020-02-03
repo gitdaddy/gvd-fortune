@@ -1,7 +1,11 @@
+#ifndef DATASET_HH
+#define DATASET_HH
+
 #include <string>
 #include <vector>
-#include "types.hh"
+
+class Polygon;
 
 std::vector<Polygon> processInputFiles(std::string const& inputFiles);
 
-// void processInputMap(std::string const& inputFiles);
+#endif

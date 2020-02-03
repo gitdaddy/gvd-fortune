@@ -1,20 +1,20 @@
 CXX=g++
 RM=rm -f
 
-gvdExe: main.o dataset.o math.o types.o
-	g++ -o gvdExe main.o dataset.o
+gvdExe:  types.o math.o dataset.o main.o
+	g++ -o gvdExe types.o math.o dataset.o main.o
 
-main.o: main.cc
-	g++ -c main.cc
-
-dataset.o: dataset.cc dataset.hh
-	g++ -c dataset.cc
+types.o: types.cc types.hh
+	g++ -c types.cc
 
 math.o: math.cc math.hh
 	g++ -c math.cc
 
-types.o: types.hh
-	g++ -c types.hh
+dataset.o: dataset.cc dataset.hh
+	g++ -c dataset.cc
+
+main.o: main.cc
+	g++ -c main.cc
 
 clean:
-	$(RM) *.o
+	$(RM) *.o *.gch

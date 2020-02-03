@@ -1,4 +1,6 @@
 #include "dataset.hh"
+#include "math.hh"
+#include "types.hh"
 
 #include <algorithm>
 #include <fstream>
@@ -35,7 +37,38 @@ namespace
     std::vector<vec2> points;
   };
 
-  RemovedResult removeColinearPoints(std::vector<vec2> const& orderedPoints, std::shared_ptr<double> pOptTolerance = nullptr)
+  bool isColinear(vec2 const& p1,vec2 const& p2, vec2 const& p3, std::shared_ptr<double> pOptTolerance = nullptr)
+  {
+    auto v1 = vec2(p2.x - p1.x, p2.y - p1.y);
+    auto v2 = vec2(p3.x - p1.x, p3.y - p1.y);
+    auto c = math::crossProduct(v1, v2);
+    if (pOptTolerance)
+    {
+      return std::abs(c) < *pOptTolerance;
+    }
+
+    return c == 0;
+  }
+
+  std::vector<size_t> getMatch(std::vector<vec2> const& dataPoints)
+  {
+    for (size_t i = 1; i < dataPoints.size(); i++)
+    {
+      if (math::equivD(dataPoints[i].y, dataPoints[i-1].y))
+        return { i-1, i };
+    }
+    return {};
+  }
+
+  double getOffsetValue(std::vector<vec2> const& dataPoints, std::vector<size_t> const& match)
+  {
+    auto xDiff = std::abs(dataPoints[match[0]].x - dataPoints[match[0]].x);
+    auto value = xDiff * 0.007;
+    if (value == 0.0) {return 1e-6;}
+    return value;
+  }
+
+  RemovedResult removeColinearPoints(std::vector<vec2>& orderedPoints, std::shared_ptr<double> pOptTolerance = nullptr)
   {
     bool didRemove = false;
     vec2 finalPoint = orderedPoints[orderedPoints.size() - 1];
@@ -48,15 +81,15 @@ namespace
       auto p1 = rslt[start];
       auto p2 = rslt[i];
       auto p3 = rslt[(i+1)%rslt.size()]; // 2,3,0
-      // if (isColinear(p1, p2, p3, optTolerance)) 
-      // {
-      //   if (p1.y < p2.y && p1.y > p3.y || p1.y > p2.y && p1.y < p3.y) // p1
-      //     toRemove.push_back(start);
-      //   else if (p1.y < p2.y && p1.y > p3.y || p1.y > p2.y && p1.y < p3.y) // p2
-      //     toRemove.push_back(i);
-      //   else // use p3
-      //     toRemove.push_back((i+1)%rslt.size());
-      // }
+      if (isColinear(p1, p2, p3, pOptTolerance))
+      {
+        if (p1.y < p2.y && p1.y > p3.y || p1.y > p2.y && p1.y < p3.y) // p1
+          toRemove.push_back(start);
+        else if (p1.y < p2.y && p1.y > p3.y || p1.y > p2.y && p1.y < p3.y) // p2
+          toRemove.push_back(i);
+        else // use p3
+          toRemove.push_back((i+1)%rslt.size());
+      }
     }
 
     if (toRemove.size() > 0) {
@@ -72,8 +105,9 @@ namespace
       didRemove = true;
     }
     // place the ending back on
-    // orderedPoints.push(orderedPoints[0]);
     // add the start/end point if it does not create a colinear line
+    if (isColinear(orderedPoints[orderedPoints.size()], finalPoint, orderedPoints[0]))
+      orderedPoints.push_back(finalPoint);
     return {didRemove, orderedPoints};
   }
 
@@ -95,7 +129,12 @@ std::vector<vec2> sanitizeData(std::vector<vec2> orderedPoints, std::shared_ptr<
     orderedPoints = removeCAS(orderedPoints, pOptTolerance);
   }
 
-  // TODO Horizontal adjust
+  auto match = getMatch(orderedPoints);
+  while(match.size() > 0)
+  {
+    orderedPoints[match[0]].y -= getOffsetValue(orderedPoints, match);
+    match = getMatch(orderedPoints);
+  }
   return orderedPoints;
 }
 
@@ -150,9 +189,3 @@ std::vector<Polygon> processInputFiles(std::string const& inputFiles)
   std::cout << "Num Polygons:" << polygons.size() << std::endl;
   return polygons;
 }
-
-// void processInputMap(std::string const& /* inputMap */)
-// {
-//   std::cout << "processing input map\n";
-//     // TODO process map
-// }

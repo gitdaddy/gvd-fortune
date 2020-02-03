@@ -56,7 +56,7 @@ function getPointsLeftOfLine(a, b, points) {
 }
 
 function dividesRightOfLine(a1, b1, a2, b2) {
-  return isRightOfLine(a1, b1, a2) && isRightOfLine(a1, b1, b2)
+  return isRightOfLine(a1, b1, a2) && isRightOfLine(a1, b1, b2);
 }
 
 function isRightOfLine(upper, lower, p) {

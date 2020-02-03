@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "dataset.hh"
+#include "types.hh"
 
 // void fortune()
 // {
