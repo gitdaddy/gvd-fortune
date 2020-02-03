@@ -1,20 +1,23 @@
 CXX=g++
+# compile in debug
+# CPPFLAGS=-g
+# -g -compile with debug symbols
 RM=rm -f
 
 gvdExe:  types.o math.o dataset.o main.o
-	g++ -o gvdExe types.o math.o dataset.o main.o
+	g++ -g -o gvdExe types.o math.o dataset.o main.o
 
 types.o: types.cc types.hh
-	g++ -c types.cc
+	g++ -g -c types.cc
 
 math.o: math.cc math.hh
-	g++ -c math.cc
+	g++ -g -c math.cc
 
 dataset.o: dataset.cc dataset.hh
-	g++ -c dataset.cc
+	g++ -g -c dataset.cc
 
 main.o: main.cc
-	g++ -c main.cc
+	g++ -g -c main.cc
 
 clean:
 	$(RM) *.o *.gch

@@ -28,7 +28,7 @@ class Event
 {
 public:
   Event(EventType_e _type, uint32_t l)
-      : type(_type), id( 123 /* g_id++ */), label(l) {}
+      : type(_type), id(g_id++), label(l) {}
 
   virtual double x() const
   {
@@ -55,6 +55,8 @@ public:
   }
 
   uint32_t getLabel() { return label; }
+
+  EventType_e getType() { return type; }
 
 private:
   EventType_e type;
@@ -134,7 +136,7 @@ SegmentSite makeSegment(vec2 p1, vec2 p2, uint32_t label, bool forceOrder = fals
 class Polygon
 {
 public:
-  Polygon() : label(123/* g_labelCount++ */) {}
+  Polygon() : label(g_labelCount++) {}
 
   void addPoint(vec2 const &loc)
   {
@@ -145,6 +147,8 @@ public:
   {
     sites.push_back(makeSegment(a, b, label));
   }
+
+  std::vector<Event> getSites() { return sites; }
 
 private:
   uint32_t label;
