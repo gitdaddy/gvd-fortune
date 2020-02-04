@@ -80,10 +80,21 @@ public:
     return value.y;
   }
 
-  vec2 getValue() { return value; }
+  void addToY(double toAdd) { value.y + toAdd; }
+
+  vec2 getValue() const { return value; }
 
 private:
   vec2 value;
+};
+
+struct point_site_less_than
+{
+  inline bool operator() (const PointSite& lhs, const PointSite& rhs)
+  {
+    // Y major, x minor
+    return (lhs.y() < rhs.y() || lhs.x() < rhs.x());
+  }
 };
 
 class SegmentSite : public Event
@@ -139,21 +150,34 @@ class Polygon
 public:
   Polygon() : label(g_labelCount++) {}
 
-  void addPoint(vec2 const &loc)
+  void addPoint(vec2 const& loc)
   {
-    sites.push_back(std::make_shared<PointSite>(label, loc));
+    orderedPointSites.push_back(std::make_shared<PointSite>(label, loc));
   }
 
-  void addSegment(vec2 a, vec2 b)
+  std::vector<std::shared_ptr<PointSite>> getPointSites() const { return orderedPointSites; }
+
+  std::vector<std::shared_ptr<Event>> getSegments()
   {
-    sites.push_back(makeSegment(a, b, label));
+    std::vector<std::shared_ptr<Event>> rslt;
+    auto p1 = vec2(orderedPointSites[0]->x(), orderedPointSites[0]->y());
+    for (size_t i = 1; i < orderedPointSites.size(); ++i)
+    {
+      auto p2 = vec2(orderedPointSites[i]->x(), orderedPointSites[i]->y());
+      rslt.push_back(makeSegment(p1, p2, label));
+      p1 = p2;
+    }
+    auto start = vec2(orderedPointSites[0]->x(), orderedPointSites[0]->y());
+    // terminate the wrap around
+    rslt.push_back(makeSegment(start, p1, label));
   }
 
-  std::vector<std::shared_ptr<Event>> getSites() { return sites; }
+  uint32_t getLabel() { return label; }
 
 private:
   uint32_t label;
-  std::vector<std::shared_ptr<Event>> sites;
+  std::vector<std::shared_ptr<PointSite>> orderedPointSites;
+
 };
 
 #endif

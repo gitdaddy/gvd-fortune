@@ -191,25 +191,15 @@ std::vector<Polygon> processInputFiles(std::string const& inputFiles)
     Polygon poly;
     if (uPts.size() > 2)
     {
-      auto p1 = uPts[0];
-      poly.addPoint(p1);
-
       for (size_t i = 1; i < uPts.size(); ++i)
       {
-        auto p2 = uPts[i];
-        poly.addPoint(p2);
-        poly.addSegment(p1,p2);
-        p1 = p2;
+        poly.addPoint(uPts[i]);
       }
-
-      // terminate the wrap around
-      poly.addSegment(uPts[0], p1);
     }
     else if (uPts.size() == 2 && !math::equiv2(uPts[0], uPts[1]))
     {
       poly.addPoint(uPts[0]);
       poly.addPoint(uPts[1]);
-      poly.addSegment(uPts[0],uPts[1]);
     }
     else if (uPts.size() == 1 || math::equiv2(uPts[0], uPts[1]))
     {

@@ -4,7 +4,7 @@ CXX=g++
 # -g -compile with debug symbols
 RM=rm -f
 
-gvdExe:  types.o math.o dataset.o main.o
+gvdExe:  types.o math.o utils.o dataset.o main.o
 	g++ -g -o gvdExe types.o math.o dataset.o main.o
 
 types.o: types.cc types.hh
@@ -12,6 +12,9 @@ types.o: types.cc types.hh
 
 math.o: math.cc math.hh
 	g++ -g -c math.cc
+
+utils.o: utils.cc utils.hh
+	g++ -g -c utils.cc
 
 dataset.o: dataset.cc dataset.hh
 	g++ -g -c dataset.cc
