@@ -18,31 +18,40 @@ int main(int argc, char** argv)
     return 0;
   }
 
-  // no map files
-
   std::string i(argv[1]);
   // Read in the dataset files
-  auto polygons = processInputFiles(i);
-
-  // infinite loop to adjust the sweepline?
-
-  std::ofstream ofs("out.txt", std::ofstream::out | std::ios_base::trunc);
-  for (auto&& p : polygons)
+  try
   {
-    ofs << "poly \n";
-    for (auto&& s : p.getSites())
-    {
-      if (EventType_e::POINT == s.getType())
-      {
-        ofs << s.x() << " " << s.y() << "\n";
-      }
-      else if (EventType_e::SEG == s.getType())
-      {
-        ofs << s.a().x << " " << s.a().y << " -> " << s.b().x << " " << s.b().y << "\n";
-      }
-    }
+    auto polygons = processInputFiles(i);
+
+    // std::cout << "test print\n";
+    // // infinite loop to adjust the sweepline?
+    // std::ofstream ofs("./out.txt", std::ofstream::out | std::ios_base::trunc);
+    // for (auto&& p : polygons)
+    // {
+    //   ofs << "poly \n";
+    //   for (auto&& pS : p.getSites())
+    //   {
+    //     if (EventType_e::POINT == pS->getType())
+    //     {
+    //       ofs << pS->x() << " " << pS->y() << "\n";
+    //     }
+    //     else if (EventType_e::SEG == pS->getType())
+    //     {
+    //       ofs << pS->a().x << " " << pS->a().y << " -> " << pS->b().x << " " << pS->b().y << "\n";
+    //     }
+    //   }
+    // }
+    // ofs.close();
   }
-  ofs.close();
+  catch(const std::exception& e)
+  {
+    std::cout << e.what() << '\n';
+  }
+  catch(...)
+  {
+    std::cout << "Unknown error\n";
+  }
 
   return 0;
 }

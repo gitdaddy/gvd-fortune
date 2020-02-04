@@ -11,6 +11,22 @@
 
 namespace
 {
+
+  struct SortableVec2
+  {
+    vec2 v;
+    size_t idx;
+  };
+
+  struct vec2_less_than
+  {
+    inline bool operator() (const SortableVec2& struct1, const SortableVec2& struct2)
+    {
+      // Y major, x minor
+      return (struct1.v.y < struct2.v.y || struct1.v.x < struct2.v.x);
+    }
+  };
+
   /////////////////////////// Helper Functions //////////////////////////////////////////
 
   std::vector<std::string> split(const std::string& s, char delimiter)
@@ -52,10 +68,11 @@ namespace
 
   std::vector<size_t> getMatch(std::vector<vec2> const& dataPoints)
   {
-    for (size_t i = 1; i < dataPoints.size(); i++)
+    for (size_t i = 0; i < dataPoints.size(); i++)
     {
-      if (math::equivD(dataPoints[i].y, dataPoints[i-1].y))
-        return { i-1, i };
+      size_t prevIdx = i == 0 ? dataPoints.size()-1 : i-1;
+      if (math::equivD(dataPoints[i].y, dataPoints[prevIdx].y))
+        return { prevIdx, i };
     }
     return {};
   }
@@ -68,47 +85,46 @@ namespace
     return value;
   }
 
-  RemovedResult removeColinearPoints(std::vector<vec2>& orderedPoints, std::shared_ptr<double> pOptTolerance = nullptr)
+  RemovedResult removeColinearPoints(std::vector<vec2> const& points, std::shared_ptr<double> pOptTolerance = nullptr)
   {
     bool didRemove = false;
-    vec2 finalPoint = orderedPoints[orderedPoints.size() - 1];
     std::vector<size_t> toRemove;
-    // remove the last element since it is a circular list
-    std::vector<vec2> rslt(orderedPoints.begin(), orderedPoints.end() - 1);
+    std::vector<vec2> afterRemove;
 
-    for (size_t i = 0; i < rslt.size(); i++) {
-      bool start = i == 0 ? rslt.size()-1 : i-1;
-      auto p1 = rslt[start];
-      auto p2 = rslt[i];
-      auto p3 = rslt[(i+1)%rslt.size()]; // 2,3,0
+    for (size_t i = 0; i < points.size(); i++) {
+      size_t start = i == 0 ? points.size()-1 : i-1;
+      size_t c = (i+1)%points.size();
+      auto p1 = points[start];
+      auto p2 = points[i];
+      auto p3 = points[c]; // 2,3,0
       if (isColinear(p1, p2, p3, pOptTolerance))
       {
-        if (p1.y < p2.y && p1.y > p3.y || p1.y > p2.y && p1.y < p3.y) // p1
-          toRemove.push_back(start);
-        else if (p1.y < p2.y && p1.y > p3.y || p1.y > p2.y && p1.y < p3.y) // p2
-          toRemove.push_back(i);
-        else // use p3
-          toRemove.push_back((i+1)%rslt.size());
+        std::vector<SortableVec2> l{{p1, start}, {p2, i}, {p3, c}};
+        std::sort(l.begin(), l.end(), vec2_less_than());
+        toRemove.push_back(l[1].idx);
       }
     }
 
     if (toRemove.size() > 0) {
-      std::vector<vec2> afterRemove;
-      for (size_t j = 0; j < rslt.size(); ++j)
+      for (size_t j = 0; j < points.size(); ++j)
       {
         if (std::find(toRemove.begin(), toRemove.end(), j) == toRemove.end())
         {
           // does not contain j
-          afterRemove.push_back(rslt[j]);
+          afterRemove.push_back(points[j]);
         }
       }
+
       didRemove = true;
     }
     // place the ending back on
     // add the start/end point if it does not create a colinear line
-    if (isColinear(orderedPoints[orderedPoints.size()], finalPoint, orderedPoints[0]))
-      orderedPoints.push_back(finalPoint);
-    return {didRemove, orderedPoints};
+    // if (isColinear(orderedPoints[orderedPoints.size()], finalPoint, orderedPoints[0]))
+    //   orderedPoints.push_back(finalPoint);
+    if (didRemove)
+      return {didRemove, afterRemove};
+    else
+      return {didRemove, points};
   }
 
   std::vector<vec2> removeCAS(std::vector<vec2> points, std::shared_ptr<double> pOptTolerance = nullptr)
@@ -116,19 +132,20 @@ namespace
     auto rslt = removeColinearPoints(points, pOptTolerance);
     while(rslt.removed)
     {
-      rslt = removeColinearPoints(points, pOptTolerance);
+      rslt = removeColinearPoints(rslt.points, pOptTolerance);
     }
     return rslt.points;
   }
 }
 
-std::vector<vec2> sanitizeData(std::vector<vec2> orderedPoints, std::shared_ptr<double> pOptTolerance = nullptr)
+std::vector<vec2> sanitizeData(std::vector<vec2>& orderedPoints, std::shared_ptr<double> pOptTolerance = nullptr)
 {
   if (orderedPoints.size() > 3)
   {
     orderedPoints = removeCAS(orderedPoints, pOptTolerance);
   }
 
+  if (orderedPoints.size() < 2) return orderedPoints;
   auto match = getMatch(orderedPoints);
   while(match.size() > 0)
   {
@@ -147,6 +164,7 @@ std::vector<Polygon> processInputFiles(std::string const& inputFiles)
   std::string filePath;
   while(fin >> filePath)
   {
+    if (filePath.empty()) continue;
     // trim?
     // each file of format
     // xxxxx yyyyyyy - p1
@@ -161,27 +179,42 @@ std::vector<Polygon> processInputFiles(std::string const& inputFiles)
     }
 
     std::vector<vec2> points;
+    // skip the first line since it is the same as the last
     for (size_t i = 1; i < lines.size(); ++i)
     {
       points.push_back(parseLineToVec2(lines[i]));
     }
 
-    sanitizeData(points);
+    auto uPts = sanitizeData(points);
 
+    // we assume point sets greater than 2 are a closed polygon
     Polygon poly;
-    auto p1 = points[0];
-    poly.addPoint(p1);
-
-    for (size_t i = 1; i < points.size() - 1; ++i)
+    if (uPts.size() > 2)
     {
-      auto p2 = points[i];
-      poly.addPoint(p2);
-      poly.addSegment(p1,p2);
-      p1 = p2;
-    }
+      auto p1 = uPts[0];
+      poly.addPoint(p1);
 
-    // terminate the wrap around
-    poly.addSegment(points[0], p1);
+      for (size_t i = 1; i < uPts.size(); ++i)
+      {
+        auto p2 = uPts[i];
+        poly.addPoint(p2);
+        poly.addSegment(p1,p2);
+        p1 = p2;
+      }
+
+      // terminate the wrap around
+      poly.addSegment(uPts[0], p1);
+    }
+    else if (uPts.size() == 2 && !math::equiv2(uPts[0], uPts[1]))
+    {
+      poly.addPoint(uPts[0]);
+      poly.addPoint(uPts[1]);
+      poly.addSegment(uPts[0],uPts[1]);
+    }
+    else if (uPts.size() == 1 || math::equiv2(uPts[0], uPts[1]))
+    {
+      poly.addPoint(uPts[0]);
+    }
 
     polygons.push_back(poly);
   }

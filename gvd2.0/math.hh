@@ -48,6 +48,11 @@ namespace math
                     error_factor;
   }
 
+  inline bool equiv2(vec2 const& a, vec2 const& b)
+  {
+    return equivD(a.x, b.x) && equivD(a.y, b.y);
+  }
+
   bool isRightOfLine(vec2 const& upper, vec2 const& lower, vec2 const& p);
 
   std::vector<vec2> getPointsRightOfLine(vec2 const& a, vec2 const& b, std::vector<vec2> points);

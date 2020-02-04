@@ -1,9 +1,10 @@
 #ifndef TYPES_HH
 #define TYPES_HH
 
+#include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
-#include <iostream>
 
 static uint32_t g_id = 0;
 static uint32_t g_labelCount = 0;
@@ -131,7 +132,7 @@ private:
 };
 
 // SegmentSite makeSegment(vec2 p1, vec2 p2, uint32_t label, bool forceOrder = false);
-SegmentSite makeSegment(vec2 p1, vec2 p2, uint32_t label, bool forceOrder = false);
+std::shared_ptr<SegmentSite> makeSegment(vec2 p1, vec2 p2, uint32_t label, bool forceOrder = false);
 
 class Polygon
 {
@@ -140,7 +141,7 @@ public:
 
   void addPoint(vec2 const &loc)
   {
-    sites.push_back(PointSite(label, loc));
+    sites.push_back(std::make_shared<PointSite>(label, loc));
   }
 
   void addSegment(vec2 a, vec2 b)
@@ -148,11 +149,11 @@ public:
     sites.push_back(makeSegment(a, b, label));
   }
 
-  std::vector<Event> getSites() { return sites; }
+  std::vector<std::shared_ptr<Event>> getSites() { return sites; }
 
 private:
   uint32_t label;
-  std::vector<Event> sites;
+  std::vector<std::shared_ptr<Event>> sites;
 };
 
 #endif
