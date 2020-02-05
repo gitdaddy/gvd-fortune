@@ -90,10 +90,10 @@ private:
 
 struct point_site_less_than
 {
-  inline bool operator() (const PointSite& lhs, const PointSite& rhs)
+  inline bool operator() (std::shared_ptr<PointSite> const& lhs, std::shared_ptr<PointSite> const& rhs)
   {
     // Y major, x minor
-    return (lhs.y() < rhs.y() || lhs.x() < rhs.x());
+    return (lhs->y() < rhs->y() || lhs->x() < rhs->x());
   }
 };
 
