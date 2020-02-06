@@ -5,7 +5,7 @@ CXX=g++
 RM=rm -f
 
 gvdExe:  types.o math.o utils.o dataset.o main.o
-	g++ -g -o gvdExe types.o math.o dataset.o main.o
+	g++ -g -o gvdExe types.o math.o utils.o dataset.o main.o
 
 types.o: types.cc types.hh
 	g++ -g -c types.cc

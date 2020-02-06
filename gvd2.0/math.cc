@@ -2,12 +2,12 @@
 
 namespace math
 {
-  double getEventY(Event const& e)
+  decimal_t getEventY(Event const& e)
   {
     return e.y();
   }
 
-  double crossProduct(vec2 const& v1, vec2 const& v2)
+  decimal_t crossProduct(vec2 const& v1, vec2 const& v2)
   {
     return v1.x * v2.y - v1.y * v2.x;
   }
@@ -48,9 +48,9 @@ namespace math
   }
 
 
-  std::vector<double> quadratic(double const& a, double const& b, double const& c)
+  std::vector<decimal_t> quadratic(decimal_t const& a, decimal_t const& b, decimal_t const& c)
   {
-    double thresh = 1e-3;
+    decimal_t thresh = 1e-3;
     if (a == 0.0) return {0.0};
     auto disc = b * b - 4 * a * c;
     if (disc < -thresh) {
@@ -100,7 +100,7 @@ namespace math
     return result;
   }
 
-  std::vector<double> lpIntersect(double h, double k, double p, vec2 const& q, vec2 const& v)
+  std::vector<decimal_t> lpIntersect(decimal_t h, decimal_t k, decimal_t p, vec2 const& q, vec2 const& v)
   {
     auto a = v.x * v.x / (4 * p);
     auto b = 2 * v.x * (q.x - h) / (4 * p) - v.y;
@@ -109,7 +109,7 @@ namespace math
     return tvals;
   }
 
-  std::vector<vec2> ppIntersect(double h1, double k1, double p1, double h2, double k2, double p2)
+  std::vector<vec2> ppIntersect(decimal_t h1, decimal_t k1, decimal_t p1, decimal_t h2, decimal_t k2, decimal_t p2)
   {
     // Check for degenerate parabolas
     // WATCH VALUE

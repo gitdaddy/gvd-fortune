@@ -53,7 +53,7 @@ namespace
     std::vector<vec2> points;
   };
 
-  bool isColinear(vec2 const& p1,vec2 const& p2, vec2 const& p3, std::shared_ptr<double> pOptTolerance = nullptr)
+  bool isColinear(vec2 const& p1,vec2 const& p2, vec2 const& p3, std::shared_ptr<decimal_t> pOptTolerance = nullptr)
   {
     auto v1 = vec2(p2.x - p1.x, p2.y - p1.y);
     auto v2 = vec2(p3.x - p1.x, p3.y - p1.y);
@@ -77,7 +77,7 @@ namespace
     return {};
   }
 
-  double getOffsetValue(std::vector<vec2> const& dataPoints, std::vector<size_t> const& match)
+  decimal_t getOffsetValue(std::vector<vec2> const& dataPoints, std::vector<size_t> const& match)
   {
     auto xDiff = std::abs(dataPoints[match[0]].x - dataPoints[match[0]].x);
     auto value = xDiff * 0.007;
@@ -85,7 +85,7 @@ namespace
     return value;
   }
 
-  RemovedResult removeColinearPoints(std::vector<vec2> const& points, std::shared_ptr<double> pOptTolerance = nullptr)
+  RemovedResult removeColinearPoints(std::vector<vec2> const& points, std::shared_ptr<decimal_t> pOptTolerance = nullptr)
   {
     bool didRemove = false;
     std::vector<size_t> toRemove;
@@ -127,7 +127,7 @@ namespace
       return {didRemove, points};
   }
 
-  std::vector<vec2> removeCAS(std::vector<vec2> points, std::shared_ptr<double> pOptTolerance = nullptr)
+  std::vector<vec2> removeCAS(std::vector<vec2> points, std::shared_ptr<decimal_t> pOptTolerance = nullptr)
   {
     auto rslt = removeColinearPoints(points, pOptTolerance);
     while(rslt.removed)
@@ -138,7 +138,7 @@ namespace
   }
 }
 
-std::vector<vec2> sanitizeData(std::vector<vec2>& orderedPoints, std::shared_ptr<double> pOptTolerance = nullptr)
+std::vector<vec2> sanitizeData(std::vector<vec2>& orderedPoints, std::shared_ptr<decimal_t> pOptTolerance = nullptr)
 {
   if (orderedPoints.size() > 3)
   {
@@ -164,6 +164,7 @@ std::vector<Polygon> processInputFiles(std::string const& inputFiles)
   std::string filePath;
   while(fin >> filePath)
   {
+    // std::cout << "File path:" << filePath << std::endl;
     if (filePath.empty()) continue;
     // trim?
     // each file of format
@@ -178,20 +179,21 @@ std::vector<Polygon> processInputFiles(std::string const& inputFiles)
       lines.push_back(line);
     }
 
-    std::vector<vec2> points;
+    std::vector<vec2> uniquePoints;
     // skip the first line since it is the same as the last
-    for (size_t i = 1; i < lines.size(); ++i)
+    for (size_t i = 0; i < lines.size() - 1; ++i)
     {
-      points.push_back(parseLineToVec2(lines[i]));
+      uniquePoints.push_back(parseLineToVec2(lines[i]));
     }
 
-    auto uPts = sanitizeData(points);
+    // auto uPts = uniquePoints;
+    auto uPts = sanitizeData(uniquePoints);
 
     // we assume point sets greater than 2 are a closed polygon
     Polygon poly;
     if (uPts.size() > 2)
     {
-      for (size_t i = 1; i < uPts.size(); ++i)
+      for (size_t i = 0; i < uPts.size(); ++i)
       {
         poly.addPoint(uPts[i]);
       }

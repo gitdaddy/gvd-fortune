@@ -8,15 +8,15 @@
 namespace
 {
   // offset sites that collide or overlap
-  void sanitizePointSiteData(std::vector<std::shared_ptr<PointSite>> const& sortedPts)
+  void sanitizePointSiteData(std::vector<PointSite>& rPts)
   {
-    for (size_t i = 1; i < sortedPts.size(); i++)
+    for (size_t i = 1; i < rPts.size(); i++)
     {
-      auto p1 = sortedPts[i-1]->getValue();
-      auto p2 = sortedPts[i]->getValue();
+      auto p1 = rPts[i-1].getValue();
+      auto p2 = rPts[i].getValue();
       if (math::equiv2(p1, p2))
       {
-        sortedPts[i]->addToY(-0.0001);
+        rPts[i].addToY(-0.0001);
       }
     }
   }
@@ -38,14 +38,19 @@ namespace
 std::vector<std::shared_ptr<Event>> createDataQueue(std::vector<Polygon> const& polygons)
 {
   std::vector<std::shared_ptr<Event>> rslt;
-  std::vector<std::shared_ptr<PointSite>> points;
+  std::vector<PointSite> points;
   for (auto&& p : polygons)
   {
-    auto toAdd = p.getPointSites();
-    points.insert(points.end(), toAdd.begin(), toAdd.end());
+    // auto toAdd = p.getPointSites();
+    // points.insert(points.end(), toAdd.begin(), toAdd.end());
+    for (auto&& s : p.getPointSites())
+    {
+      points.push_back(s);
+    }
   }
 
   // sanitize across sites
+  // SEG FAULT - fix
   std::sort(points.begin(), points.end(), point_site_less_than());
   sanitizePointSiteData(points);
 
@@ -53,20 +58,20 @@ std::vector<std::shared_ptr<Event>> createDataQueue(std::vector<Polygon> const& 
   for(auto&& sortedP : points)
   {
     std::vector<std::shared_ptr<Event>> ss;
-    if (generatedSegs.find(sortedP->getLabel()) != generatedSegs.end())
+    if (generatedSegs.find(sortedP.getLabel()) != generatedSegs.end())
     {
-      ss = generatedSegs.at(sortedP->getLabel());
+      ss = generatedSegs.at(sortedP.getLabel());
     }
     else
     {
-      auto poly = getPolyByLabel(sortedP->getLabel(), polygons);
+      auto poly = getPolyByLabel(sortedP.getLabel(), polygons);
       ss = poly.getSegments();
-      generatedSegs.emplace(sortedP->getLabel(), ss);
+      generatedSegs.emplace(sortedP.getLabel(), ss);
     }
 
     std::vector<std::shared_ptr<Event>> connectedSegs;
     std::copy_if(ss.begin(), ss.end(), std::back_inserter(connectedSegs),
-    [sortedP](auto pSeg){return math::equiv2(pSeg->a(), sortedP->getValue());});
+    [v = sortedP.getValue()](auto pSeg){return math::equiv2(pSeg->a(), v);});
 
     if (!connectedSegs.empty())
     {
@@ -89,7 +94,7 @@ std::vector<std::shared_ptr<Event>> createDataQueue(std::vector<Polygon> const& 
         rslt.push_back(connectedSegs[0]);
       }
     }
-    rslt.push_back(sortedP);
+    rslt.push_back(std::make_shared<PointSite>(sortedP));
   }
   return rslt;
 }

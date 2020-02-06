@@ -14,16 +14,16 @@ namespace math
 {
   // Math data types
 
-  double getEventY(Event const& e);
+  decimal_t getEventY(Event const& e);
 
   // MV.js Functions
-  double crossProduct(vec2 const& v1, vec2 const& v2);
+  decimal_t crossProduct(vec2 const& v1, vec2 const& v2);
 
-  inline double dot(vec2 const &a, vec2 const &b)
+  inline decimal_t dot(vec2 const &a, vec2 const &b)
   {
     return a.x*b.x + a.y*b.y;
   }
-  inline double len(vec2 const &v) { return std::sqrt(dot(v,v)); }
+  inline decimal_t len(vec2 const &v) { return std::sqrt(dot(v,v)); }
 
   inline vec2 normalizeV2(vec2 v)
   {
@@ -41,10 +41,10 @@ namespace math
     vec2 v;
   };
 
-  inline bool equivD(double a, double b, double error_factor=1.0)
+  inline bool equivD(decimal_t a, decimal_t b, decimal_t error_factor=1.0)
   {
     return a==b ||
-      std::abs(a-b)<std::abs(std::min(a,b))*std::numeric_limits<double>::epsilon()*
+      std::abs(a-b)<std::abs(std::min(a,b))*std::numeric_limits<decimal_t>::epsilon()*
                     error_factor;
   }
 
@@ -61,15 +61,15 @@ namespace math
 
   bool devidesRightOfLine(vec2 const& a1, vec2 const& b1, vec2 const& a2, vec2 const& b2);
 
-  std::vector<double> quadratic(double const& a, double const& b, double const& c);
+  std::vector<decimal_t> quadratic(decimal_t const& a, decimal_t const& b, decimal_t const& c);
 
   std::shared_ptr<vec2> intersectLines(vec2 const& p1, vec2 const& p2, vec2 const& p3, vec2 const& p4);
 
   std::vector<vec2> intersectLeftRightLines (std::vector<Line> const& leftLines, std::vector<Line> const& rightLines);
 
-  std::vector<double> lpIntersect(double h, double k, double p, vec2 const& q, vec2 const& v);
+  std::vector<decimal_t> lpIntersect(decimal_t h, decimal_t k, decimal_t p, vec2 const& q, vec2 const& v);
 
-  std::vector<vec2> ppIntersect(double h1, double k1, double p1, double h2, double k2, double p2);
+  std::vector<vec2> ppIntersect(decimal_t h1, decimal_t k1, decimal_t p1, decimal_t h2, decimal_t k2, decimal_t p2);
 }
 
 #endif

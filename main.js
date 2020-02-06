@@ -14,6 +14,7 @@ let g_queue = {};
 
 let g_datasetList = [
   {label:"Maze Dataset", filePath: "./data/maze/_files.txt"},
+  // {label:"Maze Dataset", filePath: "./gvd2.0/test_output/_files.txt"},
   {label:"100 Random", num:100, filePath: "./data/random_100/_files.txt"},
   {label:"200 Random", num:200, filePath: "./data/random_200/_files.txt"},
   {label:"500 Random", num:500, filePath: "./data/random_500/_files.txt"},

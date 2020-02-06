@@ -11,11 +11,15 @@ static uint32_t g_labelCount = 0;
 
 /////////////////////////////////// Data Structures /////////////////////////////////////
 
+typedef long double decimal_t;
+// for better precision perhaps try
+// typedef _Float128 decimal_t;
+
 struct vec2
 {
-  vec2(double _x, double _y) : x(_x), y(_y) {}
-  double x;
-  double y;
+  vec2(decimal_t _x, decimal_t _y) : x(_x), y(_y) {}
+  decimal_t x;
+  decimal_t y;
 };
 
 enum class EventType_e
@@ -31,13 +35,13 @@ public:
   Event(EventType_e _type, uint32_t l)
       : type(_type), id(g_id++), label(l) {}
 
-  virtual double x() const
+  virtual decimal_t x() const
   {
     throw std::runtime_error("calling x() on base Site");
     return 0.0;
   }
 
-  virtual double y() const
+  virtual decimal_t y() const
   {
     throw std::runtime_error("calling y() on base Site");
     return 0.0;
@@ -70,17 +74,17 @@ class PointSite : public Event
 public:
   PointSite(uint32_t label, vec2 loc) : Event(EventType_e::POINT, label), value(loc) {}
 
-  double x() const override
+  decimal_t x() const override
   {
     return value.x;
   }
 
-  double y() const override
+  decimal_t y() const override
   {
     return value.y;
   }
 
-  void addToY(double toAdd) { value.y + toAdd; }
+  void addToY(decimal_t toAdd) { value.y + toAdd; }
 
   vec2 getValue() const { return value; }
 
@@ -90,10 +94,10 @@ private:
 
 struct point_site_less_than
 {
-  inline bool operator() (std::shared_ptr<PointSite> const& lhs, std::shared_ptr<PointSite> const& rhs)
+  inline bool operator() (PointSite const& lhs, PointSite const& rhs)
   {
     // Y major, x minor
-    return (lhs->y() < rhs->y() || lhs->x() < rhs->x());
+    return (lhs.y() < rhs.y() || lhs.x() < rhs.x());
   }
 };
 
@@ -127,7 +131,7 @@ public:
     return locA;
   }
 
-  double y() const override
+  decimal_t y() const override
   {
     return std::max(locA.y, locB.y);
   }
@@ -152,22 +156,22 @@ public:
 
   void addPoint(vec2 const& loc)
   {
-    orderedPointSites.push_back(std::make_shared<PointSite>(label, loc));
+    orderedPointSites.push_back(PointSite(label, loc));
   }
 
-  std::vector<std::shared_ptr<PointSite>> getPointSites() const { return orderedPointSites; }
+  std::vector<PointSite> getPointSites() const { return orderedPointSites; }
 
   std::vector<std::shared_ptr<Event>> getSegments()
   {
     std::vector<std::shared_ptr<Event>> rslt;
-    auto p1 = vec2(orderedPointSites[0]->x(), orderedPointSites[0]->y());
+    auto p1 = vec2(orderedPointSites[0].x(), orderedPointSites[0].y());
     for (size_t i = 1; i < orderedPointSites.size(); ++i)
     {
-      auto p2 = vec2(orderedPointSites[i]->x(), orderedPointSites[i]->y());
+      auto p2 = vec2(orderedPointSites[i].x(), orderedPointSites[i].y());
       rslt.push_back(makeSegment(p1, p2, label));
       p1 = p2;
     }
-    auto start = vec2(orderedPointSites[0]->x(), orderedPointSites[0]->y());
+    auto start = vec2(orderedPointSites[0].x(), orderedPointSites[0].y());
     // terminate the wrap around
     rslt.push_back(makeSegment(start, p1, label));
   }
@@ -176,7 +180,7 @@ public:
 
 private:
   uint32_t label;
-  std::vector<std::shared_ptr<PointSite>> orderedPointSites;
+  std::vector<PointSite> orderedPointSites;
 
 };
 
