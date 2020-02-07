@@ -4,12 +4,37 @@ namespace math
 {
   decimal_t getEventY(Event const& e)
   {
-    return e.y();
+    if (e.type == EventType_e::POINT)
+    {
+      return e.point.y;
+    }
+    else if (e.type == EventType_e::SEG)
+    {
+      return e.a.y;
+    }
+    // else is a close event
+    return e.point.y;
   }
 
   decimal_t crossProduct(vec2 const& v1, vec2 const& v2)
   {
     return v1.x * v2.y - v1.y * v2.x;
+  }
+
+  std::vector<vec4> rotateZ(int theta)
+  {
+    auto rad = radians(theta);
+    // double c = 0.0;
+    // if ( std::abs(theta) == 90)
+    //   c = 0.0;
+    // else
+    //   c = std::cos(rad);
+    auto c = std::cos(rad);
+    auto s = std::sin(rad);
+    return {vec4( c,   -s, 0.0, 0.0),
+            vec4( s,    c, 0.0, 0.0),
+            vec4(0.0, 0.0, 1.0, 0.0),
+            vec4(0.0, 0.0, 0.0, 1.0) };
   }
 
   bool isRightOfLine(vec2 const& upper, vec2 const& lower, vec2 const& p)

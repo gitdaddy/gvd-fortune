@@ -4,8 +4,19 @@ CXX=g++
 # -g -compile with debug symbols
 RM=rm -f
 
-gvdExe:  types.o math.o utils.o dataset.o main.o
-	g++ -g -o gvdExe types.o math.o utils.o dataset.o main.o
+# run- "make all" to compile gvd and gvd_test
+
+all: target tests
+
+target: gvd
+
+tests: gvd_test
+
+gvd:  types.o math.o utils.o dataset.o main.o
+	g++ -g -o gvd types.o math.o utils.o dataset.o main.o
+
+gvd_test:  types.o math.o utils.o dataset.o test.o
+	g++ -g -o gvd_test types.o math.o utils.o dataset.o test.o
 
 types.o: types.cc types.hh
 	g++ -g -c types.cc
@@ -21,6 +32,9 @@ dataset.o: dataset.cc dataset.hh
 
 main.o: main.cc
 	g++ -g -c main.cc
+
+test.o: test.cc
+	g++ -g -c test.cc
 
 clean:
 	$(RM) *.o *.gch

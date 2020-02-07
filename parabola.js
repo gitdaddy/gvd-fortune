@@ -24,7 +24,6 @@ Parabola = function (focus, h, k, p, id) {//, theta, offset) {
   this.h = h;
   this.k = k;
   this.p = p;
-  this.miny = k;
   this.id = id;
 }
 

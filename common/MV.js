@@ -460,12 +460,14 @@ function rotateY(theta) {
 function rotateZ(theta) {
   var rad = radians(theta);
   // var c = Math.cos( rad );
-  var c;
-  if (Math.abs(theta) === 90) {
-    c = 0.0;
-  } else {
-    c = Math.cos( rad );
-  }
+  // var c;
+  // if (Math.abs(theta) === 90) {
+  //   c = 0.0;
+  // } else {
+  //   c = Math.cos( rad );
+  // }
+
+  var c = Math.cos( rad );
   var s = Math.sin( rad );
   var rz = mat4( c, -s, 0.0, 0.0,
 		 s,  c, 0.0, 0.0,

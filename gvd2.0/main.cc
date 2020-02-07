@@ -6,13 +6,43 @@
 #include "dataset.hh"
 #include "types.hh"
 #include "utils.hh"
+#include "math.hh"
 
 namespace
 {
-  void fortune(std::vector<Polygon> const& polygons)
+  void fortune(std::vector<Polygon> const& polygons, double sweepline)
   {
     auto queue = createDataQueue(polygons);
-    std::cout << "queue size:" << queue.size() << std::endl;
+    // std::cout << "queue size:" << queue.size() << std::endl;
+
+    if (queue.size() < 1) return;
+    // TODO init beachline
+    auto nextY = math::getEventY(queue.back());
+    // while (queue.size > 0 && nextY > sweepline)
+    // {
+    //   auto event = queue.back();
+    //   queue.pop_back();
+
+    //   if (event.type == EventType_e::CLOSE)
+    //   {
+    //   // if (event.live && event.arcNode.closeEvent.live) {
+    //     if (event.live)
+    //     {
+    //       // TODO edges and arcnodes
+
+    //       // TODO perform remove
+    //     }
+    //   }
+    //   else
+    //   {
+    //     // Add Event
+    //   }
+    //   if (queue.size() > 0)
+    //     nextY = math::getEventY(queue.back());
+    // }
+
+
+    // get the result as a vector of edge results
   }
 }
 
@@ -33,7 +63,7 @@ int main(int argc, char** argv)
     // only wrap for testing
     auto polygons = processInputFiles(i);
     auto start = std::chrono::system_clock::now();
-    fortune(polygons);
+    fortune(polygons, 0.0);
     auto end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsedSeconds = end-start;
     std::cout << "Process Duration: " << elapsedSeconds.count() << "s\n";

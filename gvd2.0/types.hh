@@ -22,6 +22,15 @@ struct vec2
   decimal_t y;
 };
 
+struct vec4
+{
+  vec4(decimal_t _x, decimal_t _y, decimal_t _z, decimal_t _w) : x(_x), y(_y), z(_z), w(_w) {}
+  decimal_t x;
+  decimal_t y;
+  decimal_t z;
+  decimal_t w;
+};
+
 enum class EventType_e
 {
   SEG = 1,
@@ -29,159 +38,106 @@ enum class EventType_e
   CLOSE = 3
 };
 
-class Event
+struct Event
 {
-public:
-  Event(EventType_e _type, uint32_t l)
-      : type(_type), id(g_id++), label(l) {}
+  Event(EventType_e t, uint32_t l, vec2 _p = vec2(0.0,0.0), vec2 _a = vec2(0.0,0.0), vec2 _b = vec2(0.0,0.0))
+  : type(t), id(g_id++), label(l), point(_p), a(_a), b(_b), live(true) {}
 
-  virtual decimal_t x() const
-  {
-    throw std::runtime_error("calling x() on base Site");
-    return 0.0;
-  }
-
-  virtual decimal_t y() const
-  {
-    throw std::runtime_error("calling y() on base Site");
-    return 0.0;
-  }
-
-  virtual vec2 a() const
-  {
-    throw std::runtime_error("calling a() on base Site");
-    return {0.0, 0.0};
-  }
-
-  virtual vec2 b() const
-  {
-    throw std::runtime_error("calling b() on base Site");
-    return {0.0, 0.0};
-  }
-
-  uint32_t getLabel() { return label; }
-
-  EventType_e getType() { return type; }
-
-private:
   EventType_e type;
   uint32_t id;
   uint32_t label;
+  vec2 point;
+  vec2 a;
+  vec2 b;
+  bool live;
 };
 
-class PointSite : public Event
+struct event_less_than
 {
-public:
-  PointSite(uint32_t label, vec2 loc) : Event(EventType_e::POINT, label), value(loc) {}
-
-  decimal_t x() const override
+  inline bool operator() (Event const& lhs, Event const& rhs) const
   {
-    return value.x;
-  }
-
-  decimal_t y() const override
-  {
-    return value.y;
-  }
-
-  void addToY(decimal_t toAdd) { value.y + toAdd; }
-
-  vec2 getValue() const { return value; }
-
-private:
-  vec2 value;
-};
-
-struct point_site_less_than
-{
-  inline bool operator() (PointSite const& lhs, PointSite const& rhs)
-  {
+    decimal_t r1 = 0.0;
+    decimal_t r2 = 0.0;
+    decimal_t l1 = 0.0;
+    decimal_t l2 = 0.0;
     // Y major, x minor
-    return (lhs.y() < rhs.y() || lhs.x() < rhs.x());
+    if (lhs.type == EventType_e::POINT)
+    {
+      l1 = lhs.point.y;
+      l2 = lhs.point.x;
+    }
+    else if (lhs.type == EventType_e::SEG)
+    {
+      l1 = lhs.a.y;
+      l2 = lhs.a.x;
+    }
+    else
+    {
+      l1 = lhs.point.y;
+      l2 = lhs.point.x;
+    }
+
+    if (rhs.type == EventType_e::POINT)
+    {
+      r1 = rhs.point.y;
+      r2 = rhs.point.x;
+    }
+    else if (rhs.type == EventType_e::SEG)
+    {
+      r1 = rhs.a.y;
+      r2 = rhs.a.x;
+    }
+    else
+    {
+      r1 = rhs.point.y;
+      r2 = rhs.point.x;
+    }
+    // return l1 < r1 || l2 < r2;
+    if (l1 == r1) return l2 < r2;
+    return l1 < r1;
   }
 };
 
-class SegmentSite : public Event
-{
-public:
-  SegmentSite(uint32_t label, vec2 _a, vec2 _b) : Event(EventType_e::SEG, label), locA(_a), locB(_b) {}
-
-  vec2 a() const override
-  {
-    return locA;
-  }
-
-  vec2 b() const override
-  {
-    return locB;
-  }
-
-private:
-  vec2 locA;
-  vec2 locB;
-};
-
-class CloseEvent : public Event
-{
-public:
-  CloseEvent(uint32_t label, vec2 _a, vec2 _b) : Event(EventType_e::CLOSE, label), locA(_a), locB(_b) {}
-
-  vec2 a() const override
-  {
-    return locA;
-  }
-
-  decimal_t y() const override
-  {
-    return std::max(locA.y, locB.y);
-  }
-
-  vec2 b() const override
-  {
-    return locB;
-  }
-
-private:
-  vec2 locA;
-  vec2 locB;
-};
-
-// SegmentSite makeSegment(vec2 p1, vec2 p2, uint32_t label, bool forceOrder = false);
-std::shared_ptr<SegmentSite> makeSegment(vec2 p1, vec2 p2, uint32_t label, bool forceOrder = false);
+Event makeSegment(vec2 p1, vec2 p2, uint32_t label, bool forceOrder = false);
 
 class Polygon
 {
 public:
-  Polygon() : label(g_labelCount++) {}
+  Polygon() : label(g_labelCount++), orderedPointSites() {}
 
   void addPoint(vec2 const& loc)
   {
-    orderedPointSites.push_back(PointSite(label, loc));
+    orderedPointSites.push_back(Event(EventType_e::POINT, label, loc));
   }
 
-  std::vector<PointSite> getPointSites() const { return orderedPointSites; }
-
-  std::vector<std::shared_ptr<Event>> getSegments()
+  std::vector<Event> getSegments()
   {
-    std::vector<std::shared_ptr<Event>> rslt;
-    auto p1 = vec2(orderedPointSites[0].x(), orderedPointSites[0].y());
+    if (orderedPointSites.size() < 2) return {};
+    if (orderedPointSites.size() == 2)
+    {
+      return {makeSegment(orderedPointSites[0].point, orderedPointSites[1].point, label)};
+    };
+
+    std::vector<Event> rslt;
+    auto p1 = orderedPointSites[0].point;
     for (size_t i = 1; i < orderedPointSites.size(); ++i)
     {
-      auto p2 = vec2(orderedPointSites[i].x(), orderedPointSites[i].y());
+      auto p2 = orderedPointSites[i].point;
       rslt.push_back(makeSegment(p1, p2, label));
       p1 = p2;
     }
-    auto start = vec2(orderedPointSites[0].x(), orderedPointSites[0].y());
+    auto start = orderedPointSites[0].point;
     // terminate the wrap around
     rslt.push_back(makeSegment(start, p1, label));
+
+    return rslt;
   }
 
   uint32_t getLabel() { return label; }
 
+  std::vector<Event> orderedPointSites;
 private:
   uint32_t label;
-  std::vector<PointSite> orderedPointSites;
-
 };
 
 #endif
