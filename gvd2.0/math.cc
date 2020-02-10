@@ -37,6 +37,21 @@ namespace math
             vec4(0.0, 0.0, 0.0, 1.0) };
   }
 
+  vec4 mult(std::vector<vec4> const& matrix, vec4 const& v4)
+  {
+    std::vector<decimal_t> rslt;
+    for (auto&& row : matrix)
+    {
+      decimal_t sum = 0.0;
+      sum += row.x * v4.x;
+      sum += row.y * v4.y;
+      sum += row.z * v4.z;
+      sum += row.w * v4.w;
+      rslt.push_back(sum);
+    }
+    return vec4(rslt[0], rslt[1], rslt[2], rslt[3]);
+  }
+
   bool isRightOfLine(vec2 const& upper, vec2 const& lower, vec2 const& p)
   {
     auto v1 = vec2(upper.x - lower.x, upper.y - lower.y);
@@ -71,7 +86,6 @@ namespace math
   {
     return isRightOfLine(a1, b1, a2) && isRightOfLine(a1, b1, b2);
   }
-
 
   std::vector<decimal_t> quadratic(decimal_t const& a, decimal_t const& b, decimal_t const& c)
   {

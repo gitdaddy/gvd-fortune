@@ -4,8 +4,11 @@
 #include <iostream>
 #include "types.hh"
 
-
 decimal_t parabola_f(decimal_t x, decimal_t h, decimal_t k, decimal_t p);
+
+vec2 transformVector(vec2 v, GeometricObject const& genP);
+
+vec2 untransformPoint(vec2 v, GeometricObject const& genP);
 
 // h - x offset
 // k - y offset
@@ -43,7 +46,17 @@ class GeometricObject
 
   std::vector<vec2> prepDraw(vec2 origin, vec2 dest);
 
-  decimal_t focus;
+  GeometryType_e objType() const { return type; }
+
+  // h - x offset
+  // k - y offset
+  // p - scale factor
+  // directrix is at k-p
+  // focus is at k+p
+  // y = (x-h)^2/(4p) + k
+  // GeometricObject crateParabola(decimal_t focus, double directrix, uint32_t id);
+  vec2 focus;
+  decimal_t h;
   decimal_t k;
   decimal_t p;
   int theta;

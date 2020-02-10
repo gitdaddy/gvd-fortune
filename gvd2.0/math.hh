@@ -71,6 +71,8 @@ namespace math
 
   std::vector<vec4> rotateZ(uint32_t theta);
 
+  vec4 mult(std::vector<vec4> const& matrix, vec4 const& v4);
+
   bool isRightOfLine(vec2 const& upper, vec2 const& lower, vec2 const& p);
 
   std::vector<vec2> getPointsRightOfLine(vec2 const& a, vec2 const& b, std::vector<vec2> points);
