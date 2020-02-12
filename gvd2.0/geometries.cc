@@ -3,7 +3,6 @@
 
 // namespace
 // {
-
 // }
 
 decimal_t parabola_f(decimal_t x, decimal_t h, decimal_t k, decimal_t p)
@@ -107,6 +106,23 @@ decimal_t GeometricObject::f(decimal_t x)
 // Inverse of f. x = f_(y)
 decimal_t GeometricObject::_f(decimal_t y)
 {
+  switch (type)
+  {
+  case GeometryType_e::PARABOLA:
+    /* code */
+    break;
+
+  case GeometryType_e::GEN_PARABOLA:
+    /* code */
+    break;
+
+  case GeometryType_e::V:
+    /* code */
+    break;
+
+  default:
+    throw std::runtime_error("Invalid geometry type");
+  }
   return 0.0;
 }
 

@@ -10,13 +10,6 @@ var ArcNode = function (site) {
   this.isEdge = false;
   this.isParabola = !isSegment(site);
   this.isV = isSegment(site);
-  if (this.isParabola) {
-    this.openPoint = site;
-    this.closePoint = site;
-  } else {
-    this.openPoint = site[0];
-    this.closePoint = site[1];
-  }
   this.side = UNDEFINED_SIDE;
   // define arc boundaries
   this.id = nodeId++;

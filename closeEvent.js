@@ -53,116 +53,6 @@ function getDiff(left, node, right, p, directrix) {
   return diffX + diffY;
 }
 
-function radiusTest(left, node, right, closePoint) {
-  // WATCH VALUE
-  var thresh = 5e-5; // 0.003?
-  if (left.isV && node.isV && right.isV) return true;
-  var segments = _.filter([left, node, right], { isV: true });
-  var points = _.filter([left, node, right], { isParabola: true });
-  var radius = undefined;
-  var pass = true;
-  _.forEach(points, function(p) {
-    if (_.isUndefined(radius)) {
-      radius = dist(p.site, closePoint);
-    } else {
-      var newR = dist(p.site, closePoint);
-      var diff = Math.abs(radius - newR);
-      if (diff > thresh) {
-        // console.log("failed radius test diff:" + diff + " -for node:" + node.id);
-        pass = false;
-      }
-    }
-  });
-  if (!pass) return false;
-
-  _.forEach(segments, function(s) {
-    var newR = dist(s.site, closePoint);
-    var diff = Math.abs(radius - newR);
-    if (diff > thresh) {
-      // console.log("failed radius test diff:" + diff + " -for node:" + node.id);
-      pass = false;
-    }
-  });
-  return pass;
-}
-
-// return true if the circle test passes false otherwise
-// function circleTest(left, node, right, r, closePoint) {
-//   // include all associated sites such as segment sites
-//   // which may not found through a neighboring arc
-
-//   var failNode = _.find([left, node, right], function (node) {
-//     if (node.isParabola) {
-//       // query for attached segs
-//       var segs = findNeighborSegments(node);
-//       _.forEach(segs, function (s) {
-//         var intercept = interceptCircleSeg({radius:r, center:closePoint}, {p1:s.a,p2:s.b});
-//         if (intercept.length == 2) return true;
-//       });
-//     } else {
-//       var intercept = interceptCircleSeg({radius:r, center:closePoint}, {p1:node.site.a,p2:node.site.b});
-//       if (intercept.length == 2) return true;
-//     }
-//     return false;
-//   });
-//   return _.isUndefined(failNode);
-// }
-
-/* Return true or false if the arcNode should be able to close in the designated spot
-   Does the shared segment run between p1 and equi/close point?
-   Arc node must be a parabola arc for this test
-   If the segment divides the start of the parabola and the close point then it cannot close
-   true otherwise
-   |
-    *p1   * a
-     \    |
-      \   |      * close
-       \  |
-        \ | /
-         \|/
-          * b
-*/
-// function canClose(left, arcNode, right, equi) {
-//   if (arcNode.isV) {
-//     var can = true;
-//     // if the V is arching with the top parabola then both sites must coincide
-//     // if (left.isParabola && right.isParabola && fastFloorEqual(arcNode.site.a, left.site)) {
-//     //   // the right site should be on the left of the segment
-//     //   // var v1 = subtract(arcNode.site.a, arcNode.site.b);
-//     //   // var v2 = subtract(right.site, arcNode.site.b);
-//     //   var v1 = vec3(arcNode.site.a[0] - arcNode.site.b[0], arcNode.site.a[1] - arcNode.site.b[1], 0);
-//     //   var v2 = vec3(right.site[0] - arcNode.site.b[0], right.site[1] - arcNode.site.b[1], 0);
-
-//     //   can = cross(v1, v2)[2] > 0;
-//     // } else if (right.isParabola && left.isParabola && fastFloorEqual(arcNode.site.a, right.site)) {
-//     //   // the left site should be on the right of the segment
-//     //   // var v1 = subtract(arcNode.site.a, arcNode.site.b);
-//     //   // var v2 = subtract(left.site, arcNode.site.b);
-//     //   var v1 = vec3(arcNode.site.a[0] - arcNode.site.b[0], arcNode.site.a[1] - arcNode.site.b[1], 0);
-//     //   var v2 = vec3(left.site[0] - arcNode.site.b[0], left.site[1] - arcNode.site.b[1], 0);
-//     //   can = cross(v1, v2)[2] < 0;
-//     // }
-
-//     return can;
-//   } else {
-
-//     // half plane test
-//     var hpTest = true;
-//     if (left.isV && fastFloorEqual(arcNode.site, left.site.a)) {
-//       hpTest = isRightOfLine(left.site.a, left.site.b, equi);
-//     } else if (right.isV && fastFloorEqual(arcNode.site, right.site.a)) {
-//       hpTest = !isRightOfLine(right.site.a, right.site.b, equi);
-//     }
-//     // else {
-//     //   return circleTest(left, arcNode, right, dist(arcNode.site, equi), equi);
-//     // }
-
-//     // If the circle created intersects the segment site that is a part
-//     // of the current, left or right arcs then it cannot be on the gvd
-//     return hpTest; // && circleTest(left, arcNode, right, dist(arcNode.site, equi), equi);
-//   }
-// }
-
 function getRadius(point, left, node, right) {
   // given a point and nodes return the radius
   if (left.isV && node.isV && right.isV) {
@@ -290,16 +180,9 @@ function createCloseEvent(arcNode, directrix) {
     closePoint = p;
   }
 
-  // TODO needed?
-  // closePoint = convertToVec3(closePoint);
-
   var radius = getRadius(closePoint, left, arcNode, right);
   if (_.isUndefined(radius)) throw "invalid radius";
 
-  // if (canClose(left, arcNode, right, closePoint)){
-  //   return new CloseEvent(closePoint[1] - radius, arcNode, left, right, closePoint, radius);
-  // }
-  // return null;
   return new CloseEvent(closePoint[1] - radius, arcNode, left, right, closePoint, radius);
 }
 

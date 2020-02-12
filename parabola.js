@@ -239,10 +239,9 @@ Parabola.prototype.setDrawPoints = function () {
 // GeneralParabola class
 //------------------------------------------------------------
 
-GeneralParabola = function (focus, h, k, p, theta, offset, splitSite = false) {
+GeneralParabola = function (focus, h, k, p, theta, splitSite = false) {
   this.parabola = new Parabola(focus, h, k, p);
   this.theta = theta;
-  this.offset = offset;
   this.Rz = rotateZ(degrees(-this.theta));
   this.nRz = rotateZ(degrees(this.theta));
   this.splitSite = splitSite;
@@ -262,7 +261,6 @@ function createGeneralParabola(focus, directrix) {
   var vxf = cross(v, v1);
   if (vxf[2] < 0) {
     v = negate(v);
-    [a, b] = [b, a];
     vxf[2] = -vxf[2];
   }
   var k = length(vxf) / 2.0;
@@ -270,7 +268,7 @@ function createGeneralParabola(focus, directrix) {
   var h = focus[0];
   var theta = Math.atan2(v[1], v[0]);
   splitSite = _.get(focus, "label") != _.get(directrix, "label");
-  return new GeneralParabola(focus, h, k, p, theta, 0, splitSite);
+  return new GeneralParabola(focus, h, k, p, theta, splitSite);
 }
 
 GeneralParabola.prototype.transformPoint = function (p) {

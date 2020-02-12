@@ -38,6 +38,128 @@ enum class EventType_e
   CLOSE = 3
 };
 
+enum class Side_e
+{
+  LEFT = 1,
+  RIGHT = 2,
+  UNDEFINED = 3
+};
+
+enum class GeometryType_e
+{
+  PARABOLA = 1,
+  GEN_PARABOLA = 2,
+  V = 3
+};
+
+// Composed geometric object
+class GeometricObject
+{
+  public:
+  GeometricObject(GeometryType_e type, uint32_t id)
+  : focus(0.0, 0.0), h(), k(), p(), theta(), Rz(), nRz(), y1(0.0, 0.0), y0(0.0, 0.0) {}
+
+  std::vector<vec2> intersect(GeometricObject const& other);
+
+  // Intersect the positive portion of the ray.
+  // If there are two intersections, the intersections will
+  // be returned in order of t value.
+  // The ray is given in parametric form p(t) = p + tv
+  std::vector<vec2> intersectRay(decimal_t p, vec2 v);
+
+  decimal_t f(decimal_t x);
+  // Inverse of f. x = f_(y)
+  decimal_t _f(decimal_t y);
+
+  std::vector<vec2> prepDraw(vec2 origin, vec2 dest);
+
+  GeometryType_e objType() const { return type; }
+
+  // h - x offset
+  // k - y offset
+  // p - scale factor
+  // directrix is at k-p
+  // focus is at k+p
+  // y = (x-h)^2/(4p) + k
+  // GeometricObject crateParabola(decimal_t focus, double directrix, uint32_t id);
+  vec2 focus;
+  decimal_t h;
+  decimal_t k;
+  decimal_t p;
+  int theta;
+  std::vector<vec4> Rz;
+  std::vector<vec4> nRz;
+  vec2 y1;
+  vec2 y0;
+  private:
+  GeometryType_e type;
+  uint32_t id;
+  // split site?
+};
+
+static uint32_t g_nodeId = 0;
+//------------------------------------------------------------
+// EdgeNode
+// left and right are the left and right children nodes.
+// left is always an ArcNode. Right may be an ArcNode or
+// EdgeNode.
+//------------------------------------------------------------
+//------------------------------------------------------------
+// ArcNode - active node segment in the beachline
+//------------------------------------------------------------
+class Node
+{
+  public:
+  Node(EventType_e type,
+    bool _isArc,
+    std::shared_ptr<Node> const& _optLeft = nullptr,
+    std::shared_ptr<Node> const& _optRight = nullptr,
+    vec2 _start = vec2(0.0,0.0))
+    : isArc(_isArc), isParabola(),
+    side(Side_e::UNDEFINED), id(g_nodeId++),
+    pLeft(_optLeft),
+    pRight(_optRight),
+    pParent(nullptr),
+    start(_start),
+    end(vec2(0.0,0.0)),
+    point(vec2(0.0,0.0)),
+    a(vec2(0.0,0.0)),
+    b(vec2(0.0,0.0))
+    {
+      isParabola = (type == EventType_e::POINT);
+    }
+
+  // Parabola, Gen Parabola, or V
+  GeometricObject createDrawElement(double directrix);
+
+  bool isGenEdge() const { return false; } // TODO determine if edge is general
+
+  std::shared_ptr<Node> prevEdge();
+  std::shared_ptr<Node> nextEdge();
+
+  std::shared_ptr<Node> prevArc();
+  std::shared_ptr<Node> nextArc();
+
+  void updateEdge();
+
+  vec2 intersection();
+
+  // std::shared_ptr<Event> optSite;
+
+  bool isArc; // otherwise an edge
+  bool isParabola; // parabola or V
+  Side_e side; // which side of the edge
+  uint32_t id;
+  std::shared_ptr<Node> pLeft;
+  std::shared_ptr<Node> pRight;
+  std::shared_ptr<Node> pParent;
+  vec2 start;
+  vec2 end;
+  vec2 point;
+  vec2 a;
+  vec2 b;
+};
+
 struct Event
 {
   Event(EventType_e t, uint32_t l, vec2 _p = vec2(0.0,0.0), vec2 _a = vec2(0.0,0.0), vec2 _b = vec2(0.0,0.0))
@@ -49,8 +171,26 @@ struct Event
   vec2 point;
   vec2 a;
   vec2 b;
+
+  // close event items
   bool live;
+  std::shared_ptr<Node> arcNode;
+  decimal_t yval;
 };
+
+struct EventPacket
+{
+  Event site;
+  std::vector<Event> children; //[0] - left/single child [1] - right
+};
+
+inline Event createCloseEvent(decimal_t y, std::shared_ptr<Node> const& arcNode, vec2 point)
+{
+  Event r(EventType_e::CLOSE, 0, point);
+  r.arcNode = arcNode;
+  r.yval = y;
+  return r;
+}
 
 struct event_less_than
 {

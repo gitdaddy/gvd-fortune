@@ -121,44 +121,44 @@ var seg = {
 
 point {x,y}
 ------------------------------------------------------------ */
-function interceptCircleSeg(circle, line){
-  var a, b, c, d, u1, u2, ret, retP1, retP2, v1, v2;
-  v1 = {};
-  v2 = {};
-  v1.x = line.p2[0] - line.p1[0];
-  v1.y = line.p2[1] - line.p1[1];
-  v2.x = line.p1[0] - circle.center[0];
-  v2.y = line.p1[1] - circle.center[1];
-  b = (v1.x * v2.x + v1.y * v2.y);
-  c = 2 * (v1.x * v1.x + v1.y * v1.y);
-  b *= -2;
-  d = Math.sqrt(b * b - 2 * c * (v2.x * v2.x + v2.y * v2.y - circle.radius * circle.radius));
-  if(isNaN(d)){ // no intercept
-      return [];
-  }
-  u1 = (b - d) / c;  // these represent the unit distance of point one and two on the line
-  u2 = (b + d) / c;
-  retP1 = {};   // return points
-  retP2 = {}
-  ret = []; // return array
-  if(u1 <= 1 && u1 >= 0){  // add point if on the line segment
-      retP1.x = line.p1[0] + v1.x * u1;
-      retP1.y = line.p1[1] + v1.y * u1;
-      ret[0] = retP1;
-  }
-  if(u2 <= 1 && u2 >= 0){  // second add point if on the line segment
-      retP2.x = line.p1[0] + v1.x * u2;
-      retP2.y = line.p1[1] + v1.y * u2;
-      ret[ret.length] = retP2;
-  }
-  // if the points are too close return the tangent point
-  if (ret.length == 2) {
-    var diff = dist(new vec3(ret[0].x, ret[0].y,0), new vec3(ret[1].x, ret[1].y,0));
-    // WATCH VALUE
-    if (diff < 5e-3) return [ret[0]];
-  }
-  return ret;
-}
+// function interceptCircleSeg(circle, line){
+//   var a, b, c, d, u1, u2, ret, retP1, retP2, v1, v2;
+//   v1 = {};
+//   v2 = {};
+//   v1.x = line.p2[0] - line.p1[0];
+//   v1.y = line.p2[1] - line.p1[1];
+//   v2.x = line.p1[0] - circle.center[0];
+//   v2.y = line.p1[1] - circle.center[1];
+//   b = (v1.x * v2.x + v1.y * v2.y);
+//   c = 2 * (v1.x * v1.x + v1.y * v1.y);
+//   b *= -2;
+//   d = Math.sqrt(b * b - 2 * c * (v2.x * v2.x + v2.y * v2.y - circle.radius * circle.radius));
+//   if(isNaN(d)){ // no intercept
+//       return [];
+//   }
+//   u1 = (b - d) / c;  // these represent the unit distance of point one and two on the line
+//   u2 = (b + d) / c;
+//   retP1 = {};   // return points
+//   retP2 = {}
+//   ret = []; // return array
+//   if(u1 <= 1 && u1 >= 0){  // add point if on the line segment
+//       retP1.x = line.p1[0] + v1.x * u1;
+//       retP1.y = line.p1[1] + v1.y * u1;
+//       ret[0] = retP1;
+//   }
+//   if(u2 <= 1 && u2 >= 0){  // second add point if on the line segment
+//       retP2.x = line.p1[0] + v1.x * u2;
+//       retP2.y = line.p1[1] + v1.y * u2;
+//       ret[ret.length] = retP2;
+//   }
+//   // if the points are too close return the tangent point
+//   if (ret.length == 2) {
+//     var diff = dist(new vec3(ret[0].x, ret[0].y,0), new vec3(ret[1].x, ret[1].y,0));
+//     // WATCH VALUE
+//     if (diff < 5e-3) return [ret[0]];
+//   }
+//   return ret;
+// }
 
 //             * p4
 //           _/
@@ -387,7 +387,7 @@ function fallsInBoundary(A, B, point) {
 
   // if the angle between AB and AP > 90 or BA and BP > 90
   // then the point is outside of the boundary
-  var r0 = getAngleBetweenTwoVec(AB, AP)
+  var r0 = getAngleBetweenTwoVec(AB, AP);
   var r1 = getAngleBetweenTwoVec(BA, BP);
   // 1.5708 is 90 degrees in radians
   return r0 < 1.5708 && r1 < 1.5708;
@@ -540,8 +540,8 @@ function bisectPointSegment(p, s) {
     // Get both bisecting sides clockwise and counter clockwise
     let v1 = vec3(v0[1], -v0[0], 0);
     let v2 = vec3(-v0[1], v0[0], 0);
-    var v1p = vec3(v1[0]+p[0], v1[1]+p[1],0)
-    var v2p = vec3(v2[0]+p[0], v2[1]+p[1],0)
+    var v1p = vec3(v1[0]+p[0], v1[1]+p[1],0);
+    var v2p = vec3(v2[0]+p[0], v2[1]+p[1],0);
     return new Line(v1p, v2p);
   }
   if (dot(subtract(p, s0), normalize(subtract(s0, s1))) ==
