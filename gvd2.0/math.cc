@@ -153,38 +153,6 @@ namespace math
     return tvals;
   }
 
-  std::vector<vec2> ppIntersect(decimal_t h1, decimal_t k1, decimal_t p1, decimal_t h2, decimal_t k2, decimal_t p2)
-  {
-    // Check for degenerate parabolas
-    // WATCH VALUE
-    const double EPSILON = 0.00000001;
-    if (std::abs(p1) < EPSILON) {
-      if (std::abs(p2) < EPSILON) {
-        // Both parabolas have no width
-        return {};
-      }
-      auto x = h1;
-      auto y = parabola_f(x, h2, k2, p2);
-      return {vec2(x, y)};
-    } else if (std::abs(p2) < EPSILON) {
-      auto x = h2;
-      auto y = parabola_f(x, h1, k1, p1);
-      return {vec2(x, y)};
-    }
-
-    auto a = 0.25*(1/p1 - 1/p2);
-    auto b = 0.5*(h2/p2 - h1/p1);
-    auto c = 0.25*(h1*h1/p1 - h2*h2/p2) + k1 - k2;
-    auto tvals = quadratic(a, b, c);
-    std::vector<vec2> ret;
-    for (auto&& x : tvals)
-    {
-      auto y = parabola_f(x, h1, k1, p1);//(x-h1)*(x-h1)/(4*p1) + k1;
-      ret.push_back({x, y});
-    }
-    return ret;
-  }
-
   double getAngle(Event s, bool consider_order)
   {
     auto p1 = s.a;

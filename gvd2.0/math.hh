@@ -131,8 +131,6 @@ namespace math
 
   std::vector<decimal_t> lpIntersect(decimal_t h, decimal_t k, decimal_t p, vec2 const& q, vec2 const& v);
 
-  std::vector<vec2> ppIntersect(decimal_t h1, decimal_t k1, decimal_t p1, decimal_t h2, decimal_t k2, decimal_t p2);
-
   inline bool betweenValue(decimal_t t, decimal_t a, decimal_t b)
   {
     std::vector<decimal_t> v = {a, b};

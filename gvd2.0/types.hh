@@ -45,57 +45,79 @@ enum class Side_e
   UNDEFINED = 3
 };
 
-enum class GeometryType_e
-{
-  PARABOLA = 1,
-  GEN_PARABOLA = 2,
-  V = 3
-};
+// enum class GeometryType_e
+// {
+//   PARABOLA = 1,
+//   GEN_PARABOLA = 2,
+//   V = 3
+// };
 
 // Composed geometric object
-class GeometricObject
+// class GeometricObject
+// {
+//   public:
+//   GeometricObject(GeometryType_e type, uint32_t id)
+//   : focus(0.0, 0.0), h(), k(), p(), theta(), Rz(), nRz(), y1(0.0, 0.0), y0(0.0, 0.0) {}
+
+//   std::vector<vec2> intersect(GeometricObject&);
+
+//   // Intersect the positive portion of the ray.
+//   // If there are two intersections, the intersections will
+//   // be returned in order of t value.
+//   // The ray is given in parametric form p(t) = p + tv
+//   std::vector<vec2> intersectRay(vec2 p, vec2 v);
+
+//   decimal_t f(decimal_t x);
+//   // Inverse of f. x = f_(y)
+//   decimal_t _f(decimal_t y);
+
+//   std::vector<vec2> prepDraw(vec2 origin, vec2 dest);
+
+//   GeometryType_e objType() const { return type; }
+
+//   // h - x offset
+//   // k - y offset
+//   // p - scale factor
+//   // directrix is at k-p
+//   // focus is at k+p
+//   // y = (x-h)^2/(4p) + k
+//   // GeometricObject crateParabola(decimal_t focus, double directrix, uint32_t id);
+//   vec2 focus;
+//   decimal_t h;
+//   decimal_t k;
+//   decimal_t p;
+//   int theta;
+//   std::vector<vec4> Rz;
+//   std::vector<vec4> nRz;
+//   vec2 y1;
+//   vec2 y0;
+//   private:
+//   GeometryType_e type;
+//   uint32_t id;
+//   // split site?
+// };
+
+struct V
 {
   public:
-  GeometricObject(GeometryType_e type, uint32_t id)
-  : focus(0.0, 0.0), h(), k(), p(), theta(), Rz(), nRz(), y1(0.0, 0.0), y0(0.0, 0.0) {}
+  V(vec2 p1, vec2 p2, decimal_t directrix, uint32_t id)
+  : point(0.0, 0.0), y1(0.0, 0.0), y0(0.0, 0.0),
+    vector1(0.0, 0.0), vector2(0.0, 0.0), id(id)
+    {
+      // TODO
+    }
 
-  std::vector<vec2> intersect(GeometricObject const& other);
-
-  // Intersect the positive portion of the ray.
-  // If there are two intersections, the intersections will
-  // be returned in order of t value.
-  // The ray is given in parametric form p(t) = p + tv
-  std::vector<vec2> intersectRay(vec2 p, vec2 v);
-
-  decimal_t f(decimal_t x);
-  // Inverse of f. x = f_(y)
-  decimal_t _f(decimal_t y);
-
-  std::vector<vec2> prepDraw(vec2 origin, vec2 dest);
-
-  GeometryType_e objType() const { return type; }
-
-  // h - x offset
-  // k - y offset
-  // p - scale factor
-  // directrix is at k-p
-  // focus is at k+p
-  // y = (x-h)^2/(4p) + k
-  // GeometricObject crateParabola(decimal_t focus, double directrix, uint32_t id);
-  vec2 focus;
-  decimal_t h;
-  decimal_t k;
-  decimal_t p;
-  int theta;
-  std::vector<vec4> Rz;
-  std::vector<vec4> nRz;
+  vec2 point;
   vec2 y1;
   vec2 y0;
+  vec2 vector1;
+  vec2 vector2;
   private:
-  GeometryType_e type;
   uint32_t id;
   // split site?
 };
+
+// TODO other beachline types
 
 static uint32_t g_nodeId = 0;
 //------------------------------------------------------------
