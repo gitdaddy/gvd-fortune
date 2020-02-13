@@ -1,5 +1,4 @@
 #include "math.hh"
-#include "geometries.hh"
 
 #include <map>
 #include <algorithm>
@@ -295,14 +294,109 @@ namespace math
     return createGeneralBisector(p, a, b);
   }
 
+  double getSegmentsBisectorAngle(Event const& s, Event const& t)
+  {
+    auto stheta = getAngle(s, false);
+    auto ttheta = getAngle(t, false);
+    auto p = pi();
+    if (stheta < 0) stheta += p*2;
+    if (ttheta < 0) ttheta += p*2;
+    if (ttheta < stheta) {
+      ttheta += 2.0 * p;
+    }
+    auto beta = (stheta + ttheta) / 2.0;
+    return beta;
+  }
 
-  // TODO
-  // double getSegmentsBisectorAngle(Event const& s, Event const& t);
+  Bisector bisectPoints(vec2 p1, vec2 p2)
+  {
+    auto v = vec2(p2.x - p1.x, p2.x - p1.x);
 
-  // Bisector bisectPoints(vec2 p1, vec2 p2);
+    auto q = vec2((v.x*0.5) + p1.x, v.x*0.5 + p1.x);
+    if (v.x > 0) {
+      v = negate(v);
+    }
+    // Get both bisecting sides clockwise and counter clockwise
+    // Testing multiple of 2 for better intersection detection effect
+    auto v1 = vec2((v.x*2) + q.x, (-v.x*2) + q.x);
+    auto v2 = vec2((-v.x*2) + q.x, (v.x*2) + q.x);
+    return createLine(v1, v2);
+  }
 
-  // std::vector<Event> bisectSegments2(Event const& s1, Event const& s2);
-  // std::vector<Event> bisectSegments4(Event const& s1, Event const& s2, Event const& s3);
+  Bisector smallAngleBisectSegments(Event s1, Event s2, std::shared_ptr<vec2> optIntersect)
+  {
+    if (parallelTest(s1, s2))
+    {
+      return getAverage(s1, s2);
+    }
+    // get the closest points
+    auto d1 = dist(s1.a, s2.a);
+    auto d2 = dist(s1.a, s2.b);
+    auto d3 = dist(s1.b, s2.a);
+    auto d4 = dist(s1.b, s2.b);
+    if (d1 < d2 && d1 < d3 && d1 < d4) {
+    } else if (d2 < d1 && d2 < d3 && d2 < d4) {
+      s2 = makeSegment(s2.b, s2.a, true);
+    } else if (d3 < d1 && d3 < d2 && d3 < d4) {
+      s1 = makeSegment(s1.b, s1.a, true);
+    } else if (d4 < d1 && d4 < d2 && d4 < d3) {
+      s1 = makeSegment(s1.b, s1.a, true);
+      s2 = makeSegment(s2.b, s2.a, true);
+    }
+
+    auto beta = getSegmentsBisectorAngle(s1, s2);
+    auto v = vec2(std::cos(beta), std::sin(beta));
+    auto p = optIntersect ? optIntersect : intersectLines(s1.a, s1.b, s2.a, s2.b);
+    if (!p)
+    {
+      std::cout << "Unable to determine intersection between segments: "
+                << s1.id << " and " << s2.id << " - using average" << std::endl;
+      return getAverage(s1, s2);
+    }
+    auto v2 = vec2(p->x + v.x, p->y + v.y);
+    // auto l = new Line(p, add(p, v));
+    return createLine(vec2(p->x, p->y), v2);
+  }
+
+  // TODO performance - perhaps use memoization for segment bisectors
+  std::vector<Bisector> bisectSegments2(Event const& s1, Event const& s2)
+  {
+    // if connected segments
+    auto optCon = connected(s1, s2);
+    if (optCon)
+    {
+      return {smallAngleBisectSegments(s1, s2, optCon)};
+    }
+
+    auto bLine = smallAngleBisectSegments(s1, s2);
+    // auto s = bisectData.line;
+    // the line for the large angle is perpendicular to the small angle bisector
+    vec2 a(bLine.p1), b(bLine.p2);
+    if (bLine.p2.y > bLine.p1.y)
+    {
+      a = vec2(bLine.p2);
+      b = vec2(bLine.p1);
+    }
+    auto AB = vec2(b.x - a.x, b.y - a.y);
+
+    auto v1Clockwise = vec2(AB.y, -AB.x); // 90 degrees perpendicular
+    auto v1CounterClockwise = vec2(-AB.y, AB.x);
+    auto intersect = optCon ? optCon : intersectLines(s1.a, s1.b, s2.a, s2.b);
+    if (!intersect)
+      return {bLine};
+
+    auto v1 = vec2(v1Clockwise.x + intersect->x, v1Clockwise.y + intersect->y);
+    auto v2 = vec2(v1CounterClockwise.x + intersect->x, v1CounterClockwise.y + intersect->y);
+    return {bLine, createLine(v1, v2)};
+  }
+
+  // std::vector<Bisector> bisectSegments4(Event const& s1, Event const& s2, Event const& s3)
+  // {
+  //   auto l = bisectSegments2(s1, s2);
+  //   auto r = bisectSegments2(s2, s3);
+  //   l.insert(l.end(), r.begin(), r.end());
+  //   return l;
+  // }
 
    Bisector bisect(Event const& e1, Event const& e2)
   {
@@ -334,8 +428,89 @@ namespace math
     return b;
   }
 
-  // std::vector<vec2> intersect(Bisector const& b1, Bisector const& b2);
+  std::vector<vec2> intersect(Bisector const& a, Bisector const& b)
+  {
+    if (a.isLine && b.isLine)
+    {
+      auto pInt = intersectLines(a.p1, a.p2, b.p1, b.p2);
+      if (!pInt) throw std::runtime_error("Invalid Intersection a");
+      return {*pInt};
+    }
 
-  // std::vector<vec2> equidistant(Event const& e1, Event const& e2, Event const& e3);
+    if (a.isLine)
+    {
+      if (!b.optGeneralParabola) throw std::runtime_error("Invalid Intersection b");
+      return b.optGeneralParabola->intersectRay(a.p1, a.v);
+    }
 
+    if (b.isLine)
+    {
+      if (!a.optGeneralParabola) throw std::runtime_error("Invalid Intersection c");
+      return a.optGeneralParabola->intersectRay(b.p1, b.v);
+    }
+    throw std::runtime_error("invalid intersection d");
+    return {};
+  }
+
+  std::vector<vec2> equidistant(Event const& a, Event const& b, Event const& c)
+  {
+    std::vector<Event> segments, points;
+    for (auto&& e : {a,b,c})
+    {
+      if (e.type == EventType_e::POINT)
+        points.push_back(e);
+      if (e.type == EventType_e::SEG)
+        segments.push_back(e);
+    }
+    // Bisecting types can be either lines or parabolas - lines are preferred
+    if (points.size() == 1)
+    {
+      if (parallelTest(segments[0], segments[1]))
+      {
+        return intersect(getAverage(segments[0], segments[1]),
+          bisect(segments[0], points[0]));
+      }
+      else
+      {
+        if (equiv2(points[0].point,segments[1].a) || equiv2(points[0].point ,segments[1].b))
+        {
+          auto b1 = bisect(segments[1], points[0]); // line preferred
+          auto blines = bisectSegments2(segments[0], segments[1]);
+          std::vector<vec2> ii;
+          for (auto&& line : blines)
+          {
+            auto i = intersect(line, b1);
+            ii.insert(ii.begin(), i.begin(), i.end());
+          }
+          return ii;
+        }
+        // otherwise default
+        auto b1 = bisect(segments[0], points[0]);
+        auto blines = bisectSegments2(segments[0], segments[1]);
+        std::vector<vec2> ii;
+        for (auto&& line : blines)
+        {
+          auto i = intersect(line, b1);
+          ii.insert(ii.begin(), i.begin(), i.end());
+        }
+        return ii;
+      }
+    }
+    else if (segments.size() == 1)
+    {
+      if (equiv2(points[1].point, segments[0].a) || equiv2(points[1].point, segments[0].b))
+      {
+        return intersect(bisect(segments[0], points[1]), bisect(points[0], points[1]));
+      }
+      return intersect(bisect(segments[0], points[0]), bisect(points[0], points[1]));
+    }
+    else if (segments.size() == 3)
+    {
+      auto l = bisectSegments2(a, b);
+      auto r = bisectSegments2(b, c);
+      if (l.size() == 0 || r.size() == 0) return {};
+      return intersectLeftRightLines(l, r);
+    }
+    return intersect(bisect(a, b), bisect(b,c));
+  }
 }

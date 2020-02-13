@@ -14,11 +14,9 @@
 namespace math
 {
   constexpr double pi() { return std::atan(1)*4; }
-  // Math data types
 
   decimal_t getEventY(Event const& e);
 
-  // MV.js Functions
   // return the z component between the two vectors
   decimal_t crossProduct(vec2 const& v1, vec2 const& v2);
 
@@ -54,6 +52,11 @@ namespace math
     return radians * 180 / pi();
   }
 
+  inline decimal_t parabola_f(decimal_t x, decimal_t h, decimal_t k, decimal_t p)
+  {
+    return (x - h) * (x - h) / (4 * p) + k;
+  }
+
   // either a line or a point segment bisector
   struct Bisector
   {
@@ -71,7 +74,6 @@ namespace math
 
   inline Bisector createGeneralBisector(vec2 focus, vec2 a, vec2 b)
   {
-
     GeometricObject g(GeometryType_e::GEN_PARABOLA, g_id++);
     auto v = normalize(vec2(b.x - a.x, b.y - a.y));
     auto v1 = vec2(focus.x - a.x, focus.y - a.y);
@@ -102,6 +104,11 @@ namespace math
   inline bool equiv2(vec2 const& a, vec2 const& b)
   {
     return equivD(a.x, b.x) && equivD(a.y, b.y);
+  }
+
+  inline decimal_t dist(vec2 a, vec2 b)
+  {
+    return length(vec2(a.x - b.x, a.y - b.y));
   }
 
   std::vector<vec4> rotateZ(uint32_t theta);
@@ -170,8 +177,9 @@ namespace math
 
   Bisector bisectPoints(vec2 p1, vec2 p2);
 
-  std::vector<Event> bisectSegments2(Event const& s1, Event const& s2);
-  std::vector<Event> bisectSegments4(Event const& s1, Event const& s2, Event const& s3);
+  Bisector smallAngleBisectSegments(Event s1, Event s2, std::shared_ptr<vec2> optIntersect = nullptr);
+  std::vector<Bisector> bisectSegments2(Event const& s1, Event const& s2);
+  // std::vector<Bisector> bisectSegments4(Event const& s1, Event const& s2, Event const& s3);
 
   inline bool parallelTest(Event const& s1, Event const& s2)
   {
@@ -187,13 +195,11 @@ namespace math
     return createLine(p1, p2);
   }
 
-  // small angle bisect segs TODO
-
   Bisector bisect(Event const& e1, Event const& e2);
 
-  std::vector<vec2> intersect(Bisector const& b1, Bisector const& b2);
+  std::vector<vec2> intersect(Bisector const& a, Bisector const& b);
 
-  std::vector<vec2> equidistant(Event const& e1, Event const& e2, Event const& e3);
+  std::vector<vec2> equidistant(Event const& a, Event const& b, Event const& c);
 }
 
 #endif

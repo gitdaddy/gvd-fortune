@@ -65,7 +65,7 @@ class GeometricObject
   // If there are two intersections, the intersections will
   // be returned in order of t value.
   // The ray is given in parametric form p(t) = p + tv
-  std::vector<vec2> intersectRay(decimal_t p, vec2 v);
+  std::vector<vec2> intersectRay(vec2 p, vec2 v);
 
   decimal_t f(decimal_t x);
   // Inverse of f. x = f_(y)
@@ -150,6 +150,8 @@ class Node
   bool isParabola; // parabola or V
   Side_e side; // which side of the edge
   uint32_t id;
+  // Perhaps these will need to be weak_ptr
+  // to avoid circular ownership
   std::shared_ptr<Node> pLeft;
   std::shared_ptr<Node> pRight;
   std::shared_ptr<Node> pParent;
