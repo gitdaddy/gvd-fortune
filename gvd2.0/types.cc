@@ -1,49 +1,27 @@
 #include "types.hh"
 #include "math.hh" // circular reference?
 
+#include <memory>
+
 namespace
 {
-  std::vector<vec2> ppIntersect(decimal_t h1, decimal_t k1, decimal_t p1, decimal_t h2, decimal_t k2, decimal_t p2)
+  std::vector<vec4> rotateZ(decimal_t theta)
   {
-    // Check for degenerate parabolas
-    // WATCH VALUE
-    const double EPSILON = 0.00000001;
-    if (std::abs(p1) < EPSILON) {
-      if (std::abs(p2) < EPSILON) {
-        // Both parabolas have no width
-        return {};
-      }
-      auto x = h1;
-      auto y = math::parabola_f(x, h2, k2, p2);
-      return {vec2(x, y)};
-    } else if (std::abs(p2) < EPSILON) {
-      auto x = h2;
-      auto y = math::parabola_f(x, h1, k1, p1);
-      return {vec2(x, y)};
-    }
-
-    auto a = 0.25*(1/p1 - 1/p2);
-    auto b = 0.5*(h2/p2 - h1/p1);
-    auto c = 0.25*(h1*h1/p1 - h2*h2/p2) + k1 - k2;
-    auto tvals = math::quadratic(a, b, c);
-    std::vector<vec2> ret;
-    for (auto&& x : tvals)
-    {
-      auto y = math::parabola_f(x, h1, k1, p1);//(x-h1)*(x-h1)/(4*p1) + k1;
-      ret.push_back({x, y});
-    }
-    return ret;
+    auto radians = theta * (std::atan(1)*4) / 180.0;
+    // double c = 0.0;
+    // if ( std::abs(theta) == 90)
+    //   c = 0.0;
+    // else
+    //   c = std::cos(radians);
+    auto c = std::cos(radians);
+    auto s = std::sin(radians);
+    return {vec4( c,   -s, 0.0, 0.0),
+            vec4( s,    c, 0.0, 0.0),
+            vec4(0.0, 0.0, 1.0, 0.0),
+            vec4(0.0, 0.0, 0.0, 1.0) };
   }
-
-  std::vector<vec2> vpIntersect(GeometricObject const& v, GeometricObject const& p)
-  {
-    // std::vector<vec2> ret;
-    // auto p = v.p;
-    // for (auto&& )
-    return {};
-  }
-
 }
+
 
 Event makeSegment(vec2 p1, vec2 p2, uint32_t label, bool forceOrder)
 {
@@ -59,123 +37,72 @@ Event makeSegment(vec2 p1, vec2 p2, uint32_t label, bool forceOrder)
   return p1.y > p2.y ? Event(EventType_e::SEG, label, vec2(0.0, 0.0), p1, p2) : Event(EventType_e::SEG, label, vec2(0.0, 0.0), p2, p1);
 }
 
-std::vector<vec2> GeometricObject::intersect(GeometricObject& rOther)
+/////////////////////// V
+V::V(vec2 p1, vec2 p2, decimal_t directrix, uint32_t id)
+  : point(0.0, 0.0), y1(0.0, 0.0), y0(0.0, 0.0),
+  vectors(), thetas(), id(id)
 {
-  switch (type)
+  y0 = p1;
+  y1 = p2;
+  if (p1.y > p2.y)
   {
-  case GeometryType_e::PARABOLA:
-    if (rOther.type == GeometryType_e::PARABOLA)
-    {
-      // not sure that this is needed
-      p = p == 0.0 ? 1e-8 : p;
-      rOther.p = rOther.p == 0.0 ? 1e-8 : rOther.p;
-      return ppIntersect(h, k, p, rOther.h, rOther.k, rOther.p);
-    }
-    // else
-    // {
-    //   // v p
-
-    // }
-    break;
-
-  case GeometryType_e::GEN_PARABOLA:
-    /* code */
-    break;
-
-  case GeometryType_e::V:
-    /* code */
-    break;
-
-  default:
-    throw std::runtime_error("Invalid geometry type");
+    y1 = p1;
+    y0 = p2;
   }
-  return {};
+  Event directrixSeg(EventType_e::SEG, 0, vec2(0.0,0.0),vec2(-1.0, directrix), vec2(1.0, directrix));
+  auto optP = math::intersectLines(y0, y1, directrixSeg.a, directrixSeg.b);
+  if (!optP) throw std::runtime_error("Invalid V");
+  point = *optP;
+  Event s1(EventType_e::SEG, 0, vec2(0.0,0.0), p1, p2);
+  auto theta = math::getSegmentsBisectorAngle(directrixSeg, s1);
+
+  auto PI = math::pi();
+  while (theta > 0) theta -= PI/2;
+  while (theta < 0) theta += PI/2;
+  thetas = {theta + PI/2, theta};
+  for (auto&& t : thetas)
+  {
+    vectors.push_back(vec2(std::cos(t), std::sin(theta)));
+  }
 }
 
-std::vector<vec2> GeometricObject::intersectRay(vec2 p, vec2 v)
+decimal_t f_x(V const& v, decimal_t x)
 {
-  switch (type)
-  {
-  case GeometryType_e::PARABOLA:
-    /* code */
-    break;
-
-  case GeometryType_e::GEN_PARABOLA:
-    /* code */
-    break;
-
-  case GeometryType_e::V:
-    /* code */
-    break;
-
-  default:
-    throw std::runtime_error("Invalid geometry type");
+  vec2 vec(0.0, 0.0);
+  if (x < v.point.x) {
+    vec = v.vectors[0];
+  } else {
+    vec = v.vectors[1];
   }
-  return {};
+  return v.point.y + vec.y * (x - v.point.x) / vec.x;
 }
 
-decimal_t GeometricObject::f(decimal_t x)
+std::vector<decimal_t> f_y(V const& v, decimal_t y)
 {
-  switch (type)
+  if (y < v.point.y) return {v.point.x};
+  if (y == v.point.y) return {v.point.x};
+  auto tY = v.point.y;
+  auto tX = v.point.x;
+  std::vector<decimal_t> ret;
+  for (auto&& vec : v.vectors)
   {
-  case GeometryType_e::PARABOLA:
-    /* code */
-    break;
-
-  case GeometryType_e::GEN_PARABOLA:
-    /* code */
-    break;
-
-  case GeometryType_e::V:
-    /* code */
-    break;
-
-  default:
-    throw std::runtime_error("Invalid geometry type");
+    ret.push_back(tX + vec.x*(y-tY)/vec.y);
   }
-  return 0.0;
-}
-// Inverse of f. x = f_(y)
-decimal_t GeometricObject::_f(decimal_t y)
-{
-  switch (type)
-  {
-  case GeometryType_e::PARABOLA:
-    /* code */
-    break;
-
-  case GeometryType_e::GEN_PARABOLA:
-    /* code */
-    break;
-
-  case GeometryType_e::V:
-    /* code */
-    break;
-
-  default:
-    throw std::runtime_error("Invalid geometry type");
-  }
-  return 0.0;
+  return ret;
 }
 
-std::vector<vec2> GeometricObject::prepDraw(vec2 origin, vec2 dest)
+//////////////// PARABOLA
+
+Parabola::Parabola(vec2 focus, decimal_t h, decimal_t k, decimal_t p, uint32_t id)
+  : focus(focus), h(h), k(k), p(p), id(id)
+{}
+
+/////////////// GENERAL PARABOLA
+
+GeneralParabola::GeneralParabola(vec2 focus, decimal_t h, decimal_t k,
+                  decimal_t p, decimal_t theta, uint32_t id)
+  : focus(focus), h(h), k(k), p(p), theta(theta), Rz(), nRz(), id(id)
 {
-  switch (type)
-  {
-  case GeometryType_e::PARABOLA:
-    /* code */
-    break;
-
-  case GeometryType_e::GEN_PARABOLA:
-    /* code */
-    break;
-
-  case GeometryType_e::V:
-    /* code */
-    break;
-
-  default:
-    throw std::runtime_error("Invalid geometry type");
-  }
-  return {};
+  Rz = rotateZ(-theta);
+  nRz = rotateZ(theta);
 }

@@ -18,7 +18,9 @@ std::vector<vec2> consolidate(std::vector<vec2> intersections, decimal_t pivotX)
 
 /////////////////////////////////////// Beachline Methods ///////////////////////////
 
-GeometricObject createBeachlineSegment(Event site, double directrix, uint32_t id);
+V createBeachlineSegmentV(Event site, double directrix, uint32_t id);
+Parabola createBeachlineSegmentPara(Event site, double directrix, uint32_t id);
+GeneralParabola createBeachlineSegmentGPara(Event site, double directrix, uint32_t id);
 
 void add(std::shared_ptr<Node> const& pRoot, EventPacket const& packet);
 

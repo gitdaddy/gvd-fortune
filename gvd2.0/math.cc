@@ -1,4 +1,5 @@
 #include "math.hh"
+#include "geometries.hh"
 
 #include <map>
 #include <algorithm>
@@ -24,22 +25,6 @@ namespace math
   decimal_t crossProduct(vec2 const& v1, vec2 const& v2)
   {
     return v1.x * v2.y - v1.y * v2.x;
-  }
-
-  std::vector<vec4> rotateZ(int theta)
-  {
-    auto rad = radians(theta);
-    // double c = 0.0;
-    // if ( std::abs(theta) == 90)
-    //   c = 0.0;
-    // else
-    //   c = std::cos(rad);
-    auto c = std::cos(rad);
-    auto s = std::sin(rad);
-    return {vec4( c,   -s, 0.0, 0.0),
-            vec4( s,    c, 0.0, 0.0),
-            vec4(0.0, 0.0, 1.0, 0.0),
-            vec4(0.0, 0.0, 0.0, 1.0) };
   }
 
   vec4 mult(std::vector<vec4> const& matrix, vec4 const& v4)
@@ -125,6 +110,125 @@ namespace math
     auto x = ((x1*y2-y1*x2)*(x3-x4) - (x1-x2)*(x3*y4-y3*x4))/denom;
     auto y = ((x1*y2-y1*x2)*(y3-y4) - (y1-y2)*(x3*y4-y3*x4))/denom;
     return std::make_shared<vec2>(x, y);
+  }
+
+  std::vector<vec2> ppIntersect(decimal_t h1, decimal_t k1, decimal_t p1, decimal_t h2, decimal_t k2, decimal_t p2)
+  {
+    // Check for degenerate parabolas
+    // WATCH VALUE
+    const double EPSILON = 0.00000001;
+    if (std::abs(p1) < EPSILON)
+    {
+      if (std::abs(p2) < EPSILON)
+      {
+        // Both parabolas have no width
+        return {};
+      }
+      auto x = h1;
+      auto y = math::parabola_f(x, h2, k2, p2);
+      return {vec2(x, y)};
+    }
+    else if (std::abs(p2) < EPSILON)
+    {
+      auto x = h2;
+      auto y = math::parabola_f(x, h1, k1, p1);
+      return {vec2(x, y)};
+    }
+
+    auto a = 0.25*(1/p1 - 1/p2);
+    auto b = 0.5*(h2/p2 - h1/p1);
+    auto c = 0.25*(h1*h1/p1 - h2*h2/p2) + k1 - k2;
+    auto tvals = math::quadratic(a, b, c);
+    std::vector<vec2> ret;
+    for (auto&& x : tvals)
+    {
+      auto y = math::parabola_f(x, h1, k1, p1);//(x-h1)*(x-h1)/(4*p1) + k1;
+      ret.push_back({x, y});
+    }
+    return ret;
+  }
+
+  std::vector<vec2> intersectRay(GeneralParabola const& p, vec2 origin, vec2 v)
+  {
+    // TODO
+    return {};
+  }
+
+  std::vector<vec2> intersectRay(Parabola const& p, vec2 origin, vec2 v)
+  {
+    // TODO
+    return {};
+  }
+
+  std::vector<vec2> intersectRay(V const& p, vec2 origin, vec2 v)
+  {
+    // TODO
+    return {};
+  }
+
+  std::vector<vec2> vpIntersect(V const& v, Parabola const& p)
+  {
+    std::vector<vec2> ret;
+    auto origin = v.point;
+    for (auto&& v : v.vectors)
+    {
+      auto o = intersectRay(p, origin, v);
+      ret.insert(ret.end(), o.begin(), o.end());
+    }
+    return ret;
+  }
+
+  std::vector<vec2> vvIntersect(V const& v1, V const& v2)
+  {
+    auto s1 = makeSegment(v1.y0, v1.y1, 0);
+    auto s2 = makeSegment(v2.y0, v2.y1, 0);
+
+    auto optConnection = connected(s1, s2);
+    if (optConnection) {
+      auto y0_y1 = vec2(v1.y1.x - v1.y0.x, v1.y1.y - v1.y0.x);
+      auto y0_Oy0 = vec2(v2.y0.x - v1.y0.x, v2.y0.x - v1.y0.x);
+      auto y0_Oy1 = vec2(v2.y1.x - v1.y0.x, v2.y1.y - v1.y0.x);
+
+      // z area between this and obj
+      auto zArea = crossProduct(y0_y1, y0_Oy0) + crossProduct(y0_y1, y0_Oy1);
+      if (zArea == 0) {
+        return {v1.point};
+      }
+      // choose this v left or right based on zArea
+      auto bisector = smallAngleBisectSegments(s1, s2, optConnection);
+
+      // often P is too close to p2 increment the height by a 0.01 to get a better width for each vector
+      if (zArea < 0) {
+        // segment right
+        auto pPrime = vec2(f_y(v1, v1.y1.y + 0.01)[1], v1.y1.y + 0.01);
+        auto pI = intersectLines(v1.point, pPrime, bisector.p1, bisector.p2);
+        if (!pI) throw std::runtime_error("Invliad intersection V to V");
+        return {*pI};
+      } else {
+        // segment left
+        auto pPrime = vec2(f_y(v1, v1.y1.y + 0.01)[0], v1.y1.y + 0.01);
+        auto pI = intersectLines(v1.point, pPrime, bisector.p1, bisector.p2);
+        if (!pI) throw std::runtime_error("Invliad intersection V to V");
+        return {*pI};
+      }
+    } else {
+      // TODO
+      // auto intersections = getLineIntersections(v1, v2);
+
+      // _.forEach(lines.left, function(l) {
+      //   _.forEach(lines.right, function(r) {
+      //     intersects.push(intersectLines(l.p1, l.p2, r.p1, r.p2));
+      //   });
+      // });
+
+      // TODO
+      // auto validPoints = filterOutPointsLowerThan(intersects, v1.p[1]);
+      // if (validPoints.length == 0) {
+      //   return [];
+      // }
+      // return _.sortBy(validPoints, function (p) { return p[0]; });
+      return {};
+    }
   }
 
   std::vector<vec2> intersectLeftRightLines (std::vector<Bisector> const& leftLines, std::vector<Bisector> const& rightLines)
@@ -408,13 +512,13 @@ namespace math
     if (a.isLine)
     {
       if (!b.optGeneralParabola) throw std::runtime_error("Invalid Intersection b");
-      return b.optGeneralParabola->intersectRay(a.p1, a.v);
+      return intersectRay(*b.optGeneralParabola, a.p1, a.v);
     }
 
     if (b.isLine)
     {
       if (!a.optGeneralParabola) throw std::runtime_error("Invalid Intersection c");
-      return a.optGeneralParabola->intersectRay(b.p1, b.v);
+      return intersectRay(*a.optGeneralParabola, b.p1, b.v);
     }
     throw std::runtime_error("invalid intersection d");
     return {};

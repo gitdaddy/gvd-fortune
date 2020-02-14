@@ -61,7 +61,7 @@ namespace math
   struct Bisector
   {
     bool isLine;
-    std::shared_ptr<GeometricObject> optGeneralParabola;
+    std::shared_ptr<GeneralParabola> optGeneralParabola;
     vec2 p1;
     vec2 p2;
     vec2 v;
@@ -74,7 +74,6 @@ namespace math
 
   inline Bisector createGeneralBisector(vec2 focus, vec2 a, vec2 b)
   {
-    GeometricObject g(GeometryType_e::GEN_PARABOLA, g_id++);
     auto v = normalize(vec2(b.x - a.x, b.y - a.y));
     auto v1 = vec2(focus.x - a.x, focus.y - a.y);
     auto z = crossProduct(v, v1);
@@ -83,14 +82,11 @@ namespace math
       v = negate(v);
       z = -z;
     }
-    g.focus = focus;
-    g.k = z / 2.0;
-    g.p = g.k;
-    g.h = focus.x;
-    g.theta = std::atan2(v.y, v.x);
     // splitSite = _.get(focus, "label") != _.get(directrix, "label");
+    auto zHalf = z/2.0;
     return {false,
-            std::make_shared<GeometricObject>(g),
+            std::make_shared<GeneralParabola>(focus, focus.x,
+              zHalf, zHalf, std::atan2(v.y, v.x), g_id++),
             vec2(0.0, 0.0), vec2(0.0, 0.0), vec2(0.0, 0.0)};
   }
 
@@ -111,8 +107,6 @@ namespace math
     return length(vec2(a.x - b.x, a.y - b.y));
   }
 
-  std::vector<vec4> rotateZ(uint32_t theta);
-
   vec4 mult(std::vector<vec4> const& matrix, vec4 const& v4);
 
   bool isRightOfLine(vec2 const& upper, vec2 const& lower, vec2 const& p);
@@ -126,6 +120,16 @@ namespace math
   std::vector<decimal_t> quadratic(decimal_t const& a, decimal_t const& b, decimal_t const& c);
 
   std::shared_ptr<vec2> intersectLines(vec2 const& p1, vec2 const& p2, vec2 const& p3, vec2 const& p4);
+
+  std::vector<vec2> ppIntersect(decimal_t h1, decimal_t k1, decimal_t p1, decimal_t h2, decimal_t k2, decimal_t p2);
+
+  std::vector<vec2> intersectRay(GeneralParabola const& p, vec2 origin, vec2 v);
+  std::vector<vec2> intersectRay(Parabola const& p, vec2 origin, vec2 v);
+  std::vector<vec2> intersectRay(V const& p, vec2 origin, vec2 v);
+
+  std::vector<vec2> vpIntersect(V const& v, Parabola const& p);
+  std::vector<vec2> vvIntersect(V const& v1, V const& v2);
+  // std::vector<vec2> vbIntersect(V const& v, Bisector const& line);
 
   std::vector<vec2> intersectLeftRightLines (std::vector<Bisector> const& leftLines, std::vector<Bisector> const& rightLines);
 

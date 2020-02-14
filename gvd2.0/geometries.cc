@@ -1,15 +1,8 @@
 #include "geometries.hh"
 #include "math.hh"
 
-// namespace
-// {
-// }
-
-
-vec2 transformVector(vec2 v, GeometricObject const& genP)
+vec2 transformVector(vec2 v, GeneralParabola const& genP)
 {
-  if (genP.objType() != GeometryType_e::GEN_PARABOLA)
-    throw std::runtime_error("Invalid object type: general parabola expected");
   if (genP.theta == 0) return v;
 
   vec4 v4 = vec4(v.x, v.y, 0.0, 0.0);
@@ -20,10 +13,8 @@ vec2 transformVector(vec2 v, GeometricObject const& genP)
   return vec2(val.x, val.y); // Do we need z,w?
 }
 
-vec2 untransformPoint(vec2 p, GeometricObject const& genP)
+vec2 untransformPoint(vec2 p, GeneralParabola const& genP)
 {
-  if (genP.objType() != GeometryType_e::GEN_PARABOLA)
-    throw std::runtime_error("Invalid object type: general parabola expected");
   if (genP.theta == 0) return p;
   vec4 newP(p.x, p.y, 0.0, 0.0);
   newP.x += -genP.h;

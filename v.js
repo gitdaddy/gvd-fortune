@@ -41,7 +41,6 @@ V = function(line, directrix, id) {
     vectors.push(vec3(Math.cos(theta), Math.sin(theta), 0));
   });
   this.vectors = vectors;
-  this.miny = directrix > Math.min(this.y0[1], this.y1[1]) ? directrix : Math.min(this.y0[1], this.y1[1]);
   this.id = id;
 }
 
