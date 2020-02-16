@@ -119,21 +119,27 @@ namespace math
 
   std::vector<decimal_t> quadratic(decimal_t const& a, decimal_t const& b, decimal_t const& c);
 
+  vec2 transformVector(vec2 v, GeneralParabola const& genP);
+
+  vec2 transformPoint(vec2 p, GeneralParabola const& genP);
+
+  vec2 untransformPoint(vec2 p, GeneralParabola const& genP);
+
+  std::vector<decimal_t> lpIntersect(decimal_t h, decimal_t k, decimal_t p, vec2 const& q, vec2 const& v);
+
   std::shared_ptr<vec2> intersectLines(vec2 const& p1, vec2 const& p2, vec2 const& p3, vec2 const& p4);
 
   std::vector<vec2> ppIntersect(decimal_t h1, decimal_t k1, decimal_t p1, decimal_t h2, decimal_t k2, decimal_t p2);
 
-  std::vector<vec2> intersectRay(GeneralParabola const& p, vec2 origin, vec2 v);
-  std::vector<vec2> intersectRay(Parabola const& p, vec2 origin, vec2 v);
-  std::vector<vec2> intersectRay(V const& p, vec2 origin, vec2 v);
+  std::vector<vec2> intersectRay(GeneralParabola const& genP, vec2 origin, vec2 v);
+  std::vector<vec2> intersectRay(Parabola& para, vec2 origin, vec2 v);
 
   std::vector<vec2> vpIntersect(V const& v, Parabola const& p);
   std::vector<vec2> vvIntersect(V const& v1, V const& v2);
+  // TODO
   // std::vector<vec2> vbIntersect(V const& v, Bisector const& line);
 
   std::vector<vec2> intersectLeftRightLines (std::vector<Bisector> const& leftLines, std::vector<Bisector> const& rightLines);
-
-  std::vector<decimal_t> lpIntersect(decimal_t h, decimal_t k, decimal_t p, vec2 const& q, vec2 const& v);
 
   inline bool betweenValue(decimal_t t, decimal_t a, decimal_t b)
   {

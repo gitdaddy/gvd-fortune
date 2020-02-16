@@ -92,6 +92,59 @@ namespace math
     return {(-b+sdisc)/(2*a), (-b-sdisc)/(2*a)};
   }
 
+  vec2 transformVector(vec2 v, GeneralParabola const& genP)
+  {
+    if (genP.theta == 0) return v;
+
+    vec4 v4 = vec4(v.x, v.y, 0.0, 0.0);
+    // auto val = math::mult(genP.Rz, v4);
+    auto val = mult(genP.Rz, v4);
+    // Not sure why w is getting set to 1.
+    // v[3] = 0;
+    return vec2(val.x, val.y); // Do we need z,w?
+  }
+
+  vec2 transformPoint(vec2 p, GeneralParabola const& genP)
+  {
+    if (genP.theta == 0) return p;
+
+    // Don't remove this code. It explains what we're doing below.
+    // var M = translate(this.h, 2*this.k, 0);
+    // M = mult(M, rotateZ(degrees(-this.theta)));
+    // M = mult(M, translate(-this.focus.x, -this.focus.y, 0));
+    // p = mult(M, vec4(p));
+
+    vec4 p4(p.x, p.y, 0.0, 0.0);
+    p4.x += -genP.focus.x;
+    p4.y += -genP.focus.y;
+    p4 = mult(genP.Rz, p4);
+    p4.x += genP.h;
+    p4.y += 2 * genP.k;
+    // genP.type = "general_parabola";
+    return vec2(p4.x, p4.y);
+  }
+
+  vec2 untransformPoint(vec2 p, GeneralParabola const& genP)
+  {
+    if (genP.theta == 0) return p;
+    vec4 newP(p.x, p.y, 0.0, 0.0);
+    newP.x += -genP.h;
+    p.y += -2 * genP.k;
+    auto rslt = mult(genP.nRz, newP);
+    rslt.x += genP.focus.x;
+    rslt.y += genP.focus.y;
+    return vec2(rslt.x, rslt.y); // Do we need z,w?
+  }
+
+  std::vector<decimal_t> lpIntersect(decimal_t h, decimal_t k, decimal_t p, vec2 const& q, vec2 const& v)
+  {
+    auto a = v.x * v.x / (4 * p);
+    auto b = 2 * v.x * (q.x - h) / (4 * p) - v.y;
+    auto c = (q.x * q.x - 2 * q.x * h + h * h) / (4 * p) + k - q.y;
+    auto tvals = quadratic(a, b, c);
+    return tvals;
+  }
+
   std::shared_ptr<vec2> intersectLines(vec2 const& p1, vec2 const& p2, vec2 const& p3, vec2 const& p4)
   {
     auto x1 = p1.x;
@@ -125,52 +178,90 @@ namespace math
         return {};
       }
       auto x = h1;
-      auto y = math::parabola_f(x, h2, k2, p2);
+      auto y = parabola_f(x, h2, k2, p2);
       return {vec2(x, y)};
     }
     else if (std::abs(p2) < EPSILON)
     {
       auto x = h2;
-      auto y = math::parabola_f(x, h1, k1, p1);
+      auto y = parabola_f(x, h1, k1, p1);
       return {vec2(x, y)};
     }
 
     auto a = 0.25*(1/p1 - 1/p2);
     auto b = 0.5*(h2/p2 - h1/p1);
     auto c = 0.25*(h1*h1/p1 - h2*h2/p2) + k1 - k2;
-    auto tvals = math::quadratic(a, b, c);
+    auto tvals = quadratic(a, b, c);
     std::vector<vec2> ret;
     for (auto&& x : tvals)
     {
-      auto y = math::parabola_f(x, h1, k1, p1);//(x-h1)*(x-h1)/(4*p1) + k1;
+      auto y = parabola_f(x, h1, k1, p1);//(x-h1)*(x-h1)/(4*p1) + k1;
       ret.push_back({x, y});
     }
     return ret;
   }
 
-  std::vector<vec2> intersectRay(GeneralParabola const& p, vec2 origin, vec2 v)
+  std::vector<vec2> intersectRay(GeneralParabola const& genP, vec2 origin, vec2 v)
   {
-    // TODO
-    return {};
+    auto p = transformPoint(origin, genP);
+    auto vec = transformVector(v, genP);
+
+    auto tvals = lpIntersect(genP.h, genP.k, genP.p, p, vec);
+    // Sort tvals in increasing order
+    if (tvals.size() == 2 && tvals[1] < tvals[0]) {
+      tvals = {tvals[1], tvals[0]};
+    }
+
+    std::vector<vec2> ret;
+  
+    for (auto&& t : tvals)
+    {
+      if (t == 0) {
+        // horizontal or vertical direction
+        // derive y
+        auto y = parabola_f(p.x, genP.h, genP.k, genP.p);
+        vec2 pt(p.x, y);
+        pt = untransformPoint(pt, genP);
+        ret.push_back(pt);
+      } else if (std::abs(t < 1e10)) {
+        auto q = vec2(p.x + (v.x * t), p.y + (v.y * t));
+        // var q = add(p, mult(v, t));
+        q = untransformPoint(q, genP);
+        ret.push_back(q);
+      }
+    }
+    return ret;
   }
 
-  std::vector<vec2> intersectRay(Parabola const& p, vec2 origin, vec2 v)
+  std::vector<vec2> intersectRay(Parabola& para, vec2 origin, vec2 v)
   {
-    // TODO
-    return {};
+    if (para.p == 0.0) { // TODO is this needed?
+      para.p = 1e-10;
+    }
+
+    auto tvals = lpIntersect(para.h, para.k, para.p, origin, v);
+
+    if (tvals.empty())
+    throw std::runtime_error("Intersect Ray Tvals Invalid");
+    // Sort tvals in increasing order
+    if (tvals.size() == 2 && tvals[1] < tvals[0]) {
+      tvals = {tvals[1], tvals[0]};
+    }
+
+    std::vector<vec2> ret;
+    for (auto&& t : tvals)
+    {
+      auto q = vec2(origin.x + (v.x * t), origin.y + (v.y * t));
+      ret.push_back(q);
+    }
+    return ret;
   }
 
-  std::vector<vec2> intersectRay(V const& p, vec2 origin, vec2 v)
-  {
-    // TODO
-    return {};
-  }
-
-  std::vector<vec2> vpIntersect(V const& v, Parabola const& p)
+  std::vector<vec2> vpIntersect(V const& v, Parabola& p)
   {
     std::vector<vec2> ret;
     auto origin = v.point;
-    for (auto&& v : v.vectors)
+    for (auto v : v.vectors)
     {
       auto o = intersectRay(p, origin, v);
       ret.insert(ret.end(), o.begin(), o.end());
@@ -246,15 +337,6 @@ namespace math
       }
     }
     return result;
-  }
-
-  std::vector<decimal_t> lpIntersect(decimal_t h, decimal_t k, decimal_t p, vec2 const& q, vec2 const& v)
-  {
-    auto a = v.x * v.x / (4 * p);
-    auto b = 2 * v.x * (q.x - h) / (4 * p) - v.y;
-    auto c = (q.x * q.x - 2 * q.x * h + h * h) / (4 * p) + k - q.y;
-    auto tvals = quadratic(a, b, c);
-    return tvals;
   }
 
   double getAngle(Event s, bool consider_order)
