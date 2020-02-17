@@ -4,6 +4,93 @@
 #include <map>
 #include <algorithm>
 
+namespace
+{
+  bool intersectsTarget(V const& line, V const& t)
+  {
+    // y0 upper
+    // y1 lower
+    auto r1 = math::isRightOfLine(line.y1, line.y0, t.y0);
+    auto r2 = math::isRightOfLine(line.y1, line.y0, t.y1);
+    return r1 && !r2 || !r1 && r2;
+  }
+
+  std::vector<vec2> getLineIntersections(V const& l, V const& r)
+  {
+    std::vector<math::Bisector> left;
+    std::vector<math::Bisector> right;
+    // 3 cases: 1 l divides r, r divides l, neither divide
+    auto t1 = intersectsTarget(l, r);
+    auto t2 = intersectsTarget(r, l);
+    if (t1 && t2) {
+      std::cout << "Error invalid input data\n";
+      return {};
+    }
+    auto v0lp = vec2(l.vectors[0].x + l.point.x, l.vectors[0].y + l.point.y);
+    auto v1lp = vec2(l.vectors[1].x + l.point.x, l.vectors[1].y + l.point.y);
+
+    auto v0rp = vec2(r.vectors[0].x + r.point.x, r.vectors[0].y + r.point.y);
+    auto v1rp = vec2(r.vectors[1].x + r.point.x, r.vectors[1].y + r.point.y);
+
+    if (!t1 && !t2) { // neither divide
+      // all combinations possible 11, 10, 01, 00
+      if (math::dividesRightOfLine(l.y1, l.y0, r.y1, r.y0)) 
+      {
+        left.push_back(math::createLine(l.point, v1lp));
+      } 
+      else 
+      {
+        left.push_back(math::createLine(l.point, v0lp));
+      }
+
+      if (math::dividesRightOfLine(r.y1, r.y0, l.y1, l.y0)) 
+      {
+        right.push_back(math::createLine(r.point, v1rp));
+      } 
+      else 
+      {
+        right.push_back(math::createLine(r.point, v0rp));
+      }
+
+    } 
+    else if (t1) 
+    {
+      left.push_back(math::createLine(l.point, v1lp));
+      left.push_back(math::createLine(l.point, v0lp));
+      if (math::dividesRightOfLine(r.y1, r.y0, l.y1, l.y0)) 
+      {
+        right.push_back(math::createLine (r.point, v1rp));
+      } 
+      else 
+      {
+        right.push_back(math::createLine (r.point, v0rp));
+      }
+    } 
+    else 
+    { // r intersects l
+      right.push_back(math::createLine (r.point, v1rp));
+      right.push_back(math::createLine (r.point, v0rp));
+      if (math::dividesRightOfLine(l.y1, l.y0, r.y1, r.y0)) 
+      {
+        left.push_back(math::createLine(l.point, v1lp));
+      } 
+      else 
+      {
+        left.push_back(math::createLine(l.point, v0lp));
+      }
+    }
+    return math::intersectLeftRightLines(left, right);
+  }
+
+  struct vec2_x_less_than
+  {
+    inline bool operator() (const vec2& struct1, const vec2& struct2)
+    {
+      return struct1.x < struct2.x;
+    }
+  };
+} // anonymous namespace
+
 namespace math
 {
   std::map<std::string, Bisector> g_bisectorsMemo;
@@ -165,6 +252,23 @@ namespace math
     return std::make_shared<vec2>(x, y);
   }
 
+  std::vector<vec2> intersectLeftRightLines(std::vector<Bisector> const& leftLines, std::vector<Bisector> const& rightLines)
+  {
+    std::vector<vec2> result;
+    for (auto&& ll : leftLines)
+    {
+      for (auto&& rl : rightLines)
+      {
+        auto pOptIntersect = intersectLines(ll.p1, ll.p2, rl.p1, rl.p2);
+        if (pOptIntersect)
+        {
+          result.push_back(*pOptIntersect.get());
+        }
+      }
+    }
+    return result;
+  }
+
   std::vector<vec2> ppIntersect(decimal_t h1, decimal_t k1, decimal_t p1, decimal_t h2, decimal_t k2, decimal_t p2)
   {
     // Check for degenerate parabolas
@@ -236,6 +340,7 @@ namespace math
   std::vector<vec2> intersectRay(Parabola& para, vec2 origin, vec2 v)
   {
     if (para.p == 0.0) { // TODO is this needed?
+      std::cout << "intersect para update...";
       para.p = 1e-10;
     }
 
@@ -293,50 +398,27 @@ namespace math
         // segment right
         auto pPrime = vec2(f_y(v1, v1.y1.y + 0.01)[1], v1.y1.y + 0.01);
         auto pI = intersectLines(v1.point, pPrime, bisector.p1, bisector.p2);
-        if (!pI) throw std::runtime_error("Invliad intersection V to V");
+        if (!pI) throw std::runtime_error("Invalid intersection V to V");
         return {*pI};
       } else {
         // segment left
         auto pPrime = vec2(f_y(v1, v1.y1.y + 0.01)[0], v1.y1.y + 0.01);
         auto pI = intersectLines(v1.point, pPrime, bisector.p1, bisector.p2);
-        if (!pI) throw std::runtime_error("Invliad intersection V to V");
+        if (!pI) throw std::runtime_error("Invalid intersection V to V");
         return {*pI};
       }
     } else {
-      // TODO
-      // auto intersections = getLineIntersections(v1, v2);
-
-      // _.forEach(lines.left, function(l) {
-      //   _.forEach(lines.right, function(r) {
-      //     intersects.push(intersectLines(l.p1, l.p2, r.p1, r.p2));
-      //   });
-      // });
-
-      // TODO
-      // auto validPoints = filterOutPointsLowerThan(intersects, v1.p[1]);
-      // if (validPoints.length == 0) {
-      //   return [];
-      // }
-      // return _.sortBy(validPoints, function (p) { return p[0]; });
-      return {};
-    }
-  }
-
-  std::vector<vec2> intersectLeftRightLines (std::vector<Bisector> const& leftLines, std::vector<Bisector> const& rightLines)
-  {
-    std::vector<vec2> result;
-    for (auto&& ll : leftLines)
-    {
-      for (auto&& rl : rightLines)
+      auto intersections = getLineIntersections(v1, v2);
+      std::vector<vec2> vPts;
+      for (auto&& i : intersections)
       {
-        auto pOptIntersect = intersectLines(ll.p1, ll.p2, rl.p1, rl.p2);
-        if (pOptIntersect)
-        {
-          result.push_back(*pOptIntersect.get());
-        }
+        if (i.y >= v1.point.y)
+          vPts.push_back(i);
       }
+      if (vPts.empty()) return {};
+      std::sort(vPts.begin(), vPts.end(), vec2_x_less_than());
+      return vPts;
     }
-    return result;
   }
 
   double getAngle(Event s, bool consider_order)
