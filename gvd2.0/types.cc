@@ -25,9 +25,32 @@ Node::Node(ArcType_e _aType)
   pRight(nullptr),
   pParent(nullptr),
   start(vec2(0.0,0.0)),
-  end(vec2(0.0,0.0)),
+  drawPoints(),
   point(vec2(0.0,0.0)),
   a(vec2(0.0,0.0)),
-  b(vec2(0.0,0.0))
+  b(vec2(0.0,0.0)),
+  live(true)
 {}
+
+// TODO implement
+std::shared_ptr<Node> Node::prevEdge()
+{
+  return nullptr;
+}
+
+std::shared_ptr<Node> Node::nextEdge()
+{
+  return nullptr;
+}
+
+std::shared_ptr<Node> Node::prevArc()
+{
+  return nullptr;
+}
+
+std::shared_ptr<Node> Node::nextArc()
+{
+  return nullptr;
+}
+
 

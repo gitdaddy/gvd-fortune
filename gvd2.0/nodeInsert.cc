@@ -17,12 +17,14 @@ namespace
     return math::crossProduct(v0, v1) < 0;
   }
 
-  std::shared_ptr<bool> isClosing(std::shared_ptr<Node> child, Event const& p)
+  // c++ form of isClosing()
+  std::shared_ptr<bool> isClosingRight(std::shared_ptr<Node> child, Event const& p)
   {
-    // if (p.type != EventType_e::POINT) throw std::runtime_error("Invalid close test");
-    // auto r = child.nextArc().optSite;
+    if (p.type != EventType_e::POINT) throw std::runtime_error("Invalid close test");
+
+    auto r = child->nextArc();
     // auto c = child.optSite;
-    // auto l = child.prevArc().optSite;
+    auto l = child->prevArc();
 
     // /* cases:
     // 1. l and c are segments and end at p
@@ -30,15 +32,86 @@ namespace
     // 2. l and r are segments and end at p
     // */
 
-    // if (c.type === "segment" && r.type === "segment") {
-    //   if (fastFloorEqual(r.b, p) && fastFloorEqual(c.b, p)) return std::make_shared<bool>(true);
-    // }
+    if (child->aType == ArcType_e::ARC_V && r->aType == ArcType_e::ARC_V)
+    {
+      if (math::equiv2(r->b, p.point) && math::equiv2(child->b, p.point)) return std::make_shared<bool>(true);
+    }
+
+    if (l->aType == ArcType_e::ARC_V && child->aType == ArcType_e::ARC_V)
+    {
+      if (math::equiv2(l->b, p.point) && math::equiv2(child->b, p.point)) return std::make_shared<bool>(false);
+    }
 
     // if (l.type === "segment" && c.type === "segment") {
-    //   if (fastFloorEqual(l.b, p) && fastFloorEqual(c.b, p)) return std::make_shared<bool>(true);
+    //   if (math::equiv2(l.b, p.point) && math::equiv2(c.b, p.point)) return std::make_shared<bool>(true);
     // }
     return nullptr;
   }
+
+  std::shared_ptr<Node> createNewEdge(std::shared_ptr<Node> left, std::shared_ptr<Node> right, vec2 vertex)
+  {
+    left->live = false;
+    right->live = false;
+    return math::createEdgeNode(left, right, vertex);
+  }
+
+  std::shared_ptr<Node> closePointSplit(std::shared_ptr<Node> left, std::shared_ptr<Node> right)
+  {
+    if (left->aType == ArcType_e::ARC_V && right->aType == ArcType_e::ARC_PARA)
+    {
+      return math::createEdgeNode(left, right, right->point);
+    }
+    else if (left->aType == ArcType_e::ARC_PARA && right->aType == ArcType_e::ARC_V)
+    {
+      return math::createEdgeNode(left, right, left->point);
+    }
+
+    throw std::runtime_error("Invalid close joint split");
+    return nullptr;
+  }
+
+  std::shared_ptr<Node> splitArcNode(std::shared_ptr<Node> toSplit, std::shared_ptr<Node> node, std::vector<std::shared_ptr<Node>> nodesToClose)
+  {
+    toSplit->live = false;
+    vec2 vertex(0.0, 0.0);
+    if (node->aType == ArcType_e::ARC_V)
+    {
+      vertex = node->a;
+    }
+    else
+    {
+      auto x = node->point.x;
+      decimal_t y;
+      if (toSplit->aType == ArcType_e::ARC_PARA)
+      {
+        auto d = toSplit->point.y == node->point.y ? node->point.y - 1e-10: node->point.y;
+        auto h = toSplit->point.x;
+        auto k = (d + toSplit->point.y) / 2;
+        auto p = (toSplit->point.y - d) / 2;
+        y = math::parabola_f(x, h, k, p);
+      }
+      else // else to split is a V
+      {
+        V obj(toSplit->a, toSplit->b, node->point.y, g_nodeId++);
+        y = f_x(obj, x);
+      }
+      vertex = vec2(x, y);
+    }
+    auto eType = toSplit->aType == ArcType_e::ARC_PARA ? EventType_e::POINT : EventType_e::SEG;
+    auto newEvent = eType == EventType_e::POINT ?
+     Event(eType, g_labelCount++, toSplit->point)
+     : Event(eType, g_labelCount++, vec2(0.0,0.0), toSplit->a, toSplit->b);
+    auto right = math::createArcNode(newEvent);
+
+    if (!nodesToClose.empty())
+    {
+      nodesToClose.push_back(toSplit);
+      nodesToClose.push_back(right);
+    }
+    auto rightEdge = math::createEdgeNode(node, right, vertex);
+    return math::createEdgeNode(toSplit, rightEdge, vertex);
+  }
+
 }
 
 SubTreeRslt generateSubTree(EventPacket const& e,
@@ -48,28 +121,28 @@ SubTreeRslt generateSubTree(EventPacket const& e,
   auto tree = std::make_shared<Node>(ArcType_e::UNDEFINED);
   std::vector<std::shared_ptr<Node>> nodesToClose;
 
-  // if (e.children.size() == 2)
-  // {
-  //   auto leftArcNode = std::make_shared<Node>(ArcType_e::ARC, e.children[0]);
-  //   auto rightArcNode = std::make_shared<Node>(ArcType_e::ARC, e.children[1]);
-  //   // TODO create new edge
-  //   if (optChild)
-  //   {
+  if (e.children.size() == 2)
+  {
+    auto leftArcNode = math::createArcNode(e.children[0]);
+    auto rightArcNode = math::createArcNode(e.children[1]);
+    // TODO create new edge
+    if (optChild)
+    {
 
-  //   }
-  //   else
-  //   {
+    }
+    else
+    {
 
-  //   }
-  // }
-  // else if (e.children.size() == 1)
-  // {
+    }
+  }
+  else if (e.children.size() == 1)
+  {
 
-  // }
-  // else
-  // {
+  }
+  else
+  {
 
-  // }
+  }
 
   // if (eventPacket.type === PACKET_TYPE.MULTI_CHILD_PARENT) {
   //   leftArcNode = new ArcNode(eventPacket.leftChild);

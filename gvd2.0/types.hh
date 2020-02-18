@@ -43,9 +43,8 @@ enum class ArcType_e
 {
   ARC_V = 1,
   ARC_PARA = 2,
-  EDGE_LINE = 3,
-  EDGE_GEN_PARA = 4,
-  UNDEFINED = 5
+  EDGE = 3,
+  UNDEFINED = 4
 };
 
 enum class Side_e
@@ -73,28 +72,29 @@ public:
   // TODO Parabola, Gen Parabola, or V
   // GeometricObject createDrawElement(double directrix);
 
-  // std::shared_ptr<Node> prevEdge();
-  // std::shared_ptr<Node> nextEdge();
+  std::shared_ptr<Node> prevEdge();
+  std::shared_ptr<Node> nextEdge();
 
-  // std::shared_ptr<Node> prevArc();
-  // std::shared_ptr<Node> nextArc();
+  std::shared_ptr<Node> prevArc();
+  std::shared_ptr<Node> nextArc();
 
   // TODO
   // void updateEdge();
 
   // vec2 intersection();
 
-  ArcType_e aType; // otherwise an edge
+  ArcType_e aType; // otherwise an edge - also set when Edge finalized
   Side_e side; // which side of the edge
   uint32_t id;
-  std::shared_ptr<Node> pLeft;
-  std::shared_ptr<Node> pRight;
+  std::shared_ptr<Node> pLeft; // Shared pointer is only a problem if we are point to self
+  std::shared_ptr<Node> pRight; // There should be no circular ownership
   std::shared_ptr<Node> pParent;
   vec2 start;
-  vec2 end;
+  std::vector<vec2> drawPoints; // used at the finalization of an edge
   vec2 point;
   vec2 a;
   vec2 b;
+  bool live;
   private:
 };
 

@@ -149,6 +149,15 @@ namespace math
     return pNode;
   }
 
+  inline std::shared_ptr<Node> createEdgeNode(std::shared_ptr<Node> l, std::shared_ptr<Node> r, vec2 startPt)
+  {
+    auto pEdge = std::make_shared<Node>(ArcType_e::EDGE);
+    pEdge->start = startPt;
+    pEdge->pLeft = l;
+    pEdge->pRight = r;
+    return pEdge;
+  }
+
   inline bool equivD(decimal_t a, decimal_t b, decimal_t error_factor=1.0)
   {
     return a==b ||
