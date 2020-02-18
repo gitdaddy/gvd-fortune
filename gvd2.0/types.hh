@@ -39,59 +39,20 @@ enum class EventType_e
   UNDEFINED = 4
 };
 
+enum class ArcType_e
+{
+  ARC_V = 1,
+  ARC_PARA = 2,
+  EDGE_LINE = 3,
+  EDGE_GEN_PARA = 4,
+  UNDEFINED = 5
+};
+
 enum class Side_e
 {
   LEFT = 1,
   RIGHT = 2,
   UNDEFINED = 3
-};
-
-class V
-{
-  public:
-  V(vec2 p1, vec2 p2, decimal_t directrix, uint32_t id);
-
-  vec2 point;
-  vec2 y1;
-  vec2 y0;
-  std::vector<vec2> vectors;
-  std::vector<double> thetas;
-  private:
-  uint32_t id;
-  // split site?
-};
-
-decimal_t f_x(V const& v, decimal_t x);
-std::vector<decimal_t> f_y(V const& v, decimal_t y);
-
-class Parabola
-{
-  public:
-  Parabola(vec2 focus, decimal_t h, decimal_t k, decimal_t p, uint32_t id);
-
-  vec2 focus;
-  decimal_t h;
-  decimal_t k;
-  decimal_t p;
-  private:
-  uint32_t id;
-};
-
-class GeneralParabola
-{
-  public:
-  GeneralParabola(vec2 focus, decimal_t h, decimal_t k,
-                  decimal_t p, decimal_t theta, uint32_t id);
-
-  vec2 focus;
-  decimal_t h;
-  decimal_t k;
-  decimal_t p;
-  decimal_t theta;
-  std::vector<vec4> Rz;
-  std::vector<vec4> nRz;
-  private:
-  uint32_t id;
 };
 
 static uint32_t g_nodeId = 0;
@@ -106,49 +67,26 @@ static uint32_t g_nodeId = 0;
 //------------------------------------------------------------
 class Node
 {
-  public:
-  Node(bool _isArc,
-    EventType_e type = EventType_e::UNDEFINED,
-    std::shared_ptr<Node> const& _optLeft = nullptr,
-    std::shared_ptr<Node> const& _optRight = nullptr,
-    vec2 _start = vec2(0.0,0.0))
-    : isArc(_isArc), isParabola(),
-    side(Side_e::UNDEFINED), id(g_nodeId++),
-    pLeft(_optLeft),
-    pRight(_optRight),
-    pParent(nullptr),
-    start(_start),
-    end(vec2(0.0,0.0)),
-    point(vec2(0.0,0.0)),
-    a(vec2(0.0,0.0)),
-    b(vec2(0.0,0.0))
-    {
-      isParabola = (type == EventType_e::POINT);
-    }
+public:
+  Node(ArcType_e _aType);
 
-  // Parabola, Gen Parabola, or V
+  // TODO Parabola, Gen Parabola, or V
   // GeometricObject createDrawElement(double directrix);
 
-  bool isGenEdge() const { return false; } // TODO determine if edge is general
+  // std::shared_ptr<Node> prevEdge();
+  // std::shared_ptr<Node> nextEdge();
 
-  std::shared_ptr<Node> prevEdge();
-  std::shared_ptr<Node> nextEdge();
+  // std::shared_ptr<Node> prevArc();
+  // std::shared_ptr<Node> nextArc();
 
-  std::shared_ptr<Node> prevArc();
-  std::shared_ptr<Node> nextArc();
+  // TODO
+  // void updateEdge();
 
-  void updateEdge();
+  // vec2 intersection();
 
-  vec2 intersection();
-
-  // std::shared_ptr<Event> optSite;
-
-  bool isArc; // otherwise an edge
-  bool isParabola; // parabola or V
+  ArcType_e aType; // otherwise an edge
   Side_e side; // which side of the edge
   uint32_t id;
-  // Perhaps these will need to be weak_ptr
-  // to avoid circular ownership
   std::shared_ptr<Node> pLeft;
   std::shared_ptr<Node> pRight;
   std::shared_ptr<Node> pParent;
@@ -157,12 +95,13 @@ class Node
   vec2 point;
   vec2 a;
   vec2 b;
+  private:
 };
 
 struct Event
 {
-  Event(EventType_e t, uint32_t l, vec2 _p = vec2(0.0,0.0), vec2 _a = vec2(0.0,0.0), vec2 _b = vec2(0.0,0.0))
-  : type(t), id(g_id++), label(l), point(_p), a(_a), b(_b), live(true) {}
+  Event(EventType_e _type, uint32_t l, vec2 _p = vec2(0.0,0.0), vec2 _a = vec2(0.0,0.0), vec2 _b = vec2(0.0,0.0))
+  : type(_type), id(g_id++), label(l), point(_p), a(_a), b(_b), live(true), arcNode(nullptr), yval(0.0) {}
 
   EventType_e type;
   uint32_t id;

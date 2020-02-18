@@ -1,6 +1,8 @@
 #ifndef MATH_HH
 #define MATH_HH
 
+#include "types.hh"
+
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -9,7 +11,48 @@
 #include <vector>
 #include <algorithm>
 
-#include "types.hh"
+struct V
+{
+  V(vec2 p1, vec2 p2, decimal_t directrix, uint32_t id);
+
+  vec2 point;
+  vec2 y1;
+  vec2 y0;
+  std::vector<vec2> vectors;
+  std::vector<double> thetas;
+  uint32_t id;
+  // split site?
+};
+
+decimal_t f_x(V const& v, decimal_t x);
+std::vector<decimal_t> f_y(V const& v, decimal_t y);
+
+struct Parabola
+{
+  Parabola(vec2 focus, decimal_t h, decimal_t k, decimal_t p, uint32_t id);
+
+  vec2 focus;
+  decimal_t h;
+  decimal_t k;
+  decimal_t p;
+  uint32_t id;
+};
+
+struct GeneralParabola
+{
+  GeneralParabola(vec2 focus, decimal_t h, decimal_t k,
+                  decimal_t p, decimal_t theta, uint32_t id);
+
+  vec2 focus;
+  decimal_t h;
+  decimal_t k;
+  decimal_t p;
+  decimal_t theta;
+  std::vector<vec4> Rz;
+  std::vector<vec4> nRz;
+  private:
+  uint32_t id;
+};
 
 namespace math
 {
@@ -88,6 +131,22 @@ namespace math
             std::make_shared<GeneralParabola>(focus, focus.x,
               zHalf, zHalf, std::atan2(v.y, v.x), g_id++),
             vec2(0.0, 0.0), vec2(0.0, 0.0), vec2(0.0, 0.0)};
+  }
+
+  inline std::shared_ptr<Node> createArcNode(Event const& event)
+  {
+    auto aType = event.type == EventType_e::SEG ? ArcType_e::ARC_V : ArcType_e::ARC_PARA;
+    auto pNode = std::make_shared<Node>(aType);
+    if (aType == ArcType_e::ARC_V)
+    {
+      pNode->a = event.a;
+      pNode->b = event.b;
+    }
+    else
+    {
+      pNode->point = event.point;
+    }
+    return pNode;
   }
 
   inline bool equivD(decimal_t a, decimal_t b, decimal_t error_factor=1.0)

@@ -69,10 +69,10 @@ Beachline.prototype.add = function (eventPacket) {
     child = this.root;
     var subTreeData = generateSubTree(eventPacket, arcNode, dcel, child);
     this.root = subTreeData.root;
-    if (subTreeData.optRemoveNode) {
-      var newEvents = this.remove(subTreeData.optRemoveNode, subTreeData.optRemovePoint, directrix);
-      return newEvents.concat(processCloseEvents(subTreeData.closingNodes, directrix));
-    }
+    // if (subTreeData.optRemoveNode) {
+    //   var newEvents = this.remove(subTreeData.optRemoveNode, subTreeData.optRemovePoint, directrix);
+    //   return newEvents.concat(processCloseEvents(subTreeData.closingNodes, directrix));
+    // }
     return processCloseEvents(subTreeData.closingNodes, directrix);
   }
 
@@ -98,10 +98,10 @@ Beachline.prototype.add = function (eventPacket) {
 
   var subTreeData = generateSubTree(eventPacket, arcNode, dcel, child);
   parent.setChild(subTreeData.root, side);
-  if (subTreeData.optRemoveNode) {
-    var newEvents = this.remove(subTreeData.optRemoveNode, subTreeData.optRemovePoint, directrix);
-    return newEvents.concat(processCloseEvents(subTreeData.closingNodes, directrix));
-  }
+  // if (subTreeData.optRemoveNode) {
+  //   var newEvents = this.remove(subTreeData.optRemoveNode, subTreeData.optRemovePoint, directrix);
+  //   return newEvents.concat(processCloseEvents(subTreeData.closingNodes, directrix));
+  // }
   return processCloseEvents(subTreeData.closingNodes, directrix);
 }
 

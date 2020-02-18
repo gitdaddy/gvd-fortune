@@ -179,8 +179,6 @@ function ParaInsert(child, arcNode, dcel, nodesToClose) {
 function generateSubTree(eventPacket, arcNode, dcel, optChild) {
   var tree;
   var nodesToClose = [];
-  var removeNode = undefined;
-  var removePoint = undefined;
   if (eventPacket.type === PACKET_TYPE.MULTI_CHILD_PARENT) {
     leftArcNode = new ArcNode(eventPacket.leftChild);
     rightArcNode = new ArcNode(eventPacket.rightChild);
@@ -223,5 +221,5 @@ function generateSubTree(eventPacket, arcNode, dcel, optChild) {
     }
   }
 
-  return {root: tree, closingNodes: nodesToClose, optRemoveNode: removeNode, optRemovePoint: removePoint};
+  return {root: tree, closingNodes: nodesToClose};
 }
