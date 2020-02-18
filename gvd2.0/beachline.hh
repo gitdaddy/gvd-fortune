@@ -2,7 +2,6 @@
 #define BEACHLINE_HH
 
 #include "types.hh"
-#include "geometries.hh"
 
 #include <memory>
 

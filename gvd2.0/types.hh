@@ -35,7 +35,8 @@ enum class EventType_e
 {
   SEG = 1,
   POINT = 2,
-  CLOSE = 3
+  CLOSE = 3,
+  UNDEFINED = 4
 };
 
 enum class Side_e
@@ -106,8 +107,8 @@ static uint32_t g_nodeId = 0;
 class Node
 {
   public:
-  Node(EventType_e type,
-    bool _isArc,
+  Node(bool _isArc,
+    EventType_e type = EventType_e::UNDEFINED,
     std::shared_ptr<Node> const& _optLeft = nullptr,
     std::shared_ptr<Node> const& _optRight = nullptr,
     vec2 _start = vec2(0.0,0.0))

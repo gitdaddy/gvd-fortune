@@ -1,5 +1,4 @@
 #include "math.hh"
-#include "geometries.hh"
 
 #include <map>
 #include <algorithm>
@@ -8,8 +7,6 @@ namespace
 {
   bool intersectsTarget(V const& line, V const& t)
   {
-    // y0 upper
-    // y1 lower
     auto r1 = math::isRightOfLine(line.y1, line.y0, t.y0);
     auto r2 = math::isRightOfLine(line.y1, line.y0, t.y1);
     return r1 && !r2 || !r1 && r2;

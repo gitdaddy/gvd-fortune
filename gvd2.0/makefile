@@ -12,20 +12,20 @@ target: gvd
 
 tests: gvd_test
 
-gvd:  types.o geometries.o math.o utils.o dataset.o beachline.o main.o
+gvd:  types.o math.o nodeInsert.o utils.o dataset.o beachline.o main.o
 	g++ -g -o gvd types.o math.o utils.o dataset.o main.o
 
-gvd_test:  types.o geometries.o math.o utils.o dataset.o beachline.o test.o
+gvd_test:  types.o math.o nodeInsert.o utils.o dataset.o beachline.o test.o
 	g++ -g -o gvd_test types.o math.o utils.o dataset.o test.o
 
 types.o: types.cc types.hh
 	g++ -g -c types.cc
 
-geometries.o: geometries.cc geometries.hh
-	g++ -g -c geometries.cc
-
 math.o: math.cc math.hh
 	g++ -g -c math.cc
+
+nodeInsert.o: nodeInsert.cc nodeInsert.hh
+	g++ -g -c nodeInsert.cc
 
 utils.o: utils.cc utils.hh
 	g++ -g -c utils.cc
