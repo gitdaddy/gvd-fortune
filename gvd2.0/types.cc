@@ -24,12 +24,12 @@ Node::Node(ArcType_e _aType)
   pLeft(nullptr),
   pRight(nullptr),
   pParent(nullptr),
-  start(vec2(0.0,0.0)),
   drawPoints(),
   point(vec2(0.0,0.0)),
   a(vec2(0.0,0.0)),
   b(vec2(0.0,0.0)),
-  live(true)
+  live(true),
+  overridden(false)
 {}
 
 // TODO implement
@@ -52,5 +52,4 @@ std::shared_ptr<Node> Node::nextArc()
 {
   return nullptr;
 }
-
 

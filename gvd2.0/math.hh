@@ -152,10 +152,24 @@ namespace math
   inline std::shared_ptr<Node> createEdgeNode(std::shared_ptr<Node> l, std::shared_ptr<Node> r, vec2 startPt)
   {
     auto pEdge = std::make_shared<Node>(ArcType_e::EDGE);
-    pEdge->start = startPt;
+    pEdge->drawPoints.push_back(startPt);
     pEdge->pLeft = l;
     pEdge->pRight = r;
+    l->pParent = pEdge;
+    r->pParent = pEdge;
     return pEdge;
+  }
+
+  inline void setChild(std::shared_ptr<Node> parent, std::shared_ptr<Node> child, Side_e side)
+  {
+    if (side == Side_e::LEFT) {
+      child->side = Side_e::LEFT;
+      parent->pLeft = child;
+    } else {
+      child->side = Side_e::RIGHT;
+      parent->pRight = child;
+    }
+    child->pParent = parent;
   }
 
   inline bool equivD(decimal_t a, decimal_t b, decimal_t error_factor=1.0)

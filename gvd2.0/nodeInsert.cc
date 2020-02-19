@@ -4,23 +4,16 @@
 
 namespace
 {
-  bool isLeftHull(Event const& sLower, Event const& sUpper)
+  bool isLeftHull(vec2 const& sLowerA, vec2 const& sLowerB, vec2 const& sUpperA)
   {
-    // DEBUG ONLY - TODO remove for release
-    if (sLower.type != EventType_e::SEG || sUpper.type != EventType_e::SEG)
-      throw std::runtime_error("Invalid hull compare");
-    auto a = sUpper.a;
-    auto o = sLower.a;
-    auto b = sLower.b;
-    auto v0 = vec2(a.x - o.x, a.y - o.y);
-    auto v1 = vec2(b.x - o.x, b.y - o.y);
+    auto v0 = vec2(sUpperA.x - sLowerA.x, sUpperA.y - sLowerA.y);
+    auto v1 = vec2(sLowerB.x - sLowerA.x, sLowerB.y - sLowerA.y);
     return math::crossProduct(v0, v1) < 0;
   }
 
   // c++ form of isClosing()
-  std::shared_ptr<bool> isClosingRight(std::shared_ptr<Node> child, Event const& p)
+  std::shared_ptr<bool> isClosingRight(std::shared_ptr<Node> child, vec2 const& p)
   {
-    if (p.type != EventType_e::POINT) throw std::runtime_error("Invalid close test");
 
     auto r = child->nextArc();
     // auto c = child.optSite;
@@ -34,12 +27,12 @@ namespace
 
     if (child->aType == ArcType_e::ARC_V && r->aType == ArcType_e::ARC_V)
     {
-      if (math::equiv2(r->b, p.point) && math::equiv2(child->b, p.point)) return std::make_shared<bool>(true);
+      if (math::equiv2(r->b, p) && math::equiv2(child->b, p)) return std::make_shared<bool>(true);
     }
 
     if (l->aType == ArcType_e::ARC_V && child->aType == ArcType_e::ARC_V)
     {
-      if (math::equiv2(l->b, p.point) && math::equiv2(child->b, p.point)) return std::make_shared<bool>(false);
+      if (math::equiv2(l->b, p) && math::equiv2(child->b, p)) return std::make_shared<bool>(false);
     }
 
     // if (l.type === "segment" && c.type === "segment") {
@@ -70,7 +63,7 @@ namespace
     return nullptr;
   }
 
-  std::shared_ptr<Node> splitArcNode(std::shared_ptr<Node> toSplit, std::shared_ptr<Node> node, std::vector<std::shared_ptr<Node>> nodesToClose)
+  std::shared_ptr<Node> splitArcNode(std::shared_ptr<Node> toSplit, std::shared_ptr<Node> node, std::vector<std::shared_ptr<Node>>& nodesToClose)
   {
     toSplit->live = false;
     vec2 vertex(0.0, 0.0);
@@ -112,6 +105,83 @@ namespace
     return math::createEdgeNode(toSplit, rightEdge, vertex);
   }
 
+  std::shared_ptr<Node> insertEdge(std::shared_ptr<Node> toSplit, std::shared_ptr<Node> edge, vec2 vertex, std::vector<std::shared_ptr<Node>>& nodesToClose)
+  {
+    toSplit->live = false;
+    auto eType = toSplit->aType == ArcType_e::ARC_PARA ? EventType_e::POINT : EventType_e::SEG;
+    auto newEvent = eType == EventType_e::POINT ?
+     Event(eType, g_labelCount++, toSplit->point)
+     : Event(eType, g_labelCount++, vec2(0.0,0.0), toSplit->a, toSplit->b);
+    auto right = math::createArcNode(newEvent);
+    if (!nodesToClose.empty())
+    {
+      nodesToClose.push_back(toSplit);
+      nodesToClose.push_back(right);
+    }
+    auto rightEdge = math::createEdgeNode(edge, right, vertex);
+    return math::createEdgeNode(toSplit, rightEdge, vertex);
+  }
+
+  // Child is guaranteed to be the parabola arc
+  std::shared_ptr<Node> VRegularInsert(std::shared_ptr<Node> arcNode,
+              std::shared_ptr<Node> childArcNode, std::shared_ptr<Node> parentV)
+  {
+    auto left = isLeftHull(childArcNode->a, childArcNode->b, parentV->a);
+    if (left) {
+      // // Set edge information since we are using a left joint split
+      auto nextEdge = arcNode->nextEdge();
+      // if (nextEdge) nextEdge.dcelEdge.generalEdge = false;
+      return createNewEdge(arcNode, childArcNode, childArcNode->a);
+    } else {
+      // // Set edge information since we are using a right joint split
+      auto prevEdge = arcNode->prevEdge();
+      // if (prevEdge) prevEdge.dcelEdge.generalEdge = false;
+      // is a arc created by the right hull joint
+      return createNewEdge(childArcNode, arcNode, childArcNode->a);
+    }
+  }
+
+  std::shared_ptr<Node> ParaInsert(std::shared_ptr<Node> child, std::shared_ptr<Node> arcNode,
+                                  std::vector<std::shared_ptr<Node>>& nodesToClose)
+  {
+    std::shared_ptr<Node> newChild = nullptr;
+    // TODO performance - most nodes will not need this
+    auto closingData = isClosingRight(child, arcNode->point);
+    if (closingData)
+    {
+      // DEBUG ONLY
+      // if (child->aType == ArcType_e::ARC_V) throw std::runtime_error("Invalid node insertion");
+      auto edgeToUpdate = child->prevEdge();
+      if (*closingData)
+      {
+        edgeToUpdate = child->nextEdge();
+      }
+      if (edgeToUpdate)
+      {
+        edgeToUpdate->overridden = true;
+        edgeToUpdate->drawPoints.push_back(arcNode->point); // General parabola points?
+      }
+      nodesToClose.push_back(child);
+      if (*closingData)
+      {
+        nodesToClose.push_back(child->nextArc());
+        newChild = closePointSplit(child, arcNode);
+      }
+      else
+      {
+        nodesToClose.push_back(child->prevArc());
+        newChild = closePointSplit(arcNode, child);
+      }
+    }
+    else
+    {
+      std::vector<std::shared_ptr<Node>> empty;
+      newChild = splitArcNode(child, arcNode, empty);
+      nodesToClose.push_back(arcNode->nextArc());
+      nodesToClose.push_back(arcNode->prevArc());
+    }
+    return newChild;
+  }
 }
 
 SubTreeRslt generateSubTree(EventPacket const& e,
@@ -125,68 +195,48 @@ SubTreeRslt generateSubTree(EventPacket const& e,
   {
     auto leftArcNode = math::createArcNode(e.children[0]);
     auto rightArcNode = math::createArcNode(e.children[1]);
-    // TODO create new edge
+    auto newEdge = math::createEdgeNode(leftArcNode, rightArcNode, arcNode->point);
     if (optChild)
     {
-
+      tree = splitArcNode(optChild, arcNode, nodesToClose);
+      auto parent = arcNode->pParent;
+      auto childEdge = insertEdge(arcNode, newEdge, arcNode->point, nodesToClose);
+      math::setChild(arcNode->pParent, childEdge, Side_e::LEFT);
     }
     else
     {
-
+      std::vector<std::shared_ptr<Node>> empty;
+      tree = insertEdge(arcNode, newEdge, arcNode->point, empty);
     }
   }
   else if (e.children.size() == 1)
   {
-
+    if (optChild && optChild->aType == ArcType_e::ARC_V) {
+      // if (!optChild.isV) throw 'Invalid insert operation';
+      auto childArcNode = math::createArcNode(e.children[0]);
+      tree = splitArcNode(optChild, arcNode, nodesToClose);
+      auto parent = arcNode->pParent;
+      auto newEdge = VRegularInsert(arcNode, childArcNode, optChild);
+      math::setChild(parent, newEdge, Side_e::LEFT);
+    } else if (optChild) {
+      tree = splitArcNode(optChild, arcNode, nodesToClose);
+      auto parent = arcNode->pParent;
+      auto childArcNode = math::createArcNode(e.children[0]);
+      auto newEdge = splitArcNode(arcNode, childArcNode, nodesToClose);
+      math::setChild(parent, newEdge, Side_e::LEFT);
+    } else {
+      // case where site is the root
+      auto childArcNode = math::createArcNode(e.children[0]);
+      tree = splitArcNode(arcNode, childArcNode, nodesToClose);
+    }
   }
   else
   {
-
+    if (optChild)
+      tree = ParaInsert(optChild, arcNode, nodesToClose);
+    else
+      tree = arcNode;
   }
-
-  // if (eventPacket.type === PACKET_TYPE.MULTI_CHILD_PARENT) {
-  //   leftArcNode = new ArcNode(eventPacket.leftChild);
-  //   rightArcNode = new ArcNode(eventPacket.rightChild);
-  //   var newEdge = createNewEdge(
-  //       leftArcNode, rightArcNode, arcNode.site, dcel);
-  //   if (optChild) {
-  //     tree = splitArcNode(optChild, arcNode, dcel, nodesToClose);
-  //     var parent = arcNode.parent;
-  //     var childEdge =
-  //         insertEdge(arcNode, newEdge, arcNode.site, dcel, nodesToClose);
-  //     parent.setChild(childEdge, LEFT_CHILD);
-  //   }
-  //   else {
-  //     tree = insertEdge(arcNode, newEdge, arcNode.site, dcel);
-  //   }
-  // } else if (eventPacket.type === PACKET_TYPE.PARENT) {
-  //   if (optChild && optChild.isV) {
-  //     // if (!optChild.isV) throw 'Invalid insert operation';
-  //     var childArcNode = new ArcNode(eventPacket.child);
-  //     tree = splitArcNode(optChild, arcNode, dcel, nodesToClose);
-  //     var parent = arcNode.parent;
-  //     var newEdge = VRegularInsert(arcNode, childArcNode, dcel, optChild);
-  //     parent.setChild(newEdge, LEFT_CHILD);
-  //   } else if (optChild) {
-  //     tree = splitArcNode(optChild, arcNode, dcel, nodesToClose);
-  //     var parent = arcNode.parent;
-  //     var childArcNode = new ArcNode(eventPacket.child);
-  //     var newEdge = splitArcNode(arcNode, childArcNode, dcel, nodesToClose);
-  //     parent.setChild(newEdge, LEFT_CHILD);
-  //   } else {
-  //     // case where site is the root
-  //     var childArcNode = new ArcNode(eventPacket.child);
-  //     tree = splitArcNode(arcNode, childArcNode, dcel, nodesToClose);
-  //   }
-  // } else {
-  //   if (optChild) {
-  //     tree = ParaInsert(optChild, arcNode, dcel, nodesToClose);
-  //   } else {
-  //     tree = arcNode;
-  //   }
-  // }
-
-  // return {root: tree, closingNodes: nodesToClose};
 
  return {tree, nodesToClose};
 }

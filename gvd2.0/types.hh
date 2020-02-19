@@ -78,6 +78,8 @@ public:
   std::shared_ptr<Node> prevArc();
   std::shared_ptr<Node> nextArc();
 
+  void setChild(std::shared_ptr<Node> child, Side_e side);
+
   // TODO
   // void updateEdge();
 
@@ -89,12 +91,14 @@ public:
   std::shared_ptr<Node> pLeft; // Shared pointer is only a problem if we are point to self
   std::shared_ptr<Node> pRight; // There should be no circular ownership
   std::shared_ptr<Node> pParent;
-  vec2 start;
+  // vec2 start;
+  // drawPoints[0] is the start
   std::vector<vec2> drawPoints; // used at the finalization of an edge
   vec2 point;
   vec2 a;
   vec2 b;
   bool live;
+  bool overridden;
   private:
 };
 
