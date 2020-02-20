@@ -172,6 +172,13 @@ namespace math
     child->pParent = parent;
   }
 
+  inline std::shared_ptr<Node> getChild(std::shared_ptr<Node> parent, Side_e side)
+  {
+    if (side == Side_e::LEFT) return pLeft;
+    return pRight;
+  }
+
+
   inline bool equivD(decimal_t a, decimal_t b, decimal_t error_factor=1.0)
   {
     return a==b ||

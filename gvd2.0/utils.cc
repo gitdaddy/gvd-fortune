@@ -99,3 +99,68 @@ std::vector<Event> createDataQueue(std::vector<Polygon> const& polygons)
   }
   return rslt;
 }
+
+std::vector<vec2> consolidate(std::vector<vec2> const& intersections, decimal_t pivotX) {
+  std::vector<vec2> ret;
+  // WATCH VALUE
+  auto thresh = 0.000001;
+  std::vector<vec2> left;
+  std::vector<vec2> right;
+  for (auto&& i : intersections)
+  {
+    if (i.x < pivotX)
+      left.push_back(i);
+    else if (i.x > pivotX)
+      right.push_back(i);
+  }
+
+  if (left.size() == 2) 
+  {
+    auto d = dist(left[0], left[1]);
+    if (d < thresh) 
+      ret.push(left[0]);
+    else 
+    {
+      ret.push(left[0]);
+      ret.push(left[1]);
+    }
+  } 
+  else if (left.size() == 1) 
+    ret.push(left[0]);
+
+  if (right.size() == 2) 
+  {
+    auto d = dist(right[0], right[1]);
+    if (d < thresh) 
+      ret.push(right[0]);
+    else 
+    {
+      ret.push(right[0]);
+      ret.push(right[1]);
+    }
+  } 
+  else if (right.size() == 1) 
+    ret.push(right[0]);
+  return ret;
+}
+
+// V createBeachlineSegmentV(Event site, double directrix, uint32_t id);
+// Parabola createBeachlineSegmentPara(Event site, double directrix, uint32_t id);
+// GeneralParabola createBeachlineSegmentGPara(Event site, double directrix, uint32_t id);
+
+// ////////////////////////////////////// Close Event Methods /////////////////////////
+
+// bool validDiff(decimal_t diff);
+
+// decimal_t getDiff(std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pNode,
+//                   std::shared_ptr<Node> const& pr, vec2 p, double directrix);
+
+// decimal_t getRadius(vec2 point, std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pNode,
+//                   std::shared_ptr<Node> const& pr);
+
+// vec2 getIntercept(std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pr, double directrix);
+
+// vec2 chooseClosePoint(std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pNode,
+//                   std::shared_ptr<Node> const& pr, double directrix);
+
+// std::shared_ptr<Event> createCloseEvent(std::shared_ptr<Node> const& pNode, double directrix);

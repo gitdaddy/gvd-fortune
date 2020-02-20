@@ -32,24 +32,62 @@ Node::Node(ArcType_e _aType)
   overridden(false)
 {}
 
-// TODO implement
+//------------------------------------------------------------
+// prevEdge
+// Returns the previous in-order edge arcNode. Find the first
+// ancestor to the left.
+//------------------------------------------------------------
 std::shared_ptr<Node> Node::prevEdge()
 {
-  return nullptr;
+  auto node = pParent;
+  auto childId = id; // ID must be unique
+  while (node && node->pLeft && node->pLeft->id == childId)
+  {
+    childId = node->id;
+    node = node->pParent;
+  }
+  return node;
 }
 
 std::shared_ptr<Node> Node::nextEdge()
 {
-  return nullptr;
+  auto node = pParent;
+  auto childId = id; // ID must be unique
+  while (node && node->pRight && node->pRight->id == childId)
+  {
+    childId = node->id;
+    node = node->pParent;
+  }
+  return node;
 }
 
 std::shared_ptr<Node> Node::prevArc()
 {
-  return nullptr;
+  std::shared_ptr<Node> node = nullptr;
+  if (aType == ArcType_e::ARC_V || aType == ArcType_e::ARC_PARA)
+    node = prevEdge();
+  else 
+    node = pLeft;
+
+  while (node && node->aType == ArcType_e::EDGE)
+  {
+    node = node->pRight;
+  }
+  return node;
 }
 
 std::shared_ptr<Node> Node::nextArc()
 {
-  return nullptr;
+  std::shared_ptr<Node> node = nullptr;
+  if (aType == ArcType_e::ARC_V || aType == ArcType_e::ARC_PARA)
+    node = nextEdge();
+  else 
+    node = pRight;
+
+  while (node && node->aType == ArcType_e::EDGE)
+  {
+    node = node->pLeft;
+  }
+  return node;
 }
 
