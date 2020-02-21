@@ -114,51 +114,84 @@ std::vector<vec2> consolidate(std::vector<vec2> const& intersections, decimal_t 
       right.push_back(i);
   }
 
-  if (left.size() == 2) 
+  if (left.size() == 2)
   {
-    auto d = dist(left[0], left[1]);
-    if (d < thresh) 
-      ret.push(left[0]);
-    else 
+    auto d = math::dist(left[0], left[1]);
+    if (d < thresh)
+      ret.push_back(left[0]);
+    else
     {
-      ret.push(left[0]);
-      ret.push(left[1]);
+      ret.push_back(left[0]);
+      ret.push_back(left[1]);
     }
-  } 
-  else if (left.size() == 1) 
-    ret.push(left[0]);
+  }
+  else if (left.size() == 1)
+    ret.push_back(left[0]);
 
-  if (right.size() == 2) 
+  if (right.size() == 2)
   {
-    auto d = dist(right[0], right[1]);
-    if (d < thresh) 
-      ret.push(right[0]);
-    else 
+    auto d = math::dist(right[0], right[1]);
+    if (d < thresh)
+      ret.push_back(right[0]);
+    else
     {
-      ret.push(right[0]);
-      ret.push(right[1]);
+      ret.push_back(right[0]);
+      ret.push_back(right[1]);
     }
-  } 
-  else if (right.size() == 1) 
-    ret.push(right[0]);
+  }
+  else if (right.size() == 1)
+    ret.push_back(right[0]);
   return ret;
 }
 
-// V createBeachlineSegmentV(Event site, double directrix, uint32_t id);
-// Parabola createBeachlineSegmentPara(Event site, double directrix, uint32_t id);
-// GeneralParabola createBeachlineSegmentGPara(Event site, double directrix, uint32_t id);
 
 // ////////////////////////////////////// Close Event Methods /////////////////////////
 
-// bool validDiff(decimal_t diff);
+bool validDiff(decimal_t diff)
+{
+  return diff > 2e-2;
+}
 
-// decimal_t getDiff(std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pNode,
-//                   std::shared_ptr<Node> const& pr, vec2 p, double directrix);
+decimal_t getRadius(vec2 point, std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pNode,
+                  std::shared_ptr<Node> const& pr)
+{
+  return 0.0;
+  // TODO
+  // if (pl->aType == ArcType_e::ARC_V && pNode->aType == ArcType_e::ARC_V && pr->aType == ArcType_e::ARC_V)
+  // {
+  //   return std::min(std::min(math::dist(point, left.site), math::dist(point, node.site)), math::dist(point, right.site));
+  // }
+  // if (pl->aType == ArcType_e::ARC_PARA)
+  //   return math::dist(point, pl->point);
+  // else if (pNode->aType == ArcType_e::ARC_PARA)
+  //   return math::dist(point, pNode->point);
 
-// decimal_t getRadius(vec2 point, std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pNode,
-//                   std::shared_ptr<Node> const& pr);
+  // return math::dist(point, pr->point);
+}
 
-// vec2 getIntercept(std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pr, double directrix);
+vec2 getIntercept(std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pr, double directrix)
+{
+  // TODO
+  return vec2(0.0, 0.0);
+}
+
+decimal_t getDiff(std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pNode,
+                  std::shared_ptr<Node> const& pr, vec2 p, double directrix)
+{
+  auto radius = getRadius(p, pl, pNode, pr);
+  auto newY = p.y - radius;
+  auto newYErrorMargin = p.y - (radius + 1e-13);
+  // rule out points too far above the directrix
+  if (newY > directrix && newYErrorMargin > directrix) return 1e10;
+
+  // Option: or test that left and right intersection
+  auto i0 = getIntercept(pl, pNode, newY);
+  auto i1 = getIntercept(pNode, pl, newY);
+  // if (!i0 || !i1) return 1e10;
+  auto diffX = std::abs(i0.x - i1.x);
+  auto diffY = std::abs(i0.y - i1.y);
+  return diffX + diffY;
+}
 
 // vec2 chooseClosePoint(std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pNode,
 //                   std::shared_ptr<Node> const& pr, double directrix);

@@ -110,6 +110,21 @@ namespace math
     vec2 v;
   };
 
+  //////////////////////////// Create functions /////////////////////////
+  inline V createV(Event const& e, decimal_t directrix, uint32_t id)
+  {
+    return {e.a, e.b, directrix, id};
+  }
+
+  inline Parabola createParabola(Event const& e, decimal_t directrix, uint32_t id)
+  {
+    // Parabola(vec2 focus, decimal_t h, decimal_t k, decimal_t p, uint32_t id);
+    auto h =  e.point.x; //focus[0];
+    auto k = (directrix + e.point.y) / 2;
+    auto p = (e.point.y - directrix) / 2;
+    return {e.point, h, k, p, id};
+  }
+
   inline Bisector createLine(vec2 p1, vec2 p2)
   {
     return {true, nullptr, p1, p2, math::normalize(vec2(p2.x - p1.x, p2.y - p1.y))};
@@ -174,16 +189,13 @@ namespace math
 
   inline std::shared_ptr<Node> getChild(std::shared_ptr<Node> parent, Side_e side)
   {
-    if (side == Side_e::LEFT) return pLeft;
-    return pRight;
+    if (side == Side_e::LEFT) return parent->pLeft;
+    return parent->pRight;
   }
-
 
   inline bool equivD(decimal_t a, decimal_t b, decimal_t error_factor=1.0)
   {
-    return a==b ||
-      std::abs(a-b)<std::abs(std::min(a,b))*std::numeric_limits<decimal_t>::epsilon()*
-                    error_factor;
+    return a==b || std::abs(a - b) < std::abs(std::min(a,b)) * std::numeric_limits<decimal_t>::epsilon() * error_factor;
   }
 
   inline bool equiv2(vec2 const& a, vec2 const& b)
