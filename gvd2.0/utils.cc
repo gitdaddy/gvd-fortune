@@ -155,24 +155,24 @@ bool validDiff(decimal_t diff)
 decimal_t getRadius(vec2 point, std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pNode,
                   std::shared_ptr<Node> const& pr)
 {
-  return 0.0;
-  // TODO
-  // if (pl->aType == ArcType_e::ARC_V && pNode->aType == ArcType_e::ARC_V && pr->aType == ArcType_e::ARC_V)
-  // {
-  //   return std::min(std::min(math::dist(point, left.site), math::dist(point, node.site)), math::dist(point, right.site));
-  // }
-  // if (pl->aType == ArcType_e::ARC_PARA)
-  //   return math::dist(point, pl->point);
-  // else if (pNode->aType == ArcType_e::ARC_PARA)
-  //   return math::dist(point, pNode->point);
+  if (pl->aType == ArcType_e::ARC_V && pNode->aType == ArcType_e::ARC_V && pr->aType == ArcType_e::ARC_V)
+  {
+    return std::min(
+      std::min(math::distLine(point, pl->a, pl->b), math::distLine(point, pNode->a, pNode->b)),
+      math::distLine(point, pr->a, pr->b));
+  }
+  if (pl->aType == ArcType_e::ARC_PARA)
+    return math::dist(point, pl->point);
+  else if (pNode->aType == ArcType_e::ARC_PARA)
+    return math::dist(point, pNode->point);
 
-  // return math::dist(point, pr->point);
+  return math::dist(point, pr->point);
 }
 
-vec2 getIntercept(std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pr, double directrix)
+std::shared_ptr<vec2> getIntercept(std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pr, double directrix)
 {
   // TODO
-  return vec2(0.0, 0.0);
+  return std::make_shared<vec2>(0.0, 0.0);
 }
 
 decimal_t getDiff(std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pNode,
@@ -187,9 +187,9 @@ decimal_t getDiff(std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& 
   // Option: or test that left and right intersection
   auto i0 = getIntercept(pl, pNode, newY);
   auto i1 = getIntercept(pNode, pl, newY);
-  // if (!i0 || !i1) return 1e10;
-  auto diffX = std::abs(i0.x - i1.x);
-  auto diffY = std::abs(i0.y - i1.y);
+  if (!i0 || !i1) return 1e10;
+  auto diffX = std::abs(i0->x - i1->x);
+  auto diffY = std::abs(i0->y - i1->y);
   return diffX + diffY;
 }
 

@@ -473,6 +473,25 @@ namespace math
     return r0 < 1.5708 && r1 < 1.5708;
   }
 
+  decimal_t distLine(vec2 p, vec2 a, vec2 b)
+  {
+    if (fallsInBoundary(a, b, p))
+    {
+      // get the equation of the line from the segment ax + by + c = 0
+      // (y1 - y2)x + (x2 - x1)y + (x1y2 - x2y1) = 0
+      auto a2 = a.y - b.y;
+      auto b2 = b.x - a.x;
+      auto c = a.x * b.y - b.x * a.y;
+      auto n = std::abs(a2 * p.x + b2 * p.y + c);
+      auto dn = std::sqrt(a2*a2 + b2*b2);
+      return n/dn;
+    }
+    else
+    {
+      return std::min(dist(a, p), dist(b, p));
+    }
+  }
+
   std::vector<vec2> filterVisiblePoints(Event const& site, std::vector<vec2> const& points)
   {
     if (points.size() < 1) return {};

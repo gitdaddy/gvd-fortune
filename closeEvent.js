@@ -76,8 +76,7 @@ function getIntercept(left, right, directrix) {
     obj = intersectStraightArcs(left, right, directrix);
   } else if (left.isV || right.isV) {
     var flipped = left.site.flipped || right.site.flipped;
-    var isgen = left.isParabola && right.isV || left.isV && right.isParabola;
-    obj = intersectParabolicToStraightArc(left, right, flipped, isgen, directrix);
+    obj = intersectParabolicToStraightArc(left, right, flipped, directrix);
   } else {
     obj = intersectParabolicArcs(left, right, directrix);
   }

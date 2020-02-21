@@ -316,7 +316,7 @@ EdgeNode.prototype.intersection = function (directrix) {
   if (leftArcNode.isV && rightArcNode.isV) {
     obj = intersectStraightArcs(leftArcNode, rightArcNode, directrix);
   } else if (leftArcNode.isV || rightArcNode.isV) {
-    obj = intersectParabolicToStraightArc(leftArcNode, rightArcNode, this.flipped, this.isGeneralSurface, directrix);
+    obj = intersectParabolicToStraightArc(leftArcNode, rightArcNode, this.flipped, directrix);
   } else {
     obj = intersectParabolicArcs(leftArcNode, rightArcNode, directrix);
   }
@@ -382,7 +382,7 @@ function intersectStraightArcs(left, right, directrix){
 }
 
 // Function supports the intersection of a parabolic arc to any other arc type
-function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, directrix){
+function intersectParabolicToStraightArc(left, right, isFlipped, directrix){
 
   // debugging only
   // if (left.id === g_debugIdLeft && right.id === g_debugIdRight) {
@@ -464,8 +464,7 @@ function intersectParabolicToStraightArc(left, right, isFlipped, isGeneral, dire
   //     _____________________________
   //
   // if the point is flipped and is connected to the V
-  if (isFlipped && isGeneral &&
-     belongsToSegmentEndpoint(left, right)) {
+  if (isFlipped && belongsToSegmentEndpoint(left, right)) {
     idx = lower;
   }
   return {
@@ -486,14 +485,14 @@ function intersectParabolicArcs(left, right, directrix){
 
   // if the two sites are equal their
   // intersection is mid point to the directrix
-  if (fastFloorEqual(left.site, right.site)) {
-    console.log("Intersecting equal point sites");
-    var i = new vec3(left.site.x, (left.site.y + directrix)/2.0, 0);
-    return {
-      results: [i],
-      resultIdx: 0
-    };
-  }
+  // if (fastFloorEqual(left.site, right.site)) {
+  //   console.error("Intersecting equal point sites");
+  //   var i = new vec3(left.site.x, (left.site.y + directrix)/2.0, 0);
+  //   return {
+  //     results: [i],
+  //     resultIdx: 0
+  //   };
+  // }
 
   let pleft = createBeachlineSegment(left.site, directrix, left.id);
   let pright = createBeachlineSegment(right.site, directrix, right.id);

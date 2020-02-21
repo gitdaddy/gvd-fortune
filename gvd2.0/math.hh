@@ -111,18 +111,18 @@ namespace math
   };
 
   //////////////////////////// Create functions /////////////////////////
-  inline V createV(Event const& e, decimal_t directrix, uint32_t id)
+  inline V createV(vec2 a, vec2 b, decimal_t directrix, uint32_t id)
   {
-    return {e.a, e.b, directrix, id};
+    return {a, b, directrix, id};
   }
 
-  inline Parabola createParabola(Event const& e, decimal_t directrix, uint32_t id)
+  inline Parabola createParabola(vec2 point, decimal_t directrix, uint32_t id)
   {
     // Parabola(vec2 focus, decimal_t h, decimal_t k, decimal_t p, uint32_t id);
-    auto h =  e.point.x; //focus[0];
-    auto k = (directrix + e.point.y) / 2;
-    auto p = (e.point.y - directrix) / 2;
-    return {e.point, h, k, p, id};
+    auto h =  point.x; //focus[0];
+    auto k = (directrix + point.y) / 2;
+    auto p = (point.y - directrix) / 2;
+    return {point, h, k, p, id};
   }
 
   inline Bisector createLine(vec2 p1, vec2 p2)
@@ -253,6 +253,9 @@ namespace math
   bool dividesPoints(vec2 v, vec2 origin, vec2 p1, vec2 p2);
 
   bool fallsInBoundary(vec2 A, vec2 B, vec2 point);
+
+    // distance from p to line(a-b)
+  decimal_t distLine(vec2 p, vec2 a, vec2 b);
 
   std::vector<vec2> filterVisiblePoints(Event const& site, std::vector<vec2> const& points);
 
