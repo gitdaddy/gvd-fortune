@@ -13,9 +13,9 @@ std::shared_ptr<vec2> intersectParabolicArcs(std::shared_ptr<Node> l, std::share
 
 std::shared_ptr<vec2> intersection(std::shared_ptr<Node> edge, decimal_t directrix);
 
-void add(std::shared_ptr<Node> const& pRoot, EventPacket const& packet);
+std::vector<Event> add(std::shared_ptr<Node> const& pChild, EventPacket const& packet);
 
-void remove(std::shared_ptr<Node> const& pArcNode, vec2 point,
+std::vector<Event> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
             double directrix, std::vector<std::shared_ptr<Node>> const& endingEdges);
 
 #endif

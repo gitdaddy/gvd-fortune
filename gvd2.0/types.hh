@@ -126,7 +126,7 @@ struct EventPacket
   std::vector<Event> children; //[0] - left/single child [1] - right
 };
 
-inline Event createCloseEvent(decimal_t y, std::shared_ptr<Node> const& arcNode, vec2 point)
+inline Event newCloseEvent(decimal_t y, std::shared_ptr<Node> const& arcNode, vec2 point)
 {
   Event r(EventType_e::CLOSE, 0, point);
   r.arcNode = arcNode;

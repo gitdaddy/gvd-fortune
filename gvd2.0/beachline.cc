@@ -1,6 +1,7 @@
 #include "beachline.hh"
 #include "math.hh"
 #include "utils.hh"
+#include "nodeInsert.hh"
 
 namespace
 {
@@ -8,12 +9,12 @@ namespace
   {
     return math::equiv2(p, b);
   }
+
+  static std::shared_ptr<Node> root = nullptr;
 }
 
 std::shared_ptr<vec2> intersectStraightArcs(std::shared_ptr<Node> l, std::shared_ptr<Node> r, decimal_t directrix)
 {
-  // auto pleft = createBeachlineSegment(left.site, directrix, left.id);
-  // auto pright = createBeachlineSegment(right.site, directrix, right.id);
   std::vector<vec2> ints;
   auto left = math::createV(l->a, l->b, directrix, l->id);
   auto right = math::createV(r->a, r->b, directrix, r->id);
@@ -161,15 +162,101 @@ std::shared_ptr<vec2> intersection(std::shared_ptr<Node> edge, decimal_t directr
   return intersectParabolicToStraightArc(l, r, flipped, directrix);
 }
 
-void add(std::shared_ptr<Node> const& pRoot, EventPacket const& packet)
+std::vector<Event> add(std::shared_ptr<Node> const& pChild, EventPacket const& packet)
 {
+  auto arcNode = math::createArcNode(packet.site);
+  auto directrix = packet.site.point.y;
+
+  if (root == nullptr) 
+  {
+    auto subTreeData = generateSubTree(packet, arcNode, nullptr);
+    root = subTreeData.root;
+    return {};
+  }
+
+  auto parent = root;
+  // var side, child;
+  std::shared_ptr<Node> child;
+
+  if (root->aType != ArcType_e::EDGE) 
+  {
+    child = root;
+    auto subTreeData = generateSubTree(packet, arcNode, child);
+    root = subTreeData.root;
+    return {};
+    // return processCloseEvents(subTreeData.nodesToClose, directrix);
+  }
+
+  // Do a binary search to find the arc node that the new
+  // site intersects with
+  auto rslt = intersection(parent, directrix);
+  if (!rslt) throw std::runtime_error("Invalid intersection on add()");
+  auto side = (packet.site.point.x < rslt->x) ? Side_e::LEFT : Side_e::RIGHT;
+  child = math::getChild(parent, side);
+  while (child->aType == ArcType_e::EDGE) 
+  {
+    parent = child;
+    auto i = intersection(parent, directrix);
+    if (!i) 
+    {
+      throw "Invalid intersection on 'Add'";
+    } 
+    // x = i.x;
+    // if (packet.site[0] == x) {
+    //   console.log("Site and intersect values equal:" + x + " for intersection: " + parent.id);
+    // }
+    side = (packet.site.point.x < i->x) ? Side_e::LEFT : Side_e::RIGHT;
+    child = math::getChild(parent, side);
+  }
+
+  auto subTreeData = generateSubTree(packet, arcNode, child);
+  math::setChild(parent, subTreeData.root, side);
+  
+  return {};
   // TODO
-  return;
+  // return processCloseEvents(subTreeData.nodesToClose, directrix);
 }
 
-void remove(std::shared_ptr<Node> const& pArcNode, vec2 point,
+std::vector<Event> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
             double directrix, std::vector<std::shared_ptr<Node>> const& endingEdges)
 {
-  // TODO
-  return;
+  // if (!arcNode.isArc) throw "Unexpected edge in remove";
+
+  auto parent = arcNode->pParent;
+  auto grandparent = parent->pParent;
+  auto side = (parent->pLeft && parent->pLeft->id == arcNode->id) ? Side_e::LEFT : Side_e::RIGHT;
+  auto parentSide = (grandparent->pLeft->id == parent->id) ? Side_e::LEFT : Side_e::RIGHT;
+
+  // Get newEdge (an EdgeNode) before updating children etc.
+  auto newEdge = arcNode->nextEdge();
+  if (side == Side_e::LEFT) {
+    newEdge = arcNode->prevEdge();
+  }
+
+  auto siblingSide = side == Side_e::LEFT ? Side_e::RIGHT : Side_e::LEFT;
+  auto sibling = math::getChild(parent, siblingSide);
+  math::setChild(grandparent, sibling, parentSide);
+  sibling->pParent = grandparent;
+
+  // TODO update edge
+  // newEdge.updateEdge(point, this.dcel, [], endingEdges);
+  arcNode->live = false;
+
+  // Cancel the close event for this arc and adjoining arcs.
+  // Add new close events for adjoining arcs.
+  // var closeEvents = [];
+  std::vector<Event> closeEvents;
+  auto prevArc = newEdge->prevArc();
+  prevArc->live = false;
+  auto e = createCloseEvent(prevArc, directrix);
+  if (e)
+    closeEvents.push_back(*e);
+
+  auto nextArc = newEdge->nextArc();
+  nextArc->live = false;
+  e = createCloseEvent(nextArc, directrix);
+  if (e)
+    closeEvents.push_back(*e);
+  return closeEvents;
 }
+
