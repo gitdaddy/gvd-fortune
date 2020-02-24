@@ -11,9 +11,82 @@ namespace
   }
 
   static std::shared_ptr<Node> root = nullptr;
+
+  // ////////////////////////////////////// Close Event Methods /////////////////////////
+
+  bool validDiff(decimal_t diff)
+  {
+    return diff > 2e-2;
+  }
+
+  decimal_t getRadius(vec2 point, std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pNode,
+                    std::shared_ptr<Node> const& pr)
+  {
+    if (pl->aType == ArcType_e::ARC_V && pNode->aType == ArcType_e::ARC_V && pr->aType == ArcType_e::ARC_V)
+    {
+      return std::min(
+        std::min(math::distLine(point, pl->a, pl->b), math::distLine(point, pNode->a, pNode->b)),
+        math::distLine(point, pr->a, pr->b));
+    }
+    if (pl->aType == ArcType_e::ARC_PARA)
+      return math::dist(point, pl->point);
+    else if (pNode->aType == ArcType_e::ARC_PARA)
+      return math::dist(point, pNode->point);
+
+    return math::dist(point, pr->point);
+  }
+
+  std::shared_ptr<vec2> getIntercept(std::shared_ptr<Node> const& l, std::shared_ptr<Node> const& r, double directrix)
+  {
+    if (l->aType == ArcType_e::ARC_V && r->aType == ArcType_e::ARC_V)
+      return intersectStraightArcs(l, r, directrix);
+    else if (l->aType == ArcType_e::ARC_PARA && r->aType == ArcType_e::ARC_PARA)
+      return intersectParabolicArcs(l, r, directrix);
+
+    // if one is the endpoint of the other
+    bool flipped = isFlipped(l->point, r->b) || isFlipped(r->point, l->b);
+    return intersectParabolicToStraightArc(l, r, flipped, directrix);
+  }
+
+  decimal_t getDiff(std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pNode,
+                    std::shared_ptr<Node> const& pr, vec2 p, double directrix)
+  {
+    auto radius = getRadius(p, pl, pNode, pr);
+    auto newY = p.y - radius;
+    auto newYErrorMargin = p.y - (radius + 1e-13);
+    // rule out points too far above the directrix
+    if (newY > directrix && newYErrorMargin > directrix) return 1e10;
+
+    // Option: or test that left and right intersection
+    auto i0 = getIntercept(pl, pNode, newY);
+    auto i1 = getIntercept(pNode, pl, newY);
+    if (!i0 || !i1) return 1e10;
+    auto diffX = std::abs(i0->x - i1->x);
+    auto diffY = std::abs(i0->y - i1->y);
+    return diffX + diffY;
+  }
+
+  std::shared_ptr<vec2> chooseClosePoint(std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pNode,
+                  std::shared_ptr<Node> const& pr, double directrix)
+  {
+    return nullptr;
+  //   if (_.isEmpty(points)) return null;
+  //   if (points.length === 1) return points[0];
+  //   var leastDiff = 10000;
+  //   // length test - the length of node's arc should be close to 0
+  //   // for the correct point
+  //   var validPoints = _.sortBy(points, function (p) {
+  //     var diff = getDiff(left, node, right, p, directrix);
+  //     if (diff < leastDiff)
+  //     leastDiff = diff;
+  //     return diff;
+  //   });
+  //   if (!validDiff(leastDiff)) return null;
+  //   return validPoints[0];
+  }
 }
 
-std::shared_ptr<vec2> intersectStraightArcs(std::shared_ptr<Node> l, std::shared_ptr<Node> r, decimal_t directrix)
+std::shared_ptr<vec2> intersectStraightArcs(std::shared_ptr<Node> l, std::shared_ptr<Node> r, double directrix)
 {
   std::vector<vec2> ints;
   auto left = math::createV(l->a, l->b, directrix, l->id);
@@ -46,7 +119,7 @@ std::shared_ptr<vec2> intersectStraightArcs(std::shared_ptr<Node> l, std::shared
 }
 
 std::shared_ptr<vec2> intersectParabolicToStraightArc(std::shared_ptr<Node> l, std::shared_ptr<Node> r,
- bool isFlipped, decimal_t directrix)
+ bool isFlipped, double directrix)
 {
   std::vector<vec2> ints;
   if (l->aType == ArcType_e::ARC_PARA)
@@ -131,7 +204,7 @@ std::shared_ptr<vec2> intersectParabolicToStraightArc(std::shared_ptr<Node> l, s
   return std::make_shared<vec2>(ints[idx]);
 }
 
-std::shared_ptr<vec2> intersectParabolicArcs(std::shared_ptr<Node> l, std::shared_ptr<Node> r, decimal_t directrix)
+std::shared_ptr<vec2> intersectParabolicArcs(std::shared_ptr<Node> l, std::shared_ptr<Node> r, double directrix)
 {
   auto left = math::createParabola(l->point, directrix, l->id);
   auto right = math::createParabola(r->point, directrix, l->id);
@@ -148,18 +221,102 @@ std::shared_ptr<vec2> intersectParabolicArcs(std::shared_ptr<Node> l, std::share
   return std::make_shared<vec2>(ints[1-lower]);
 }
 
-std::shared_ptr<vec2> intersection(std::shared_ptr<Node> edge, decimal_t directrix)
+std::shared_ptr<vec2> intersection(std::shared_ptr<Node> edge, double directrix)
 {
   auto l = edge->prevArc();
   auto r = edge->nextArc();
-  if (l->aType == ArcType_e::ARC_V && r->aType == ArcType_e::ARC_V)
-    return intersectStraightArcs(l, r, directrix);
-  else if (l->aType == ArcType_e::ARC_PARA && r->aType == ArcType_e::ARC_PARA)
-    return intersectParabolicArcs(l, r, directrix);
+  return getIntercept(l, r, directrix);
+}
 
-  // if one is the endpoint of the other
-  bool flipped = isFlipped(l->point, r->b) || isFlipped(r->point, l->b);
-  return intersectParabolicToStraightArc(l, r, flipped, directrix);
+std::shared_ptr<Event> createCloseEvent(std::shared_ptr<Node> const& arcNode, double directrix)
+{
+  if (!arcNode) return nullptr;
+  auto left = arcNode->prevArc();
+  auto right = arcNode->nextArc();
+  if (!left || right) return nullptr;
+  return nullptr;
+  // auto closePoint;
+
+  // if (arcNode->aType == ArcType_e::ARC_PARA 
+  //     && left->aType == ArcType_e::ARC_PARA 
+  //     && left->aType == ArcType_e::ARC_PARA) 
+  //   {
+  //   // All three are points
+  //   auto equi = math::equidistant(left->point, arcNode->point, right->point);
+  //   if (!equi) {
+  //     // console.log("Equi point null between 3 point sites");
+  //     return null;
+  //   }
+  //   closePoint = equi[0];
+  //   if (closePoint == null) return null;
+  //   var u = subtract(left.site, arcNode.site);
+  //   var v = subtract(left.site, right.site);
+  //   // Check if there should be a close event added. In some
+  //   // cases there shouldn't be.
+  //   if (cross(u, v)[2] < 0) {
+  //     let r = length(subtract(arcNode.site, closePoint));
+  //     let event_y = closePoint[1] - r;
+  //     return new CloseEvent(event_y, arcNode, left, right, closePoint, r);
+  //   }
+  //   return null;
+  // }
+
+  // if (arcNode.isV) {
+  //   if (arcNode.site.a == left.site && arcNode.site.b == right.site
+  //     || arcNode.site.b == left.site && arcNode.site.a == right.site) return null;
+  //   // If siblings reference the same closing node don't let them close until
+  //   // the closing node is processed
+  //   if (shareVClosing(arcNode, left) || shareVClosing(arcNode, right)) return null;
+  // }
+
+  // // can compute up to 6 equi points
+  // var points = equidistant(left.site, arcNode.site, right.site);
+
+  // // debugging only
+  // // if (g_addDebug) {
+  // //   _.forEach(points, function(p) {
+  // //     g_debugObjs.push(p);
+  // //   });
+  // // }
+
+  // // guilty by association
+  // _.forEach([left, arcNode, right], function(node) {
+  //   points = node.isV ? filterVisiblePoints(node.site, points) : points;
+  // });
+
+  // if (points == null || points.length == 0) return null;
+
+  // // filter by site association
+  // points = filterBySiteAssociation(left, arcNode, right, points);
+
+  // if (points == null || points.length == 0) return null;
+  // if (points.length == 1) {
+  //   closePoint = points[0];
+  //   var diff = getDiff(left, arcNode, right, closePoint, directrix);
+  //   if (!validDiff(diff)) return null;
+  // } else {
+  //   var p = chooseClosePoint(left, arcNode, right, points, directrix);
+  //   if (!p) return null;
+  //   closePoint = p;
+  // }
+
+  // var radius = getRadius(closePoint, left, arcNode, right);
+  // if (_.isUndefined(radius)) throw "invalid radius";
+
+  // return new CloseEvent(closePoint[1] - radius, arcNode, left, right, closePoint, radius);
+}
+
+std::vector<Event> processCloseEvents(std::vector<std::shared_ptr<Node>> closingNodes, double directrix) 
+{
+  std::vector<Event> ret;
+  for (auto&& n : closingNodes)
+  {
+    auto e = createCloseEvent(n, directrix);
+    if (e)
+      ret.push_back(*e);
+  }
+
+  return ret;
 }
 
 std::vector<Event> add(std::shared_ptr<Node> const& pChild, EventPacket const& packet)
@@ -183,8 +340,7 @@ std::vector<Event> add(std::shared_ptr<Node> const& pChild, EventPacket const& p
     child = root;
     auto subTreeData = generateSubTree(packet, arcNode, child);
     root = subTreeData.root;
-    return {};
-    // return processCloseEvents(subTreeData.nodesToClose, directrix);
+    return processCloseEvents(subTreeData.nodesToClose, directrix);
   }
 
   // Do a binary search to find the arc node that the new
@@ -201,10 +357,6 @@ std::vector<Event> add(std::shared_ptr<Node> const& pChild, EventPacket const& p
     {
       throw "Invalid intersection on 'Add'";
     } 
-    // x = i.x;
-    // if (packet.site[0] == x) {
-    //   console.log("Site and intersect values equal:" + x + " for intersection: " + parent.id);
-    // }
     side = (packet.site.point.x < i->x) ? Side_e::LEFT : Side_e::RIGHT;
     child = math::getChild(parent, side);
   }
@@ -212,9 +364,7 @@ std::vector<Event> add(std::shared_ptr<Node> const& pChild, EventPacket const& p
   auto subTreeData = generateSubTree(packet, arcNode, child);
   math::setChild(parent, subTreeData.root, side);
   
-  return {};
-  // TODO
-  // return processCloseEvents(subTreeData.nodesToClose, directrix);
+  return processCloseEvents(subTreeData.nodesToClose, directrix);
 }
 
 std::vector<Event> remove(std::shared_ptr<Node> const& arcNode, vec2 point,

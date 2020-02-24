@@ -33,61 +33,6 @@ namespace
     throw std::runtime_error("failed to locate polygon with label:" + std::to_string(label));
     return Polygon();
   }
-
-  // ////////////////////////////////////// Close Event Methods /////////////////////////
-
-  bool validDiff(decimal_t diff)
-  {
-    return diff > 2e-2;
-  }
-
-  decimal_t getRadius(vec2 point, std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pNode,
-                    std::shared_ptr<Node> const& pr)
-  {
-    if (pl->aType == ArcType_e::ARC_V && pNode->aType == ArcType_e::ARC_V && pr->aType == ArcType_e::ARC_V)
-    {
-      return std::min(
-        std::min(math::distLine(point, pl->a, pl->b), math::distLine(point, pNode->a, pNode->b)),
-        math::distLine(point, pr->a, pr->b));
-    }
-    if (pl->aType == ArcType_e::ARC_PARA)
-      return math::dist(point, pl->point);
-    else if (pNode->aType == ArcType_e::ARC_PARA)
-      return math::dist(point, pNode->point);
-
-    return math::dist(point, pr->point);
-  }
-
-  std::shared_ptr<vec2> getIntercept(std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pr, double directrix)
-  {
-    // TODO
-    return std::make_shared<vec2>(0.0, 0.0);
-  }
-
-  decimal_t getDiff(std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pNode,
-                    std::shared_ptr<Node> const& pr, vec2 p, double directrix)
-  {
-    auto radius = getRadius(p, pl, pNode, pr);
-    auto newY = p.y - radius;
-    auto newYErrorMargin = p.y - (radius + 1e-13);
-    // rule out points too far above the directrix
-    if (newY > directrix && newYErrorMargin > directrix) return 1e10;
-
-    // Option: or test that left and right intersection
-    auto i0 = getIntercept(pl, pNode, newY);
-    auto i1 = getIntercept(pNode, pl, newY);
-    if (!i0 || !i1) return 1e10;
-    auto diffX = std::abs(i0->x - i1->x);
-    auto diffY = std::abs(i0->y - i1->y);
-    return diffX + diffY;
-  }
-
-  vec2 chooseClosePoint(std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pNode,
-                  std::shared_ptr<Node> const& pr, double directrix)
-  {
-    // TODO
-    return vec2(0.0, 0.0);
-  }
 }
 
 std::vector<Event> createDataQueue(std::vector<Polygon> const& polygons)
@@ -199,20 +144,3 @@ std::vector<vec2> consolidate(std::vector<vec2> const& intersections, decimal_t 
   return ret;
 }
 
-std::shared_ptr<Event> createCloseEvent(std::shared_ptr<Node> const& pNode, double directrix)
-{
-  return nullptr;
-}
-
-std::vector<Event> processCloseEvents(std::vector<std::shared_ptr<Node>> closingNodes, double directrix) 
-{
-  std::vector<Event> ret;
-  for (auto&& n : closingNodes)
-  {
-    auto e = createCloseEvent(n, directrix);
-    if (e)
-      ret.push_back(*e);
-  }
-
-  return ret;
-}

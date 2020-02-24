@@ -66,11 +66,6 @@ function getRadius(point, left, node, right) {
 }
 
 function getIntercept(left, right, directrix) {
-  if (left.id === g_debugIdLeft && right.id === g_debugIdRight) {
-    g_addDebug = true;
-  } else {
-    g_addDebug = false;
-  }
   var obj = {};
   if (left.isV && right.isV) {
     obj = intersectStraightArcs(left, right, directrix);
