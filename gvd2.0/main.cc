@@ -3,46 +3,90 @@
 #include <fstream>
 #include <chrono>
 
+#include "beachline.hh"
 #include "dataset.hh"
+#include "math.hh"
 #include "types.hh"
 #include "utils.hh"
-#include "math.hh"
 
 namespace
 {
+  EventPacket getEventPacket(Event const& e, std::set<Event, math::event_less_than>& rQueue)
+  {
+    auto n = rQueue.end()--;
+    auto nn = n--;
+    if (nn->type == EventType_e::SEG && n->type == EventType_e::SEG)
+    {
+      EventPacket ret = {e, {*n, *nn}};
+      rQueue.erase(n);
+      rQueue.erase(nn);
+      return ret;
+    }
+    else if (n->type == EventType_e::SEG)
+    {
+      EventPacket ret = {e, {*n}};
+      rQueue.erase(n);
+      return ret;
+    }
+    return {e, {}};
+  }
+
   void fortune(std::vector<Polygon> const& polygons, double sweepline)
   {
     auto queue = createDataQueue(polygons);
-    // std::cout << "queue size:" << queue.size() << std::endl;
+    std::cout << "queue size:" << queue.size() << std::endl;
 
     if (queue.size() < 1) return;
-    // TODO init beachline
-    auto nextY = math::getEventY(queue.back());
-    // while (queue.size > 0 && nextY > sweepline)
-    // {
-    //   auto event = queue.back();
-    //   queue.pop_back();
+    auto nextY = math::getEventY(*queue.end()--);
 
-    //   if (event.type == EventType_e::CLOSE)
-    //   {
-    //   // if (event.live && event.arcNode.closeEvent.live) {
-    //     if (event.live)
-    //     {
-    //       // TODO edges and arcnodes
+    // testing only
+    int count = 0;
 
-    //       // TODO perform remove
-    //     }
-    //   }
-    //   else
-    //   {
-    //     // Add Event
-    //   }
-    //   if (queue.size() > 0)
-    //     nextY = math::getEventY(queue.back());
-    // }
+    while (queue.size() > 0 && nextY > sweepline)
+    {
 
+      count++;
+      auto eventItr = queue.end()--; // the last element in the queue
+      auto event = *eventItr;
+      queue.erase(eventItr);
 
-    // get the result as a vector of edge results
+      if (event.type == EventType_e::CLOSE)
+      {
+        // DEBUG ONLY
+        if (!event.arcNode) throw std::runtime_error("Close Event invalid");
+        if (event.arcNode->live)
+        {
+          // TODO edge finalization
+          auto curY = math::getEventY(event);
+          auto newEvents = beachline::remove(event.arcNode, event.point, curY);
+          for (auto&& e : newEvents)
+          {
+            auto newY = math::getEventY(e);
+            if (newY < curY - 0.000001 || std::abs(newY - curY) < 1e-6) // Simplify?
+              queue.insert(e);
+          }
+        }
+      }
+      else
+      {
+        // Add Event
+        auto packet = getEventPacket(event, queue);
+        auto newEvents = beachline::add(event.arcNode, packet);
+        auto curY = math::getEventY(event);
+        for (auto&& e : newEvents)
+        {
+          auto newY = math::getEventY(e);
+          if (newY < curY - 0.000001 || std::abs(newY - curY) < 1e-6) // Simplify?
+            queue.insert(e);
+        }
+      }
+
+      if (queue.size() > 0)
+        nextY = math::getEventY(*queue.end()--);
+    }
+
+    // TODO get the result as a vector of edge results
+    std::cout << "Done - count:" << count << "\n";
   }
 }
 
@@ -63,7 +107,7 @@ int main(int argc, char** argv)
     // only wrap for testing
     auto polygons = processInputFiles(i);
     auto start = std::chrono::system_clock::now();
-    fortune(polygons, 0.0);
+    fortune(polygons, 0.5);
     auto end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsedSeconds = end-start;
     std::cout << "Process Duration: " << elapsedSeconds.count() << "s\n";

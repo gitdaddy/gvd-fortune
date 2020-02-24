@@ -1,7 +1,8 @@
 #include "beachline.hh"
+#include "dataset.hh"
 #include "math.hh"
-#include "utils.hh"
 #include "nodeInsert.hh"
+#include "utils.hh"
 
 namespace
 {
@@ -67,22 +68,77 @@ namespace
   }
 
   std::shared_ptr<vec2> chooseClosePoint(std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pNode,
-                  std::shared_ptr<Node> const& pr, double directrix)
+                  std::shared_ptr<Node> const& pr, std::vector<vec2> points, double directrix)
   {
-    return nullptr;
-  //   if (_.isEmpty(points)) return null;
-  //   if (points.length === 1) return points[0];
-  //   var leastDiff = 10000;
-  //   // length test - the length of node's arc should be close to 0
-  //   // for the correct point
-  //   var validPoints = _.sortBy(points, function (p) {
-  //     var diff = getDiff(left, node, right, p, directrix);
-  //     if (diff < leastDiff)
-  //     leastDiff = diff;
-  //     return diff;
-  //   });
-  //   if (!validDiff(leastDiff)) return null;
-  //   return validPoints[0];
+    if (points.size() == 1) return std::make_shared<vec2>(points[0]);
+    auto leastDiff = 10000;
+    size_t curIdx;
+    // length test - the length of node's arc should be close to 0
+    // for the correct point
+
+    // var validPoints = _.sortBy(points, function (p) {
+    //   var diff = getDiff(left, node, right, p, directrix);
+    //   if (diff < leastDiff)
+    //   leastDiff = diff;
+    //   return diff;
+    // });
+    for (size_t i = 0; i < points.size(); i++)
+    {
+      auto diff = getDiff(pl, pNode, pr, points[i], directrix);
+      if (diff < leastDiff)
+      {
+        leastDiff = diff;
+        curIdx = i;
+      }
+    }
+
+    if (!validDiff(leastDiff)) return nullptr;
+    return std::make_shared<vec2>(points[curIdx]);
+  }
+
+  std::vector<vec2> consolidate(std::vector<vec2> const& intersections, decimal_t pivotX)
+  {
+    std::vector<vec2> ret;
+    // WATCH VALUE
+    auto thresh = 0.000001;
+    std::vector<vec2> left;
+    std::vector<vec2> right;
+    for (auto&& i : intersections)
+    {
+      if (i.x < pivotX)
+        left.push_back(i);
+      else if (i.x > pivotX)
+        right.push_back(i);
+    }
+
+    if (left.size() == 2)
+    {
+      auto d = math::dist(left[0], left[1]);
+      if (d < thresh)
+        ret.push_back(left[0]);
+      else
+      {
+        ret.push_back(left[0]);
+        ret.push_back(left[1]);
+      }
+    }
+    else if (left.size() == 1)
+      ret.push_back(left[0]);
+
+    if (right.size() == 2)
+    {
+      auto d = math::dist(right[0], right[1]);
+      if (d < thresh)
+        ret.push_back(right[0]);
+      else
+      {
+        ret.push_back(right[0]);
+        ret.push_back(right[1]);
+      }
+    }
+    else if (right.size() == 1)
+      ret.push_back(right[0]);
+    return ret;
   }
 }
 
@@ -234,79 +290,65 @@ std::shared_ptr<Event> createCloseEvent(std::shared_ptr<Node> const& arcNode, do
   auto left = arcNode->prevArc();
   auto right = arcNode->nextArc();
   if (!left || right) return nullptr;
-  return nullptr;
-  // auto closePoint;
 
-  // if (arcNode->aType == ArcType_e::ARC_PARA 
-  //     && left->aType == ArcType_e::ARC_PARA 
-  //     && left->aType == ArcType_e::ARC_PARA) 
-  //   {
-  //   // All three are points
-  //   auto equi = math::equidistant(left->point, arcNode->point, right->point);
-  //   if (!equi) {
-  //     // console.log("Equi point null between 3 point sites");
-  //     return null;
-  //   }
-  //   closePoint = equi[0];
-  //   if (closePoint == null) return null;
-  //   var u = subtract(left.site, arcNode.site);
-  //   var v = subtract(left.site, right.site);
-  //   // Check if there should be a close event added. In some
-  //   // cases there shouldn't be.
-  //   if (cross(u, v)[2] < 0) {
-  //     let r = length(subtract(arcNode.site, closePoint));
-  //     let event_y = closePoint[1] - r;
-  //     return new CloseEvent(event_y, arcNode, left, right, closePoint, r);
-  //   }
-  //   return null;
-  // }
+  vec2 closePoint(0.0, 0.0);
+  auto el = math::createEventFromNode(left);
+  auto ec = math::createEventFromNode(arcNode);
+  auto er = math::createEventFromNode(right);
 
-  // if (arcNode.isV) {
-  //   if (arcNode.site.a == left.site && arcNode.site.b == right.site
-  //     || arcNode.site.b == left.site && arcNode.site.a == right.site) return null;
-  //   // If siblings reference the same closing node don't let them close until
-  //   // the closing node is processed
-  //   if (shareVClosing(arcNode, left) || shareVClosing(arcNode, right)) return null;
-  // }
+  if (arcNode->aType == ArcType_e::ARC_PARA
+      && left->aType == ArcType_e::ARC_PARA
+      && left->aType == ArcType_e::ARC_PARA)
+    {
+    // All three are points
+    auto equi = math::equidistant(el, ec, er);
+    if (equi.empty())  return nullptr;
+    closePoint = equi.front();
+    auto u = math::subtract(left->point, arcNode->point);
+    auto v = math::subtract(left->point, right->point);
+    // Check if there should be a close event added. In some
+    // cases there shouldn't be like when the three sites are colinear
+    if (math::crossProduct(u, v) < 0)
+    {
+      auto r = math::length(math::subtract(arcNode->point, closePoint));
+      auto event_y = closePoint.y - r;
+      return std::make_shared<Event>(newCloseEvent(event_y, arcNode, closePoint));
+    }
+    return nullptr;
+  }
 
-  // // can compute up to 6 equi points
-  // var points = equidistant(left.site, arcNode.site, right.site);
+  // can compute up to 6 equi points
+  auto points = math::equidistant(el, ec, er);
 
-  // // debugging only
-  // // if (g_addDebug) {
-  // //   _.forEach(points, function(p) {
-  // //     g_debugObjs.push(p);
-  // //   });
-  // // }
+  for (auto&& e : {el, ec, er})
+  {
+    if (e.type == EventType_e::SEG)
+      points = math::filterVisiblePoints(e, points);
+  }
 
-  // // guilty by association
-  // _.forEach([left, arcNode, right], function(node) {
-  //   points = node.isV ? filterVisiblePoints(node.site, points) : points;
-  // });
+  if (points.empty()) return nullptr;
 
-  // if (points == null || points.length == 0) return null;
+  // filter by site association
+  points = math::filterBySiteAssociation(el, ec, er, points);
 
-  // // filter by site association
-  // points = filterBySiteAssociation(left, arcNode, right, points);
+  if (points.empty()) return nullptr;
+  if (points.size() == 1)
+  {
+    closePoint = points[0];
+    auto diff = getDiff(left, arcNode, right, closePoint, directrix);
+    if (!validDiff(diff)) return nullptr;
+  } else {
+    auto p = chooseClosePoint(left, arcNode, right, points, directrix);
+    if (!p) return nullptr;
+    closePoint = *p;
+  }
 
-  // if (points == null || points.length == 0) return null;
-  // if (points.length == 1) {
-  //   closePoint = points[0];
-  //   var diff = getDiff(left, arcNode, right, closePoint, directrix);
-  //   if (!validDiff(diff)) return null;
-  // } else {
-  //   var p = chooseClosePoint(left, arcNode, right, points, directrix);
-  //   if (!p) return null;
-  //   closePoint = p;
-  // }
+  auto radius = getRadius(closePoint, left, arcNode, right);
 
-  // var radius = getRadius(closePoint, left, arcNode, right);
-  // if (_.isUndefined(radius)) throw "invalid radius";
-
-  // return new CloseEvent(closePoint[1] - radius, arcNode, left, right, closePoint, radius);
+  return std::make_shared<Event>(newCloseEvent(closePoint.y - radius, arcNode, closePoint));
 }
 
-std::vector<Event> processCloseEvents(std::vector<std::shared_ptr<Node>> closingNodes, double directrix) 
+std::vector<Event> processCloseEvents(std::vector<std::shared_ptr<Node>> closingNodes, double directrix)
 {
   std::vector<Event> ret;
   for (auto&& n : closingNodes)
@@ -319,94 +361,95 @@ std::vector<Event> processCloseEvents(std::vector<std::shared_ptr<Node>> closing
   return ret;
 }
 
-std::vector<Event> add(std::shared_ptr<Node> const& pChild, EventPacket const& packet)
+namespace beachline
 {
-  auto arcNode = math::createArcNode(packet.site);
-  auto directrix = packet.site.point.y;
-
-  if (root == nullptr) 
+  std::vector<Event> add(std::shared_ptr<Node> const& pChild, EventPacket const& packet)
   {
-    auto subTreeData = generateSubTree(packet, arcNode, nullptr);
-    root = subTreeData.root;
-    return {};
-  }
+    auto arcNode = math::createArcNode(packet.site);
+    auto directrix = packet.site.point.y;
 
-  auto parent = root;
-  // var side, child;
-  std::shared_ptr<Node> child;
+    if (root == nullptr)
+    {
+      auto subTreeData = generateSubTree(packet, arcNode, nullptr);
+      root = subTreeData.root;
+      return {};
+    }
 
-  if (root->aType != ArcType_e::EDGE) 
-  {
-    child = root;
+    auto parent = root;
+    // var side, child;
+    std::shared_ptr<Node> child;
+
+    if (root->aType != ArcType_e::EDGE)
+    {
+      child = root;
+      auto subTreeData = generateSubTree(packet, arcNode, child);
+      root = subTreeData.root;
+      return processCloseEvents(subTreeData.nodesToClose, directrix);
+    }
+
+    // Do a binary search to find the arc node that the new
+    // site intersects with
+    auto rslt = intersection(parent, directrix);
+    if (!rslt) throw std::runtime_error("Invalid intersection on add()");
+    auto side = (packet.site.point.x < rslt->x) ? Side_e::LEFT : Side_e::RIGHT;
+    child = math::getChild(parent, side);
+    while (child->aType == ArcType_e::EDGE)
+    {
+      parent = child;
+      auto i = intersection(parent, directrix);
+      if (!i)
+        throw std::runtime_error("Invalid intersection on 'Add'");
+
+      side = (packet.site.point.x < i->x) ? Side_e::LEFT : Side_e::RIGHT;
+      child = math::getChild(parent, side);
+    }
+
     auto subTreeData = generateSubTree(packet, arcNode, child);
-    root = subTreeData.root;
+    math::setChild(parent, subTreeData.root, side);
+
     return processCloseEvents(subTreeData.nodesToClose, directrix);
   }
 
-  // Do a binary search to find the arc node that the new
-  // site intersects with
-  auto rslt = intersection(parent, directrix);
-  if (!rslt) throw std::runtime_error("Invalid intersection on add()");
-  auto side = (packet.site.point.x < rslt->x) ? Side_e::LEFT : Side_e::RIGHT;
-  child = math::getChild(parent, side);
-  while (child->aType == ArcType_e::EDGE) 
+  std::vector<Event> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
+              double directrix) //, std::vector<std::shared_ptr<Node>> const& endingEdges)
   {
-    parent = child;
-    auto i = intersection(parent, directrix);
-    if (!i) 
-    {
-      throw "Invalid intersection on 'Add'";
-    } 
-    side = (packet.site.point.x < i->x) ? Side_e::LEFT : Side_e::RIGHT;
-    child = math::getChild(parent, side);
+    // if (!arcNode.isArc) throw "Unexpected edge in remove";
+
+    auto parent = arcNode->pParent;
+    auto grandparent = parent->pParent;
+    auto side = (parent->pLeft && parent->pLeft->id == arcNode->id) ? Side_e::LEFT : Side_e::RIGHT;
+    auto parentSide = (grandparent->pLeft->id == parent->id) ? Side_e::LEFT : Side_e::RIGHT;
+
+    // Get newEdge (an EdgeNode) before updating children etc.
+    auto newEdge = arcNode->nextEdge();
+    if (side == Side_e::LEFT) {
+      newEdge = arcNode->prevEdge();
+    }
+
+    auto siblingSide = side == Side_e::LEFT ? Side_e::RIGHT : Side_e::LEFT;
+    auto sibling = math::getChild(parent, siblingSide);
+    math::setChild(grandparent, sibling, parentSide);
+    sibling->pParent = grandparent;
+
+    // TODO update edge
+    // newEdge.updateEdge(point, this.dcel, [], endingEdges);
+    arcNode->live = false;
+
+    // Cancel the close event for this arc and adjoining arcs.
+    // Add new close events for adjoining arcs.
+    // var closeEvents = [];
+    std::vector<Event> closeEvents;
+    auto prevArc = newEdge->prevArc();
+    prevArc->live = false;
+    auto e = createCloseEvent(prevArc, directrix);
+    if (e)
+      closeEvents.push_back(*e);
+
+    auto nextArc = newEdge->nextArc();
+    nextArc->live = false;
+    e = createCloseEvent(nextArc, directrix);
+    if (e)
+      closeEvents.push_back(*e);
+    return closeEvents;
   }
-
-  auto subTreeData = generateSubTree(packet, arcNode, child);
-  math::setChild(parent, subTreeData.root, side);
-  
-  return processCloseEvents(subTreeData.nodesToClose, directrix);
 }
-
-std::vector<Event> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
-            double directrix, std::vector<std::shared_ptr<Node>> const& endingEdges)
-{
-  // if (!arcNode.isArc) throw "Unexpected edge in remove";
-
-  auto parent = arcNode->pParent;
-  auto grandparent = parent->pParent;
-  auto side = (parent->pLeft && parent->pLeft->id == arcNode->id) ? Side_e::LEFT : Side_e::RIGHT;
-  auto parentSide = (grandparent->pLeft->id == parent->id) ? Side_e::LEFT : Side_e::RIGHT;
-
-  // Get newEdge (an EdgeNode) before updating children etc.
-  auto newEdge = arcNode->nextEdge();
-  if (side == Side_e::LEFT) {
-    newEdge = arcNode->prevEdge();
-  }
-
-  auto siblingSide = side == Side_e::LEFT ? Side_e::RIGHT : Side_e::LEFT;
-  auto sibling = math::getChild(parent, siblingSide);
-  math::setChild(grandparent, sibling, parentSide);
-  sibling->pParent = grandparent;
-
-  // TODO update edge
-  // newEdge.updateEdge(point, this.dcel, [], endingEdges);
-  arcNode->live = false;
-
-  // Cancel the close event for this arc and adjoining arcs.
-  // Add new close events for adjoining arcs.
-  // var closeEvents = [];
-  std::vector<Event> closeEvents;
-  auto prevArc = newEdge->prevArc();
-  prevArc->live = false;
-  auto e = createCloseEvent(prevArc, directrix);
-  if (e)
-    closeEvents.push_back(*e);
-
-  auto nextArc = newEdge->nextArc();
-  nextArc->live = false;
-  e = createCloseEvent(nextArc, directrix);
-  if (e)
-    closeEvents.push_back(*e);
-  return closeEvents;
-}
-

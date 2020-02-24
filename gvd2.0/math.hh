@@ -111,6 +111,16 @@ namespace math
   };
 
   //////////////////////////// Create functions /////////////////////////
+  inline Event createEventFromNode(std::shared_ptr<Node> const& node)
+  {
+    // DEBUG ONLY
+    if (node->aType == ArcType_e::EDGE) throw std::runtime_error("Attempt to build event from edge!");
+    auto eType = node->aType == ArcType_e::ARC_PARA ? EventType_e::POINT : EventType_e::SEG;
+    return eType == EventType_e::POINT ?
+     Event(eType, g_labelCount++, node->point)
+     : Event(eType, g_labelCount++, vec2(0.0,0.0), node->a, node->b);
+  }
+
   inline V createV(vec2 a, vec2 b, decimal_t directrix, uint32_t id)
   {
     return {a, b, directrix, id};
@@ -203,6 +213,16 @@ namespace math
     return equivD(a.x, b.x) && equivD(a.y, b.y);
   }
 
+  inline std::shared_ptr<Event> sharedSegment(Event const& s1, Event const& s2)
+  {
+    if (s1.type == EventType_e::POINT && s2.type == EventType_e::SEG) {
+      return equiv2(s1.point, s2.a) || equiv2(s1.point, s2.b) ? std::make_shared<Event>(s2) : nullptr;
+    } else if (s2.type == EventType_e::POINT && s1.type == EventType_e::SEG) {
+      return equiv2(s1.a, s2.point) || equiv2(s1.b, s2.point) ? std::make_shared<Event>(s1) : nullptr;
+    }
+    return nullptr;
+  }
+
   inline decimal_t dist(vec2 a, vec2 b)
   {
     return length(vec2(a.x - b.x, a.y - b.y));
@@ -217,6 +237,8 @@ namespace math
   std::vector<vec2> getPointsLeftOfLine(vec2 const& a, vec2 const& b, std::vector<vec2> points);
 
   bool dividesRightOfLine(vec2 const& a1, vec2 const& b1, vec2 const& a2, vec2 const& b2);
+
+  std::vector<vec2> filterBySiteAssociation(Event const& s1, Event const& s2, Event const& s3, std::vector<vec2> const& points);
 
   std::vector<decimal_t> quadratic(decimal_t const& a, decimal_t const& b, decimal_t const& c);
 
@@ -236,7 +258,7 @@ namespace math
   std::vector<vec2> intersectRay(GeneralParabola const& genP, vec2 origin, vec2 v);
   std::vector<vec2> intersectRay(Parabola& para, vec2 origin, vec2 v);
 
-  std::vector<vec2> vpIntersect(V const& v, Parabola const& p);
+  std::vector<vec2> vpIntersect(V const& v, Parabola& p);
   std::vector<vec2> vvIntersect(V const& v1, V const& v2);
   std::vector<vec2> vbIntersect(V const& v, Bisector const& line);
 
@@ -310,6 +332,41 @@ namespace math
   std::vector<vec2> intersect(Bisector const& a, Bisector const& b);
 
   std::vector<vec2> equidistant(Event const& a, Event const& b, Event const& c);
+
+
+  struct event_less_than
+  {
+    inline bool operator() (Event const& lhs, Event const& rhs) const
+    {
+      // Y major, x minor
+      if (lhs.type == EventType_e::SEG && rhs.type == EventType_e::SEG)
+      {
+        if (math::equiv2(lhs.a, rhs.a))
+        {
+          // auto r = math::isRightOfLine(lhs.a, lhs.b, rhs.b);
+          auto v1 = vec2(lhs.a.x - lhs.b.x, lhs.a.y - lhs.b.y);
+          auto v2 = vec2(rhs.b.x - lhs.b.x, rhs.b.y - lhs.b.y);
+          auto z = crossProduct(v1, v2);
+          if (z == 0.0) return lhs.b.y < rhs.b.y;
+          return z < 0.0;
+        }
+        else if (lhs.a.y == rhs.a.y) return lhs.a.x < rhs.a.x;
+        return lhs.a.y < rhs.a.y;
+      }
+      else if (rhs.type == EventType_e::SEG)
+      {
+        if (lhs.point.y == rhs.a.y) return lhs.point.x < rhs.a.x;
+        return lhs.point.y < rhs.a.y;
+      }
+      else if (lhs.type == EventType_e::SEG)
+      {
+        if (rhs.point.y == lhs.a.y) return rhs.point.x < lhs.a.x;
+        return rhs.point.y < lhs.a.y;
+      }
+      if (lhs.point.y == rhs.point.y) return lhs.point.x < rhs.point.x;
+      return lhs.point.y < rhs.point.y;
+    }
+  };
 }
 
 #endif

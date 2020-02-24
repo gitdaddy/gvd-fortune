@@ -134,52 +134,6 @@ inline Event newCloseEvent(decimal_t y, std::shared_ptr<Node> const& arcNode, ve
   return r;
 }
 
-struct event_less_than
-{
-  inline bool operator() (Event const& lhs, Event const& rhs) const
-  {
-    decimal_t r1 = 0.0;
-    decimal_t r2 = 0.0;
-    decimal_t l1 = 0.0;
-    decimal_t l2 = 0.0;
-    // Y major, x minor
-    if (lhs.type == EventType_e::POINT)
-    {
-      l1 = lhs.point.y;
-      l2 = lhs.point.x;
-    }
-    else if (lhs.type == EventType_e::SEG)
-    {
-      l1 = lhs.a.y;
-      l2 = lhs.a.x;
-    }
-    else
-    {
-      l1 = lhs.point.y;
-      l2 = lhs.point.x;
-    }
-
-    if (rhs.type == EventType_e::POINT)
-    {
-      r1 = rhs.point.y;
-      r2 = rhs.point.x;
-    }
-    else if (rhs.type == EventType_e::SEG)
-    {
-      r1 = rhs.a.y;
-      r2 = rhs.a.x;
-    }
-    else
-    {
-      r1 = rhs.point.y;
-      r2 = rhs.point.x;
-    }
-    // return l1 < r1 || l2 < r2;
-    if (l1 == r1) return l2 < r2;
-    return l1 < r1;
-  }
-};
-
 Event makeSegment(vec2 p1, vec2 p2, uint32_t label, bool forceOrder = false);
 
 class Polygon

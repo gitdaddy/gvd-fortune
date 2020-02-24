@@ -2,7 +2,7 @@
 #define BEACHLINE_HH
 
 #include "types.hh"
-#include "math.hh"
+// #include "math.hh"
 
 #include <memory>
 
@@ -20,9 +20,13 @@ std::shared_ptr<vec2> intersection(std::shared_ptr<Node> edge, double directrix)
 std::vector<Event> processCloseEvents(std::vector<std::shared_ptr<Node>> closingNodes, double directrix);
 
 /////////////////////////////////////// Beachline methods ////////////////////
-std::vector<Event> add(std::shared_ptr<Node> const& pChild, EventPacket const& packet);
 
-std::vector<Event> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
-            double directrix, std::vector<std::shared_ptr<Node>> const& endingEdges);
+namespace beachline
+{
+  std::vector<Event> add(std::shared_ptr<Node> const& pChild, EventPacket const& packet);
+
+  std::vector<Event> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
+              double directrix); //, std::vector<std::shared_ptr<Node>> const& endingEdges);
+}
 
 #endif

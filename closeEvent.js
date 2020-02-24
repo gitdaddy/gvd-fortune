@@ -135,13 +135,13 @@ function createCloseEvent(arcNode, directrix) {
     return null;
   }
 
-  if (arcNode.isV) {
-    if (arcNode.site.a == left.site && arcNode.site.b == right.site
-      || arcNode.site.b == left.site && arcNode.site.a == right.site) return null;
-    // If siblings reference the same closing node don't let them close until
-    // the closing node is processed
-    if (shareVClosing(arcNode, left) || shareVClosing(arcNode, right)) return null;
-  }
+  // if (arcNode.isV) {
+  //   if (arcNode.site.a == left.site && arcNode.site.b == right.site
+  //     || arcNode.site.b == left.site && arcNode.site.a == right.site) return null;
+  //   // If siblings reference the same closing node don't let them close until
+  //   // the closing node is processed
+  //   if (shareVClosing(arcNode, left) || shareVClosing(arcNode, right)) return null;
+  // }
 
   // can compute up to 6 equi points
   var points = equidistant(left.site, arcNode.site, right.site);

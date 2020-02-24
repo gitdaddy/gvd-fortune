@@ -176,6 +176,33 @@ namespace math
     return isRightOfLine(a1, b1, a2) && isRightOfLine(a1, b1, b2);
   }
 
+  std::vector<vec2> filterBySiteAssociation(Event const& s1, Event const& s2, Event const& s3, std::vector<vec2> const& points)
+  {
+    // for each associated node
+    auto sLeft = sharedSegment(s1, s2);
+    auto sRight = sharedSegment(s2, s3);
+    if (sLeft && sRight) return points;
+    if (!sLeft && !sRight) return points;
+
+    if (sLeft) {
+      if (s2.type == EventType_e::SEG) {
+        return equiv2(s2.b, s1.point) ? getPointsRightOfLine(sLeft->a, sLeft->b, points)
+          : getPointsLeftOfLine(sLeft->a, sLeft->b, points);
+      } else {
+        return equiv2(s2.point, s1.a) ? getPointsRightOfLine(sLeft->a, sLeft->b, points)
+        : getPointsLeftOfLine(sLeft->a, sLeft->b, points);
+      }
+    }
+    // sRight otherwise
+    if (s2.type == EventType_e::SEG) {
+      return equiv2(s2.b, s3.point) ? getPointsLeftOfLine(sRight->a, sRight->b, points)
+        : getPointsRightOfLine(sRight->a, sRight->b, points);
+    } else {
+      return equiv2(s2.point, s3.a) ? getPointsLeftOfLine(sRight->a, sRight->b, points)
+      : getPointsRightOfLine(sRight->a, sRight->b, points);
+    }
+  }
+
   std::vector<decimal_t> quadratic(decimal_t const& a, decimal_t const& b, decimal_t const& c)
   {
     decimal_t thresh = 1e-3;
@@ -378,9 +405,9 @@ namespace math
   {
     std::vector<vec2> ret;
     auto origin = v.point;
-    for (auto v : v.vectors)
+    for (auto vec : v.vectors)
     {
-      auto o = intersectRay(p, origin, v);
+      auto o = intersectRay(p, origin, vec);
       ret.insert(ret.end(), o.begin(), o.end());
     }
     return ret;
@@ -431,6 +458,19 @@ namespace math
       std::sort(vPts.begin(), vPts.end(), vec2_x_less_than());
       return vPts;
     }
+  }
+
+  std::vector<vec2> vbIntersect(V const& v, Bisector const& line)
+  {
+    std::vector<vec2> ret;
+    auto origin = v.point;
+    for (auto vec : v.vectors)
+    {
+      auto r = math::intersectLines(origin, vec, line.p1, line.p2);
+      if (r)
+        ret.push_back(*r);
+    }
+    return ret;
   }
 
   double getAngle(Event s, bool consider_order)
@@ -656,14 +696,6 @@ namespace math
     auto v2 = vec2(v1CounterClockwise.x + intersect->x, v1CounterClockwise.y + intersect->y);
     return {bLine, createLine(v1, v2)};
   }
-
-  // std::vector<Bisector> bisectSegments4(Event const& s1, Event const& s2, Event const& s3)
-  // {
-  //   auto l = bisectSegments2(s1, s2);
-  //   auto r = bisectSegments2(s2, s3);
-  //   l.insert(l.end(), r.begin(), r.end());
-  //   return l;
-  // }
 
    Bisector bisect(Event const& e1, Event const& e2)
   {

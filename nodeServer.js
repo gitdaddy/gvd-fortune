@@ -17,7 +17,7 @@ function crossZ(v1, v2) {
   return (v1.x*v2.y) - (v1.y*v1.x);
 }
 
-function isColinear(p1, p2, p3) {
+function pointsColinear(p1, p2, p3) {
   var v1 = {x:p2.x - p1.x, y:p2.y - p1.y};
   var v2 = {x:p3.x - p1.x, y:p3.y - p1.y};
   return crossZ(v1, v2) === 0;
@@ -38,12 +38,12 @@ function overlap(x1, y1, x2, y2, x3, y3, x4, y4){
 	r3 = ((a1 * x3) + (b1 * y3) + c1);
   r4 = ((a1 * x4) + (b1 * y4) + c1);
 
-  // check co-linear isColinear(p1,p2,p3)
+  // check co-linear pointsColinear(p1,p2,p3)
   var np0 = {x: x1, y: y1};
   var np1 = {x: x2, y: y2};
   var lp0 = {x: x3, y: y3};
   var lp1 = {x: x4, y: y4};
-  if (isColinear(lp0, lp1, np0) || isColinear(lp0, lp1, np1)) return 0;
+  if (pointsColinear(lp0, lp1, np0) || pointsColinear(lp0, lp1, np1)) return 0;
 
 	// Check signs of r3 and r4. If both point 3 and point 4 lie on
 	// same side of line 1, the line segments do not intersect.
