@@ -34,83 +34,23 @@ namespace
   }
 }
 
-// std::vector<Event> createDataQueue(std::vector<Polygon> const& polygons)
-// {
-//   std::vector<Event> rslt;
-//   std::vector<Event> points;
-//   for (auto&& p : polygons)
-//   {
-//     // auto toAdd = p.getPointSites();
-//     // points.insert(points.end(), toAdd.begin(), toAdd.end());
-//     for (auto s : p.orderedPointSites)
-//     {
-//       points.push_back(s);
-//     }
-//   }
-
-//   std::cout << "sorting points size:" << points.size() << std::endl;
-//   std::sort(points.begin(), points.end(), event_less_than());
-//   std::cout << "sorted points\n";
-//   // sanitize across sites
-//   sanitizePointSiteData(points);
-
-//   std::map<uint32_t, std::vector<Event>> generatedSegs;
-//   for(auto&& sortedP : points)
-//   {
-//     std::vector<Event> ss;
-//     if (generatedSegs.find(sortedP.label) != generatedSegs.end())
-//     {
-//       ss = generatedSegs.at(sortedP.label);
-//     }
-//     else
-//     {
-//       auto poly = getPolyByLabel(sortedP.label, polygons);
-//       ss = poly.getSegments();
-//       generatedSegs.emplace(sortedP.label, ss);
-//     }
-
-//     std::vector<Event> connectedSegs;
-//     std::copy_if(ss.begin(), ss.end(), std::back_inserter(connectedSegs),
-//     [v = sortedP.point](auto s){return math::equiv2(s.a, v);});
-
-//     if (!connectedSegs.empty())
-//     {
-//       if (connectedSegs.size() == 2)
-//       {
-//         // add the segments if order of left to right
-//         if (math::isRightOfLine(connectedSegs[0].a, connectedSegs[0].b, connectedSegs[1].b))
-//         {
-//           rslt.push_back(connectedSegs[0]);
-//           rslt.push_back(connectedSegs[1]);
-//         }
-//         else
-//         {
-//           rslt.push_back(connectedSegs[1]);
-//           rslt.push_back(connectedSegs[0]);
-//         }
-//       }
-//       else
-//       {
-//         rslt.push_back(connectedSegs[0]);
-//       }
-//     }
-//     rslt.push_back(sortedP);
-//   }
-//   return rslt;
-// }
-
-std::set<Event, math::event_less_than> createDataQueue(std::vector<Polygon> const& polygons)
+std::vector<Event> createDataQueue(std::vector<Polygon> const& polygons)
 {
-  std::set<Event, math::event_less_than> rslt;
+  std::vector<Event> rslt;
   std::vector<Event> points;
   for (auto&& p : polygons)
   {
+    // auto toAdd = p.getPointSites();
+    // points.insert(points.end(), toAdd.begin(), toAdd.end());
     for (auto s : p.orderedPointSites)
     {
       points.push_back(s);
     }
   }
 
+  std::cout << "sorting points size:" << points.size() << std::endl;
+  std::sort(points.begin(), points.end(), math::event_less_than());
+  std::cout << "sorted points\n";
   // sanitize across sites
   sanitizePointSiteData(points);
 
@@ -128,12 +68,77 @@ std::set<Event, math::event_less_than> createDataQueue(std::vector<Polygon> cons
       ss = poly.getSegments();
       generatedSegs.emplace(sortedP.label, ss);
     }
-    rslt.insert(sortedP);
-  }
-  for (auto&& segs : generatedSegs)
-  {
-    for (auto&& s : segs.second)
-      rslt.insert(s);
+
+    std::vector<Event> connectedSegs;
+    std::copy_if(ss.begin(), ss.end(), std::back_inserter(connectedSegs),
+    [v = sortedP.point](auto s){return math::equiv2(s.a, v);});
+
+    if (!connectedSegs.empty())
+    {
+      if (connectedSegs.size() == 2)
+      {
+        // add the segments if order of left to right
+        if (math::isRightOfLine(connectedSegs[0].a, connectedSegs[0].b, connectedSegs[1].b))
+        {
+          rslt.push_back(connectedSegs[0]);
+          rslt.push_back(connectedSegs[1]);
+        }
+        else
+        {
+          rslt.push_back(connectedSegs[1]);
+          rslt.push_back(connectedSegs[0]);
+        }
+      }
+      else
+      {
+        rslt.push_back(connectedSegs[0]);
+      }
+    }
+    rslt.push_back(sortedP);
   }
   return rslt;
 }
+
+// std::vector<Event> createDataQueue(std::vector<Polygon> const& polygons)
+// {
+//   std::vector<Event> rslt;
+//   std::vector<Event> points;
+//   for (auto&& p : polygons)
+//   {
+//     for (auto s : p.orderedPointSites)
+//     {
+//       points.push_back(s);
+//     }
+//   }
+
+//   // sanitize across sites
+//   sanitizePointSiteData(points);
+
+//   std::map<uint32_t, std::vector<Event>> generatedSegs;
+//   for(auto&& sortedP : points)
+//   {
+//     std::vector<Event> ss;
+//     if (generatedSegs.find(sortedP.label) != generatedSegs.end())
+//     {
+//       ss = generatedSegs.at(sortedP.label);
+//     }
+//     else
+//     {
+//       auto poly = getPolyByLabel(sortedP.label, polygons);
+//       ss = poly.getSegments();
+//       generatedSegs.emplace(sortedP.label, ss);
+//     }
+//     rslt.insert(sortedP);
+//   }
+
+//   for (auto&& segs : generatedSegs)
+//   {
+//     for (auto&& s : segs.second)
+//     {
+//       std::cout << "Insert new seg:";
+//       printEvent(s);
+//       rslt.insert(s);
+//     }
+//   }
+//   return rslt;
+// }

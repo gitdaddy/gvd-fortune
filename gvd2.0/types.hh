@@ -120,6 +120,25 @@ struct Event
   decimal_t yval;
 };
 
+inline void printEvent(Event const& e)
+{
+  std::string type;
+  if (e.type == EventType_e::POINT)
+    type = "Point";
+  else if (e.type == EventType_e::SEG)
+    type = "Segment";
+  else if (e.type == EventType_e::CLOSE)
+    type = "Close";
+  else if (e.type == EventType_e::UNDEFINED)
+    type = "Undefined";
+
+  std::cout << "Event: Type(" << type << ") id(" << e.id
+    << ") label(" << e.label << ") point(" << e.point.x << ","
+    << e.point.y << ") a(" << e.a.x << ","
+    << e.a.y << ") b(" << e.b.x << ","
+    << e.b.y << ")" << std::endl;
+}
+
 struct EventPacket
 {
   Event site;

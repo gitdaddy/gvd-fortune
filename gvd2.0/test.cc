@@ -27,11 +27,11 @@ int main(int /* argc */, char** /* argv */)
     seg3.a = vec2(0.5, 0.0);
     seg3.b = vec2(0.4999, 1.0);
 
-    // if (!math::parallelTest(seg1, seg2))
-    //   throw std::runtime_error("Failed the parallel test 1");
+    if (!math::parallelTest(seg1, seg2))
+      throw std::runtime_error("Failed the parallel test 1");
 
-    // if (math::parallelTest(seg1, seg3))
-    //   throw std::runtime_error("Failed the parallel test 2");
+    if (math::parallelTest(seg1, seg3))
+      throw std::runtime_error("Failed the parallel test 2");
 
     auto v1 = math::subtract(vec2(0.0,0.0), vec2(1.0, 0.0));
     auto v2 = math::subtract(vec2(0.0,0.0), vec2(-1.0, 0.0));
@@ -61,6 +61,19 @@ int main(int /* argc */, char** /* argv */)
 
     if (!math::isRightOfLine(a1, a2, a5))
       throw std::runtime_error("Failed right of line test3");
+
+    Polygon poly;
+    poly.addPoint(vec2(0.7, 0.5));
+    poly.addPoint(vec2(0.4, 0.4));
+    poly.addPoint(vec2(0.4, 0.3));
+    auto queue = createDataQueue({poly});
+
+    for (auto&& elem : queue)
+    {
+      printEvent(elem);
+    }
+
+    // TODO insertion test
 
     std::cout << "All unit tests passed\n";
   }

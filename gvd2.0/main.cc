@@ -11,7 +11,7 @@
 
 namespace
 {
-  EventPacket getEventPacket(Event const& e, std::set<Event, math::event_less_than>& rQueue)
+  EventPacket getEventPacket(Event const& e, std::vector<Event>& rQueue)
   {
     auto n = rQueue.end()--;
     auto nn = n--;
@@ -31,20 +31,26 @@ namespace
     return {e, {}};
   }
 
+  void sortedInsert(Event const& e, std::vector<Event>& rQueue)
+  {
+    // PERFORMANCE - see if we can speed this up
+    rQueue.push_back(e);
+    std::sort(rQueue.begin(), rQueue.end(), math::event_less_than());
+  }
+
   void fortune(std::vector<Polygon> const& polygons, double sweepline)
   {
     auto queue = createDataQueue(polygons);
     std::cout << "queue size:" << queue.size() << std::endl;
 
     if (queue.size() < 1) return;
-    auto nextY = math::getEventY(*queue.end()--);
+    auto nextY = math::getEventY(*(queue.end()--));
 
     // testing only
     int count = 0;
 
     while (queue.size() > 0 && nextY > sweepline)
     {
-
       count++;
       auto eventItr = queue.end()--; // the last element in the queue
       auto event = *eventItr;
@@ -63,7 +69,7 @@ namespace
           {
             auto newY = math::getEventY(e);
             if (newY < curY - 0.000001 || std::abs(newY - curY) < 1e-6) // Simplify?
-              queue.insert(e);
+              sortedInsert(e, queue);
           }
         }
       }
@@ -77,12 +83,13 @@ namespace
         {
           auto newY = math::getEventY(e);
           if (newY < curY - 0.000001 || std::abs(newY - curY) < 1e-6) // Simplify?
-            queue.insert(e);
+            sortedInsert(e, queue);
+            // queue.insert(e);
         }
       }
 
       if (queue.size() > 0)
-        nextY = math::getEventY(*queue.end()--);
+        nextY = math::getEventY(*(queue.end()--));
     }
 
     // TODO get the result as a vector of edge results
