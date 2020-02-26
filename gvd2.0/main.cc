@@ -13,19 +13,24 @@ namespace
 {
   EventPacket getEventPacket(Event const& e, std::vector<Event>& rQueue)
   {
-    auto n = rQueue.end()--;
-    auto nn = n--;
-    if (nn->type == EventType_e::SEG && n->type == EventType_e::SEG)
+    // auto n = rQueue.end()--;
+    auto n = rQueue.back();
+    auto nn = rQueue[rQueue.size() - 2];
+    // auto nn = n--;
+    if (nn.type == EventType_e::SEG && n.type == EventType_e::SEG)
     {
-      EventPacket ret = {e, {*n, *nn}};
-      rQueue.erase(n);
-      rQueue.erase(nn);
+      EventPacket ret = {e, {n, nn}};
+      // rQueue.erase(n);
+      // rQueue.erase(nn);
+      rQueue.pop_back();
+      rQueue.pop_back();
       return ret;
     }
-    else if (n->type == EventType_e::SEG)
+    else if (n.type == EventType_e::SEG)
     {
-      EventPacket ret = {e, {*n}};
-      rQueue.erase(n);
+      EventPacket ret = {e, {n}};
+      // rQueue.erase(n);
+      rQueue.pop_back();
       return ret;
     }
     return {e, {}};
@@ -44,7 +49,8 @@ namespace
     std::cout << "queue size:" << queue.size() << std::endl;
 
     if (queue.size() < 1) return;
-    auto nextY = math::getEventY(*(queue.end()--));
+    // auto nextY = math::getEventY(*(queue.end()--));
+    auto nextY = math::getEventY(queue.back());
 
     // testing only
     int count = 0;
@@ -52,9 +58,11 @@ namespace
     while (queue.size() > 0 && nextY > sweepline)
     {
       count++;
-      auto eventItr = queue.end()--; // the last element in the queue
-      auto event = *eventItr;
-      queue.erase(eventItr);
+      // auto eventItr = queue.end()--; // the last element in the queue
+      // auto event = *eventItr;
+      // queue.erase(eventItr);
+      auto event = queue.back();
+      queue.pop_back();
 
       if (event.type == EventType_e::CLOSE)
       {
@@ -89,7 +97,7 @@ namespace
       }
 
       if (queue.size() > 0)
-        nextY = math::getEventY(*(queue.end()--));
+        nextY = math::getEventY(queue.back());
     }
 
     // TODO get the result as a vector of edge results

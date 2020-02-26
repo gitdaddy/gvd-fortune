@@ -289,7 +289,7 @@ std::shared_ptr<Event> createCloseEvent(std::shared_ptr<Node> const& arcNode, do
   if (!arcNode) return nullptr;
   auto left = arcNode->prevArc();
   auto right = arcNode->nextArc();
-  if (!left || right) return nullptr;
+  if (!left || !right) return nullptr;
 
   vec2 closePoint(0.0, 0.0);
   auto el = math::createEventFromNode(left);
@@ -299,7 +299,7 @@ std::shared_ptr<Event> createCloseEvent(std::shared_ptr<Node> const& arcNode, do
   if (arcNode->aType == ArcType_e::ARC_PARA
       && left->aType == ArcType_e::ARC_PARA
       && left->aType == ArcType_e::ARC_PARA)
-    {
+  {
     // All three are points
     auto equi = math::equidistant(el, ec, er);
     if (equi.empty())  return nullptr;

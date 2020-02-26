@@ -351,7 +351,6 @@ namespace math
           return z < 0.0;
         }
         else if (lhs.a.y == rhs.a.y) return lhs.a.x < rhs.a.x;
-        std::cout << "LHS a y: " << lhs.a.y << " RHS a y: " << rhs.a.y << std::endl;
         return lhs.a.y < rhs.a.y;
       }
       else if (rhs.type == EventType_e::SEG)

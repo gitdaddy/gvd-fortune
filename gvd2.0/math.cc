@@ -386,9 +386,14 @@ namespace math
     auto tvals = lpIntersect(para.h, para.k, para.p, origin, v);
 
     if (tvals.empty())
-    throw std::runtime_error("Intersect Ray Tvals Invalid");
+    {
+      // throw std::runtime_error("Intersect Ray Tvals Invalid");
+      std::cout << "Invalid tvals\n";
+      return {};
+    }
     // Sort tvals in increasing order
-    if (tvals.size() == 2 && tvals[1] < tvals[0]) {
+    if (tvals.size() == 2 && tvals[1] < tvals[0])
+    {
       tvals = {tvals[1], tvals[0]};
     }
 
@@ -709,6 +714,7 @@ namespace math
               vec2(0.0, 0.0), vec2(0.0, 0.0)};
     if (e1.type == EventType_e::POINT && e2.type == EventType_e::POINT)
     {
+      // TODO fix there is something weird here
       b = bisectPoints(e1.point, e2.point);
     }
     else if (e1.type == EventType_e::POINT && e2.type == EventType_e::SEG)
@@ -732,7 +738,10 @@ namespace math
     if (a.isLine && b.isLine)
     {
       auto pInt = intersectLines(a.p1, a.p2, b.p1, b.p2);
-      if (!pInt) throw std::runtime_error("Invalid Intersection a");
+      if (!pInt)
+      {
+        throw std::runtime_error("Invalid Intersection a");
+      }
       return {*pInt};
     }
 
@@ -810,7 +819,7 @@ namespace math
       if (l.size() == 0 || r.size() == 0) return {};
       return intersectLeftRightLines(l, r);
     }
-    return intersect(bisect(a, b), bisect(b,c));
+    return intersect(bisect(a, b), bisect(b, c));
   }
 }
 

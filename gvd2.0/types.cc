@@ -65,8 +65,12 @@ std::shared_ptr<Node> Node::prevArc()
 {
   std::shared_ptr<Node> node = nullptr;
   if (aType == ArcType_e::ARC_V || aType == ArcType_e::ARC_PARA)
+  {
     node = prevEdge();
-  else 
+    if (!node) return nullptr;
+    node = node->pLeft;
+  }
+  else
     node = pLeft;
 
   while (node && node->aType == ArcType_e::EDGE)
@@ -80,8 +84,12 @@ std::shared_ptr<Node> Node::nextArc()
 {
   std::shared_ptr<Node> node = nullptr;
   if (aType == ArcType_e::ARC_V || aType == ArcType_e::ARC_PARA)
+  {
     node = nextEdge();
-  else 
+    if (!node) return nullptr;
+    node = node->pRight;
+  }
+  else
     node = pRight;
 
   while (node && node->aType == ArcType_e::EDGE)
