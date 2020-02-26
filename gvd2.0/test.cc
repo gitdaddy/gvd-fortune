@@ -9,6 +9,16 @@
 #include "math.hh"
 
 
+namespace
+{
+  // void sortedInsert(Event const& e, std::vector<Event>& rQueue)
+  // {
+  //   // PERFORMANCE - see if we can speed this up
+  //   rQueue.push_back(e);
+  //   std::sort(rQueue.begin(), rQueue.end(), math::event_less_than());
+  // }
+}
+
 int main(int /* argc */, char** /* argv */)
 {
   // always run from the /gvd-fortune/ folder
@@ -67,13 +77,24 @@ int main(int /* argc */, char** /* argv */)
     poly.addPoint(vec2(0.4, 0.4));
     poly.addPoint(vec2(0.4, 0.3));
     auto queue = createDataQueue({poly});
+    if (queue.back().type != EventType_e::POINT)
+      throw std::runtime_error("Failed to create queue");
 
-    for (auto&& elem : queue)
+    auto c1 = newCloseEvent(0.6, nullptr, vec2(0.0, 0.0));
+    auto c2 = newCloseEvent(0.3999, nullptr, vec2(0.0, 0.0));
+    std::vector<CloseEvent> cQueue = {c1, c2};
+    auto c3 = newCloseEvent(0.5999, nullptr, vec2(0.0, 0.0));
+
+    cQueue.push_back(c3);
+    std::sort(cQueue.begin(), cQueue.end(), math::close_event_less_than());
+
+    if (cQueue.back().yval == 0.5999)
+      throw std::runtime_error("Failed to sort close queue");
+
+    for (auto&& elem : cQueue)
     {
-      printEvent(elem);
+      printCloseEvent(elem);
     }
-
-    // TODO insertion test
 
     std::cout << "All unit tests passed\n";
   }

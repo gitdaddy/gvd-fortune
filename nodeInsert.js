@@ -81,7 +81,7 @@ function closePointSplit(left, right, dcel) {
 //          | node
 //          *
 //------------------------------------------------------------
-function splitArcNode(toSplit, node, dcel, optNodesToClose) {
+function splitArcNode(toSplit, node, dcel, nodesToClose) {
   if (toSplit.closeEvent) {
     toSplit.closeEvent.live = false;
   }
@@ -102,10 +102,8 @@ function splitArcNode(toSplit, node, dcel, optNodesToClose) {
   }
   var left = toSplit;
   var right = new ArcNode(toSplit.site);
-  if (optNodesToClose) {
-    optNodesToClose.push(left);
-    optNodesToClose.push(right);
-  }
+  nodesToClose.push(left);
+  nodesToClose.push(right);
   return new EdgeNode(
       left, new EdgeNode(node, right, vertex, dcel), vertex, dcel);
 }
@@ -169,9 +167,7 @@ function ParaInsert(child, arcNode, dcel, nodesToClose) {
     }
   } else {
     // regular split
-    newChild = splitArcNode(child, arcNode, dcel);
-    nodesToClose.push(arcNode.nextArc());
-    nodesToClose.push(arcNode.prevArc());
+    newChild = splitArcNode(child, arcNode, dcel, nodesToClose);
   }
   return newChild;
 }

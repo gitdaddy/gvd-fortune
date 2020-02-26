@@ -36,11 +36,11 @@ namespace
     return {e, {}};
   }
 
-  void sortedInsert(Event const& e, std::vector<Event>& rQueue)
+  void sortedInsert(CloseEvent const& e, std::vector<CloseEvent>& rQueue)
   {
     // PERFORMANCE - see if we can speed this up
     rQueue.push_back(e);
-    std::sort(rQueue.begin(), rQueue.end(), math::event_less_than());
+    std::sort(rQueue.begin(), rQueue.end(), math::close_event_less_than());
   }
 
   void fortune(std::vector<Polygon> const& polygons, double sweepline)
@@ -48,36 +48,51 @@ namespace
     auto queue = createDataQueue(polygons);
     std::cout << "queue size:" << queue.size() << std::endl;
 
-    if (queue.size() < 1) return;
-    // auto nextY = math::getEventY(*(queue.end()--));
-    auto nextY = math::getEventY(queue.back());
+    decimal_t curY = 0.0;
+
+    // set perhaps?
+    std::vector<CloseEvent> closeEvents;
+
+    Event event(EventType_e::UNDEFINED, 0);
+    CloseEvent cEvent;
+    bool onClose = false;
 
     // testing only
     int count = 0;
 
-    while (queue.size() > 0 && nextY > sweepline)
+    while (queue.size() > 0)
     {
       count++;
-      // auto eventItr = queue.end()--; // the last element in the queue
-      // auto event = *eventItr;
-      // queue.erase(eventItr);
-      auto event = queue.back();
-      queue.pop_back();
+      event = queue.back();
+      curY = math::getEventY(queue.back());
+      // get the next event closest to the sweepline
+      if (!closeEvents.empty() && closeEvents.back().yval >= curY)
+      {
+        onClose = true;
+        cEvent = closeEvents.back();
+        closeEvents.pop_back();
+        curY = cEvent.yval;
+      }
+      else
+      {
+        onClose = false;
+        queue.pop_back();
+      }
+      if (curY < sweepline)
+        break;
 
-      if (event.type == EventType_e::CLOSE)
+      if (onClose)
       {
         // DEBUG ONLY
-        if (!event.arcNode) throw std::runtime_error("Close Event invalid");
-        if (event.arcNode->live)
+        if (!cEvent.arcNode) throw std::runtime_error("Close Event invalid");
+        if (cEvent.arcNode->live)
         {
           // TODO edge finalization
-          auto curY = math::getEventY(event);
-          auto newEvents = beachline::remove(event.arcNode, event.point, curY);
+          auto newEvents = beachline::remove(cEvent.arcNode, cEvent.point, curY);
           for (auto&& e : newEvents)
           {
-            auto newY = math::getEventY(e);
-            if (newY < curY - 0.000001 || std::abs(newY - curY) < 1e-6) // Simplify?
-              sortedInsert(e, queue);
+            if (e.yval < curY - 0.000001 || std::abs(e.yval - curY) < 1e-6) // Simplify?
+              sortedInsert(e, closeEvents);
           }
         }
       }
@@ -85,23 +100,17 @@ namespace
       {
         // Add Event
         auto packet = getEventPacket(event, queue);
-        auto newEvents = beachline::add(event.arcNode, packet);
-        auto curY = math::getEventY(event);
+        auto newEvents = beachline::add(packet);
         for (auto&& e : newEvents)
         {
-          auto newY = math::getEventY(e);
-          if (newY < curY - 0.000001 || std::abs(newY - curY) < 1e-6) // Simplify?
-            sortedInsert(e, queue);
-            // queue.insert(e);
+          if (e.yval < curY - 0.000001 || std::abs(e.yval - curY) < 1e-6) // Simplify?
+            sortedInsert(e, closeEvents);
         }
       }
-
-      if (queue.size() > 0)
-        nextY = math::getEventY(queue.back());
     }
 
+    std::cout << "Count:" << count << std::endl;
     // TODO get the result as a vector of edge results
-    std::cout << "Done - count:" << count << "\n";
   }
 }
 
@@ -122,7 +131,7 @@ int main(int argc, char** argv)
     // only wrap for testing
     auto polygons = processInputFiles(i);
     auto start = std::chrono::system_clock::now();
-    fortune(polygons, 0.5);
+    fortune(polygons, -0.9);
     auto end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsedSeconds = end-start;
     std::cout << "Process Duration: " << elapsedSeconds.count() << "s\n";

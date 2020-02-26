@@ -35,8 +35,7 @@ enum class EventType_e
 {
   SEG = 1,
   POINT = 2,
-  CLOSE = 3,
-  UNDEFINED = 4
+  UNDEFINED = 3
 };
 
 enum class ArcType_e
@@ -69,9 +68,6 @@ class Node
 public:
   Node(ArcType_e _aType);
 
-  // TODO Parabola, Gen Parabola, or V
-  // GeometricObject createDrawElement(double directrix);
-
   std::shared_ptr<Node> prevEdge();
   std::shared_ptr<Node> nextEdge();
 
@@ -80,10 +76,8 @@ public:
 
   void setChild(std::shared_ptr<Node> child, Side_e side);
 
-  // TODO
+  // TODO?
   // void updateEdge();
-
-  // vec2 intersection();
 
   ArcType_e aType; // otherwise an edge - also set when Edge finalized
   Side_e side; // which side of the edge
@@ -105,7 +99,7 @@ public:
 struct Event
 {
   Event(EventType_e _type, uint32_t l, vec2 _p = vec2(0.0,0.0), vec2 _a = vec2(0.0,0.0), vec2 _b = vec2(0.0,0.0))
-  : type(_type), id(g_id++), label(l), point(_p), a(_a), b(_b), live(true), arcNode(nullptr), yval(0.0) {}
+  : type(_type), id(g_id++), label(l), point(_p), a(_a), b(_b) {}
 
   EventType_e type;
   uint32_t id;
@@ -113,8 +107,13 @@ struct Event
   vec2 point;
   vec2 a;
   vec2 b;
+};
 
+struct CloseEvent
+{
   // close event items
+  CloseEvent() : point(0.0, 0.0), live(true), arcNode(nullptr), yval(0.0) {};
+  vec2 point;
   bool live;
   std::shared_ptr<Node> arcNode;
   decimal_t yval;
@@ -127,8 +126,6 @@ inline void printEvent(Event const& e)
     type = "Point";
   else if (e.type == EventType_e::SEG)
     type = "Segment";
-  else if (e.type == EventType_e::CLOSE)
-    type = "Close";
   else if (e.type == EventType_e::UNDEFINED)
     type = "Undefined";
 
@@ -139,18 +136,27 @@ inline void printEvent(Event const& e)
     << e.b.y << ")" << std::endl;
 }
 
+
+
 struct EventPacket
 {
   Event site;
   std::vector<Event> children; //[0] - left/single child [1] - right
 };
 
-inline Event newCloseEvent(decimal_t y, std::shared_ptr<Node> const& arcNode, vec2 point)
+inline CloseEvent newCloseEvent(decimal_t y, std::shared_ptr<Node> const& arcNode, vec2 point)
 {
-  Event r(EventType_e::CLOSE, 0, point);
+  CloseEvent r;
+  r.point = point;
   r.arcNode = arcNode;
   r.yval = y;
   return r;
+}
+
+inline void printCloseEvent(CloseEvent const& e)
+{
+  std::cout << "Close Event: point(" << e.point.x << ","
+  << e.point.y << ") yval(" << e.yval << ") " << std::endl;
 }
 
 Event makeSegment(vec2 p1, vec2 p2, uint32_t label, bool forceOrder = false);

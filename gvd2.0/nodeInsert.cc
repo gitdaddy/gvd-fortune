@@ -63,7 +63,8 @@ namespace
     return nullptr;
   }
 
-  std::shared_ptr<Node> splitArcNode(std::shared_ptr<Node> toSplit, std::shared_ptr<Node> node, std::vector<std::shared_ptr<Node>>& nodesToClose)
+  std::shared_ptr<Node> splitArcNode(std::shared_ptr<Node> toSplit,
+    std::shared_ptr<Node> node, std::vector<std::shared_ptr<Node>>& nodesToClose)
   {
     toSplit->live = false;
     vec2 vertex(0.0, 0.0);
@@ -96,16 +97,14 @@ namespace
      : Event(eType, g_labelCount++, vec2(0.0,0.0), toSplit->a, toSplit->b);
     auto right = math::createArcNode(newEvent);
 
-    if (!nodesToClose.empty())
-    {
-      nodesToClose.push_back(toSplit);
-      nodesToClose.push_back(right);
-    }
+    nodesToClose.push_back(toSplit);
+    nodesToClose.push_back(right);
     auto rightEdge = math::createEdgeNode(node, right, vertex);
     return math::createEdgeNode(toSplit, rightEdge, vertex);
   }
 
-  std::shared_ptr<Node> insertEdge(std::shared_ptr<Node> toSplit, std::shared_ptr<Node> edge, vec2 vertex, std::vector<std::shared_ptr<Node>>& nodesToClose)
+  std::shared_ptr<Node> insertEdge(std::shared_ptr<Node> toSplit, std::shared_ptr<Node> edge,
+        vec2 vertex, std::vector<std::shared_ptr<Node>>& nodesToClose, bool addCloseNodes = true)
   {
     toSplit->live = false;
     auto eType = toSplit->aType == ArcType_e::ARC_PARA ? EventType_e::POINT : EventType_e::SEG;
@@ -113,7 +112,7 @@ namespace
      Event(eType, g_labelCount++, toSplit->point)
      : Event(eType, g_labelCount++, vec2(0.0,0.0), toSplit->a, toSplit->b);
     auto right = math::createArcNode(newEvent);
-    if (!nodesToClose.empty())
+    if (addCloseNodes)
     {
       nodesToClose.push_back(toSplit);
       nodesToClose.push_back(right);
@@ -175,10 +174,7 @@ namespace
     }
     else
     {
-      std::vector<std::shared_ptr<Node>> empty;
-      newChild = splitArcNode(child, arcNode, empty);
-      nodesToClose.push_back(arcNode->nextArc());
-      nodesToClose.push_back(arcNode->prevArc());
+      newChild = splitArcNode(child, arcNode, nodesToClose);
     }
     return newChild;
   }
@@ -204,10 +200,7 @@ SubTreeRslt generateSubTree(EventPacket const& e,
       math::setChild(arcNode->pParent, childEdge, Side_e::LEFT);
     }
     else
-    {
-      std::vector<std::shared_ptr<Node>> empty;
-      tree = insertEdge(arcNode, newEdge, arcNode->point, empty);
-    }
+      tree = insertEdge(arcNode, newEdge, arcNode->point, nodesToClose, false);
   }
   else if (e.children.size() == 1)
   {

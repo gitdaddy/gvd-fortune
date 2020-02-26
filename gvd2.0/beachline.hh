@@ -17,15 +17,15 @@ std::shared_ptr<vec2> intersection(std::shared_ptr<Node> edge, double directrix)
 
 // std::shared_ptr<Event> createCloseEvent(std::shared_ptr<Node> const& arcNode, double directrix);
 
-std::vector<Event> processCloseEvents(std::vector<std::shared_ptr<Node>> closingNodes, double directrix);
+// std::vector<CloseEvent> processCloseEvents(std::vector<std::shared_ptr<Node>> closingNodes, double directrix);
 
 /////////////////////////////////////// Beachline methods ////////////////////
 
 namespace beachline
 {
-  std::vector<Event> add(std::shared_ptr<Node> const& pChild, EventPacket const& packet);
+  std::vector<CloseEvent> add(EventPacket const& packet);
 
-  std::vector<Event> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
+  std::vector<CloseEvent> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
               double directrix); //, std::vector<std::shared_ptr<Node>> const& endingEdges);
 }
 

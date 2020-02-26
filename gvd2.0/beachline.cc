@@ -75,13 +75,6 @@ namespace
     size_t curIdx;
     // length test - the length of node's arc should be close to 0
     // for the correct point
-
-    // var validPoints = _.sortBy(points, function (p) {
-    //   var diff = getDiff(left, node, right, p, directrix);
-    //   if (diff < leastDiff)
-    //   leastDiff = diff;
-    //   return diff;
-    // });
     for (size_t i = 0; i < points.size(); i++)
     {
       auto diff = getDiff(pl, pNode, pr, points[i], directrix);
@@ -194,7 +187,7 @@ std::shared_ptr<vec2> intersectParabolicToStraightArc(std::shared_ptr<Node> l, s
       }
       if (ints.empty())
       {
-        std::cout << "0 intersections between p - v";
+        std::cout << "0 intersections between p - v\n";
         return nullptr;
       }
     }
@@ -234,7 +227,7 @@ std::shared_ptr<vec2> intersectParabolicToStraightArc(std::shared_ptr<Node> l, s
     }
     if (ints.empty())
     {
-      std::cout << "0 intersections between p - v";
+      std::cout << "0 intersections between p - v\n";
       return nullptr;
     }
   }
@@ -260,13 +253,22 @@ std::shared_ptr<vec2> intersectParabolicToStraightArc(std::shared_ptr<Node> l, s
   return std::make_shared<vec2>(ints[idx]);
 }
 
+// non ptr type?
 std::shared_ptr<vec2> intersectParabolicArcs(std::shared_ptr<Node> l, std::shared_ptr<Node> r, double directrix)
 {
+  if (l->id == 184)
+  {
+    std::cout << "TEST\n";
+  }
+
   auto left = math::createParabola(l->point, directrix, l->id);
-  auto right = math::createParabola(r->point, directrix, l->id);
+  auto right = math::createParabola(r->point, directrix, r->id);
   auto ints = math::ppIntersect(left.h, left.k, left.p, right.h, right.k, right.p);
 
-  if (ints.empty()) throw std::runtime_error("Invalid intersection p-p");
+  if (ints.empty())
+  {
+    throw std::runtime_error("Invalid intersection p-p");
+  }
 
   auto centX = (ints[0].x + ints[1].x) / 2.0;
   auto prevY = math::parabola_f(centX, left.h, left.k, left.p);
@@ -284,7 +286,7 @@ std::shared_ptr<vec2> intersection(std::shared_ptr<Node> edge, double directrix)
   return getIntercept(l, r, directrix);
 }
 
-std::shared_ptr<Event> createCloseEvent(std::shared_ptr<Node> const& arcNode, double directrix)
+std::shared_ptr<CloseEvent> createCloseEvent(std::shared_ptr<Node> const& arcNode, double directrix)
 {
   if (!arcNode) return nullptr;
   auto left = arcNode->prevArc();
@@ -312,7 +314,7 @@ std::shared_ptr<Event> createCloseEvent(std::shared_ptr<Node> const& arcNode, do
     {
       auto r = math::length(math::subtract(arcNode->point, closePoint));
       auto event_y = closePoint.y - r;
-      return std::make_shared<Event>(newCloseEvent(event_y, arcNode, closePoint));
+      return std::make_shared<CloseEvent>(newCloseEvent(event_y, arcNode, closePoint));
     }
     return nullptr;
   }
@@ -345,12 +347,12 @@ std::shared_ptr<Event> createCloseEvent(std::shared_ptr<Node> const& arcNode, do
 
   auto radius = getRadius(closePoint, left, arcNode, right);
 
-  return std::make_shared<Event>(newCloseEvent(closePoint.y - radius, arcNode, closePoint));
+  return std::make_shared<CloseEvent>(newCloseEvent(closePoint.y - radius, arcNode, closePoint));
 }
 
-std::vector<Event> processCloseEvents(std::vector<std::shared_ptr<Node>> closingNodes, double directrix)
+std::vector<CloseEvent> processCloseEvents(std::vector<std::shared_ptr<Node>> closingNodes, double directrix)
 {
-  std::vector<Event> ret;
+  std::vector<CloseEvent> ret;
   for (auto&& n : closingNodes)
   {
     auto e = createCloseEvent(n, directrix);
@@ -363,7 +365,7 @@ std::vector<Event> processCloseEvents(std::vector<std::shared_ptr<Node>> closing
 
 namespace beachline
 {
-  std::vector<Event> add(std::shared_ptr<Node> const& pChild, EventPacket const& packet)
+  std::vector<CloseEvent> add(EventPacket const& packet)
   {
     auto arcNode = math::createArcNode(packet.site);
     auto directrix = packet.site.point.y;
@@ -410,7 +412,7 @@ namespace beachline
     return processCloseEvents(subTreeData.nodesToClose, directrix);
   }
 
-  std::vector<Event> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
+  std::vector<CloseEvent> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
               double directrix) //, std::vector<std::shared_ptr<Node>> const& endingEdges)
   {
     // if (!arcNode.isArc) throw "Unexpected edge in remove";
@@ -438,7 +440,7 @@ namespace beachline
     // Cancel the close event for this arc and adjoining arcs.
     // Add new close events for adjoining arcs.
     // var closeEvents = [];
-    std::vector<Event> closeEvents;
+    std::vector<CloseEvent> closeEvents;
     auto prevArc = newEdge->prevArc();
     prevArc->live = false;
     auto e = createCloseEvent(prevArc, directrix);

@@ -113,12 +113,7 @@ namespace math
     {
       return e.point.y;
     }
-    else if (e.type == EventType_e::SEG)
-    {
-      return e.a.y;
-    }
-    // else is a close event
-    return e.point.y;
+    return e.a.y;
   }
 
   decimal_t crossProduct(vec2 const& v1, vec2 const& v2)
@@ -264,9 +259,15 @@ namespace math
 
   std::vector<decimal_t> lpIntersect(decimal_t h, decimal_t k, decimal_t p, vec2 const& q, vec2 const& v)
   {
-    auto a = v.x * v.x / (4 * p);
-    auto b = 2 * v.x * (q.x - h) / (4 * p) - v.y;
-    auto c = (q.x * q.x - 2 * q.x * h + h * h) / (4 * p) + k - q.y;
+    if (p == 0.0)
+    {
+      std::cout << "Non-value p returning empty tvals\n";
+      return {};
+    }
+    auto p4 = 4 * p;
+    auto a = v.x * v.x / p4;
+    auto b = 2 * v.x * (q.x - h) / p4 - v.y;
+    auto c = (q.x * q.x - 2 * q.x * h + h * h) / p4 + k - q.y;
     auto tvals = quadratic(a, b, c);
     return tvals;
   }
@@ -378,8 +379,10 @@ namespace math
 
   std::vector<vec2> intersectRay(Parabola& para, vec2 origin, vec2 v)
   {
-    if (para.p == 0.0) { // TODO is this needed?
-      std::cout << "intersect para update...";
+    if (para.p == 0.0)
+    {
+      // TODO is this needed?
+      std::cout << "intersect para update...\n";
       para.p = 1e-10;
     }
 
@@ -387,8 +390,6 @@ namespace math
 
     if (tvals.empty())
     {
-      // throw std::runtime_error("Intersect Ray Tvals Invalid");
-      std::cout << "Invalid tvals\n";
       return {};
     }
     // Sort tvals in increasing order
@@ -581,7 +582,8 @@ namespace math
   Bisector bisectPointSegment(vec2 p, vec2 a, vec2 b)
   {
     if ((equivD(p.x, a.x) && equivD(p.y, a.y)) ||
-        (equivD(p.x, b.x) && equivD(p.y, b.y))) {
+        (equivD(p.x, b.x) && equivD(p.y, b.y)))
+    {
       // special case: point is a segment endpoint
       auto v0 = vec2(b.x - a.x, b.y - a.y);
 
@@ -592,8 +594,10 @@ namespace math
       auto v2p = vec2(v2.x+p.x, v2.y+p.y);
       return createLine(v1p, v2p);
     }
+
     if (dot(subtract(p, a), normalize(subtract(a, b))) ==
-        length(subtract(p, a))) {
+        length(subtract(p, a)))
+    {
       // special case: line and point are collinear
       if (length(subtract(p, a)) < length(subtract(p, b))) {
         // if p is closer to a...
@@ -613,7 +617,8 @@ namespace math
     auto p = pi();
     if (stheta < 0) stheta += p*2;
     if (ttheta < 0) ttheta += p*2;
-    if (ttheta < stheta) {
+    if (ttheta < stheta)
+    {
       ttheta += 2.0 * p;
     }
     auto beta = (stheta + ttheta) / 2.0;
@@ -622,16 +627,17 @@ namespace math
 
   Bisector bisectPoints(vec2 p1, vec2 p2)
   {
-    auto v = vec2(p2.x - p1.x, p2.x - p1.x);
+    auto v = vec2(p2.x - p1.x, p2.y - p1.y);
 
-    auto q = vec2((v.x*0.5) + p1.x, v.x*0.5 + p1.x);
-    if (v.x > 0) {
+    auto q = vec2((v.x*0.5) + p1.x, v.y*0.5 + p1.y);
+    if (v.y > 0)
+    {
       v = negate(v);
     }
     // Get both bisecting sides clockwise and counter clockwise
     // Testing multiple of 2 for better intersection detection effect
-    auto v1 = vec2((v.x*2) + q.x, (-v.x*2) + q.x);
-    auto v2 = vec2((-v.x*2) + q.x, (v.x*2) + q.x);
+    auto v1 = vec2((v.y*2) + q.x, (-v.x*2) + q.y);
+    auto v2 = vec2((-v.y*2) + q.x, (v.x*2) + q.y);
     return createLine(v1, v2);
   }
 
@@ -646,12 +652,20 @@ namespace math
     auto d2 = dist(s1.a, s2.b);
     auto d3 = dist(s1.b, s2.a);
     auto d4 = dist(s1.b, s2.b);
-    if (d1 < d2 && d1 < d3 && d1 < d4) {
-    } else if (d2 < d1 && d2 < d3 && d2 < d4) {
+    if (d1 < d2 && d1 < d3 && d1 < d4)
+    {
+      // do nothing
+    }
+    else if (d2 < d1 && d2 < d3 && d2 < d4)
+    {
       s2 = makeSegment(s2.b, s2.a, true);
-    } else if (d3 < d1 && d3 < d2 && d3 < d4) {
+    }
+    else if (d3 < d1 && d3 < d2 && d3 < d4)
+    {
       s1 = makeSegment(s1.b, s1.a, true);
-    } else if (d4 < d1 && d4 < d2 && d4 < d3) {
+    }
+    else if (d4 < d1 && d4 < d2 && d4 < d3)
+    {
       s1 = makeSegment(s1.b, s1.a, true);
       s2 = makeSegment(s2.b, s2.a, true);
     }
@@ -667,7 +681,7 @@ namespace math
     }
     auto v2 = vec2(p->x + v.x, p->y + v.y);
     // auto l = new Line(p, add(p, v));
-    return createLine(vec2(p->x, p->y), v2);
+    return createLine(*p, v2);
   }
 
   // TODO performance - perhaps use memoization for segment bisectors

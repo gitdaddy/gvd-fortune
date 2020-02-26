@@ -6,7 +6,7 @@
 Event makeSegment(vec2 p1, vec2 p2, uint32_t label, bool forceOrder)
 {
   // check for p1.y == p2.y?
-  // TESTING ONLY
+  // DEBUG ONLY
   if (p1.y == p2.y)
     throw std::runtime_error("Horizontal segment detected");
 
