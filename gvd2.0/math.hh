@@ -333,6 +333,15 @@ namespace math
 
   std::vector<vec2> equidistant(Event const& a, Event const& b, Event const& c);
 
+  //////////////////////// Sorting structs ////////////////////////////
+  struct vec2_x_less_than
+  {
+    inline bool operator() (vec2 const& lhs, vec2 const& rhs)
+    {
+      return lhs.x < rhs.x;
+    }
+  };
+
   struct close_event_less_than
   {
     inline bool operator() (CloseEvent const& lhs, CloseEvent const& rhs)

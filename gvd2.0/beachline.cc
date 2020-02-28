@@ -6,10 +6,6 @@
 
 namespace
 {
-  bool isFlipped(vec2 p, vec2 b) // if p is the endpoint for seg.b
-  {
-    return math::equiv2(p, b);
-  }
 
   static std::shared_ptr<Node> root = nullptr;
 
@@ -45,8 +41,7 @@ namespace
       return intersectParabolicArcs(l, r, directrix);
 
     // if one is the endpoint of the other
-    bool flipped = isFlipped(l->point, r->b) || isFlipped(r->point, l->b);
-    return intersectParabolicToStraightArc(l, r, flipped, directrix);
+    return intersectParabolicToStraightArc(l, r, directrix);
   }
 
   decimal_t getDiff(std::shared_ptr<Node> const& pl, std::shared_ptr<Node> const& pNode,
@@ -60,7 +55,7 @@ namespace
 
     // Option: or test that left and right intersection
     auto i0 = getIntercept(pl, pNode, newY);
-    auto i1 = getIntercept(pNode, pl, newY);
+    auto i1 = getIntercept(pNode, pr, newY);
     if (!i0 || !i1) return 1e10;
     auto diffX = std::abs(i0->x - i1->x);
     auto diffY = std::abs(i0->y - i1->y);
@@ -167,8 +162,7 @@ std::shared_ptr<vec2> intersectStraightArcs(std::shared_ptr<Node> l, std::shared
   return std::make_shared<vec2>(ints[1-lower]);
 }
 
-std::shared_ptr<vec2> intersectParabolicToStraightArc(std::shared_ptr<Node> l, std::shared_ptr<Node> r,
- bool isFlipped, double directrix)
+std::shared_ptr<vec2> intersectParabolicToStraightArc(std::shared_ptr<Node> l, std::shared_ptr<Node> r, double directrix)
 {
   std::vector<vec2> ints;
   if (l->aType == ArcType_e::ARC_PARA)
@@ -182,7 +176,7 @@ std::shared_ptr<vec2> intersectParabolicToStraightArc(std::shared_ptr<Node> l, s
       // so narrow that it won't intersect with any ray below p
       if (math::equiv2(l->point, r->a) || math::equiv2(l->point, r->b) && left.p < 1e-5)
       {
-        auto backupLine = math::createLine(vec2(-1, left.focus.x), vec2(1, left.focus.y));
+        auto backupLine = math::createLine(vec2(-1, left.focus.y), vec2(1, left.focus.y));
         ints = math::vbIntersect(right, backupLine);
       }
       if (ints.empty())
@@ -194,12 +188,13 @@ std::shared_ptr<vec2> intersectParabolicToStraightArc(std::shared_ptr<Node> l, s
     if (ints.size() == 1) return std::make_shared<vec2>(ints[0]);
     if (ints.size() > 2)
     {
-      auto x = l->aType == ArcType_e::ARC_PARA ? l->point.x : r->point.x;
+      auto x = l->point.x;
       // Test get the center intersections
       ints = consolidate(ints, x);
       if (ints.size() == 1) return std::make_shared<vec2>(ints[0]);
     }
 
+    std::sort(ints.begin(), ints.end(), math::vec2_x_less_than());
     auto idx = 0;
     auto centX = (ints[0].x + ints[1].x) / 2.0;
     auto prevY = math::parabola_f(centX, left.h, left.k, left.p);
@@ -209,12 +204,14 @@ std::shared_ptr<vec2> intersectParabolicToStraightArc(std::shared_ptr<Node> l, s
       lower = 0;
     idx = 1 - lower;
 
-    if (isFlipped && math::equiv2(l->point, r->b)) idx = lower;
+    // flip the intersection if one is the endpoint of the segment site
+    if (math::equiv2(l->point, r->b)) idx = lower;
     return std::make_shared<vec2>(ints[idx]);
   }
 
+  // left is a segment and right is a point
   auto left = math::createV(l->a, l->b, directrix, l->id);
-  auto right = math::createParabola(r->point, directrix, l->id);
+  auto right = math::createParabola(r->point, directrix, r->id);
   ints = math::vpIntersect(left, right);
   if (ints.empty())
   {
@@ -222,7 +219,7 @@ std::shared_ptr<vec2> intersectParabolicToStraightArc(std::shared_ptr<Node> l, s
     // so narrow that it won't intersect with any ray below p
     if (math::equiv2(r->point, l->a) || math::equiv2(r->point, l->b) && right.p < 1e-5)
     {
-      auto backupLine = math::createLine(vec2(-1, right.focus.x), vec2(1, right.focus.y));
+      auto backupLine = math::createLine(vec2(-1, right.focus.y), vec2(1, right.focus.y));
       ints = math::vbIntersect(left, backupLine);
     }
     if (ints.empty())
@@ -234,12 +231,13 @@ std::shared_ptr<vec2> intersectParabolicToStraightArc(std::shared_ptr<Node> l, s
   if (ints.size() == 1) return std::make_shared<vec2>(ints[0]);
   if (ints.size() > 2)
   {
-    auto x = l->aType == ArcType_e::ARC_PARA ? r->point.x : r->point.x;
+    auto x = r->point.x;
     // Test get the center intersections
     ints = consolidate(ints, x);
     if (ints.size() == 1) return std::make_shared<vec2>(ints[0]);
   }
 
+  std::sort(ints.begin(), ints.end(), math::vec2_x_less_than());
   auto idx = 0;
   auto centX = (ints[0].x + ints[1].x) / 2.0;
   auto prevY = f_x(left, centX);
@@ -249,18 +247,14 @@ std::shared_ptr<vec2> intersectParabolicToStraightArc(std::shared_ptr<Node> l, s
     lower = 0;
   idx = 1 - lower;
 
-  if (isFlipped && math::equiv2(l->point, l->b)) idx = lower;
+  // flip the intersection if one is the endpoint of the segment site
+  if (math::equiv2(r->point, l->b)) idx = lower;
   return std::make_shared<vec2>(ints[idx]);
 }
 
 // non ptr type?
 std::shared_ptr<vec2> intersectParabolicArcs(std::shared_ptr<Node> l, std::shared_ptr<Node> r, double directrix)
 {
-  if (l->id == 184)
-  {
-    std::cout << "TEST\n";
-  }
-
   auto left = math::createParabola(l->point, directrix, l->id);
   auto right = math::createParabola(r->point, directrix, r->id);
   auto ints = math::ppIntersect(left.h, left.k, left.p, right.h, right.k, right.p);
@@ -297,6 +291,8 @@ std::shared_ptr<CloseEvent> createCloseEvent(std::shared_ptr<Node> const& arcNod
   auto el = math::createEventFromNode(left);
   auto ec = math::createEventFromNode(arcNode);
   auto er = math::createEventFromNode(right);
+
+  // NOTE labels from generated events will not match for connected sites
 
   if (arcNode->aType == ArcType_e::ARC_PARA
       && left->aType == ArcType_e::ARC_PARA
@@ -423,10 +419,7 @@ namespace beachline
     auto parentSide = (grandparent->pLeft->id == parent->id) ? Side_e::LEFT : Side_e::RIGHT;
 
     // Get newEdge (an EdgeNode) before updating children etc.
-    auto newEdge = arcNode->nextEdge();
-    if (side == Side_e::LEFT) {
-      newEdge = arcNode->prevEdge();
-    }
+    auto newEdge = side == Side_e::LEFT ? arcNode->prevEdge() : arcNode->nextEdge();
 
     auto siblingSide = side == Side_e::LEFT ? Side_e::RIGHT : Side_e::LEFT;
     auto sibling = math::getChild(parent, siblingSide);

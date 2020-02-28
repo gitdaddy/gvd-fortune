@@ -83,8 +83,8 @@ public:
   Side_e side; // which side of the edge
   uint32_t id;
   std::shared_ptr<Node> pLeft; // Shared pointer is only a problem if we are point to self
-  std::shared_ptr<Node> pRight; // There should be no circular ownership
-  std::shared_ptr<Node> pParent;
+  std::shared_ptr<Node> pRight;
+  std::shared_ptr<Node> pParent; // TODO make this a weak_ptr to avoid circular ownership
   // vec2 start;
   // drawPoints[0] is the start
   std::vector<vec2> drawPoints; // used at the finalization of an edge
@@ -149,6 +149,7 @@ inline CloseEvent newCloseEvent(decimal_t y, std::shared_ptr<Node> const& arcNod
   CloseEvent r;
   r.point = point;
   r.arcNode = arcNode;
+  arcNode->live = true;
   r.yval = y;
   return r;
 }

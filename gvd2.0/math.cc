@@ -754,7 +754,9 @@ namespace math
       auto pInt = intersectLines(a.p1, a.p2, b.p1, b.p2);
       if (!pInt)
       {
-        throw std::runtime_error("Invalid Intersection a");
+        // Most likely the lines are parallel in which case they should not
+        // intersect
+        return {};
       }
       return {*pInt};
     }

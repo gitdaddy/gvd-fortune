@@ -11,8 +11,6 @@ var CloseEvent = function (y, arcNode, leftNode, rightNode, point, radius) {
   // Point that is equidistant from the three points
   this.point = point;
   this.arcNode = arcNode;
-  this.leftNode = leftNode;
-  this.rightNode = rightNode;
   this.arcNode.closeEvent = this;
   this.isCloseEvent = true;
   this.live = true;
