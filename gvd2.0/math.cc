@@ -332,7 +332,7 @@ namespace math
       return {vec2(x, y)};
     }
 
-    auto a = 0.25*(1/p1 - 1/p2);
+    auto a = 0.25*(1.0/p1 - 1.0/p2);
     auto b = 0.5*(h2/p2 - h1/p1);
     auto c = 0.25*(h1*h1/p1 - h2*h2/p2) + k1 - k2;
     auto tvals = quadratic(a, b, c);

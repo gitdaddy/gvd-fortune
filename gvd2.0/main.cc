@@ -38,6 +38,10 @@ namespace
 
   void sortedInsert(CloseEvent const& e, std::vector<CloseEvent>& rQueue)
   {
+    // if (e.arcNode->id == 49 || e.arcNode->id == 61)
+    // {
+    //   std::cout << "testing\n";
+    // }
     // PERFORMANCE - see if we can speed this up
     rQueue.push_back(e);
     std::sort(rQueue.begin(), rQueue.end(), math::close_event_less_than());
@@ -85,25 +89,26 @@ namespace
       {
         // DEBUG ONLY
         if (!cEvent.arcNode) throw std::runtime_error("Close Event invalid");
-        if (cEvent.arcNode->live)
+        // if (cEvent.arcNode->live)
+
+        // TODO edge finalization
+        auto newEvents = beachline::remove(cEvent.arcNode, cEvent.point, curY, closeEvents);
+        for (auto&& e : newEvents)
         {
-          // TODO edge finalization
-          auto newEvents = beachline::remove(cEvent.arcNode, cEvent.point, curY);
-          for (auto&& e : newEvents)
-          {
-            if (e.yval < curY - 0.000001 || std::abs(e.yval - curY) < 1e-6) // Simplify?
-              sortedInsert(e, closeEvents);
-          }
+          // if (e.yval < curY - 0.000001 || std::abs(e.yval - curY) < 1e-6) // Simplify?
+          if (e.yval < curY)
+            sortedInsert(e, closeEvents);
         }
       }
       else
       {
         // Add Event
         auto packet = getEventPacket(event, queue);
-        auto newEvents = beachline::add(packet);
+        auto newEvents = beachline::add(packet, closeEvents);
         for (auto&& e : newEvents)
         {
-          if (e.yval < curY - 0.000001 || std::abs(e.yval - curY) < 1e-6) // Simplify?
+          // if (e.yval < curY - 0.000001 || std::abs(e.yval - curY) < 1e-6) // Simplify?
+          if (e.yval < curY) // Simplify?
             sortedInsert(e, closeEvents);
         }
       }

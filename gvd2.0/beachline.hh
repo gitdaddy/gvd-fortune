@@ -22,10 +22,10 @@ std::shared_ptr<vec2> intersection(std::shared_ptr<Node> edge, double directrix)
 
 namespace beachline
 {
-  std::vector<CloseEvent> add(EventPacket const& packet);
+  std::vector<CloseEvent> add(EventPacket const& packet, std::vector<CloseEvent>& rCQueue);
 
   std::vector<CloseEvent> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
-              double directrix); //, std::vector<std::shared_ptr<Node>> const& endingEdges);
+              double directrix, std::vector<CloseEvent>& rCQueue); //, std::vector<std::shared_ptr<Node>> const& endingEdges);
 }
 
 #endif

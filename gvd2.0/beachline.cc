@@ -361,14 +361,14 @@ std::vector<CloseEvent> processCloseEvents(std::vector<std::shared_ptr<Node>> cl
 
 namespace beachline
 {
-  std::vector<CloseEvent> add(EventPacket const& packet)
+  std::vector<CloseEvent> add(EventPacket const& packet, std::vector<CloseEvent>& rCQueue)
   {
     auto arcNode = math::createArcNode(packet.site);
     auto directrix = packet.site.point.y;
 
     if (root == nullptr)
     {
-      auto subTreeData = generateSubTree(packet, arcNode, nullptr);
+      auto subTreeData = generateSubTree(packet, arcNode, rCQueue, nullptr);
       root = subTreeData.root;
       return {};
     }
@@ -380,7 +380,7 @@ namespace beachline
     if (root->aType != ArcType_e::EDGE)
     {
       child = root;
-      auto subTreeData = generateSubTree(packet, arcNode, child);
+      auto subTreeData = generateSubTree(packet, arcNode, rCQueue, child);
       root = subTreeData.root;
       return processCloseEvents(subTreeData.nodesToClose, directrix);
     }
@@ -402,14 +402,14 @@ namespace beachline
       child = math::getChild(parent, side);
     }
 
-    auto subTreeData = generateSubTree(packet, arcNode, child);
+    auto subTreeData = generateSubTree(packet, arcNode, rCQueue, child);
     math::setChild(parent, subTreeData.root, side);
 
     return processCloseEvents(subTreeData.nodesToClose, directrix);
   }
 
   std::vector<CloseEvent> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
-              double directrix) //, std::vector<std::shared_ptr<Node>> const& endingEdges)
+              double directrix, std::vector<CloseEvent>& rCQueue) //, std::vector<std::shared_ptr<Node>> const& endingEdges)
   {
     // if (!arcNode.isArc) throw "Unexpected edge in remove";
 
@@ -428,20 +428,24 @@ namespace beachline
 
     // TODO update edge
     // newEdge.updateEdge(point, this.dcel, [], endingEdges);
-    arcNode->live = false;
+    // arcNode->live = false;
+    removeCloseEventFromQueue(arcNode->id, rCQueue);
 
     // Cancel the close event for this arc and adjoining arcs.
     // Add new close events for adjoining arcs.
     // var closeEvents = [];
     std::vector<CloseEvent> closeEvents;
     auto prevArc = newEdge->prevArc();
-    prevArc->live = false;
+    // prevArc->live = false;
+    removeCloseEventFromQueue(prevArc->id, rCQueue);
+
     auto e = createCloseEvent(prevArc, directrix);
     if (e)
       closeEvents.push_back(*e);
 
     auto nextArc = newEdge->nextArc();
-    nextArc->live = false;
+    // nextArc->live = false;
+    removeCloseEventFromQueue(nextArc->id, rCQueue);
     e = createCloseEvent(nextArc, directrix);
     if (e)
       closeEvents.push_back(*e);

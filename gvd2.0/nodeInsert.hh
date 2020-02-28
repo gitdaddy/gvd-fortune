@@ -12,6 +12,7 @@ struct SubTreeRslt
 
 SubTreeRslt generateSubTree(EventPacket const& e,
                                       std::shared_ptr<Node> arcNode,
+                                      std::vector<CloseEvent>& rCQueue,
                                       std::shared_ptr<Node> optChild = nullptr);
 
 #endif

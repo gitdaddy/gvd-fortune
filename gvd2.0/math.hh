@@ -130,8 +130,8 @@ namespace math
   {
     // Parabola(vec2 focus, decimal_t h, decimal_t k, decimal_t p, uint32_t id);
     auto h =  point.x; //focus[0];
-    auto k = (directrix + point.y) / 2;
-    auto p = (point.y - directrix) / 2;
+    auto k = (directrix + point.y) / 2.0;
+    auto p = (point.y - directrix) / 2.0;
     return {point, h, k, p, id};
   }
 

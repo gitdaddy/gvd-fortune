@@ -41,10 +41,13 @@ namespace
     return nullptr;
   }
 
-  std::shared_ptr<Node> createNewEdge(std::shared_ptr<Node> left, std::shared_ptr<Node> right, vec2 vertex)
+  std::shared_ptr<Node> createNewEdge(std::shared_ptr<Node> left, std::shared_ptr<Node> right, vec2 vertex,
+                                      std::vector<CloseEvent>& rCQueue)
   {
-    left->live = false;
-    right->live = false;
+    // left->live = false;
+    // right->live = false;
+    removeCloseEventFromQueue(left->id, rCQueue);
+    removeCloseEventFromQueue(right->id, rCQueue);
     return math::createEdgeNode(left, right, vertex);
   }
 
@@ -64,9 +67,11 @@ namespace
   }
 
   std::shared_ptr<Node> splitArcNode(std::shared_ptr<Node> toSplit,
-    std::shared_ptr<Node> node, std::vector<std::shared_ptr<Node>>& nodesToClose)
+    std::shared_ptr<Node> node, std::vector<std::shared_ptr<Node>>& nodesToClose,
+    std::vector<CloseEvent>& rCQueue)
   {
-    toSplit->live = false;
+    // toSplit->live = false;
+    removeCloseEventFromQueue(toSplit->id, rCQueue);
     vec2 vertex(0.0, 0.0);
     if (node->aType == ArcType_e::ARC_V)
     {
@@ -104,9 +109,11 @@ namespace
   }
 
   std::shared_ptr<Node> insertEdge(std::shared_ptr<Node> toSplit, std::shared_ptr<Node> edge,
-        vec2 vertex, std::vector<std::shared_ptr<Node>>& nodesToClose, bool addCloseNodes = true)
+        vec2 vertex, std::vector<std::shared_ptr<Node>>& nodesToClose,
+        std::vector<CloseEvent>& rCQueue, bool addCloseNodes = true)
   {
-    toSplit->live = false;
+    // toSplit->live = false;
+    removeCloseEventFromQueue(toSplit->id, rCQueue);
     auto eType = toSplit->aType == ArcType_e::ARC_PARA ? EventType_e::POINT : EventType_e::SEG;
     auto newEvent = eType == EventType_e::POINT ?
      Event(eType, g_labelCount++, toSplit->point)
@@ -123,25 +130,27 @@ namespace
 
   // Child is guaranteed to be the parabola arc
   std::shared_ptr<Node> VRegularInsert(std::shared_ptr<Node> arcNode,
-              std::shared_ptr<Node> childArcNode, std::shared_ptr<Node> parentV)
+              std::shared_ptr<Node> childArcNode, std::shared_ptr<Node> parentV,
+              std::vector<CloseEvent>& rCQueue)
   {
     auto left = isLeftHull(childArcNode->a, childArcNode->b, parentV->a);
     if (left) {
       // // Set edge information since we are using a left joint split
       auto nextEdge = arcNode->nextEdge();
       // if (nextEdge) nextEdge.dcelEdge.generalEdge = false;
-      return createNewEdge(arcNode, childArcNode, childArcNode->a);
+      return createNewEdge(arcNode, childArcNode, childArcNode->a, rCQueue);
     } else {
       // // Set edge information since we are using a right joint split
       auto prevEdge = arcNode->prevEdge();
       // if (prevEdge) prevEdge.dcelEdge.generalEdge = false;
       // is a arc created by the right hull joint
-      return createNewEdge(childArcNode, arcNode, childArcNode->a);
+      return createNewEdge(childArcNode, arcNode, childArcNode->a, rCQueue);
     }
   }
 
   std::shared_ptr<Node> ParaInsert(std::shared_ptr<Node> child, std::shared_ptr<Node> arcNode,
-                                  std::vector<std::shared_ptr<Node>>& nodesToClose)
+                                  std::vector<std::shared_ptr<Node>>& nodesToClose,
+                                  std::vector<CloseEvent>& rCQueue)
   {
     std::shared_ptr<Node> newChild = nullptr;
     // TODO performance - most nodes will not need this
@@ -174,7 +183,7 @@ namespace
     }
     else
     {
-      newChild = splitArcNode(child, arcNode, nodesToClose);
+      newChild = splitArcNode(child, arcNode, nodesToClose, rCQueue);
     }
     return newChild;
   }
@@ -182,6 +191,7 @@ namespace
 
 SubTreeRslt generateSubTree(EventPacket const& e,
                                       std::shared_ptr<Node> arcNode,
+                                      std::vector<CloseEvent>& rCQueue,
                                       std::shared_ptr<Node> optChild)
 {
   auto tree = std::make_shared<Node>(ArcType_e::UNDEFINED);
@@ -194,39 +204,39 @@ SubTreeRslt generateSubTree(EventPacket const& e,
     auto newEdge = math::createEdgeNode(leftArcNode, rightArcNode, arcNode->point);
     if (optChild)
     {
-      tree = splitArcNode(optChild, arcNode, nodesToClose);
+      tree = splitArcNode(optChild, arcNode, nodesToClose, rCQueue);
       auto parent = arcNode->pParent;
-      auto childEdge = insertEdge(arcNode, newEdge, arcNode->point, nodesToClose);
+      auto childEdge = insertEdge(arcNode, newEdge, arcNode->point, nodesToClose, rCQueue);
       math::setChild(arcNode->pParent, childEdge, Side_e::LEFT);
     }
     else
-      tree = insertEdge(arcNode, newEdge, arcNode->point, nodesToClose, false);
+      tree = insertEdge(arcNode, newEdge, arcNode->point, nodesToClose, rCQueue, false);
   }
   else if (e.children.size() == 1)
   {
     if (optChild && optChild->aType == ArcType_e::ARC_V) {
       // if (!optChild.isV) throw 'Invalid insert operation';
       auto childArcNode = math::createArcNode(e.children[0]);
-      tree = splitArcNode(optChild, arcNode, nodesToClose);
+      tree = splitArcNode(optChild, arcNode, nodesToClose, rCQueue);
       auto parent = arcNode->pParent;
-      auto newEdge = VRegularInsert(arcNode, childArcNode, optChild);
+      auto newEdge = VRegularInsert(arcNode, childArcNode, optChild, rCQueue);
       math::setChild(parent, newEdge, Side_e::LEFT);
     } else if (optChild) {
-      tree = splitArcNode(optChild, arcNode, nodesToClose);
+      tree = splitArcNode(optChild, arcNode, nodesToClose, rCQueue);
       auto parent = arcNode->pParent;
       auto childArcNode = math::createArcNode(e.children[0]);
-      auto newEdge = splitArcNode(arcNode, childArcNode, nodesToClose);
+      auto newEdge = splitArcNode(arcNode, childArcNode, nodesToClose, rCQueue);
       math::setChild(parent, newEdge, Side_e::LEFT);
     } else {
       // case where site is the root
       auto childArcNode = math::createArcNode(e.children[0]);
-      tree = splitArcNode(arcNode, childArcNode, nodesToClose);
+      tree = splitArcNode(arcNode, childArcNode, nodesToClose, rCQueue);
     }
   }
   else
   {
     if (optChild)
-      tree = ParaInsert(optChild, arcNode, nodesToClose);
+      tree = ParaInsert(optChild, arcNode, nodesToClose, rCQueue);
     else
       tree = arcNode;
   }

@@ -1,6 +1,7 @@
 #ifndef TYPES_HH
 #define TYPES_HH
 
+#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -74,7 +75,7 @@ public:
   std::shared_ptr<Node> prevArc();
   std::shared_ptr<Node> nextArc();
 
-  void setChild(std::shared_ptr<Node> child, Side_e side);
+  // void setChild(std::shared_ptr<Node> child, Side_e side);
 
   // TODO?
   // void updateEdge();
@@ -91,7 +92,7 @@ public:
   vec2 point;
   vec2 a;
   vec2 b;
-  bool live;
+  // bool live;
   bool overridden;
   private:
 };
@@ -112,9 +113,9 @@ struct Event
 struct CloseEvent
 {
   // close event items
-  CloseEvent() : point(0.0, 0.0), live(true), arcNode(nullptr), yval(0.0) {};
+  CloseEvent() : point(0.0, 0.0), arcNode(nullptr), yval(0.0) {};
   vec2 point;
-  bool live;
+  // bool live;
   std::shared_ptr<Node> arcNode;
   decimal_t yval;
 };
@@ -136,8 +137,6 @@ inline void printEvent(Event const& e)
     << e.b.y << ")" << std::endl;
 }
 
-
-
 struct EventPacket
 {
   Event site;
@@ -149,9 +148,23 @@ inline CloseEvent newCloseEvent(decimal_t y, std::shared_ptr<Node> const& arcNod
   CloseEvent r;
   r.point = point;
   r.arcNode = arcNode;
-  arcNode->live = true;
+  // arcNode->live = true;
   r.yval = y;
   return r;
+}
+
+// TODO performance
+inline void removeCloseEventFromQueue(uint32_t id, std::vector<CloseEvent>& q)
+{
+  // if (id == 49 || id == 61)
+  // {
+  //   std::cout << "testing\n";
+  // }
+  auto itr = std::find_if(q.begin(), q.end(), [&id](auto& e){
+    return e.arcNode && e.arcNode->id == id;
+  });
+  if (itr != q.end())
+    q.erase(itr);
 }
 
 inline void printCloseEvent(CloseEvent const& e)

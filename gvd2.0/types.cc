@@ -28,8 +28,8 @@ Node::Node(ArcType_e _aType)
   point(vec2(0.0,0.0)),
   a(vec2(0.0,0.0)),
   b(vec2(0.0,0.0)),
-  live(true),
   overridden(false)
+  // live(true),
 {}
 
 //------------------------------------------------------------
