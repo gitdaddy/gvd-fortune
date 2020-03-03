@@ -132,10 +132,10 @@ namespace
 
 std::shared_ptr<vec2> intersectStraightArcs(std::shared_ptr<Node> l, std::shared_ptr<Node> r, double directrix)
 {
-  std::vector<vec2> ints;
+  std::vector<vec2> ints; // 644, 114
   auto left = math::createV(l->a, l->b, directrix, l->id);
   auto right = math::createV(r->a, r->b, directrix, r->id);
-  ints = math::vvIntersect(right, left);
+  ints = math::vvIntersect(left, right);
   if (ints.empty())
   {
     std::cout << "Empty intersections v-v\n";

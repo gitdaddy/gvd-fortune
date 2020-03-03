@@ -120,6 +120,14 @@ struct CloseEvent
   decimal_t yval;
 };
 
+struct close_event_less_than
+{
+  inline bool operator() (CloseEvent const& lhs, CloseEvent const& rhs)
+  {
+    return lhs.yval < rhs.yval;
+  }
+};
+
 inline void printEvent(Event const& e)
 {
   std::string type;
@@ -153,13 +161,24 @@ inline CloseEvent newCloseEvent(decimal_t y, std::shared_ptr<Node> const& arcNod
   return r;
 }
 
+inline void sortedInsert(CloseEvent const& e, std::vector<CloseEvent>& rQueue)
+{
+  if (e.arcNode->id == 644 || e.arcNode->id == 114)
+  {
+    std::cout << "testing\n";
+  }
+  // PERFORMANCE - see if we can speed this up
+  rQueue.push_back(e);
+  std::sort(rQueue.begin(), rQueue.end(), close_event_less_than());
+}
+
 // TODO performance
 inline void removeCloseEventFromQueue(uint32_t id, std::vector<CloseEvent>& q)
 {
-  // if (id == 49 || id == 61)
-  // {
-  //   std::cout << "testing\n";
-  // }
+  if (id == 644 || id == 114)
+  {
+    std::cout << "testing\n";
+  }
   auto itr = std::find_if(q.begin(), q.end(), [&id](auto& e){
     return e.arcNode && e.arcNode->id == id;
   });

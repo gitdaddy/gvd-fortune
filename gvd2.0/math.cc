@@ -684,7 +684,7 @@ namespace math
     return createLine(*p, v2);
   }
 
-  // TODO performance - perhaps use memoization for segment bisectors
+  // TODO performance - perhaps use memoization for segment bisectors?
   std::vector<Bisector> bisectSegments2(Event const& s1, Event const& s2)
   {
     // if connected segments
@@ -842,7 +842,7 @@ namespace math
 /////////////////////// V
 V::V(vec2 p1, vec2 p2, decimal_t directrix, uint32_t id)
   : point(0.0, 0.0), y1(0.0, 0.0), y0(0.0, 0.0),
-  vectors(), thetas(), id(id)
+  vectors(), id(id)
 {
   y0 = p1;
   y1 = p2;
@@ -851,21 +851,28 @@ V::V(vec2 p1, vec2 p2, decimal_t directrix, uint32_t id)
     y1 = p1;
     y0 = p2;
   }
-  Event directrixSeg(EventType_e::SEG, 0, vec2(0.0,0.0),vec2(-1.0, directrix), vec2(1.0, directrix));
-  auto optP = math::intersectLines(y0, y1, directrixSeg.a, directrixSeg.b);
+  Event directrixSeg(EventType_e::SEG, 0, vec2(0.0,0.0), vec2(-1.0, directrix), vec2(1.0, directrix));
+  auto optP = math::intersectLines(y1, y0, directrixSeg.a, directrixSeg.b);
   if (!optP) throw std::runtime_error("Invalid V");
   point = *optP;
-  Event s1(EventType_e::SEG, 0, vec2(0.0,0.0), p1, p2);
-  auto theta = math::getSegmentsBisectorAngle(directrixSeg, s1);
+  Event s1(EventType_e::SEG, 0, vec2(0.0,0.0), y1, y0);
 
-  auto PI = math::pi();
-  while (theta > 0) theta -= PI/2;
-  while (theta < 0) theta += PI/2;
-  thetas = {theta + PI/2, theta};
-  for (auto&& t : thetas)
+  auto rslt = math::bisectSegments2(directrixSeg, s1);
+  if (rslt.size() != 2) throw std::runtime_error("Invalid V");
+  for (auto&& r:rslt)
   {
-    vectors.push_back(vec2(std::cos(t), std::sin(theta)));
+    vectors.push_back(r.v);
   }
+  // auto theta = math::getSegmentsBisectorAngle(directrixSeg, s1);
+
+  // auto PI = math::pi();
+  // while (theta > 0) theta -= PI/2;
+  // while (theta < 0) theta += PI/2;
+  // thetas = {theta + PI/2, theta};
+  // for (auto&& t : thetas)
+  // {
+  //   vectors.push_back(vec2(std::cos(t), std::sin(theta)));
+  // }
 }
 
 decimal_t f_x(V const& v, decimal_t x)

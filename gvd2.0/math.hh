@@ -19,7 +19,6 @@ struct V
   vec2 y1;
   vec2 y0;
   std::vector<vec2> vectors;
-  std::vector<double> thetas;
   uint32_t id;
   // split site?
 };
@@ -311,7 +310,6 @@ namespace math
 
   Bisector smallAngleBisectSegments(Event s1, Event s2, std::shared_ptr<vec2> optIntersect = nullptr);
   std::vector<Bisector> bisectSegments2(Event const& s1, Event const& s2);
-  // std::vector<Bisector> bisectSegments4(Event const& s1, Event const& s2, Event const& s3);
 
   inline bool parallelTest(Event const& s1, Event const& s2)
   {
@@ -339,14 +337,6 @@ namespace math
     inline bool operator() (vec2 const& lhs, vec2 const& rhs)
     {
       return lhs.x < rhs.x;
-    }
-  };
-
-  struct close_event_less_than
-  {
-    inline bool operator() (CloseEvent const& lhs, CloseEvent const& rhs)
-    {
-      return lhs.yval < rhs.yval;
     }
   };
 

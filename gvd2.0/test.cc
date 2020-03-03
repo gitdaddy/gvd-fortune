@@ -86,7 +86,7 @@ int main(int /* argc */, char** /* argv */)
     auto c3 = newCloseEvent(0.5999, nullptr, vec2(0.0, 0.0));
 
     cQueue.push_back(c3);
-    std::sort(cQueue.begin(), cQueue.end(), math::close_event_less_than());
+    std::sort(cQueue.begin(), cQueue.end(), close_event_less_than());
 
     if (cQueue.back().yval == 0.5999)
       throw std::runtime_error("Failed to sort close queue");

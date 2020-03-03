@@ -36,17 +36,6 @@ namespace
     return {e, {}};
   }
 
-  void sortedInsert(CloseEvent const& e, std::vector<CloseEvent>& rQueue)
-  {
-    // if (e.arcNode->id == 49 || e.arcNode->id == 61)
-    // {
-    //   std::cout << "testing\n";
-    // }
-    // PERFORMANCE - see if we can speed this up
-    rQueue.push_back(e);
-    std::sort(rQueue.begin(), rQueue.end(), math::close_event_less_than());
-  }
-
   void fortune(std::vector<Polygon> const& polygons, double sweepline)
   {
     auto queue = createDataQueue(polygons);
@@ -67,6 +56,7 @@ namespace
     while (queue.size() > 0)
     {
       count++;
+      std::cout << "Count:" << count << std::endl;
       event = queue.back();
       curY = math::getEventY(queue.back());
       // get the next event closest to the sweepline
