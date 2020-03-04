@@ -194,7 +194,7 @@ SubTreeRslt generateSubTree(EventPacket const& e,
                                       std::vector<CloseEvent>& rCQueue,
                                       std::shared_ptr<Node> optChild)
 {
-  auto tree = std::make_shared<Node>(ArcType_e::UNDEFINED);
+  auto tree = std::make_shared<Node>(ArcType_e::UNDEFINED, 0);
   std::vector<std::shared_ptr<Node>> nodesToClose;
 
   if (e.children.size() == 2)

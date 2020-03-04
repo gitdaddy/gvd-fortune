@@ -25,6 +25,7 @@ namespace
     auto f = std::find_if(polygons.begin(), polygons.end(), [label](Polygon poly){
       if (label == poly.getLabel())
         return true;
+      return false;  
     });
     if (f != polygons.end())
       return (*f);
@@ -71,7 +72,7 @@ std::vector<Event> createDataQueue(std::vector<Polygon> const& polygons)
 
     std::vector<Event> connectedSegs;
     std::copy_if(ss.begin(), ss.end(), std::back_inserter(connectedSegs),
-    [v = sortedP.point](auto s){return math::equiv2(s.a, v);});
+    [v = sortedP.point](Event const& s){return math::equiv2(s.a, v);});
 
     if (!connectedSegs.empty())
     {

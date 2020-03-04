@@ -12,11 +12,11 @@ target: gvd
 
 tests: gvd_test
 
-gvd:  types.o math.o nodeInsert.o utils.o dataset.o beachline.o main.o
-	g++ -g -o gvd types.o math.o nodeInsert.o utils.o dataset.o beachline.o main.o
+gvd:  types.o math.o nodeInsert.o utils.o dataset.o fortune.o main.o
+	g++ -g -o gvd types.o math.o nodeInsert.o utils.o dataset.o fortune.o main.o
 
-gvd_test:  types.o math.o nodeInsert.o utils.o dataset.o beachline.o test.o
-	g++ -g -o gvd_test types.o math.o nodeInsert.o utils.o dataset.o beachline.o test.o
+gvd_test:  types.o math.o nodeInsert.o utils.o dataset.o fortune.o test.o
+	g++ -g -o gvd_test types.o math.o nodeInsert.o utils.o dataset.o fortune.o test.o
 
 types.o: types.cc types.hh
 	g++ -g -c types.cc
@@ -33,8 +33,8 @@ utils.o: utils.cc utils.hh
 dataset.o: dataset.cc dataset.hh
 	g++ -g -c dataset.cc
 
-beachline.o: beachline.cc beachline.hh
-	g++ -g -c beachline.cc
+fortune.o: fortune.cc fortune.hh
+	g++ -g -c fortune.cc
 
 main.o: main.cc
 	g++ -g -c main.cc

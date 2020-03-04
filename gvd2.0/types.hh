@@ -67,7 +67,7 @@ static uint32_t g_nodeId = 0;
 class Node
 {
 public:
-  Node(ArcType_e _aType);
+  Node(ArcType_e _aType, uint32_t label);
 
   std::shared_ptr<Node> prevEdge();
   std::shared_ptr<Node> nextEdge();
@@ -75,25 +75,19 @@ public:
   std::shared_ptr<Node> prevArc();
   std::shared_ptr<Node> nextArc();
 
-  // void setChild(std::shared_ptr<Node> child, Side_e side);
-
-  // TODO?
-  // void updateEdge();
-
   ArcType_e aType; // otherwise an edge - also set when Edge finalized
   Side_e side; // which side of the edge
   uint32_t id;
   std::shared_ptr<Node> pLeft; // Shared pointer is only a problem if we are point to self
   std::shared_ptr<Node> pRight;
   std::shared_ptr<Node> pParent; // TODO make this a weak_ptr to avoid circular ownership
-  // vec2 start;
   // drawPoints[0] is the start
   std::vector<vec2> drawPoints; // used at the finalization of an edge
   vec2 point;
   vec2 a;
   vec2 b;
-  // bool live;
   bool overridden;
+  uint32_t label;
   private:
 };
 
@@ -179,7 +173,7 @@ inline void removeCloseEventFromQueue(uint32_t id, std::vector<CloseEvent>& q)
   {
     std::cout << "testing\n";
   }
-  auto itr = std::find_if(q.begin(), q.end(), [&id](auto& e){
+  auto itr = std::find_if(q.begin(), q.end(), [&id](CloseEvent const& e){
     return e.arcNode && e.arcNode->id == id;
   });
   if (itr != q.end())
@@ -197,7 +191,7 @@ Event makeSegment(vec2 p1, vec2 p2, uint32_t label, bool forceOrder = false);
 class Polygon
 {
 public:
-  Polygon() : label(g_labelCount++), orderedPointSites() {}
+  Polygon() : orderedPointSites(), label(g_labelCount++) {}
 
   void addPoint(vec2 const& loc)
   {

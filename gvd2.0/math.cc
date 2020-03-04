@@ -4,11 +4,13 @@
 
 namespace
 {
+  const double g_xInc = 0.01;
+
   bool intersectsTarget(V const& line, V const& t)
   {
     auto r1 = math::isRightOfLine(line.y1, line.y0, t.y0);
     auto r2 = math::isRightOfLine(line.y1, line.y0, t.y1);
-    return r1 && !r2 || !r1 && r2;
+    return (r1 && !r2) || (!r1 && r2);
   }
 
   std::vector<vec2> getLineIntersections(V const& l, V const& r)
@@ -496,7 +498,7 @@ namespace math
     auto v2 = vec2(p2.x - origin.x, p2.y - origin.y);
     auto c0 = crossProduct(v, v1);
     auto c1 = crossProduct(v, v2);
-    return c0 < 0 && c1 > 0 || c0 > 0 && c1 < 0;
+    return (c0 < 0 && c1 > 0) || (c0 > 0 && c1 < 0);
   }
 
   bool fallsInBoundary(vec2 A, vec2 B, vec2 point)
@@ -571,12 +573,13 @@ namespace math
     auto i = intersectLines(s1.a, s1.b , s2.a, s2.b);
     // if the intersection is within the y bounds
     // only works for non-horizontal lines
-    if (!i) {
+    if (!i) 
+    {
       // most likely the lines are parallel
       return false;
     }
-    return betweenValue(i->y, s2.a.y, s2.b.y) && betweenValue(i->x, s2.a.x, s2.b.x)
-          || betweenValue(i->y, s1.a.y, s1.b.y) && betweenValue(i->x, s1.a.x, s1.b.x);
+    return (betweenValue(i->y, s2.a.y, s2.b.y) && betweenValue(i->x, s2.a.x, s2.b.x))
+          || (betweenValue(i->y, s1.a.y, s1.b.y) && betweenValue(i->x, s1.a.x, s1.b.x));
   }
 
   Bisector bisectPointSegment(vec2 p, vec2 a, vec2 b)
@@ -728,7 +731,6 @@ namespace math
               vec2(0.0, 0.0), vec2(0.0, 0.0)};
     if (e1.type == EventType_e::POINT && e2.type == EventType_e::POINT)
     {
-      // TODO fix there is something weird here
       b = bisectPoints(e1.point, e2.point);
     }
     else if (e1.type == EventType_e::POINT && e2.type == EventType_e::SEG)
@@ -914,4 +916,42 @@ GeneralParabola::GeneralParabola(vec2 focus, decimal_t h, decimal_t k,
 {
   Rz = rotateZ(-theta);
   nRz = rotateZ(theta);
+}
+
+std::vector<vec2> prepDraw(V const& v, vec2 const& origin, vec2 const& dest)
+{
+  return {origin, v.point, dest};
+}
+
+std::vector<vec2> prepDraw(Parabola const& p, vec2 const& origin, vec2 const& dest)
+{
+  std::vector<vec2> points;
+  for (auto x = origin.x; x < dest.x; x += g_xInc)
+    points.push_back(vec2(x, math::parabola_f(x, p.h, p.k, p.p)));
+  return points;
+}
+
+std::vector<vec2> prepDraw(GeneralParabola const& p, vec2 const& origin, vec2 const& dest)
+{
+  auto x0 = math::transformPoint(origin, p).x;
+  auto x1 = math::transformPoint(dest, p).x;
+  if (x0 > x1) {
+    auto temp = x1;
+    x1 = x0;
+    x0 = temp;
+  }
+  // this.parabola.setDrawBounds(x0, x1);
+  // this.setDrawPoints();
+  std::vector<vec2> points;
+  for (auto x = origin.x; x < dest.x; x += g_xInc)
+    points.push_back(vec2(x, math::parabola_f(x, p.h, p.k, p.p)));
+  
+  std::vector<vec2> drawPoints;
+  // if (_.isNaN(this.parabola.x0) || _.isNaN(this.parabola.x1)) return;
+  for (auto&& pt : points) 
+  {
+    auto newPt = math::untransformPoint(pt, p);
+    drawPoints.push_back(newPt);
+  }
+  return drawPoints;
 }

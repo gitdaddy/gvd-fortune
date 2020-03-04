@@ -3,111 +3,11 @@
 #include <fstream>
 #include <chrono>
 
-#include "beachline.hh"
+#include "fortune.hh"
 #include "dataset.hh"
 #include "math.hh"
 #include "types.hh"
 #include "utils.hh"
-
-namespace
-{
-  EventPacket getEventPacket(Event const& e, std::vector<Event>& rQueue)
-  {
-    // auto n = rQueue.end()--;
-    auto n = rQueue.back();
-    auto nn = rQueue[rQueue.size() - 2];
-    // auto nn = n--;
-    if (nn.type == EventType_e::SEG && n.type == EventType_e::SEG)
-    {
-      EventPacket ret = {e, {n, nn}};
-      // rQueue.erase(n);
-      // rQueue.erase(nn);
-      rQueue.pop_back();
-      rQueue.pop_back();
-      return ret;
-    }
-    else if (n.type == EventType_e::SEG)
-    {
-      EventPacket ret = {e, {n}};
-      // rQueue.erase(n);
-      rQueue.pop_back();
-      return ret;
-    }
-    return {e, {}};
-  }
-
-  void fortune(std::vector<Polygon> const& polygons, double sweepline)
-  {
-    auto queue = createDataQueue(polygons);
-    std::cout << "queue size:" << queue.size() << std::endl;
-
-    decimal_t curY = 0.0;
-
-    // set perhaps?
-    std::vector<CloseEvent> closeEvents;
-
-    Event event(EventType_e::UNDEFINED, 0);
-    CloseEvent cEvent;
-    bool onClose = false;
-
-    // testing only
-    int count = 0;
-
-    while (queue.size() > 0)
-    {
-      count++;
-      std::cout << "Count:" << count << std::endl;
-      event = queue.back();
-      curY = math::getEventY(queue.back());
-      // get the next event closest to the sweepline
-      if (!closeEvents.empty() && closeEvents.back().yval >= curY)
-      {
-        onClose = true;
-        cEvent = closeEvents.back();
-        closeEvents.pop_back();
-        curY = cEvent.yval;
-      }
-      else
-      {
-        onClose = false;
-        queue.pop_back();
-      }
-      if (curY < sweepline)
-        break;
-
-      if (onClose)
-      {
-        // DEBUG ONLY
-        if (!cEvent.arcNode) throw std::runtime_error("Close Event invalid");
-        // if (cEvent.arcNode->live)
-
-        // TODO edge finalization
-        auto newEvents = beachline::remove(cEvent.arcNode, cEvent.point, curY, closeEvents);
-        for (auto&& e : newEvents)
-        {
-          // if (e.yval < curY - 0.000001 || std::abs(e.yval - curY) < 1e-6) // Simplify?
-          if (e.yval < curY)
-            sortedInsert(e, closeEvents);
-        }
-      }
-      else
-      {
-        // Add Event
-        auto packet = getEventPacket(event, queue);
-        auto newEvents = beachline::add(packet, closeEvents);
-        for (auto&& e : newEvents)
-        {
-          // if (e.yval < curY - 0.000001 || std::abs(e.yval - curY) < 1e-6) // Simplify?
-          if (e.yval < curY) // Simplify?
-            sortedInsert(e, closeEvents);
-        }
-      }
-    }
-
-    std::cout << "Count:" << count << std::endl;
-    // TODO get the result as a vector of edge results
-  }
-}
 
 int main(int argc, char** argv)
 {

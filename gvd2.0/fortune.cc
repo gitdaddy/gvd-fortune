@@ -1,4 +1,4 @@
-#include "beachline.hh"
+#include "fortune.hh"
 #include "dataset.hh"
 #include "math.hh"
 #include "nodeInsert.hh"
@@ -6,8 +6,32 @@
 
 namespace
 {
-
   static std::shared_ptr<Node> root = nullptr;
+
+  EventPacket getEventPacket(Event const& e, std::vector<Event>& rQueue)
+  {
+    // auto n = rQueue.end()--;
+    auto n = rQueue.back();
+    auto nn = rQueue[rQueue.size() - 2];
+    // auto nn = n--;
+    if (nn.type == EventType_e::SEG && n.type == EventType_e::SEG)
+    {
+      EventPacket ret = {e, {n, nn}};
+      // rQueue.erase(n);
+      // rQueue.erase(nn);
+      rQueue.pop_back();
+      rQueue.pop_back();
+      return ret;
+    }
+    else if (n.type == EventType_e::SEG)
+    {
+      EventPacket ret = {e, {n}};
+      // rQueue.erase(n);
+      rQueue.pop_back();
+      return ret;
+    }
+    return {e, {}};
+  }
 
   // ////////////////////////////////////// Close Event Methods /////////////////////////
 
@@ -128,6 +152,38 @@ namespace
       ret.push_back(right[0]);
     return ret;
   }
+
+  std::vector<vec2> getDrawPointsFromBisector(vec2 const& start, vec2 const& end, math::Bisector const& b)
+  {
+    if (b.isLine) return {start, end};
+    return prepDraw(*b.optGeneralParabola, start, end);
+  }
+
+  // Resolve the final points for the closing edge
+  void resolveEdge(std::shared_ptr<Node> edge, vec2 const& endPoint)
+  {
+    auto prev = edge->prevArc();
+    auto next = edge->nextArc();
+    if (!prev || !next) return;
+    
+    // only resolve general edges between labeled sites
+    if (prev->label == next->label) return;
+    // create a bisector from the two sites
+    auto prevEvent = math::createEventFromNode(prev);
+    auto nextEvent = math::createEventFromNode(next);
+    if (edge->drawPoints.empty()) throw std::runtime_error("Invalid Edge with no start");
+
+    if (prevEvent.type == EventType_e::SEG && nextEvent.type == EventType_e::SEG)
+    {
+      auto bisectors = math::bisectSegments2(prevEvent, nextEvent);
+      edge->drawPoints = getDrawPointsFromBisector(edge->drawPoints[0], endPoint, bisectors[0]);
+    }
+    else
+    {
+      auto b = math::bisect(prevEvent, nextEvent);
+      edge->drawPoints = getDrawPointsFromBisector(edge->drawPoints[0], endPoint, b);
+    }
+  }
 }
 
 std::shared_ptr<vec2> intersectStraightArcs(std::shared_ptr<Node> l, std::shared_ptr<Node> r, double directrix)
@@ -174,7 +230,7 @@ std::shared_ptr<vec2> intersectParabolicToStraightArc(std::shared_ptr<Node> l, s
     {
       // use a back-up line since the parabola is probably
       // so narrow that it won't intersect with any ray below p
-      if (math::equiv2(l->point, r->a) || math::equiv2(l->point, r->b) && left.p < 1e-5)
+      if (math::equiv2(l->point, r->a) || (math::equiv2(l->point, r->b) && left.p < 1e-5))
       {
         auto backupLine = math::createLine(vec2(-1, left.focus.y), vec2(1, left.focus.y));
         ints = math::vbIntersect(right, backupLine);
@@ -217,7 +273,7 @@ std::shared_ptr<vec2> intersectParabolicToStraightArc(std::shared_ptr<Node> l, s
   {
     // use a back-up line since the parabola is probably
     // so narrow that it won't intersect with any ray below p
-    if (math::equiv2(r->point, l->a) || math::equiv2(r->point, l->b) && right.p < 1e-5)
+    if (math::equiv2(r->point, l->a) || (math::equiv2(r->point, l->b) && right.p < 1e-5))
     {
       auto backupLine = math::createLine(vec2(-1, right.focus.y), vec2(1, right.focus.y));
       ints = math::vbIntersect(left, backupLine);
@@ -359,96 +415,172 @@ std::vector<CloseEvent> processCloseEvents(std::vector<std::shared_ptr<Node>> cl
   return ret;
 }
 
-namespace beachline
+std::vector<CloseEvent> add(EventPacket const& packet, std::vector<CloseEvent>& rCQueue)
 {
-  std::vector<CloseEvent> add(EventPacket const& packet, std::vector<CloseEvent>& rCQueue)
+  auto arcNode = math::createArcNode(packet.site);
+  auto directrix = packet.site.point.y;
+
+  if (root == nullptr)
   {
-    auto arcNode = math::createArcNode(packet.site);
-    auto directrix = packet.site.point.y;
+    auto subTreeData = generateSubTree(packet, arcNode, rCQueue, nullptr);
+    root = subTreeData.root;
+    return {};
+  }
 
-    if (root == nullptr)
-    {
-      auto subTreeData = generateSubTree(packet, arcNode, rCQueue, nullptr);
-      root = subTreeData.root;
-      return {};
-    }
+  auto parent = root;
+  // var side, child;
+  std::shared_ptr<Node> child;
 
-    auto parent = root;
-    // var side, child;
-    std::shared_ptr<Node> child;
-
-    if (root->aType != ArcType_e::EDGE)
-    {
-      child = root;
-      auto subTreeData = generateSubTree(packet, arcNode, rCQueue, child);
-      root = subTreeData.root;
-      return processCloseEvents(subTreeData.nodesToClose, directrix);
-    }
-
-    // Do a binary search to find the arc node that the new
-    // site intersects with
-    auto rslt = intersection(parent, directrix);
-    if (!rslt) throw std::runtime_error("Invalid intersection on add()");
-    auto side = (packet.site.point.x < rslt->x) ? Side_e::LEFT : Side_e::RIGHT;
-    child = math::getChild(parent, side);
-    while (child->aType == ArcType_e::EDGE)
-    {
-      parent = child;
-      auto i = intersection(parent, directrix);
-      if (!i)
-        throw std::runtime_error("Invalid intersection on 'Add'");
-
-      side = (packet.site.point.x < i->x) ? Side_e::LEFT : Side_e::RIGHT;
-      child = math::getChild(parent, side);
-    }
-
+  if (root->aType != ArcType_e::EDGE)
+  {
+    child = root;
     auto subTreeData = generateSubTree(packet, arcNode, rCQueue, child);
-    math::setChild(parent, subTreeData.root, side);
-
+    root = subTreeData.root;
     return processCloseEvents(subTreeData.nodesToClose, directrix);
   }
 
-  std::vector<CloseEvent> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
-              double directrix, std::vector<CloseEvent>& rCQueue) //, std::vector<std::shared_ptr<Node>> const& endingEdges)
+  // Do a binary search to find the arc node that the new
+  // site intersects with
+  auto rslt = intersection(parent, directrix);
+  if (!rslt) throw std::runtime_error("Invalid intersection on add()");
+  auto side = (packet.site.point.x < rslt->x) ? Side_e::LEFT : Side_e::RIGHT;
+  child = math::getChild(parent, side);
+  while (child->aType == ArcType_e::EDGE)
   {
-    // if (!arcNode.isArc) throw "Unexpected edge in remove";
+    parent = child;
+    auto i = intersection(parent, directrix);
+    if (!i)
+      throw std::runtime_error("Invalid intersection on 'Add'");
 
-    auto parent = arcNode->pParent;
-    auto grandparent = parent->pParent;
-    auto side = (parent->pLeft && parent->pLeft->id == arcNode->id) ? Side_e::LEFT : Side_e::RIGHT;
-    auto parentSide = (grandparent->pLeft->id == parent->id) ? Side_e::LEFT : Side_e::RIGHT;
-
-    // Get newEdge (an EdgeNode) before updating children etc.
-    auto newEdge = side == Side_e::LEFT ? arcNode->prevEdge() : arcNode->nextEdge();
-
-    auto siblingSide = side == Side_e::LEFT ? Side_e::RIGHT : Side_e::LEFT;
-    auto sibling = math::getChild(parent, siblingSide);
-    math::setChild(grandparent, sibling, parentSide);
-    sibling->pParent = grandparent;
-
-    // TODO update edge
-    // newEdge.updateEdge(point, this.dcel, [], endingEdges);
-    // arcNode->live = false;
-    removeCloseEventFromQueue(arcNode->id, rCQueue);
-
-    // Cancel the close event for this arc and adjoining arcs.
-    // Add new close events for adjoining arcs.
-    // var closeEvents = [];
-    std::vector<CloseEvent> closeEvents;
-    auto prevArc = newEdge->prevArc();
-    // prevArc->live = false;
-    removeCloseEventFromQueue(prevArc->id, rCQueue);
-
-    auto e = createCloseEvent(prevArc, directrix);
-    if (e)
-      closeEvents.push_back(*e);
-
-    auto nextArc = newEdge->nextArc();
-    // nextArc->live = false;
-    removeCloseEventFromQueue(nextArc->id, rCQueue);
-    e = createCloseEvent(nextArc, directrix);
-    if (e)
-      closeEvents.push_back(*e);
-    return closeEvents;
+    side = (packet.site.point.x < i->x) ? Side_e::LEFT : Side_e::RIGHT;
+    child = math::getChild(parent, side);
   }
+
+  auto subTreeData = generateSubTree(packet, arcNode, rCQueue, child);
+  math::setChild(parent, subTreeData.root, side);
+
+  return processCloseEvents(subTreeData.nodesToClose, directrix);
+}
+
+std::vector<CloseEvent> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
+            double directrix, std::vector<CloseEvent>& rCQueue)
+{
+  // resolve ending edges
+  auto prevEdge = arcNode->prevEdge();
+  auto nextEdge = arcNode->nextEdge();
+
+  if (prevEdge && !prevEdge->overridden)
+    resolveEdge(prevEdge, point);    
+  if (nextEdge && !nextEdge->overridden)
+    resolveEdge(nextEdge, point);    
+
+  auto parent = arcNode->pParent;
+  auto grandparent = parent->pParent;
+  auto side = (parent->pLeft && parent->pLeft->id == arcNode->id) ? Side_e::LEFT : Side_e::RIGHT;
+  auto parentSide = (grandparent->pLeft->id == parent->id) ? Side_e::LEFT : Side_e::RIGHT;
+
+  // Get newEdge (an EdgeNode) before updating children etc.
+  auto newEdge = side == Side_e::LEFT ? arcNode->prevEdge() : arcNode->nextEdge();
+ 
+  auto siblingSide = side == Side_e::LEFT ? Side_e::RIGHT : Side_e::LEFT;
+  auto sibling = math::getChild(parent, siblingSide);
+  math::setChild(grandparent, sibling, parentSide);
+  sibling->pParent = grandparent;
+
+  // Update edge - verify
+  if (newEdge->drawPoints.empty())
+    newEdge->drawPoints.push_back(point);
+  else 
+    newEdge->drawPoints[0] = point;
+
+  removeCloseEventFromQueue(arcNode->id, rCQueue);
+
+  // Cancel the close event for this arc and adjoining arcs.
+  // Add new close events for adjoining arcs.
+  std::vector<CloseEvent> closeEvents;
+  auto prevArc = newEdge->prevArc();
+  removeCloseEventFromQueue(prevArc->id, rCQueue);
+
+  auto e = createCloseEvent(prevArc, directrix);
+  if (e)
+    closeEvents.push_back(*e);
+
+  auto nextArc = newEdge->nextArc();
+  removeCloseEventFromQueue(nextArc->id, rCQueue);
+  e = createCloseEvent(nextArc, directrix);
+  if (e)
+    closeEvents.push_back(*e);
+  return closeEvents;
+}
+
+ComputeResult fortune(std::vector<Polygon> const& polygons, double sweepline)
+{
+  auto queue = createDataQueue(polygons);
+  std::cout << "queue size:" << queue.size() << std::endl;
+
+  decimal_t curY = 0.0;
+
+  // set perhaps?
+  std::vector<CloseEvent> closeEvents;
+
+  Event event(EventType_e::UNDEFINED, 0);
+  CloseEvent cEvent;
+  bool onClose = false;
+
+  // testing only
+  int count = 0;
+
+  while (queue.size() > 0)
+  {
+    count++;
+    std::cout << "Count:" << count << std::endl;
+    event = queue.back();
+    curY = math::getEventY(queue.back());
+    // get the next event closest to the sweepline
+    if (!closeEvents.empty() && closeEvents.back().yval >= curY)
+    {
+      onClose = true;
+      cEvent = closeEvents.back();
+      closeEvents.pop_back();
+      curY = cEvent.yval;
+    }
+    else
+    {
+      onClose = false;
+      queue.pop_back();
+    }
+    if (curY < sweepline)
+      break;
+
+    if (onClose)
+    {
+      // DEBUG ONLY
+      // if (!cEvent.arcNode) throw std::runtime_error("Close Event invalid");
+
+      auto newEvents = remove(cEvent.arcNode, cEvent.point, curY, closeEvents);
+      for (auto&& e : newEvents)
+      {
+        // if (e.yval < curY - 0.000001 || std::abs(e.yval - curY) < 1e-6) // Simplify?
+        if (e.yval < curY)
+          sortedInsert(e, closeEvents);
+      }
+    }
+    else
+    {
+      // Add Event
+      auto packet = getEventPacket(event, queue);
+      auto newEvents = add(packet, closeEvents);
+      for (auto&& e : newEvents)
+      {
+        // if (e.yval < curY - 0.000001 || std::abs(e.yval - curY) < 1e-6) // Simplify?
+        if (e.yval < curY) // Simplify?
+          sortedInsert(e, closeEvents);
+      }
+    }
+  }
+
+  std::cout << "Count:" << count << std::endl;
+  // TODO get the result as a vector of edge results
+  ComputeResult rslt;
+  return rslt;
 }

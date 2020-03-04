@@ -26,6 +26,8 @@ struct V
 decimal_t f_x(V const& v, decimal_t x);
 std::vector<decimal_t> f_y(V const& v, decimal_t y);
 
+std::vector<vec2> prepDraw(V const& v, vec2 const& origin, vec2 const& dest);
+
 struct Parabola
 {
   Parabola(vec2 focus, decimal_t h, decimal_t k, decimal_t p, uint32_t id);
@@ -36,6 +38,8 @@ struct Parabola
   decimal_t p;
   uint32_t id;
 };
+
+std::vector<vec2> prepDraw(Parabola const& p, vec2 const& origin, vec2 const& dest);
 
 struct GeneralParabola
 {
@@ -52,6 +56,8 @@ struct GeneralParabola
   private:
   uint32_t id;
 };
+
+std::vector<vec2> prepDraw(GeneralParabola const& p, vec2 const& origin, vec2 const& dest);
 
 namespace math
 {
@@ -113,7 +119,7 @@ namespace math
   inline Event createEventFromNode(std::shared_ptr<Node> const& node)
   {
     // DEBUG ONLY
-    if (node->aType == ArcType_e::EDGE) throw std::runtime_error("Attempt to build event from edge!");
+    // if (node->aType == ArcType_e::EDGE) throw std::runtime_error("Attempt to build event from edge!");
     auto eType = node->aType == ArcType_e::ARC_PARA ? EventType_e::POINT : EventType_e::SEG;
     return eType == EventType_e::POINT ?
      Event(eType, g_labelCount++, node->point)
@@ -160,7 +166,7 @@ namespace math
   inline std::shared_ptr<Node> createArcNode(Event const& event)
   {
     auto aType = event.type == EventType_e::SEG ? ArcType_e::ARC_V : ArcType_e::ARC_PARA;
-    auto pNode = std::make_shared<Node>(aType);
+    auto pNode = std::make_shared<Node>(aType, event.label);
     if (aType == ArcType_e::ARC_V)
     {
       pNode->a = event.a;
@@ -175,7 +181,7 @@ namespace math
 
   inline std::shared_ptr<Node> createEdgeNode(std::shared_ptr<Node> l, std::shared_ptr<Node> r, vec2 startPt)
   {
-    auto pEdge = std::make_shared<Node>(ArcType_e::EDGE);
+    auto pEdge = std::make_shared<Node>(ArcType_e::EDGE, 0);
     pEdge->drawPoints.push_back(startPt);
     pEdge->pLeft = l;
     pEdge->pRight = r;
