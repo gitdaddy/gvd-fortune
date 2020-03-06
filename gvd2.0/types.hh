@@ -88,6 +88,7 @@ public:
   vec2 b;
   bool overridden;
   uint32_t label;
+  bool visited;
   private:
 };
 

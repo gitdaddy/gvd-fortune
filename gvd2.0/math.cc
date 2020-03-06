@@ -573,7 +573,7 @@ namespace math
     auto i = intersectLines(s1.a, s1.b , s2.a, s2.b);
     // if the intersection is within the y bounds
     // only works for non-horizontal lines
-    if (!i) 
+    if (!i)
     {
       // most likely the lines are parallel
       return false;
@@ -926,7 +926,9 @@ std::vector<vec2> prepDraw(V const& v, vec2 const& origin, vec2 const& dest)
 std::vector<vec2> prepDraw(Parabola const& p, vec2 const& origin, vec2 const& dest)
 {
   std::vector<vec2> points;
-  for (auto x = origin.x; x < dest.x; x += g_xInc)
+  auto lx = origin.x < -1.1 ? -1.1 : origin.x;
+  auto dx = dest.x > 1.1 ? 1.1 : dest.x;
+  for (auto x = lx; x < dx; x += g_xInc)
     points.push_back(vec2(x, math::parabola_f(x, p.h, p.k, p.p)));
   return points;
 }
@@ -943,12 +945,16 @@ std::vector<vec2> prepDraw(GeneralParabola const& p, vec2 const& origin, vec2 co
   // this.parabola.setDrawBounds(x0, x1);
   // this.setDrawPoints();
   std::vector<vec2> points;
-  for (auto x = origin.x; x < dest.x; x += g_xInc)
+
+  auto lx = x0 < -1.0 ? 1.0 : x0;
+  auto dx = x1 > 1.0 ? 1.0 : x1;
+
+  for (auto x = lx; x < dx; x += g_xInc)
     points.push_back(vec2(x, math::parabola_f(x, p.h, p.k, p.p)));
-  
+
   std::vector<vec2> drawPoints;
   // if (_.isNaN(this.parabola.x0) || _.isNaN(this.parabola.x1)) return;
-  for (auto&& pt : points) 
+  for (auto&& pt : points)
   {
     auto newPt = math::untransformPoint(pt, p);
     drawPoints.push_back(newPt);

@@ -4,6 +4,8 @@
 #include "nodeInsert.hh"
 #include "utils.hh"
 
+#include <fstream>
+
 namespace
 {
   static std::shared_ptr<Node> root = nullptr;
@@ -165,7 +167,7 @@ namespace
     auto prev = edge->prevArc();
     auto next = edge->nextArc();
     if (!prev || !next) return;
-    
+
     // only resolve general edges between labeled sites
     if (prev->label == next->label) return;
     // create a bisector from the two sites
@@ -184,6 +186,185 @@ namespace
       edge->drawPoints = getDrawPointsFromBisector(edge->drawPoints[0], endPoint, b);
     }
   }
+
+  void setRsltEdges(std::shared_ptr<Node> const& pNode, ComputeResult& rslt, double const& sweepline)
+  {
+    if (pNode->visited) return;
+    if (pNode->aType == ArcType_e::EDGE)
+    {
+      // we have already visited this node
+      if (pNode->drawPoints.size() == 2)
+      {
+        rslt.edges.push_back({pNode->drawPoints[0], pNode->drawPoints[1]});
+      }
+      else if (pNode->drawPoints.size() > 2)
+      {
+        rslt.curvedEdges.push_back(pNode->drawPoints);
+      }
+      pNode->visited = true;
+      if (pNode->pLeft) setRsltEdges(pNode->pLeft, rslt, sweepline);
+      if (pNode->pRight) setRsltEdges(pNode->pRight, rslt, sweepline);
+      return;
+    }
+    else if (pNode->aType == ArcType_e::ARC_PARA)
+    {
+      auto p = math::createParabola(pNode->point, sweepline, 0);
+      auto pPrev = pNode->prevEdge();
+      auto pNext = pNode->nextEdge();
+      if (!pPrev || !pNext) return;
+      auto o = intersection(pPrev, sweepline);
+      auto d = intersection(pNext, sweepline);
+      if (!o || !d) return;
+      auto pts = prepDraw(p, *o, *d);
+      if (!pts.empty())
+        rslt.b_curvedEdges.push_back(pts);
+      pNode->visited = true;
+      return;
+    }
+    else if (pNode->aType == ArcType_e::ARC_V)
+    {
+      auto v = math::createV(pNode->a, pNode->b, sweepline, 0);
+      auto pPrev = pNode->prevEdge();
+      auto pNext = pNode->nextEdge();
+      if (!pPrev || !pNext) return;
+      auto o = intersection(pPrev, sweepline);
+      auto d = intersection(pNext, sweepline);
+      if (!o || !d) return;
+      auto pts = prepDraw(v, *o, *d);
+      if (!pts.empty())
+        rslt.b_edges.push_back(pts);
+
+      pNode->visited = true;
+      return;
+    }
+
+    return;
+  }
+}
+
+void writeResults(ComputeResult const& r, std::string const& pPath, std::string const& ePath, std::string const& bPath)
+{
+  // write polygons
+  std::ofstream outP(
+          pPath.c_str(),
+          std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
+  for (auto&& poly: r.polygons)
+  {
+    outP << "p\n"; // signal for new polygon
+    for (auto&& pt : poly.orderedPointSites)
+    {
+      outP << pt.point.x << " " << pt.point.y << std::endl;
+    }
+    auto start = poly.orderedPointSites[0];
+    outP << start.point.x << " " << start.point.y << std::endl;
+  }
+
+  // write edges
+  std::ofstream outE(ePath.c_str(), std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
+  for (auto&& e: r.edges)
+  {
+    outE << "e\n"; // signal for new edge
+    outE << e.first.x << " " << e.first.x << std::endl;
+    outE << e.second.x << " " << e.second.x << std::endl;
+  }
+
+  for (auto&& ce: r.curvedEdges)
+  {
+    outE << "ce\n"; // signal for new edge
+    for (auto&& ePt : ce)
+    {
+      outE << ePt.x << " " << ePt.y << std::endl;
+    }
+  }
+
+  // write beachline items
+  std::ofstream outB(bPath.c_str(), std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
+  for (auto&& e: r.b_edges)
+  {
+    outB << "b\n"; // signal for new edge
+    for (auto&& ePt : e)
+    {
+      outB << ePt.x << " " << ePt.y << std::endl;
+    }
+  }
+
+  for (auto&& ce: r.b_curvedEdges)
+  {
+    outB << "cb\n"; // signal for new edge
+    for (auto&& ePt : ce)
+    {
+      outB << ePt.x << " " << ePt.y << std::endl;
+    }
+  }
+
+  outP.close();
+  outE.close();
+  outB.close();
+}
+
+void writeResults(ComputeResult const& r, std::string const& ePath, std::string const& bPath)
+{
+  // write edges
+  std::ofstream outE(ePath.c_str(), std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
+  for (auto&& e: r.edges)
+  {
+    outE << "e\n"; // signal for new edge
+    outE << e.first.x << " " << e.first.x << std::endl;
+    outE << e.second.x << " " << e.second.x << std::endl;
+  }
+
+  for (auto&& ce: r.curvedEdges)
+  {
+    outE << "ce\n"; // signal for new edge
+    for (auto&& ePt : ce)
+    {
+      outE << ePt.x << " " << ePt.y << std::endl;
+    }
+  }
+
+  // write beachline items
+  std::ofstream outB(bPath.c_str(), std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
+  for (auto&& e: r.b_edges)
+  {
+    outB << "b\n"; // signal for new edge
+    for (auto&& ePt : e)
+    {
+      outB << ePt.x << " " << ePt.y << std::endl;
+    }
+  }
+
+  for (auto&& ce: r.b_curvedEdges)
+  {
+    outB << "cb\n"; // signal for new edge
+    for (auto&& ePt : ce)
+    {
+      outB << ePt.x << " " << ePt.y << std::endl;
+    }
+  }
+  outE.close();
+  outB.close();
+}
+
+void writeResults(ComputeResult const& r, std::string const& ePath)
+{
+  // write edges
+  std::ofstream outE(ePath.c_str(), std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
+  for (auto&& e: r.edges)
+  {
+    outE << "e\n"; // signal for new edge
+    outE << e.first.x << " " << e.first.x << std::endl;
+    outE << e.second.x << " " << e.second.x << std::endl;
+  }
+
+  for (auto&& ce: r.curvedEdges)
+  {
+    outE << "ce\n"; // signal for new edge
+    for (auto&& ePt : ce)
+    {
+      outE << ePt.x << " " << ePt.y << std::endl;
+    }
+  }
+  outE.close();
 }
 
 std::shared_ptr<vec2> intersectStraightArcs(std::shared_ptr<Node> l, std::shared_ptr<Node> r, double directrix)
@@ -470,9 +651,9 @@ std::vector<CloseEvent> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
   auto nextEdge = arcNode->nextEdge();
 
   if (prevEdge && !prevEdge->overridden)
-    resolveEdge(prevEdge, point);    
+    resolveEdge(prevEdge, point);
   if (nextEdge && !nextEdge->overridden)
-    resolveEdge(nextEdge, point);    
+    resolveEdge(nextEdge, point);
 
   auto parent = arcNode->pParent;
   auto grandparent = parent->pParent;
@@ -481,7 +662,7 @@ std::vector<CloseEvent> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
 
   // Get newEdge (an EdgeNode) before updating children etc.
   auto newEdge = side == Side_e::LEFT ? arcNode->prevEdge() : arcNode->nextEdge();
- 
+
   auto siblingSide = side == Side_e::LEFT ? Side_e::RIGHT : Side_e::LEFT;
   auto sibling = math::getChild(parent, siblingSide);
   math::setChild(grandparent, sibling, parentSide);
@@ -490,7 +671,7 @@ std::vector<CloseEvent> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
   // Update edge - verify
   if (newEdge->drawPoints.empty())
     newEdge->drawPoints.push_back(point);
-  else 
+  else
     newEdge->drawPoints[0] = point;
 
   removeCloseEventFromQueue(arcNode->id, rCQueue);
@@ -513,12 +694,11 @@ std::vector<CloseEvent> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
   return closeEvents;
 }
 
-ComputeResult fortune(std::vector<Polygon> const& polygons, double sweepline)
+ComputeResult fortune(std::vector<Event> queue, double sweepline)
 {
-  auto queue = createDataQueue(polygons);
-  std::cout << "queue size:" << queue.size() << std::endl;
+  root = nullptr;
 
-  decimal_t curY = 0.0;
+  decimal_t curY = 1000.0;
 
   // set perhaps?
   std::vector<CloseEvent> closeEvents;
@@ -582,5 +762,6 @@ ComputeResult fortune(std::vector<Polygon> const& polygons, double sweepline)
   std::cout << "Count:" << count << std::endl;
   // TODO get the result as a vector of edge results
   ComputeResult rslt;
+  setRsltEdges(root, rslt, sweepline);
   return rslt;
 }

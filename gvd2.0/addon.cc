@@ -1,43 +1,45 @@
 #include <iostream>
 #include <node.h>
 
-#include "fortune.hh"
 #include "dataset.hh"
+#include "fortune.hh"
+#include "utils.hh"
 
-// build with: 
+// build with:
 // node-gyp configure build
 
 namespace
 {
-  uint32_t g_datasetIdx = -1;
-  std::vector<std::string> getDatasets()
-  {
-    return {"./data/maze/_files.txt",
-            "./data/random_100/_files.txt",
-            "./data/random_200/_files.txt",
-            "./data/random_500/_files.txt",
-            "./data/random_1000/_files.txt",
-            "./data/holes/h_64/_files.txt",
-            "./data/holes/h_128/_files.txt",
-            "./data/holes/h_256/_files.txt",
-            "./data/holes/h_512/_files.txt",
-            "./data/holes/h_1024/_files.txt",
-            "./data/holes/h_2048/_files.txt",
-            "./data/holes/h_4096/_files.txt",
-            "./data/holes/h_8192/_files.txt",
-            "./data/holes/h_16384/_files.txt",
-            "./data/holes/h_32768/_files.txt"};
-    // TODO          
-    // {label:"Sydney city dataset", isMap: true, filename:"Sydney_2_512.map"}, // TODO add more versions
-    // {label:"Berlin city dataset", isMap: true, filename:"Berlin_0_256.map"},
-    // {label:"Boston city dataset", isMap: true, filename:"Boston_0_256.map"},
-    // {label:"Moscow city dataset", isMap: true, filename:"Moscow_1_256.map"},
-    // {label:"Denver city dataset", isMap: true, filename:"Denver_0_256.map"}, // TODO FIX
-    // {label:"Milan city dataset", isMap: true, filename:"Milan_0_256.map"}, // TODO FIX
-    // {label:"NewYork city dataset", isMap: true, filename:"NewYork_1_256.map"}, // TODO FIX
-    // {label:"Paris city dataset", isMap: true, filename:"Paris_0_256.map"}, // TODO FIX
-    // {label:"Shanghai city dataset", isMap: true, filename:"Shanghai_2_256.map"},
-  }
+  std::string g_dataset;
+  std::vector<Event> g_queue;
+  // std::vector<std::string> getDatasets()
+  // {
+  //   return {"./data/maze/_files.txt",
+  //           "./data/random_100/_files.txt",
+  //           "./data/random_200/_files.txt",
+  //           "./data/random_500/_files.txt",
+  //           "./data/random_1000/_files.txt",
+  //           "./data/holes/h_64/_files.txt",
+  //           "./data/holes/h_128/_files.txt",
+  //           "./data/holes/h_256/_files.txt",
+  //           "./data/holes/h_512/_files.txt",
+  //           "./data/holes/h_1024/_files.txt",
+  //           "./data/holes/h_2048/_files.txt",
+  //           "./data/holes/h_4096/_files.txt",
+  //           "./data/holes/h_8192/_files.txt",
+  //           "./data/holes/h_16384/_files.txt",
+  //           "./data/holes/h_32768/_files.txt"};
+  //   // TODO
+  //   // {label:"Sydney city dataset", isMap: true, filename:"Sydney_2_512.map"}, // TODO add more versions
+  //   // {label:"Berlin city dataset", isMap: true, filename:"Berlin_0_256.map"},
+  //   // {label:"Boston city dataset", isMap: true, filename:"Boston_0_256.map"},
+  //   // {label:"Moscow city dataset", isMap: true, filename:"Moscow_1_256.map"},
+  //   // {label:"Denver city dataset", isMap: true, filename:"Denver_0_256.map"}, // TODO FIX
+  //   // {label:"Milan city dataset", isMap: true, filename:"Milan_0_256.map"}, // TODO FIX
+  //   // {label:"NewYork city dataset", isMap: true, filename:"NewYork_1_256.map"}, // TODO FIX
+  //   // {label:"Paris city dataset", isMap: true, filename:"Paris_0_256.map"}, // TODO FIX
+  //   // {label:"Shanghai city dataset", isMap: true, filename:"Shanghai_2_256.map"},
+  // }
 }
 
 void ComputeGVD(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -52,24 +54,31 @@ void ComputeGVD(const v8::FunctionCallbackInfo<v8::Value>& args)
       return;
     }
 
-    g_datasetIdx = args[0]->ToUint32()->Value();
+    char set[255];
 
-    auto sets = getDatasets();
-    if (g_datasetIdx > sets.size() - 1)
-    {
-      std::cout << "Error set idx of: " << g_datasetIdx << " is too large";
-    }
+    args[0]->ToString()->WriteUtf8(&set[0], args[0]->ToString()->Utf8Length());
+    g_dataset.assign(&set[0], args[0]->ToString()->Utf8Length());
 
     double sweepline = args[1]->ToNumber()->Value();
-    auto polygons = processInputFiles(sets[g_datasetIdx]);
-    auto gvdResults = fortune(polygons, sweepline);
 
-    // TODO transfer results into v8 objects
+    // testing only
+    std::cout << "Dataset: " << g_dataset << " sweepline:" << sweepline << std::endl;
+
+    auto polygons = processInputFiles(g_dataset);
+    g_queue = createDataQueue(polygons);
+    auto gvdResults = fortune(g_queue, sweepline);
+    gvdResults.polygons = polygons;
+
+    std::string pPath("./output_polygons.txt");
+    std::string ePath("./output_edges.txt");
+    std::string bPath("./output_beachline.txt");
+
+    writeResults(gvdResults, pPath, ePath, bPath);
 
     v8::Handle<v8::Object> result = v8::Object::New(isolate);
-    result->Set(v8::String::NewFromUtf8(isolate, "sites"), v8::String::NewFromUtf8(isolate, "<Path to sites>"));
-    result->Set(v8::String::NewFromUtf8(isolate, "edges"), v8::String::NewFromUtf8(isolate, "<Path to edges>"));
-    result->Set(v8::String::NewFromUtf8(isolate, "beachline"), v8::String::NewFromUtf8(isolate, "<path to beachline>"));
+    result->Set(v8::String::NewFromUtf8(isolate, "sites"), v8::String::NewFromUtf8(isolate, pPath.c_str()));
+    result->Set(v8::String::NewFromUtf8(isolate, "edges"), v8::String::NewFromUtf8(isolate, ePath.c_str()));
+    result->Set(v8::String::NewFromUtf8(isolate, "beachline"), v8::String::NewFromUtf8(isolate, bPath.c_str()));
     args.GetReturnValue().Set(result);
   }
   catch(const std::exception& e)
@@ -79,7 +88,6 @@ void ComputeGVD(const v8::FunctionCallbackInfo<v8::Value>& args)
   }
 }
 
-// TODO increment gvd perhaps
 void Increment(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
   try
@@ -93,10 +101,10 @@ void Increment(const v8::FunctionCallbackInfo<v8::Value>& args)
     }
 
     double sweepline = args[0]->ToNumber()->Value();
-    
+
     // testing only
-    std::cout << "T idx: " << g_datasetIdx << " s:" << sweepline << std::endl;
- 
+    std::cout << "T dataset: " << g_dataset << " s:" << sweepline << std::endl;
+
     // auto polygons = processInputFiles(sets[g_datasetIdx]);
     // auto gvdResults = fortune(polygons, sweepline);
 

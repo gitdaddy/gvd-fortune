@@ -19,15 +19,15 @@ let g_datasetList = [
   {label:"200 Random", num:200, filePath: "./data/random_200/_files.txt"},
   {label:"500 Random", num:500, filePath: "./data/random_500/_files.txt"},
   {label:"1000 Random", num:1000, filePath: "./data/random_1000/_files.txt"},
-  {label:"Sydney city dataset", isMap: true, filename:"Sydney_2_512.map"}, // TODO add more versions
-  {label:"Berlin city dataset", isMap: true, filename:"Berlin_0_256.map"},
-  {label:"Boston city dataset", isMap: true, filename:"Boston_0_256.map"},
-  {label:"Moscow city dataset", isMap: true, filename:"Moscow_1_256.map"},
+  // {label:"Sydney city dataset", isMap: true, filename:"Sydney_2_512.map"}, // TODO add more versions
+  // {label:"Berlin city dataset", isMap: true, filename:"Berlin_0_256.map"},
+  // {label:"Boston city dataset", isMap: true, filename:"Boston_0_256.map"},
+  // {label:"Moscow city dataset", isMap: true, filename:"Moscow_1_256.map"},
   // {label:"Denver city dataset", isMap: true, filename:"Denver_0_256.map"}, // TODO FIX
   // {label:"Milan city dataset", isMap: true, filename:"Milan_0_256.map"}, // TODO FIX
   // {label:"NewYork city dataset", isMap: true, filename:"NewYork_1_256.map"}, // TODO FIX
   // {label:"Paris city dataset", isMap: true, filename:"Paris_0_256.map"}, // TODO FIX
-  {label:"Shanghai city dataset", isMap: true, filename:"Shanghai_2_256.map"},
+  // {label:"Shanghai city dataset", isMap: true, filename:"Shanghai_2_256.map"},
   {label:"Holes-64", filePath: "./data/holes/h_64/_files.txt"},
   {label:"Holes-128", filePath: "./data/holes/h_128/_files.txt"},
   {label:"Holes-256", filePath: "./data/holes/h_256/_files.txt"},
@@ -170,29 +170,38 @@ function init() {
 
 function datasetChange(idx) {
   localStorage.setIdx = idx;
+  var query = '/data/?value=' + g_datasetList[idx].filePath + "&sweepline=" + g_sweepline.y.toFixed(10);
+  $.get(query).then(function (json) {
+    // TODO Render the results
+    // var polygons = parseInputJSON(json);
+    // g_datasetList[idx].data = polygons;
+    // g_polygons = polygons;
+    // processNewDataset();
+  });
 
-  if (!g_datasetList[idx].data) {
-    if (g_datasetList[idx].isMap) {
-      var query = '/map/?value=' + './data/maps/' + g_datasetList[idx].filename;
-      $.get(query).then(function (json) {
-        var polygons = parseInputMap(json);
-        g_datasetList[idx].data = polygons;
-        g_polygons = polygons;
-        processNewDataset();
-      });
-    } else {
-      var query = '/data/?value=' + g_datasetList[idx].filePath;
-      $.get(query).then(function (json) {
-        var polygons = parseInputJSON(json);
-        g_datasetList[idx].data = polygons;
-        g_polygons = polygons;
-        processNewDataset();
-      });
-    }
-  } else {
-    g_polygons = g_datasetList[idx].data; // load the cached data
-    processNewDataset();
-  }
+  // if (!g_datasetList[idx].data) {
+  //   if (g_datasetList[idx].isMap) {
+  //     var query = '/map/?value=' + './data/maps/' + g_datasetList[idx].filename;
+  //     $.get(query).then(function (json) {
+  //       var polygons = parseInputMap(json);
+  //       g_datasetList[idx].data = polygons;
+  //       g_polygons = polygons;
+  //       processNewDataset();
+  //     });
+  //   } else {
+  //     var query = '/data/?value=' + g_datasetList[idx].filePath + "&sweepline=" + g_sweepline;
+  //     $.get(query).then(function (json) {
+  //       // TODO Render the results
+  //       // var polygons = parseInputJSON(json);
+  //       // g_datasetList[idx].data = polygons;
+  //       // g_polygons = polygons;
+  //       // processNewDataset();
+  //     });
+  //   }
+  // } else {
+  //   g_polygons = g_datasetList[idx].data; // load the cached data
+  //   processNewDataset();
+  // }
 }
 
 function fortune(reorder) {

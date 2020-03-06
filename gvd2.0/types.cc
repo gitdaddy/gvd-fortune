@@ -24,7 +24,8 @@ Node::Node(ArcType_e _aType, uint32_t label)
   a(vec2(0.0,0.0)),
   b(vec2(0.0,0.0)),
   overridden(false),
-  label(label)
+  label(label),
+  visited(false)
 {}
 
 //------------------------------------------------------------

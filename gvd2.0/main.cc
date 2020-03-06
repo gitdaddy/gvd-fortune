@@ -26,7 +26,8 @@ int main(int argc, char** argv)
     // only wrap for testing
     auto polygons = processInputFiles(i);
     auto start = std::chrono::system_clock::now();
-    fortune(polygons, -0.9);
+    auto queue = createDataQueue(polygons);
+    auto rslt = fortune(queue, 0.5);
     auto end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsedSeconds = end-start;
     std::cout << "Process Duration: " << elapsedSeconds.count() << "s\n";

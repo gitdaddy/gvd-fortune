@@ -3,6 +3,8 @@ const express = require('express');
 var router = express();
 var fs = require('fs');
 var _ = require('lodash');
+const gvd_Addon = require("./gvd2.0/build/Release/addon.node");
+
 
 // streaming TODO
 // const path = require('path');
@@ -19,9 +21,9 @@ var _ = require('lodash');
 // output
 //    .pipe(
 //         through(function (data) {
-//             // the data coming in is an array, 
+//             // the data coming in is an array,
 //            	// Element 0 is the name of the event emitted by the addon ("integer")
-//            	// Element 1 is the data - which in this case is just the integer 
+//            	// Element 1 is the data - which in this case is just the integer
 //            	this.queue(data[1]);
 //         }))
 //    .pipe(process.stdout);
@@ -423,7 +425,12 @@ router.get('/', function(req, res) {
 
 router.get('/data', function(req, res) {
   res.type('json');
-  res.json(getDatasetJson(req.query.value));
+  let jsonObj = gvd_Addon.ComputeGVD(req.query.value, parseFloat(req.query.sweepline));
+  if (!jsonObj)
+    console.log("Server failed to perform task");
+  // console.log("Rslt from addon:" + jsonObj);
+  // res.json(getDatasetJson(req.query.value));
+  // TODO read in files and present the data
 });
 
 router.get('/map', function(req, res) {
