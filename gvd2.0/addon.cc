@@ -4,8 +4,12 @@
 #include "fortune.hh"
 #include "dataset.hh"
 
+// build with: 
+// node-gyp configure build
+
 namespace
 {
+  uint32_t g_datasetIdx = -1;
   std::vector<std::string> getDatasets()
   {
     return {"./data/maze/_files.txt",
@@ -48,24 +52,24 @@ void ComputeGVD(const v8::FunctionCallbackInfo<v8::Value>& args)
       return;
     }
 
-    uint32_t datasetIdx = args[0]->ToUint32()->Value();
+    g_datasetIdx = args[0]->ToUint32()->Value();
 
     auto sets = getDatasets();
-    if (datasetIdx > sets.size() - 1)
+    if (g_datasetIdx > sets.size() - 1)
     {
-      std::cout << "Error set idx of: " << datasetIdx << " is too large";
+      std::cout << "Error set idx of: " << g_datasetIdx << " is too large";
     }
 
     double sweepline = args[1]->ToNumber()->Value();
-    auto polygons = processInputFiles(sets[datasetIdx]);
+    auto polygons = processInputFiles(sets[g_datasetIdx]);
     auto gvdResults = fortune(polygons, sweepline);
 
     // TODO transfer results into v8 objects
 
     v8::Handle<v8::Object> result = v8::Object::New(isolate);
-    result->Set(v8::String::NewFromUtf8(isolate, "name"), v8::String::NewFromUtf8(isolate, "Stackoverflow"));
-    result->Set(v8::String::NewFromUtf8(isolate, "url"), v8::String::NewFromUtf8(isolate, "http://stackoverflow.com"));
-    result->Set(v8::String::NewFromUtf8(isolate, "javascript_tagged"), v8::Number::New(isolate, 317566));
+    result->Set(v8::String::NewFromUtf8(isolate, "sites"), v8::String::NewFromUtf8(isolate, "<Path to sites>"));
+    result->Set(v8::String::NewFromUtf8(isolate, "edges"), v8::String::NewFromUtf8(isolate, "<Path to edges>"));
+    result->Set(v8::String::NewFromUtf8(isolate, "beachline"), v8::String::NewFromUtf8(isolate, "<path to beachline>"));
     args.GetReturnValue().Set(result);
   }
   catch(const std::exception& e)
@@ -73,14 +77,48 @@ void ComputeGVD(const v8::FunctionCallbackInfo<v8::Value>& args)
     std::cout << "Error " << e.what() << '\n';
     return;
   }
-  
 }
 
 // TODO increment gvd perhaps
+void Increment(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+  try
+  {
+    v8::Isolate* isolate = args.GetIsolate();
+
+    if (args.Length() < 1)
+    {
+      std::cout << "Compute GVD arg count too low\n";
+      return;
+    }
+
+    double sweepline = args[0]->ToNumber()->Value();
+    
+    // testing only
+    std::cout << "T idx: " << g_datasetIdx << " s:" << sweepline << std::endl;
+ 
+    // auto polygons = processInputFiles(sets[g_datasetIdx]);
+    // auto gvdResults = fortune(polygons, sweepline);
+
+    // TODO transfer results into v8 objects
+
+    v8::Handle<v8::Object> result = v8::Object::New(isolate);
+    result->Set(v8::String::NewFromUtf8(isolate, "sites"), v8::String::NewFromUtf8(isolate, "<Path to sites>"));
+    result->Set(v8::String::NewFromUtf8(isolate, "edges"), v8::String::NewFromUtf8(isolate, "<Path to edges>"));
+    result->Set(v8::String::NewFromUtf8(isolate, "beachline"), v8::String::NewFromUtf8(isolate, "<path to beachline>"));
+    args.GetReturnValue().Set(result);
+  }
+  catch(const std::exception& e)
+  {
+    std::cout << "Error " << e.what() << '\n';
+    return;
+  }
+}
 
 void Initalize(v8::Local<v8::Object> exports)
 {
   NODE_SET_METHOD(exports, "ComputeGVD", ComputeGVD);
+  NODE_SET_METHOD(exports, "Increment", Increment);
 }
 
 NODE_MODULE(addon, Initalize)

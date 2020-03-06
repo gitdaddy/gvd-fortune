@@ -14,7 +14,8 @@ const gvd_Addon = require("./gvd2.0/build/Release/addon.node");
 // console.timeEnd("js")
 
 console.time("c++");
-let jsonObj = gvd_Addon.ComputeGVD(1, 0.5);
+let jsonObj = gvd_Addon.ComputeGVD(2, 0.5);
+gvd_Addon.Increment(0.2);
 // console.log(JSON.stringify(r));
 // console.log(jsonObj["name"]);
 // console.log("r:" + r);
