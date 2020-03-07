@@ -3,6 +3,7 @@ const express = require('express');
 var router = express();
 var fs = require('fs');
 var _ = require('lodash');
+var file_io = require('./fileIO.js')
 const gvd_Addon = require("./gvd2.0/build/Release/addon.node");
 
 
@@ -431,6 +432,7 @@ router.get('/data', function(req, res) {
   // console.log("Rslt from addon:" + jsonObj);
   // res.json(getDatasetJson(req.query.value));
   // TODO read in files and present the data
+  res.json(readOutputFiles());
 });
 
 router.get('/map', function(req, res) {

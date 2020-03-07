@@ -172,6 +172,7 @@ function datasetChange(idx) {
   localStorage.setIdx = idx;
   var query = '/data/?value=' + g_datasetList[idx].filePath + "&sweepline=" + g_sweepline.y.toFixed(10);
   $.get(query).then(function (json) {
+    console.log("got data...");
     // TODO Render the results
     // var polygons = parseInputJSON(json);
     // g_datasetList[idx].data = polygons;
