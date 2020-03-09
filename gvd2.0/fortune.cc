@@ -5,6 +5,8 @@
 #include "utils.hh"
 
 #include <fstream>
+#include <limits>
+#include <iomanip>
 
 namespace
 {
@@ -248,6 +250,7 @@ void writeResults(ComputeResult const& r, std::string const& pPath, std::string 
   std::ofstream outP(
           pPath.c_str(),
           std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
+  outP << std::setprecision(std::numeric_limits<decimal_t>::digits10 + 1);
   for (auto&& poly: r.polygons)
   {
     outP << "p\n"; // signal for new polygon
@@ -261,6 +264,7 @@ void writeResults(ComputeResult const& r, std::string const& pPath, std::string 
 
   // write edges
   std::ofstream outE(ePath.c_str(), std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
+  outE << std::setprecision(std::numeric_limits<decimal_t>::digits10 + 1);
   for (auto&& e: r.edges)
   {
     outE << "e\n"; // signal for new edge
@@ -270,7 +274,7 @@ void writeResults(ComputeResult const& r, std::string const& pPath, std::string 
 
   for (auto&& ce: r.curvedEdges)
   {
-    outE << "ce\n"; // signal for new edge
+    outE << "ec\n"; // signal for new edge
     for (auto&& ePt : ce)
     {
       outE << ePt.x << " " << ePt.y << std::endl;
@@ -279,6 +283,7 @@ void writeResults(ComputeResult const& r, std::string const& pPath, std::string 
 
   // write beachline items
   std::ofstream outB(bPath.c_str(), std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
+  outB << std::setprecision(std::numeric_limits<decimal_t>::digits10 + 1);
   for (auto&& e: r.b_edges)
   {
     outB << "b\n"; // signal for new edge
@@ -290,7 +295,7 @@ void writeResults(ComputeResult const& r, std::string const& pPath, std::string 
 
   for (auto&& ce: r.b_curvedEdges)
   {
-    outB << "cb\n"; // signal for new edge
+    outB << "bc\n"; // signal for new edge
     for (auto&& ePt : ce)
     {
       outB << ePt.x << " " << ePt.y << std::endl;

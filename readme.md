@@ -2,7 +2,7 @@
 To run code with the built-in node server you will need nodejs and some basic packages installed
 
 Needed npm packages:
-opn, fs, express
+open, fs, express
 
 Linux:
 sudo apt-get nodejs

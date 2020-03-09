@@ -1136,3 +1136,110 @@ function zoomed() {
 
   rescaleView(newX, newY);
 }
+
+function renderData(sites, edges, beachline) {
+  // draw sites
+  var points = [];
+  var segments = [];
+  _.each(sites, function (elem) {
+    var s = elem.points;
+    if (s.length === 1 || s.length === 2) {
+      var p1 = vec3(s[0].x, s[0].y, 0);
+      points.push(p1);
+    } else if (s.length === 3) {
+      var p1 = vec3(s[0].x, s[0].y, 0);
+      var p2 = vec3(s[1].x, s[1].y, 0);
+      points.push(p1);
+      points.push(p2);
+      segments.push(makeSegment(p1, p2));
+    } else if (s.length > 3) {
+      var p1 = vec3(s[0].x, s[0].y, 0);
+      for (var i = 1; i < s.length; i++) {
+        var p2 = vec3(s[i].x, s[i].y, 0);
+        points.push(p1);
+        points.push(p2);
+        segments.push(makeSegment(p1, p2));
+        p1 = p2;
+      }
+    }
+  });
+  drawSites(points);
+  drawSegments(segments);
+  // draw edges
+  var edgesVertices = [];
+  var edges = [];
+  var generalEdges = [];
+  _.each(edges, function (elem) {
+    var e = elem.points;
+    if (e.length === 2) {
+      // Line
+      edgesVertices.push(e[0]);
+      edgesVertices.push(e[1]);
+      edges.push({origin: e[0], dest: e[1]});
+    } else if (e.length > 3) {
+      // GP
+      generalEdges.push(e);
+    }
+  });
+
+  // _.unique(edgesVertices);
+
+  let line = d3.line()
+  .x(function (d) {return xRev(d.x);})
+  .y(function (d) {return yRev(d.y);})
+  .curve(d3.curveLinear);
+
+  let d3generalEdges = d3.select('#gvd')
+    .selectAll('.gvd-surface-parabola')
+    .data(generalEdges);
+  d3generalEdges.exit().remove();
+  d3generalEdges.enter()
+    .append("path")
+    .style("fill","none")
+    // .attr("class", e => getSurfaceParabolaClass(e.splitSite))
+    .attr("vector-effect", "non-scaling-stroke")
+    // .attr("id", d => )
+    .merge(d3generalEdges)
+    .style("stroke-width", getSurfaceWidth(true))
+    .attr("d", d => line(d))
+    // .attr("transform", p => p.transform)
+  ;
+
+  let d3edges = d3.select('#gvd')
+    .selectAll('.gvd-surface')
+    .data(edges);
+  d3edges.exit().remove();
+  d3edges.enter()
+    .append('line')
+    .attr('class', getSurfaceClass(true))
+    .attr("vector-effect", "non-scaling-stroke")
+    // .attr("id", d => getEdgeId(d))
+    .merge(d3edges)
+    .attr('x1', e => xRev(e.origin.x))
+    .attr('y1', e => yRev(e.origin.y))
+    .attr('x2', e => xRev(e.dest.x))
+    .attr('y2', e => yRev(e.dest.y))
+    .style("stroke-width", e => getSurfaceWidth(true))
+  ;
+
+  d3.select('#gvd').selectAll(".gvd-edge-vertex").remove();
+
+  // shortest path network?
+
+  let ev = d3.select('#gvd')
+    .selectAll(".gvd-edge-vertex")
+    .data(edgesVertices);
+    ev.enter()
+    .append("circle")
+    .attr("class", "gvd-edge-vertex")
+    // .attr("id", (d,i) => `edge-vertex-${i}`)
+    .attr("cx", d => xRev(d.x))
+    .attr("cy", d => yRev(d.y))
+    .attr("r", g_siteRadius)
+    // .on("click", onEdgeVertexClick)
+    // .on("mouseover", onEdgeVertexMouseOver)
+    // .on("mouseout", onEdgeVertexMouseOut)
+    ;
+
+  // draw beachline
+}

@@ -172,12 +172,10 @@ function datasetChange(idx) {
   localStorage.setIdx = idx;
   var query = '/data/?value=' + g_datasetList[idx].filePath + "&sweepline=" + g_sweepline.y.toFixed(10);
   $.get(query).then(function (json) {
-    console.log("got data...");
-    // TODO Render the results
-    // var polygons = parseInputJSON(json);
-    // g_datasetList[idx].data = polygons;
-    // g_polygons = polygons;
-    // processNewDataset();
+    var sites = JSON.parse(json.sites);
+    var edges = JSON.parse(json.edges);
+    var beachline = JSON.parse(json.beachline);
+    renderData(sites, edges, beachline);
   });
 
   // if (!g_datasetList[idx].data) {
