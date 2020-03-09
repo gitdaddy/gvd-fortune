@@ -6,29 +6,6 @@ var _ = require('lodash');
 var file_io = require('./fileIO.js')
 const gvd_Addon = require("./gvd2.0/build/Release/addon.node");
 
-
-// streaming TODO
-// const path = require('path');
-// const worker = require("streaming-worker");
-// const addon_path = path.join(__dirname, "../addon/build/Release/simple_stream");
-// const simple_stream = worker(addon_path);
-
-// simple_stream.from.on('integer', function(value){
-//     console.log(value);
-// });
-
-// const through = require('through');
-// var output = simple_stream.from.stream();
-// output
-//    .pipe(
-//         through(function (data) {
-//             // the data coming in is an array,
-//            	// Element 0 is the name of the event emitted by the addon ("integer")
-//            	// Element 1 is the data - which in this case is just the integer
-//            	this.queue(data[1]);
-//         }))
-//    .pipe(process.stdout);
-
 const hostname = 'localhost';
 const port = 8082;
 
@@ -432,7 +409,8 @@ router.get('/data', function(req, res) {
   // console.log("Rslt from addon:" + jsonObj);
   // res.json(getDatasetJson(req.query.value));
   // TODO read in files and present the data
-  res.json(readOutputFiles());
+  var j = file_io.readOutputFiles(jsonObj);
+  res.json(j);
 });
 
 router.get('/map', function(req, res) {

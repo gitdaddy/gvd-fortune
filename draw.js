@@ -1136,3 +1136,9 @@ function zoomed() {
 
   rescaleView(newX, newY);
 }
+
+function renderData(data) {
+  // draw sites
+  // draw edges
+  // draw beachline
+}
