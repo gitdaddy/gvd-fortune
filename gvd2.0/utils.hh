@@ -6,7 +6,6 @@
 #include "types.hh"
 #include "math.hh"
 
-// std::vector<Event> createDataQueue(std::vector<Polygon> const& polygons);
 std::vector<Event> createDataQueue(std::vector<Polygon> const& polygons);
 
 #endif

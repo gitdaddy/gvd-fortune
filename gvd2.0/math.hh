@@ -16,8 +16,8 @@ struct V
   V(vec2 p1, vec2 p2, decimal_t directrix, uint32_t id);
 
   vec2 point;
-  vec2 y1;
-  vec2 y0;
+  vec2 a;
+  vec2 b;
   std::vector<vec2> vectors;
   uint32_t id;
   // split site?
@@ -182,7 +182,7 @@ namespace math
   inline std::shared_ptr<Node> createEdgeNode(std::shared_ptr<Node> l, std::shared_ptr<Node> r, vec2 startPt)
   {
     auto pEdge = std::make_shared<Node>(ArcType_e::EDGE, 0);
-    pEdge->drawPoints.push_back(startPt);
+    pEdge->edgeStart = startPt;
     pEdge->pLeft = l;
     pEdge->pRight = r;
     l->pParent = pEdge;
@@ -261,7 +261,7 @@ namespace math
   std::vector<vec2> ppIntersect(decimal_t h1, decimal_t k1, decimal_t p1, decimal_t h2, decimal_t k2, decimal_t p2);
 
   std::vector<vec2> intersectRay(GeneralParabola const& genP, vec2 origin, vec2 v);
-  std::vector<vec2> intersectRay(Parabola& para, vec2 origin, vec2 v);
+  std::vector<vec2> intersectRay(Parabola& para, vec2 p, vec2 v);
 
   std::vector<vec2> vpIntersect(V const& v, Parabola& p);
   std::vector<vec2> vvIntersect(V const& v1, V const& v2);

@@ -8,4 +8,6 @@ class Polygon;
 
 std::vector<Polygon> processInputFiles(std::string const& inputFiles);
 
+// std::vector<Polygon> getTestSet();
+
 #endif

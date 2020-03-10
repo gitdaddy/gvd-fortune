@@ -8,8 +8,8 @@ namespace
 
   bool intersectsTarget(V const& line, V const& t)
   {
-    auto r1 = math::isRightOfLine(line.y1, line.y0, t.y0);
-    auto r2 = math::isRightOfLine(line.y1, line.y0, t.y1);
+    auto r1 = math::isRightOfLine(line.a, line.b, t.b);
+    auto r2 = math::isRightOfLine(line.a, line.b, t.a);
     return (r1 && !r2) || (!r1 && r2);
   }
 
@@ -32,7 +32,7 @@ namespace
 
     if (!t1 && !t2) { // neither divide
       // all combinations possible 11, 10, 01, 00
-      if (math::dividesRightOfLine(l.y1, l.y0, r.y1, r.y0))
+      if (math::dividesRightOfLine(l.a, l.b, r.a, r.b))
       {
         left.push_back(math::createLine(l.point, v1lp));
       }
@@ -41,7 +41,7 @@ namespace
         left.push_back(math::createLine(l.point, v0lp));
       }
 
-      if (math::dividesRightOfLine(r.y1, r.y0, l.y1, l.y0))
+      if (math::dividesRightOfLine(r.a, r.b, l.a, l.b))
       {
         right.push_back(math::createLine(r.point, v1rp));
       }
@@ -55,7 +55,7 @@ namespace
     {
       left.push_back(math::createLine(l.point, v1lp));
       left.push_back(math::createLine(l.point, v0lp));
-      if (math::dividesRightOfLine(r.y1, r.y0, l.y1, l.y0))
+      if (math::dividesRightOfLine(r.a, r.b, l.a, l.b))
       {
         right.push_back(math::createLine (r.point, v1rp));
       }
@@ -68,7 +68,7 @@ namespace
     { // r intersects l
       right.push_back(math::createLine (r.point, v1rp));
       right.push_back(math::createLine (r.point, v0rp));
-      if (math::dividesRightOfLine(l.y1, l.y0, r.y1, r.y0))
+      if (math::dividesRightOfLine(l.a, l.b, r.a, r.b))
       {
         left.push_back(math::createLine(l.point, v1lp));
       }
@@ -379,7 +379,8 @@ namespace math
     return ret;
   }
 
-  std::vector<vec2> intersectRay(Parabola& para, vec2 origin, vec2 v)
+  // The ray is given in parametric form p(t) = p + tv
+  std::vector<vec2> intersectRay(Parabola& para, vec2 p, vec2 v)
   {
     if (para.p == 0.0)
     {
@@ -388,7 +389,7 @@ namespace math
       para.p = 1e-10;
     }
 
-    auto tvals = lpIntersect(para.h, para.k, para.p, origin, v);
+    auto tvals = lpIntersect(para.h, para.k, para.p, p, v);
 
     if (tvals.empty())
     {
@@ -403,7 +404,7 @@ namespace math
     std::vector<vec2> ret;
     for (auto&& t : tvals)
     {
-      auto q = vec2(origin.x + (v.x * t), origin.y + (v.y * t));
+      auto q = vec2(p.x + (v.x * t), p.y + (v.y * t));
       ret.push_back(q);
     }
     return ret;
@@ -413,6 +414,7 @@ namespace math
   {
     std::vector<vec2> ret;
     auto origin = v.point;
+    // vectors are in parametric form
     for (auto vec : v.vectors)
     {
       auto o = intersectRay(p, origin, vec);
@@ -423,17 +425,17 @@ namespace math
 
   std::vector<vec2> vvIntersect(V const& v1, V const& v2)
   {
-    auto s1 = makeSegment(v1.y0, v1.y1, 0);
-    auto s2 = makeSegment(v2.y0, v2.y1, 0);
+    auto s1 = makeSegment(v1.b, v1.a, 0);
+    auto s2 = makeSegment(v2.b, v2.a, 0);
 
     auto optConnection = connected(s1, s2);
     if (optConnection) {
-      auto y0_y1 = vec2(v1.y1.x - v1.y0.x, v1.y1.y - v1.y0.x);
-      auto y0_Oy0 = vec2(v2.y0.x - v1.y0.x, v2.y0.x - v1.y0.x);
-      auto y0_Oy1 = vec2(v2.y1.x - v1.y0.x, v2.y1.y - v1.y0.x);
+      auto a_b = vec2(v1.a.x - v1.b.x, v1.a.y - v1.b.x);
+      auto b_b0 = vec2(v2.b.x - v1.b.x, v2.b.x - v1.b.x);
+      auto b_a1 = vec2(v2.a.x - v1.b.x, v2.a.y - v1.b.x);
 
       // z area between this and obj
-      auto zArea = crossProduct(y0_y1, y0_Oy0) + crossProduct(y0_y1, y0_Oy1);
+      auto zArea = crossProduct(a_b, b_b0) + crossProduct(a_b, b_a1);
       if (zArea == 0) {
         return {v1.point};
       }
@@ -443,13 +445,13 @@ namespace math
       // often P is too close to p2 increment the height by a 0.01 to get a better width for each vector
       if (zArea < 0) {
         // segment right
-        auto pPrime = vec2(f_y(v1, v1.y1.y + 0.01)[1], v1.y1.y + 0.01);
+        auto pPrime = vec2(f_y(v1, v1.a.y + 0.01)[1], v1.a.y + 0.01);
         auto pI = intersectLines(v1.point, pPrime, bisector.p1, bisector.p2);
         if (!pI) throw std::runtime_error("Invalid intersection V to V");
         return {*pI};
       } else {
         // segment left
-        auto pPrime = vec2(f_y(v1, v1.y1.y + 0.01)[0], v1.y1.y + 0.01);
+        auto pPrime = vec2(f_y(v1, v1.a.y + 0.01)[0], v1.a.y + 0.01);
         auto pI = intersectLines(v1.point, pPrime, bisector.p1, bisector.p2);
         if (!pI) throw std::runtime_error("Invalid intersection V to V");
         return {*pI};
@@ -483,13 +485,13 @@ namespace math
 
   double getAngle(Event s, bool consider_order)
   {
-    auto p1 = s.a;
-    auto p2 = s.b;
+    auto p1 = s.b; // lower point
+    auto p2 = s.a; // upper point
     if (p1.y == p2.y) return 0;
     if (consider_order && p1.y > p2.y) {
-      return std::atan2(p1.y-p2.y, p1.y-p2.y);
+      return std::atan2(p1.y-p2.y, p1.x-p2.x);
     }
-    return std::atan2(p2.y-p1.y, p2.y-p1.y);
+    return std::atan2(p2.y-p1.y, p2.x-p1.x);
   }
 
   bool dividesPoints(vec2 v, vec2 origin, vec2 p1, vec2 p2)
@@ -843,38 +845,30 @@ namespace math
 
 /////////////////////// V
 V::V(vec2 p1, vec2 p2, decimal_t directrix, uint32_t id)
-  : point(0.0, 0.0), y1(0.0, 0.0), y0(0.0, 0.0),
+  : point(0.0, 0.0), a(0.0, 0.0), b(0.0, 0.0),
   vectors(), id(id)
 {
-  y0 = p1;
-  y1 = p2;
+  a = p2;
+  b = p1;
   if (p1.y > p2.y)
   {
-    y1 = p1;
-    y0 = p2;
+    a = p1;
+    b = p2;
   }
   Event directrixSeg(EventType_e::SEG, 0, vec2(0.0,0.0), vec2(-1.0, directrix), vec2(1.0, directrix));
-  auto optP = math::intersectLines(y1, y0, directrixSeg.a, directrixSeg.b);
+  auto optP = math::intersectLines(a, b, directrixSeg.a, directrixSeg.b);
   if (!optP) throw std::runtime_error("Invalid V");
   point = *optP;
-  Event s1(EventType_e::SEG, 0, vec2(0.0,0.0), y1, y0);
+  Event s1(EventType_e::SEG, 0, vec2(0.0,0.0), a, b);
+  auto theta = math::getSegmentsBisectorAngle(directrixSeg, s1);
 
-  auto rslt = math::bisectSegments2(directrixSeg, s1);
-  if (rslt.size() != 2) throw std::runtime_error("Invalid V");
-  for (auto&& r:rslt)
+  auto PI = math::pi();
+  while (theta > 0) theta -= PI/2;
+  while (theta < 0) theta += PI/2;
+  for (auto&& t : {theta + PI/2, theta})
   {
-    vectors.push_back(r.v);
+    vectors.push_back(vec2(std::cos(t), std::sin(t)));
   }
-  // auto theta = math::getSegmentsBisectorAngle(directrixSeg, s1);
-
-  // auto PI = math::pi();
-  // while (theta > 0) theta -= PI/2;
-  // while (theta < 0) theta += PI/2;
-  // thetas = {theta + PI/2, theta};
-  // for (auto&& t : thetas)
-  // {
-  //   vectors.push_back(vec2(std::cos(t), std::sin(theta)));
-  // }
 }
 
 decimal_t f_x(V const& v, decimal_t x)

@@ -158,7 +158,7 @@ namespace
     if (closingData)
     {
       // DEBUG ONLY
-      // if (child->aType == ArcType_e::ARC_V) throw std::runtime_error("Invalid node insertion");
+      if (child->aType == ArcType_e::ARC_V) throw std::runtime_error("Invalid node insertion");
       auto edgeToUpdate = child->prevEdge();
       if (*closingData)
       {
@@ -167,7 +167,7 @@ namespace
       if (edgeToUpdate)
       {
         edgeToUpdate->overridden = true;
-        edgeToUpdate->drawPoints.push_back(arcNode->point); // General parabola points?
+        edgeToUpdate->edgeStart = arcNode->point; // General parabola points?
       }
       nodesToClose.push_back(child);
       if (*closingData)

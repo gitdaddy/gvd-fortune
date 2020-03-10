@@ -11,6 +11,8 @@
 namespace
 {
   static std::shared_ptr<Node> root = nullptr;
+  static std::vector<std::pair<vec2, vec2>> g_edges;
+  static std::vector<std::vector<vec2>> g_curvedEdges;
 
   EventPacket getEventPacket(Event const& e, std::vector<Event>& rQueue)
   {
@@ -163,8 +165,9 @@ namespace
     return prepDraw(*b.optGeneralParabola, start, end);
   }
 
-  // Resolve the final points for the closing edge
-  void resolveEdge(std::shared_ptr<Node> edge, vec2 const& endPoint)
+  // Commits the final edge points for the closing edge
+  // Assumes that edge->drawpoints[0] aka start is set
+  void commitEdge(std::shared_ptr<Node> edge, vec2 const& endPoint)
   {
     auto prev = edge->prevArc();
     auto next = edge->nextArc();
@@ -175,47 +178,42 @@ namespace
     // create a bisector from the two sites
     auto prevEvent = math::createEventFromNode(prev);
     auto nextEvent = math::createEventFromNode(next);
-    if (edge->drawPoints.empty()) throw std::runtime_error("Invalid Edge with no start");
 
     if (prevEvent.type == EventType_e::SEG && nextEvent.type == EventType_e::SEG)
     {
-      auto bisectors = math::bisectSegments2(prevEvent, nextEvent);
-      edge->drawPoints = getDrawPointsFromBisector(edge->drawPoints[0], endPoint, bisectors[0]);
+      // auto bisectors = math::bisectSegments2(prevEvent, nextEvent);
+      // edge->drawPoints = getDrawPointsFromBisector(edge->drawPoints[0], endPoint, bisectors[0]);
+      g_edges.push_back({edge->edgeStart, endPoint});
     }
     else
     {
       auto b = math::bisect(prevEvent, nextEvent);
-      edge->drawPoints = getDrawPointsFromBisector(edge->drawPoints[0], endPoint, b);
+      auto pts = getDrawPointsFromBisector(edge->edgeStart, endPoint, b);
+      if (b.isLine)
+        g_edges.push_back({pts[0], pts[1]});
+      else
+        g_curvedEdges.push_back(pts);
     }
   }
 
-  void setRsltEdges(std::shared_ptr<Node> const& pNode, ComputeResult& rslt, double const& sweepline)
+  void setBeachline(std::shared_ptr<Node> const& pNode, ComputeResult& rslt, double const& sweepline)
   {
     if (pNode->visited) return;
     if (pNode->aType == ArcType_e::EDGE)
     {
-      // we have already visited this node
-      if (pNode->drawPoints.size() == 2)
-      {
-        rslt.edges.push_back({pNode->drawPoints[0], pNode->drawPoints[1]});
-      }
-      else if (pNode->drawPoints.size() > 2)
-      {
-        rslt.curvedEdges.push_back(pNode->drawPoints);
-      }
       pNode->visited = true;
-      if (pNode->pLeft) setRsltEdges(pNode->pLeft, rslt, sweepline);
-      if (pNode->pRight) setRsltEdges(pNode->pRight, rslt, sweepline);
+      if (pNode->pLeft) setBeachline(pNode->pLeft, rslt, sweepline);
+      if (pNode->pRight) setBeachline(pNode->pRight, rslt, sweepline);
       return;
     }
     else if (pNode->aType == ArcType_e::ARC_PARA)
     {
       auto p = math::createParabola(pNode->point, sweepline, 0);
-      auto pPrev = pNode->prevEdge();
-      auto pNext = pNode->nextEdge();
-      if (!pPrev || !pNext) return;
-      auto o = intersection(pPrev, sweepline);
-      auto d = intersection(pNext, sweepline);
+      auto l = pNode->prevArc();
+      auto r = pNode->nextArc();
+      if (!l || !r) return;
+      auto o = getIntercept(l, pNode, sweepline);
+      auto d = getIntercept(pNode, r, sweepline);
       if (!o || !d) return;
       auto pts = prepDraw(p, *o, *d);
       if (!pts.empty())
@@ -226,11 +224,11 @@ namespace
     else if (pNode->aType == ArcType_e::ARC_V)
     {
       auto v = math::createV(pNode->a, pNode->b, sweepline, 0);
-      auto pPrev = pNode->prevEdge();
-      auto pNext = pNode->nextEdge();
-      if (!pPrev || !pNext) return;
-      auto o = intersection(pPrev, sweepline);
-      auto d = intersection(pNext, sweepline);
+      auto l = pNode->prevArc();
+      auto r = pNode->nextArc();
+      if (!l || !r) return;
+      auto o = getIntercept(l, pNode, sweepline);
+      auto d = getIntercept(pNode, r, sweepline);
       if (!o || !d) return;
       auto pts = prepDraw(v, *o, *d);
       if (!pts.empty())
@@ -268,8 +266,8 @@ void writeResults(ComputeResult const& r, std::string const& pPath, std::string 
   for (auto&& e: r.edges)
   {
     outE << "e\n"; // signal for new edge
-    outE << e.first.x << " " << e.first.x << std::endl;
-    outE << e.second.x << " " << e.second.x << std::endl;
+    outE << e.first.x << " " << e.first.y << std::endl;
+    outE << e.second.x << " " << e.second.y << std::endl;
   }
 
   for (auto&& ce: r.curvedEdges)
@@ -655,43 +653,36 @@ std::vector<CloseEvent> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
   auto prevEdge = arcNode->prevEdge();
   auto nextEdge = arcNode->nextEdge();
 
+  // the left and right edge converge onto the point
   if (prevEdge && !prevEdge->overridden)
-    resolveEdge(prevEdge, point);
+    commitEdge(prevEdge, point);
   if (nextEdge && !nextEdge->overridden)
-    resolveEdge(nextEdge, point);
+    commitEdge(nextEdge, point);
 
   auto parent = arcNode->pParent;
   auto grandparent = parent->pParent;
   auto side = (parent->pLeft && parent->pLeft->id == arcNode->id) ? Side_e::LEFT : Side_e::RIGHT;
   auto parentSide = (grandparent->pLeft->id == parent->id) ? Side_e::LEFT : Side_e::RIGHT;
 
-  // Get newEdge (an EdgeNode) before updating children etc.
-  auto newEdge = side == Side_e::LEFT ? arcNode->prevEdge() : arcNode->nextEdge();
-
   auto siblingSide = side == Side_e::LEFT ? Side_e::RIGHT : Side_e::LEFT;
   auto sibling = math::getChild(parent, siblingSide);
   math::setChild(grandparent, sibling, parentSide);
+  // the grand parent inherits the children and a new start
+  grandparent->edgeStart = point;
   sibling->pParent = grandparent;
 
-  // Update edge - verify
-  if (newEdge->drawPoints.empty())
-    newEdge->drawPoints.push_back(point);
-  else
-    newEdge->drawPoints[0] = point;
-
-  removeCloseEventFromQueue(arcNode->id, rCQueue);
-
   // Cancel the close event for this arc and adjoining arcs.
-  // Add new close events for adjoining arcs.
+  // Add new close events for new sibling arcs.
+  removeCloseEventFromQueue(arcNode->id, rCQueue);
   std::vector<CloseEvent> closeEvents;
-  auto prevArc = newEdge->prevArc();
+  auto prevArc = grandparent->prevArc();
   removeCloseEventFromQueue(prevArc->id, rCQueue);
 
   auto e = createCloseEvent(prevArc, directrix);
   if (e)
     closeEvents.push_back(*e);
 
-  auto nextArc = newEdge->nextArc();
+  auto nextArc = grandparent->nextArc();
   removeCloseEventFromQueue(nextArc->id, rCQueue);
   e = createCloseEvent(nextArc, directrix);
   if (e)
@@ -702,6 +693,8 @@ std::vector<CloseEvent> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
 ComputeResult fortune(std::vector<Event> queue, double sweepline)
 {
   root = nullptr;
+  g_edges = {};
+  g_curvedEdges = {};
 
   decimal_t curY = 1000.0;
 
@@ -758,15 +751,14 @@ ComputeResult fortune(std::vector<Event> queue, double sweepline)
       for (auto&& e : newEvents)
       {
         // if (e.yval < curY - 0.000001 || std::abs(e.yval - curY) < 1e-6) // Simplify?
-        if (e.yval < curY) // Simplify?
+        if (e.yval < curY)
           sortedInsert(e, closeEvents);
       }
     }
   }
 
   std::cout << "Count:" << count << std::endl;
-  // TODO get the result as a vector of edge results
-  ComputeResult rslt;
-  setRsltEdges(root, rslt, sweepline);
+  ComputeResult rslt{{}, g_edges, g_curvedEdges, {}, {}};
+  setBeachline(root, rslt, sweepline);
   return rslt;
 }

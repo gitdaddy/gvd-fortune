@@ -7,7 +7,7 @@ var file_io = require('./fileIO.js')
 const gvd_Addon = require("./gvd2.0/build/Release/addon.node");
 
 const hostname = 'localhost';
-const port = 8082;
+const port = 8083;
 
 function sameSign(a,b) {
   return (a * b) > 0;
@@ -401,9 +401,31 @@ router.get('/', function(req, res) {
   res.sendFile('index.html', {root: __dirname});
 });
 
+// TODO old deprecate
 router.get('/data', function(req, res) {
   res.type('json');
-  let jsonObj = gvd_Addon.ComputeGVD(req.query.value, parseFloat(req.query.sweepline));
+  res.json(getDatasetJson(req.query.value));
+});
+
+router.get('/data_new', function(req, res) {
+  res.type('json');
+  var val = parseFloat(req.query.sweepline);
+  if (val > 1.0 || val < -1.0) return;
+  let jsonObj = gvd_Addon.ComputeGVD(req.query.value, val);
+  if (!jsonObj)
+    console.log("Server failed to perform task");
+  // console.log("Rslt from addon:" + jsonObj);
+  // res.json(getDatasetJson(req.query.value));
+  // TODO read in files and present the data
+  var j = file_io.readOutputFiles(jsonObj);
+  res.json(j);
+});
+
+router.get('/line_change', function(req, res) {
+  res.type('json');
+  var val = parseFloat(req.query.sweepline);
+  if (val > 1.0 || val < -1.0) return;
+  let jsonObj = gvd_Addon.Update(val);
   if (!jsonObj)
     console.log("Server failed to perform task");
   // console.log("Rslt from addon:" + jsonObj);
@@ -447,5 +469,5 @@ router.use(express.static(__dirname));
 router.listen(port);
 
 // open default web client
-open('http://localhost:8082/');
+open('http://localhost:8083/');
 

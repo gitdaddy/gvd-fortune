@@ -29,6 +29,8 @@ function makeSegment(p1, p2, forceOrder = false) {
   s.a = s[0];
   s.b = s[1];
   s.type = 'segment';
+  s.label = 1; // default
+  s.id = 1; // default
   return s;
 }
 

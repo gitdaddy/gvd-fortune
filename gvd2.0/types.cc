@@ -19,7 +19,7 @@ Node::Node(ArcType_e _aType, uint32_t label)
   pLeft(nullptr),
   pRight(nullptr),
   pParent(nullptr),
-  drawPoints(),
+  edgeStart(vec2(0.0,0.0)),
   point(vec2(0.0,0.0)),
   a(vec2(0.0,0.0)),
   b(vec2(0.0,0.0)),

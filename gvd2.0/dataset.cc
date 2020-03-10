@@ -178,39 +178,67 @@ std::vector<Polygon> processInputFiles(std::string const& inputFiles)
     {
       lines.push_back(line);
     }
-
-    std::vector<vec2> uniquePoints;
-    // skip the first line since it is the same as the last
-    for (size_t i = 0; i < lines.size() - 1; ++i)
-    {
-      uniquePoints.push_back(parseLineToVec2(lines[i]));
-    }
-
-    // auto uPts = uniquePoints;
-    auto uPts = sanitizeData(uniquePoints);
-
-    // we assume point sets greater than 2 are a closed polygon
     Polygon poly;
-    if (uPts.size() > 2)
+
+    if (lines.size() == 2)
     {
-      for (size_t i = 0; i < uPts.size(); ++i)
+      poly.addPoint(parseLineToVec2(lines[0]));
+    }
+    else
+    {
+      std::vector<vec2> uniquePoints;
+      // skip the first line since it is the same as the last
+      for (size_t i = 0; i < lines.size() - 1; ++i)
       {
-        poly.addPoint(uPts[i]);
+        uniquePoints.push_back(parseLineToVec2(lines[i]));
       }
-    }
-    else if (uPts.size() == 2 && !math::equiv2(uPts[0], uPts[1]))
-    {
-      poly.addPoint(uPts[0]);
-      poly.addPoint(uPts[1]);
-    }
-    else if (uPts.size() == 1 || math::equiv2(uPts[0], uPts[1]))
-    {
-      poly.addPoint(uPts[0]);
+
+      // auto uPts = uniquePoints;
+      auto uPts = sanitizeData(uniquePoints);
+
+      // we assume point sets greater than 2 are a closed polygon
+      if (uPts.size() > 2)
+      {
+        for (size_t i = 0; i < uPts.size(); ++i)
+        {
+          poly.addPoint(uPts[i]);
+        }
+      }
+      else if (uPts.size() == 2 && !math::equiv2(uPts[0], uPts[1]))
+      {
+        poly.addPoint(uPts[0]);
+        poly.addPoint(uPts[1]);
+      }
+      else if (uPts.size() == 1 || math::equiv2(uPts[0], uPts[1]))
+      {
+        poly.addPoint(uPts[0]);
+      }
     }
 
     polygons.push_back(poly);
   }
-  // TESTING ONLY
-  std::cout << "Num Polygons:" << polygons.size() << std::endl;
   return polygons;
 }
+
+// std::vector<Polygon> getTestSet()
+// {
+//   std::vector<Polygon> rslt;
+
+//   Polygon p1;
+//   p1.addPoint(vec2(0.123456, 0.3234526));
+//   rslt.push_back(p1);
+
+//   Polygon p2;
+//   p2.addPoint(vec2(-0.1234, 0.534562));
+//   rslt.push_back(p2);
+
+//   Polygon p3;
+//   p3.addPoint(vec2(0.5635, -0.343262));
+//   rslt.push_back(p3);
+
+//   Polygon p4;
+//   p4.addPoint(vec2(-0.2335, 0.6262));
+//   rslt.push_back(p4);
+
+//   return rslt;
+// }

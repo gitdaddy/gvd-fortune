@@ -61,9 +61,6 @@ void ComputeGVD(const v8::FunctionCallbackInfo<v8::Value>& args)
 
     double sweepline = args[1]->ToNumber()->Value();
 
-    // testing only
-    std::cout << "Dataset: " << g_dataset << " sweepline:" << sweepline << std::endl;
-
     auto polygons = processInputFiles(g_dataset);
     g_queue = createDataQueue(polygons);
     auto gvdResults = fortune(g_queue, sweepline);
@@ -88,7 +85,7 @@ void ComputeGVD(const v8::FunctionCallbackInfo<v8::Value>& args)
   }
 }
 
-void Increment(const v8::FunctionCallbackInfo<v8::Value>& args)
+void Update(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
   try
   {
@@ -101,19 +98,19 @@ void Increment(const v8::FunctionCallbackInfo<v8::Value>& args)
     }
 
     double sweepline = args[0]->ToNumber()->Value();
+    auto gvdResults = fortune(g_queue, sweepline);
+    // gvdResults.polygons = polygons;
 
-    // testing only
-    std::cout << "T dataset: " << g_dataset << " s:" << sweepline << std::endl;
+    std::string pPath("./output_polygons.txt");
+    std::string ePath("./output_edges.txt");
+    std::string bPath("./output_beachline.txt");
 
-    // auto polygons = processInputFiles(sets[g_datasetIdx]);
-    // auto gvdResults = fortune(polygons, sweepline);
-
-    // TODO transfer results into v8 objects
+    writeResults(gvdResults, pPath, ePath, bPath);
 
     v8::Handle<v8::Object> result = v8::Object::New(isolate);
-    result->Set(v8::String::NewFromUtf8(isolate, "sites"), v8::String::NewFromUtf8(isolate, "<Path to sites>"));
-    result->Set(v8::String::NewFromUtf8(isolate, "edges"), v8::String::NewFromUtf8(isolate, "<Path to edges>"));
-    result->Set(v8::String::NewFromUtf8(isolate, "beachline"), v8::String::NewFromUtf8(isolate, "<path to beachline>"));
+    result->Set(v8::String::NewFromUtf8(isolate, "sites"), v8::String::NewFromUtf8(isolate, pPath.c_str()));
+    result->Set(v8::String::NewFromUtf8(isolate, "edges"), v8::String::NewFromUtf8(isolate, ePath.c_str()));
+    result->Set(v8::String::NewFromUtf8(isolate, "beachline"), v8::String::NewFromUtf8(isolate, bPath.c_str()));
     args.GetReturnValue().Set(result);
   }
   catch(const std::exception& e)
@@ -126,7 +123,7 @@ void Increment(const v8::FunctionCallbackInfo<v8::Value>& args)
 void Initalize(v8::Local<v8::Object> exports)
 {
   NODE_SET_METHOD(exports, "ComputeGVD", ComputeGVD);
-  NODE_SET_METHOD(exports, "Increment", Increment);
+  NODE_SET_METHOD(exports, "Update", Update);
 }
 
 NODE_MODULE(addon, Initalize)

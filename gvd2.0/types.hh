@@ -81,8 +81,7 @@ public:
   std::shared_ptr<Node> pLeft; // Shared pointer is only a problem if we are point to self
   std::shared_ptr<Node> pRight;
   std::shared_ptr<Node> pParent; // TODO make this a weak_ptr to avoid circular ownership
-  // drawPoints[0] is the start
-  std::vector<vec2> drawPoints; // used at the finalization of an edge
+  vec2 edgeStart;
   vec2 point;
   vec2 a;
   vec2 b;

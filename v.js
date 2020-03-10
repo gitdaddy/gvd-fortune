@@ -35,9 +35,9 @@ V = function(line, directrix, id) {
   // Get the first positive 90 degree sibling to theta
   while (theta > 0) theta -= Math.PI/2;
   while (theta < 0) theta += Math.PI/2;
-  this.thetas = [theta + Math.PI/2, theta];
+  var tvals = [theta + Math.PI/2, theta];
   var vectors = [];
-  this.thetas.forEach(function(theta) {
+  tvals.forEach(function(theta) {
     vectors.push(vec3(Math.cos(theta), Math.sin(theta), 0));
   });
   this.vectors = vectors;

@@ -38,7 +38,7 @@ let g_datasetList = [
   {label:"Holes-8192", filePath: "./data/holes/h_8192/_files.txt"},
   {label:"Holes-16384", filePath: "./data/holes/h_16384/_files.txt"},
   {label:"Holes-32768", filePath: "./data/holes/h_32768/_files.txt"},
-  {label:"Data Testing"}
+  {label:"Data Testing", filePath: "./data/test/_files.txt"}
  ];
 
 let closeEventPoints = [];
@@ -56,7 +56,7 @@ let g_xInc = 0.001;
 
 let g_settings = {
   showEvents: {label: "Show Events", value: false},
-  showGVDVer: {label: "Show GVD vertices", value: false},
+  showGVDVer: {label: "Show GVD vertices", value: true},
   showGVDSeg: {label: "Show GVD segments", value: true},
   showObjVer: {label: "Show object vertices", value: false},
   showObjSeg: {label: "Show object segments", value: true},
@@ -134,7 +134,8 @@ function keydown(event) {
     // Prevent scroll
     event.preventDefault();
     document.getElementById("sweeplineInput").value = g_sweepline.y.toFixed(10);
-    render();
+  sweeplineUpdate_C_addon(localStorage.setIdx);
+    // render();
   }
 }
 
@@ -165,42 +166,56 @@ function init() {
   //   var idx = localStorage.setIdx;
   // }
   document.getElementById("dataset-select").selectedIndex = idx;
-  datasetChange(idx);
+  datasetChange_C_addon(idx);
 }
 
-function datasetChange(idx) {
+function datasetChange_C_addon(idx) {
   localStorage.setIdx = idx;
-  var query = '/data/?value=' + g_datasetList[idx].filePath + "&sweepline=" + g_sweepline.y.toFixed(10);
+  var query = '/data_new/?value=' + g_datasetList[idx].filePath + "&sweepline=" + g_sweepline.y.toFixed(10);
   $.get(query).then(function (json) {
     var sites = JSON.parse(json.sites);
     var edges = JSON.parse(json.edges);
     var beachline = JSON.parse(json.beachline);
     renderData(sites, edges, beachline);
   });
+}
 
-  // if (!g_datasetList[idx].data) {
-  //   if (g_datasetList[idx].isMap) {
-  //     var query = '/map/?value=' + './data/maps/' + g_datasetList[idx].filename;
-  //     $.get(query).then(function (json) {
-  //       var polygons = parseInputMap(json);
-  //       g_datasetList[idx].data = polygons;
-  //       g_polygons = polygons;
-  //       processNewDataset();
-  //     });
-  //   } else {
-  //     var query = '/data/?value=' + g_datasetList[idx].filePath + "&sweepline=" + g_sweepline;
-  //     $.get(query).then(function (json) {
-  //       // TODO Render the results
-  //       // var polygons = parseInputJSON(json);
-  //       // g_datasetList[idx].data = polygons;
-  //       // g_polygons = polygons;
-  //       // processNewDataset();
-  //     });
-  //   }
-  // } else {
-  //   g_polygons = g_datasetList[idx].data; // load the cached data
-  //   processNewDataset();
-  // }
+function sweeplineUpdate_C_addon(idx) {
+  localStorage.setIdx = idx;
+  var query = '/line_change/?value=' + g_datasetList[idx].filePath + "&sweepline=" + g_sweepline.y.toFixed(10);
+  $.get(query).then(function (json) {
+    var sites = JSON.parse(json.sites);
+    var edges = JSON.parse(json.edges);
+    var beachline = JSON.parse(json.beachline);
+    renderData(sites, edges, beachline);
+  });
+}
+
+// TODO deprecate
+function datasetChange(idx) {
+  localStorage.setIdx = idx;
+  if (!g_datasetList[idx].data) {
+    if (g_datasetList[idx].isMap) {
+      var query = '/map/?value=' + './data/maps/' + g_datasetList[idx].filename;
+      $.get(query).then(function (json) {
+        var polygons = parseInputMap(json);
+        g_datasetList[idx].data = polygons;
+        g_polygons = polygons;
+        processNewDataset();
+      });
+    } else {
+      var query = '/data/?value=' + g_datasetList[idx].filePath;
+      $.get(query).then(function (json) {
+        var polygons = parseInputJSON(json);
+        g_datasetList[idx].data = polygons;
+        g_polygons = polygons;
+        processNewDataset();
+      });
+    }
+  } else {
+    g_polygons = g_datasetList[idx].data; // load the cached data
+    processNewDataset();
+  }
 }
 
 function fortune(reorder) {
@@ -295,7 +310,8 @@ function fortune(reorder) {
 
 function moveSweepline(y) {
   setSweepline(y);
-  render();
+  sweeplineUpdate_C_addon(localStorage.setIdx);
+  // render();
 }
 
 function render(reorder = false) {
