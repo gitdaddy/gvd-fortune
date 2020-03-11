@@ -19,6 +19,8 @@ namespace
     // auto c = child.optSite;
     auto l = child->prevArc();
 
+    if (!r || !l) return nullptr;
+
     // /* cases:
     // 1. l and c are segments and end at p
     // 2. c and r are segments and end at p

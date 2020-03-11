@@ -411,13 +411,13 @@ router.get('/data_new', function(req, res) {
   res.type('json');
   var val = parseFloat(req.query.sweepline);
   if (val > 1.0 || val < -1.0) return;
+  console.log("Compute @ val:" + val);
   let jsonObj = gvd_Addon.ComputeGVD(req.query.value, val);
   if (!jsonObj)
     console.log("Server failed to perform task");
-  // console.log("Rslt from addon:" + jsonObj);
-  // res.json(getDatasetJson(req.query.value));
-  // TODO read in files and present the data
   var j = file_io.readOutputFiles(jsonObj);
+  j.msg = jsonObj.msg;
+  j.err = jsonObj.err;
   res.json(j);
 });
 
@@ -425,13 +425,13 @@ router.get('/line_change', function(req, res) {
   res.type('json');
   var val = parseFloat(req.query.sweepline);
   if (val > 1.0 || val < -1.0) return;
+  console.log("Update @ val:" + val);
   let jsonObj = gvd_Addon.Update(val);
   if (!jsonObj)
     console.log("Server failed to perform task");
-  // console.log("Rslt from addon:" + jsonObj);
-  // res.json(getDatasetJson(req.query.value));
-  // TODO read in files and present the data
   var j = file_io.readOutputFiles(jsonObj);
+  j.msg = jsonObj.msg;
+  j.err = jsonObj.err;
   res.json(j);
 });
 

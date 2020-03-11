@@ -198,6 +198,7 @@ namespace
 
   void setBeachline(std::shared_ptr<Node> const& pNode, ComputeResult& rslt, double const& sweepline)
   {
+    if (!pNode) return;
     if (pNode->visited) return;
     if (pNode->aType == ArcType_e::EDGE)
     {
@@ -300,8 +301,11 @@ void writeResults(ComputeResult const& r, std::string const& pPath, std::string 
     }
   }
 
+  outP << "p";
   outP.close();
+  outE << "e";
   outE.close();
+  outB << "b";
   outB.close();
 }
 
@@ -690,7 +694,7 @@ std::vector<CloseEvent> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
   return closeEvents;
 }
 
-ComputeResult fortune(std::vector<Event> queue, double sweepline)
+ComputeResult fortune(std::vector<Event> queue, double sweepline, std::string& rMsg, std::string& rErr)
 {
   root = nullptr;
   g_edges = {};
@@ -708,57 +712,73 @@ ComputeResult fortune(std::vector<Event> queue, double sweepline)
   // testing only
   int count = 0;
 
-  while (queue.size() > 0)
+  try
   {
-    count++;
-    std::cout << "Count:" << count << std::endl;
-    event = queue.back();
-    curY = math::getEventY(queue.back());
-    // get the next event closest to the sweepline
-    if (!closeEvents.empty() && closeEvents.back().yval >= curY)
+    while (queue.size() > 0)
     {
-      onClose = true;
-      cEvent = closeEvents.back();
-      closeEvents.pop_back();
-      curY = cEvent.yval;
-    }
-    else
-    {
-      onClose = false;
-      queue.pop_back();
-    }
-    if (curY < sweepline)
-      break;
-
-    if (onClose)
-    {
-      // DEBUG ONLY
-      // if (!cEvent.arcNode) throw std::runtime_error("Close Event invalid");
-
-      auto newEvents = remove(cEvent.arcNode, cEvent.point, curY, closeEvents);
-      for (auto&& e : newEvents)
+      count++;
+      std::cout << "Count:" << count << std::endl;
+      event = queue.back();
+      curY = math::getEventY(queue.back());
+      // get the next event closest to the sweepline
+      if (!closeEvents.empty() && closeEvents.back().yval >= curY)
       {
-        // if (e.yval < curY - 0.000001 || std::abs(e.yval - curY) < 1e-6) // Simplify?
-        if (e.yval < curY)
-          sortedInsert(e, closeEvents);
+        onClose = true;
+        cEvent = closeEvents.back();
+        closeEvents.pop_back();
+        curY = cEvent.yval;
+      }
+      else
+      {
+        onClose = false;
+        queue.pop_back();
+      }
+      if (curY < sweepline)
+        break;
+
+      if (onClose)
+      {
+        // DEBUG ONLY
+        // if (!cEvent.arcNode) throw std::runtime_error("Close Event invalid");
+
+        auto newEvents = remove(cEvent.arcNode, cEvent.point, curY, closeEvents);
+        for (auto&& e : newEvents)
+        {
+          // if (e.yval < curY - 0.000001 || std::abs(e.yval - curY) < 1e-6) // Simplify?
+          if (e.yval < curY)
+            sortedInsert(e, closeEvents);
+        }
+      }
+      else
+      {
+        // Add Event
+        auto packet = getEventPacket(event, queue);
+        auto newEvents = add(packet, closeEvents);
+        for (auto&& e : newEvents)
+        {
+          // if (e.yval < curY - 0.000001 || std::abs(e.yval - curY) < 1e-6) // Simplify?
+          if (e.yval < curY)
+            sortedInsert(e, closeEvents);
+        }
       }
     }
-    else
-    {
-      // Add Event
-      auto packet = getEventPacket(event, queue);
-      auto newEvents = add(packet, closeEvents);
-      for (auto&& e : newEvents)
-      {
-        // if (e.yval < curY - 0.000001 || std::abs(e.yval - curY) < 1e-6) // Simplify?
-        if (e.yval < curY)
-          sortedInsert(e, closeEvents);
-      }
-    }
+
+    rMsg += ": Count:" + count;
+    ComputeResult rslt{{}, g_edges, g_curvedEdges, {}, {}};
+
+    if (!root)
+      rMsg += ": Root node null";
+
+    // DEBUG ONLY
+    setBeachline(root, rslt, sweepline);
+    rMsg += ": V Count:" + std::to_string(rslt.b_edges.size())
+    + ": Para Count:" + std::to_string(rslt.b_curvedEdges.size());
+    return rslt;
+  }
+  catch(std::exception const& e)
+  {
+    rErr += "Error: " + std::string(e.what());
   }
 
-  std::cout << "Count:" << count << std::endl;
-  ComputeResult rslt{{}, g_edges, g_curvedEdges, {}, {}};
-  setBeachline(root, rslt, sweepline);
-  return rslt;
+  return ComputeResult();
 }

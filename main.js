@@ -58,7 +58,7 @@ let g_settings = {
   showEvents: {label: "Show Events", value: false},
   showGVDVer: {label: "Show GVD vertices", value: true},
   showGVDSeg: {label: "Show GVD segments", value: true},
-  showObjVer: {label: "Show object vertices", value: false},
+  showObjVer: {label: "Show object vertices", value: true},
   showObjSeg: {label: "Show object segments", value: true},
   showMedial: {label: "Show Medial Axis", value: false},
   showDebugObjs: {label: "Show Debug Input", value: false}, // debugging only
@@ -173,21 +173,41 @@ function datasetChange_C_addon(idx) {
   localStorage.setIdx = idx;
   var query = '/data_new/?value=' + g_datasetList[idx].filePath + "&sweepline=" + g_sweepline.y.toFixed(10);
   $.get(query).then(function (json) {
+    if (json.err && json.err.length > 0) {
+      console.error("Server error: " + json.err);
+      return;
+    }
+
+    if (json.msg && json.msg.length > 0) {
+      console.log("Server message: " + json.msg);
+    }
+
     var sites = JSON.parse(json.sites);
     var edges = JSON.parse(json.edges);
     var beachline = JSON.parse(json.beachline);
+
     renderData(sites, edges, beachline);
   });
 }
 
 function sweeplineUpdate_C_addon(idx) {
   localStorage.setIdx = idx;
+  drawSweepline(g_sweepline);
   var query = '/line_change/?value=' + g_datasetList[idx].filePath + "&sweepline=" + g_sweepline.y.toFixed(10);
   $.get(query).then(function (json) {
-    var sites = JSON.parse(json.sites);
+    if (json.err && json.err.length > 0) {
+      console.error("Server error: " + json.err);
+      return;
+    }
+
+    if (json.msg && json.msg.length > 0) {
+      console.log("Server message: " + json.msg);
+    }
+    // var sites = JSON.parse(json.sites);
     var edges = JSON.parse(json.edges);
     var beachline = JSON.parse(json.beachline);
-    renderData(sites, edges, beachline);
+    renderData([], edges, beachline);
+    enforceSettings();
   });
 }
 

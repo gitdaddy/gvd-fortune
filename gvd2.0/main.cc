@@ -27,7 +27,11 @@ int main(int argc, char** argv)
     auto polygons = processInputFiles(i);
     auto start = std::chrono::system_clock::now();
     auto queue = createDataQueue(polygons);
-    auto rslt = fortune(queue, 0.5);
+    std::string msg;
+    std::string err;
+    fortune(queue, 0.1, msg, err);
+    std::cout << "Msg: " << msg << std::endl;
+    std::cout << "Error: " << err << std::endl;
     auto end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsedSeconds = end-start;
     std::cout << "Process Duration: " << elapsedSeconds.count() << "s\n";

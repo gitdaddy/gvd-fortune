@@ -63,7 +63,10 @@ void ComputeGVD(const v8::FunctionCallbackInfo<v8::Value>& args)
 
     auto polygons = processInputFiles(g_dataset);
     g_queue = createDataQueue(polygons);
-    auto gvdResults = fortune(g_queue, sweepline);
+    auto tmp = g_queue;
+    std::string msg;
+    std::string err;
+    auto gvdResults = fortune(tmp, sweepline, msg, err);
     gvdResults.polygons = polygons;
 
     std::string pPath("./output_polygons.txt");
@@ -76,6 +79,8 @@ void ComputeGVD(const v8::FunctionCallbackInfo<v8::Value>& args)
     result->Set(v8::String::NewFromUtf8(isolate, "sites"), v8::String::NewFromUtf8(isolate, pPath.c_str()));
     result->Set(v8::String::NewFromUtf8(isolate, "edges"), v8::String::NewFromUtf8(isolate, ePath.c_str()));
     result->Set(v8::String::NewFromUtf8(isolate, "beachline"), v8::String::NewFromUtf8(isolate, bPath.c_str()));
+    result->Set(v8::String::NewFromUtf8(isolate, "msg"), v8::String::NewFromUtf8(isolate, msg.c_str()));
+    result->Set(v8::String::NewFromUtf8(isolate, "err"), v8::String::NewFromUtf8(isolate, err.c_str()));
     args.GetReturnValue().Set(result);
   }
   catch(const std::exception& e)
@@ -98,7 +103,10 @@ void Update(const v8::FunctionCallbackInfo<v8::Value>& args)
     }
 
     double sweepline = args[0]->ToNumber()->Value();
-    auto gvdResults = fortune(g_queue, sweepline);
+    auto tmp = g_queue;
+    std::string msg;
+    std::string err;
+    auto gvdResults = fortune(tmp, sweepline, msg, err);
     // gvdResults.polygons = polygons;
 
     std::string pPath("./output_polygons.txt");
@@ -111,6 +119,8 @@ void Update(const v8::FunctionCallbackInfo<v8::Value>& args)
     result->Set(v8::String::NewFromUtf8(isolate, "sites"), v8::String::NewFromUtf8(isolate, pPath.c_str()));
     result->Set(v8::String::NewFromUtf8(isolate, "edges"), v8::String::NewFromUtf8(isolate, ePath.c_str()));
     result->Set(v8::String::NewFromUtf8(isolate, "beachline"), v8::String::NewFromUtf8(isolate, bPath.c_str()));
+    result->Set(v8::String::NewFromUtf8(isolate, "msg"), v8::String::NewFromUtf8(isolate, msg.c_str()));
+    result->Set(v8::String::NewFromUtf8(isolate, "err"), v8::String::NewFromUtf8(isolate, err.c_str()));
     args.GetReturnValue().Set(result);
   }
   catch(const std::exception& e)
