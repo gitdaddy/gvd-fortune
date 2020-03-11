@@ -26,6 +26,6 @@ std::shared_ptr<vec2> intersectParabolicArcs(std::shared_ptr<Node> l, std::share
 
 std::shared_ptr<vec2> intersection(std::shared_ptr<Node> edge, double directrix);
 
-ComputeResult fortune(std::vector<Event> queue, double sweepline, std::string& rMsg, std::string& rErr);
+ComputeResult fortune(std::vector<Event> queue, double const& sweepline, std::string& rMsg, std::string& rErr);
 
 #endif

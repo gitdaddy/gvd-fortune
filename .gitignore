@@ -4,3 +4,6 @@ voronoi.zip
 vd-code
 *vscode*
 node_modules
+output_beachline.txt
+output_edges.txt
+output_polygons.txt

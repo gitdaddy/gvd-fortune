@@ -26,7 +26,7 @@ struct V
 decimal_t f_x(V const& v, decimal_t x);
 std::vector<decimal_t> f_y(V const& v, decimal_t y);
 
-std::vector<vec2> prepDraw(V const& v, vec2 const& origin, vec2 const& dest);
+std::vector<vec2> prepDraw(V const& v, decimal_t const& x0, decimal_t const& x1);
 
 struct Parabola
 {
@@ -39,7 +39,7 @@ struct Parabola
   uint32_t id;
 };
 
-std::vector<vec2> prepDraw(Parabola const& p, vec2 const& origin, vec2 const& dest);
+std::vector<vec2> prepDraw(Parabola const& p, decimal_t const& x0, decimal_t const& x1);
 
 struct GeneralParabola
 {

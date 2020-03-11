@@ -181,8 +181,6 @@ namespace
 
     if (prevEvent.type == EventType_e::SEG && nextEvent.type == EventType_e::SEG)
     {
-      // auto bisectors = math::bisectSegments2(prevEvent, nextEvent);
-      // edge->drawPoints = getDrawPointsFromBisector(edge->drawPoints[0], endPoint, bisectors[0]);
       g_edges.push_back({edge->edgeStart, endPoint});
     }
     else
@@ -196,6 +194,7 @@ namespace
     }
   }
 
+  // TODO optimize for intersect sharing
   void setBeachline(std::shared_ptr<Node> const& pNode, ComputeResult& rslt, double const& sweepline)
   {
     if (!pNode) return;
@@ -210,13 +209,33 @@ namespace
     else if (pNode->aType == ArcType_e::ARC_PARA)
     {
       auto p = math::createParabola(pNode->point, sweepline, 0);
+      decimal_t x0;
+      decimal_t x1;
       auto l = pNode->prevArc();
       auto r = pNode->nextArc();
-      if (!l || !r) return;
-      auto o = getIntercept(l, pNode, sweepline);
-      auto d = getIntercept(pNode, r, sweepline);
-      if (!o || !d) return;
-      auto pts = prepDraw(p, *o, *d);
+      if (!l)
+      {
+        auto yDiff = std::abs(pNode->point.y - sweepline);
+        x0 = pNode->point.x - yDiff * 2.0;
+      }
+      if (!r)
+      {
+        auto yDiff = std::abs(pNode->point.y - sweepline);
+        x1 = pNode->point.x + yDiff * 2.0;
+      }
+
+      auto o = l ? getIntercept(l, pNode, sweepline) : nullptr;
+      auto d = r ? getIntercept(pNode, r, sweepline) : nullptr;
+      auto xl = o ? o->x : x0;
+      auto xr = d ? d->x : x1;
+
+      // debug only
+      if (xl > xr)
+      {
+        std::cout << "Something wrong here with parabola\n";
+      }
+
+      auto pts = prepDraw(p, xl, xr);
       if (!pts.empty())
         rslt.b_curvedEdges.push_back(pts);
       pNode->visited = true;
@@ -225,13 +244,33 @@ namespace
     else if (pNode->aType == ArcType_e::ARC_V)
     {
       auto v = math::createV(pNode->a, pNode->b, sweepline, 0);
+      decimal_t x0;
+      decimal_t x1;
       auto l = pNode->prevArc();
       auto r = pNode->nextArc();
-      if (!l || !r) return;
-      auto o = getIntercept(l, pNode, sweepline);
-      auto d = getIntercept(pNode, r, sweepline);
-      if (!o || !d) return;
-      auto pts = prepDraw(v, *o, *d);
+      if (!l)
+      {
+        auto yDiff = std::abs(pNode->a.y - sweepline);
+        x0 = v.point.x - yDiff * 2.0;
+      }
+      if (!r)
+      {
+        auto yDiff = std::abs(pNode->a.y - sweepline);
+        x1 = v.point.x + yDiff * 2.0;
+      }
+
+      auto o = l ? getIntercept(l, pNode, sweepline) : nullptr;
+      auto d = r ? getIntercept(pNode, r, sweepline) : nullptr;
+      auto xl = o ? o->x : x0;
+      auto xr = d ? d->x : x1;
+
+      // debug only
+      if (xl > xr)
+      {
+        std::cout << "Something wrong here with V\n";
+      }
+
+      auto pts = prepDraw(v, xl, xr);
       if (!pts.empty())
         rslt.b_edges.push_back(pts);
 
@@ -395,8 +434,8 @@ std::shared_ptr<vec2> intersectStraightArcs(std::shared_ptr<Node> l, std::shared
         return std::abs(x - a.x) < std::abs(x - b.x);
     });
     ints = {ints[0], ints[1]};
-    std::sort(ints.begin(), ints.end(), [](vec2 a, vec2 b) { return a.x < b.x; });
   }
+  std::sort(ints.begin(), ints.end(), math::vec2_x_less_than());
   auto centX = (ints[0].x + ints[1].x) / 2.0;
   auto prevY = f_x(left, centX);
   auto nextY = f_x(right, centX);
@@ -507,6 +546,7 @@ std::shared_ptr<vec2> intersectParabolicArcs(std::shared_ptr<Node> l, std::share
   {
     throw std::runtime_error("Invalid intersection p-p");
   }
+  std::sort(ints.begin(), ints.end(), math::vec2_x_less_than());
 
   auto centX = (ints[0].x + ints[1].x) / 2.0;
   auto prevY = math::parabola_f(centX, left.h, left.k, left.p);
@@ -694,7 +734,7 @@ std::vector<CloseEvent> remove(std::shared_ptr<Node> const& arcNode, vec2 point,
   return closeEvents;
 }
 
-ComputeResult fortune(std::vector<Event> queue, double sweepline, std::string& rMsg, std::string& rErr)
+ComputeResult fortune(std::vector<Event> queue, double const& sweepline, std::string& rMsg, std::string& rErr)
 {
   root = nullptr;
   g_edges = {};
@@ -719,7 +759,7 @@ ComputeResult fortune(std::vector<Event> queue, double sweepline, std::string& r
       count++;
       std::cout << "Count:" << count << std::endl;
       event = queue.back();
-      curY = math::getEventY(queue.back());
+      curY = math::getEventY(event);
       // get the next event closest to the sweepline
       if (!closeEvents.empty() && closeEvents.back().yval >= curY)
       {

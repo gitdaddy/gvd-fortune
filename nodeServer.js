@@ -395,7 +395,7 @@ function getMapDatasetJson(filePath) {
   return JSON.stringify(json);
 }
 
-// route code
+//////////////////////////////////// route code ///////////////////////////////////
 router.get('/', function(req, res) {
   res.type("html");
   res.sendFile('index.html', {root: __dirname});

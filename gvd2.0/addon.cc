@@ -44,10 +44,14 @@ namespace
 
 void ComputeGVD(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+  v8::Isolate* isolate = args.GetIsolate();
+  std::string msg;
+  std::string err;
+  std::string pPath("./output_polygons.txt");
+  std::string ePath("./output_edges.txt");
+  std::string bPath("./output_beachline.txt");
   try
   {
-    v8::Isolate* isolate = args.GetIsolate();
-
     if (args.Length() < 2)
     {
       std::cout << "Compute GVD arg count too low\n";
@@ -55,7 +59,6 @@ void ComputeGVD(const v8::FunctionCallbackInfo<v8::Value>& args)
     }
 
     char set[255];
-
     args[0]->ToString()->WriteUtf8(&set[0], args[0]->ToString()->Utf8Length());
     g_dataset.assign(&set[0], args[0]->ToString()->Utf8Length());
 
@@ -69,33 +72,33 @@ void ComputeGVD(const v8::FunctionCallbackInfo<v8::Value>& args)
     auto gvdResults = fortune(tmp, sweepline, msg, err);
     gvdResults.polygons = polygons;
 
-    std::string pPath("./output_polygons.txt");
-    std::string ePath("./output_edges.txt");
-    std::string bPath("./output_beachline.txt");
-
     writeResults(gvdResults, pPath, ePath, bPath);
-
-    v8::Handle<v8::Object> result = v8::Object::New(isolate);
-    result->Set(v8::String::NewFromUtf8(isolate, "sites"), v8::String::NewFromUtf8(isolate, pPath.c_str()));
-    result->Set(v8::String::NewFromUtf8(isolate, "edges"), v8::String::NewFromUtf8(isolate, ePath.c_str()));
-    result->Set(v8::String::NewFromUtf8(isolate, "beachline"), v8::String::NewFromUtf8(isolate, bPath.c_str()));
-    result->Set(v8::String::NewFromUtf8(isolate, "msg"), v8::String::NewFromUtf8(isolate, msg.c_str()));
-    result->Set(v8::String::NewFromUtf8(isolate, "err"), v8::String::NewFromUtf8(isolate, err.c_str()));
-    args.GetReturnValue().Set(result);
   }
   catch(const std::exception& e)
   {
     std::cout << "Error " << e.what() << '\n';
-    return;
+    err += "Error: " + std::string(e.what());
   }
+
+  v8::Handle<v8::Object> result = v8::Object::New(isolate);
+  result->Set(v8::String::NewFromUtf8(isolate, "sites"), v8::String::NewFromUtf8(isolate, pPath.c_str()));
+  result->Set(v8::String::NewFromUtf8(isolate, "edges"), v8::String::NewFromUtf8(isolate, ePath.c_str()));
+  result->Set(v8::String::NewFromUtf8(isolate, "beachline"), v8::String::NewFromUtf8(isolate, bPath.c_str()));
+  result->Set(v8::String::NewFromUtf8(isolate, "msg"), v8::String::NewFromUtf8(isolate, msg.c_str()));
+  result->Set(v8::String::NewFromUtf8(isolate, "err"), v8::String::NewFromUtf8(isolate, err.c_str()));
+  args.GetReturnValue().Set(result);
 }
 
 void Update(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+  v8::Isolate* isolate = args.GetIsolate();
+  std::string msg;
+  std::string err;
+  std::string pPath("./output_polygons.txt");
+  std::string ePath("./output_edges.txt");
+  std::string bPath("./output_beachline.txt");
   try
   {
-    v8::Isolate* isolate = args.GetIsolate();
-
     if (args.Length() < 1)
     {
       std::cout << "Compute GVD arg count too low\n";
@@ -104,30 +107,24 @@ void Update(const v8::FunctionCallbackInfo<v8::Value>& args)
 
     double sweepline = args[0]->ToNumber()->Value();
     auto tmp = g_queue;
-    std::string msg;
-    std::string err;
     auto gvdResults = fortune(tmp, sweepline, msg, err);
     // gvdResults.polygons = polygons;
 
-    std::string pPath("./output_polygons.txt");
-    std::string ePath("./output_edges.txt");
-    std::string bPath("./output_beachline.txt");
-
     writeResults(gvdResults, pPath, ePath, bPath);
-
-    v8::Handle<v8::Object> result = v8::Object::New(isolate);
-    result->Set(v8::String::NewFromUtf8(isolate, "sites"), v8::String::NewFromUtf8(isolate, pPath.c_str()));
-    result->Set(v8::String::NewFromUtf8(isolate, "edges"), v8::String::NewFromUtf8(isolate, ePath.c_str()));
-    result->Set(v8::String::NewFromUtf8(isolate, "beachline"), v8::String::NewFromUtf8(isolate, bPath.c_str()));
-    result->Set(v8::String::NewFromUtf8(isolate, "msg"), v8::String::NewFromUtf8(isolate, msg.c_str()));
-    result->Set(v8::String::NewFromUtf8(isolate, "err"), v8::String::NewFromUtf8(isolate, err.c_str()));
-    args.GetReturnValue().Set(result);
   }
   catch(const std::exception& e)
   {
     std::cout << "Error " << e.what() << '\n';
-    return;
+
+    err += "Error: " + std::string(e.what());
   }
+  v8::Handle<v8::Object> result = v8::Object::New(isolate);
+  result->Set(v8::String::NewFromUtf8(isolate, "sites"), v8::String::NewFromUtf8(isolate, pPath.c_str()));
+  result->Set(v8::String::NewFromUtf8(isolate, "edges"), v8::String::NewFromUtf8(isolate, ePath.c_str()));
+  result->Set(v8::String::NewFromUtf8(isolate, "beachline"), v8::String::NewFromUtf8(isolate, bPath.c_str()));
+  result->Set(v8::String::NewFromUtf8(isolate, "msg"), v8::String::NewFromUtf8(isolate, msg.c_str()));
+  result->Set(v8::String::NewFromUtf8(isolate, "err"), v8::String::NewFromUtf8(isolate, err.c_str()));
+  args.GetReturnValue().Set(result);
 }
 
 void Initalize(v8::Local<v8::Object> exports)

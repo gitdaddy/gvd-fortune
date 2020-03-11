@@ -465,7 +465,6 @@ namespace math
           vPts.push_back(i);
       }
       if (vPts.empty()) return {};
-      std::sort(vPts.begin(), vPts.end(), vec2_x_less_than());
       return vPts;
     }
   }
@@ -912,16 +911,20 @@ GeneralParabola::GeneralParabola(vec2 focus, decimal_t h, decimal_t k,
   nRz = rotateZ(theta);
 }
 
-std::vector<vec2> prepDraw(V const& v, vec2 const& origin, vec2 const& dest)
+std::vector<vec2> prepDraw(V const& v,  decimal_t const& x0, decimal_t const& x1)
 {
-  return {origin, v.point, dest};
+  if (x1 < -1.1 || x0 > 1.1) return {};
+  auto lx = x0 < -1.1 ? -1.1 : x0;
+  auto dx = x1 > 1.1 ? 1.1 : x1;
+  return {vec2(x0, f_x(v, x0)), v.point, vec2(x1, f_x(v, x1))};
 }
 
-std::vector<vec2> prepDraw(Parabola const& p, vec2 const& origin, vec2 const& dest)
+std::vector<vec2> prepDraw(Parabola const& p,  decimal_t const& x0, decimal_t const& x1)
 {
+  if (x1 < -1.1 || x0 > 1.1) return {};
   std::vector<vec2> points;
-  auto lx = origin.x < -1.1 ? -1.1 : origin.x;
-  auto dx = dest.x > 1.1 ? 1.1 : dest.x;
+  auto lx = x0 < -1.1 ? -1.1 : x0;
+  auto dx = x1 > 1.1 ? 1.1 : x1;
   for (auto x = lx; x < dx; x += g_xInc)
     points.push_back(vec2(x, math::parabola_f(x, p.h, p.k, p.p)));
   return points;
