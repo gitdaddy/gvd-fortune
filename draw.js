@@ -818,28 +818,14 @@ function drawSurface(dcel) {
     ;
 }
 
-function drawCloseEvents(eventPoints) {
-  eventPoints = eventPoints.filter(d => d.live);
+function drawCloseEvents_2(eventPoints) {
 
   let highlight = function(event) {
-    let arcNode = event.arcNode;
-
     // Highlight the arc
-    let arcElement = d3.select(`#treenode${arcNode.id}`);
-    arcElement.style("stroke-width", g_isoEdgeWidth * 5);
-
-    showDebugCircumcircle(event.point[0], event.point[1], event.r);
+    showDebugCircumcircle(event.x, event.y, Math.abs(event.y - event.yval));
   };
 
   let unhighlight = function(event) {
-    let arcNode = event.arcNode;
-
-    // Unhighlight the arc
-    let arcElement = d3.select(`#treenode${arcNode.id}`);
-    arcElement.style("stroke-width", g_isoEdgeWidth);
-
-    // Unhighlight the sites
-    // d3.select(`#site${arcNode.site.id}`).attr("r", SITE_RADIUS);
     hideDebugCircumcircle();
   };
 
@@ -855,12 +841,57 @@ function drawCloseEvents(eventPoints) {
     .on('mouseover', highlight)
     .on('mouseout', unhighlight)
     .merge(selection)
+    .attr('fill', "blue")
     .attr('r', g_siteRadius)
-    .attr('cx', d => xRev(d.point[0]))
-    .attr('cy', d => yRev(d.point[1]))
+    .attr('cx', d => xRev(d.x))
+    .attr('cy', d => yRev(d.y))
     .attr('visibility', g_settings.showEvents.value ? null : 'hidden')
   ;
 }
+
+// function drawCloseEvents(eventPoints) {
+//   eventPoints = eventPoints.filter(d => d.live);
+
+//   let highlight = function(event) {
+//     let arcNode = event.arcNode;
+
+//     // Highlight the arc
+//     let arcElement = d3.select(`#treenode${arcNode.id}`);
+//     arcElement.style("stroke-width", g_isoEdgeWidth * 5);
+
+//     showDebugCircumcircle(event.point[0], event.point[1], event.r);
+//   };
+
+//   let unhighlight = function(event) {
+//     let arcNode = event.arcNode;
+
+//     // Unhighlight the arc
+//     let arcElement = d3.select(`#treenode${arcNode.id}`);
+//     arcElement.style("stroke-width", g_isoEdgeWidth);
+
+//     // Unhighlight the sites
+//     // d3.select(`#site${arcNode.site.id}`).attr("r", SITE_RADIUS);
+//     hideDebugCircumcircle();
+//   };
+
+//   let selection = d3.select("#gvd").selectAll(".close-event")
+//     .data(eventPoints);
+//   // exit
+//   selection.exit().remove();
+//   // enter
+//   selection.enter()
+//     .append("circle")
+//     .attr('class', "close-event")
+//     .attr("vector-effect", "non-scaling-stroke")
+//     .on('mouseover', highlight)
+//     .on('mouseout', unhighlight)
+//     .merge(selection)
+//     .attr('r', g_siteRadius)
+//     .attr('cx', d => xRev(d.point[0]))
+//     .attr('cy', d => yRev(d.point[1]))
+//     .attr('visibility', g_settings.showEvents.value ? null : 'hidden')
+//   ;
+// }
 
 function renderVS(vs) {
   //------------------------------
@@ -1064,8 +1095,8 @@ function rescaleView(newX, newY) {
   if (g_settings.showEvents.value) {
     d3.select("#gvd")
     .selectAll(".close-event")
-    .attr('cx', d => newX(d.point[0]))
-    .attr('cy', d => newY(d.point[1]))
+    .attr('cx', d => newX(d.x))
+    .attr('cy', d => newY(d.y))
     ;
   }
 
@@ -1150,17 +1181,17 @@ function convertPoints(points) {
   return rslt;
 }
 
-function renderData(sites, edges, beachline) {
+function renderData(sites, edges, beachline, closeEvents) {
   // d3.select("#gvd").selectAll(".segment-site").remove();
   // d3.select("#gvd").selectAll(".point-site").remove();
 
   d3.select("#gvd").selectAll(".gvd-surface-parabola").remove();
   d3.select("#gvd").selectAll(".gvd-surface").remove();
   d3.select('#gvd').selectAll(".gvd-edge-vertex").remove();
-  
+
   d3.select("#gvd").selectAll(".beach-parabola").remove();
   d3.select("#gvd").selectAll(".beach-v").remove();
-  
+
   var line = d3.line()
   .x(function (d) {return xRev(d[0]);})
   .y(function (d) {return yRev(d[1]);})
@@ -1327,5 +1358,10 @@ function renderData(sites, edges, beachline) {
       .attr("rightx", p => xRev(p.drawPoints[p.drawPoints.length-1][0]))
       .style("stroke-width", g_isoEdgeWidth);
     ;
+  }
+
+  // draw close events
+  if (g_settings.showEvents.value) {
+    drawCloseEvents_2(closeEvents);
   }
 }

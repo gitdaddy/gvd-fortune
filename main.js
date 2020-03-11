@@ -55,7 +55,7 @@ let g_sInc = 0.01;
 let g_xInc = 0.001;
 
 let g_settings = {
-  showEvents: {label: "Show Events", value: false},
+  showEvents: {label: "Show Events", value: true},
   showGVDVer: {label: "Show GVD vertices", value: true},
   showGVDSeg: {label: "Show GVD segments", value: true},
   showObjVer: {label: "Show object vertices", value: true},
@@ -185,8 +185,9 @@ function datasetChange_C_addon(idx) {
     var sites = JSON.parse(json.sites);
     var edges = JSON.parse(json.edges);
     var beachline = JSON.parse(json.beachline);
+    var closeEvents = JSON.parse(json.closeEvents);
 
-    renderData(sites, edges, beachline);
+    renderData(sites, edges, beachline, closeEvents);
   });
 }
 
@@ -206,7 +207,8 @@ function sweeplineUpdate_C_addon(idx) {
     // var sites = JSON.parse(json.sites);
     var edges = JSON.parse(json.edges);
     var beachline = JSON.parse(json.beachline);
-    renderData([], edges, beachline);
+    var closeEvents = JSON.parse(json.closeEvents);
+    renderData([], edges, beachline, closeEvents);
     enforceSettings();
   });
 }
@@ -345,7 +347,7 @@ function render(reorder = false) {
 
   var t2 = performance.now();
   drawBeachline(beachline, g_sweepline.y);
-  drawCloseEvents(closeEventPoints);
+  // drawCloseEvents(closeEventPoints);
   drawSweepline(g_sweepline);
   drawSurface(dcel);
   var t3 = performance.now();

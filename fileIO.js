@@ -68,8 +68,21 @@ module.exports.readOutputFiles = function (fileData) {
         dataPoints.push(newElem);
       }
     });
-
     rslt.beachline = JSON.stringify(arcs); // {arcs:[{points: [{}], fileId: ''}, ..]}
   }
+
+  var cFile = fileData["closeEvents"];
+  if (cFile) {
+    var closeEvents = [];
+    var lines = fs.readFileSync(cFile.trim(), 'utf-8').split('\n');
+    lines.forEach(line => {
+      var list = line.split(" ");
+      if (list.length === 3){
+        closeEvents.push({x: parseFloat(list[0]), y: parseFloat(list[1]), yval: parseFloat(list[2])});
+      }
+    });
+    rslt.closeEvents = JSON.stringify(closeEvents); // {arcs:[{x,y, yval}, ..]}
+  }
+
   return rslt;
 }

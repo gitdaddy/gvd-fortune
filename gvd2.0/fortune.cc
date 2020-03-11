@@ -230,10 +230,10 @@ namespace
       auto xr = d ? d->x : x1;
 
       // debug only
-      if (xl > xr)
-      {
-        std::cout << "Something wrong here with parabola\n";
-      }
+      // if (xl > xr)
+      // {
+      //   std::cout << "Something wrong here with parabola\n";
+      // }
 
       auto pts = prepDraw(p, xl, xr);
       if (!pts.empty())
@@ -265,10 +265,10 @@ namespace
       auto xr = d ? d->x : x1;
 
       // debug only
-      if (xl > xr)
-      {
-        std::cout << "Something wrong here with V\n";
-      }
+      // if (xl > xr)
+      // {
+      //   std::cout << "Something wrong here with V\n";
+      // }
 
       auto pts = prepDraw(v, xl, xr);
       if (!pts.empty())
@@ -282,27 +282,10 @@ namespace
   }
 }
 
-void writeResults(ComputeResult const& r, std::string const& pPath, std::string const& ePath, std::string const& bPath)
+void writeResults(ComputeResult const& r, std::string const& ePath)
 {
-  // write polygons
-  std::ofstream outP(
-          pPath.c_str(),
-          std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
-  outP << std::setprecision(std::numeric_limits<decimal_t>::digits10 + 1);
-  for (auto&& poly: r.polygons)
-  {
-    outP << "p\n"; // signal for new polygon
-    for (auto&& pt : poly.orderedPointSites)
-    {
-      outP << pt.point.x << " " << pt.point.y << std::endl;
-    }
-    auto start = poly.orderedPointSites[0];
-    outP << start.point.x << " " << start.point.y << std::endl;
-  }
-
   // write edges
   std::ofstream outE(ePath.c_str(), std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
-  outE << std::setprecision(std::numeric_limits<decimal_t>::digits10 + 1);
   for (auto&& e: r.edges)
   {
     outE << "e\n"; // signal for new edge
@@ -318,10 +301,17 @@ void writeResults(ComputeResult const& r, std::string const& pPath, std::string 
       outE << ePt.x << " " << ePt.y << std::endl;
     }
   }
+  outE << "e";
+  outE.close();
+}
+
+void writeResults(ComputeResult const& r, std::string const& ePath, std::string const& bPath)
+{
+  // write edges
+  writeResults(r, ePath);
 
   // write beachline items
   std::ofstream outB(bPath.c_str(), std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
-  outB << std::setprecision(std::numeric_limits<decimal_t>::digits10 + 1);
   for (auto&& e: r.b_edges)
   {
     outB << "b\n"; // signal for new edge
@@ -340,77 +330,52 @@ void writeResults(ComputeResult const& r, std::string const& pPath, std::string 
     }
   }
 
-  outP << "p";
-  outP.close();
-  outE << "e";
-  outE.close();
   outB << "b";
   outB.close();
 }
 
-void writeResults(ComputeResult const& r, std::string const& ePath, std::string const& bPath)
+void writeResults(ComputeResult const& r, std::string const& pPath, std::string const& ePath, std::string const& bPath)
 {
-  // write edges
-  std::ofstream outE(ePath.c_str(), std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
-  for (auto&& e: r.edges)
+  writeResults(r, ePath, bPath);
+
+  // write polygons
+  std::ofstream outP(
+          pPath.c_str(),
+          std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
+  outP << std::setprecision(std::numeric_limits<decimal_t>::digits10 + 1);
+  for (auto&& poly: r.polygons)
   {
-    outE << "e\n"; // signal for new edge
-    outE << e.first.x << " " << e.first.x << std::endl;
-    outE << e.second.x << " " << e.second.x << std::endl;
+    outP << "p\n"; // signal for new polygon
+    for (auto&& pt : poly.orderedPointSites)
+    {
+      outP << pt.point.x << " " << pt.point.y << std::endl;
+    }
+    auto start = poly.orderedPointSites[0];
+    outP << start.point.x << " " << start.point.y << std::endl;
   }
 
-  for (auto&& ce: r.curvedEdges)
-  {
-    outE << "ce\n"; // signal for new edge
-    for (auto&& ePt : ce)
-    {
-      outE << ePt.x << " " << ePt.y << std::endl;
-    }
-  }
-
-  // write beachline items
-  std::ofstream outB(bPath.c_str(), std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
-  for (auto&& e: r.b_edges)
-  {
-    outB << "b\n"; // signal for new edge
-    for (auto&& ePt : e)
-    {
-      outB << ePt.x << " " << ePt.y << std::endl;
-    }
-  }
-
-  for (auto&& ce: r.b_curvedEdges)
-  {
-    outB << "cb\n"; // signal for new edge
-    for (auto&& ePt : ce)
-    {
-      outB << ePt.x << " " << ePt.y << std::endl;
-    }
-  }
-  outE.close();
-  outB.close();
+  outP << "p";
+  outP.close();
 }
 
-void writeResults(ComputeResult const& r, std::string const& ePath)
+void writeResults(ComputeResult const& r, std::string const& pPath,
+  std::string const& ePath, std::string const& bPath, std::string const& cPath)
 {
-  // write edges
-  std::ofstream outE(ePath.c_str(), std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
-  for (auto&& e: r.edges)
+  writeResults(r, pPath, ePath, bPath);
+
+  // write close events
+  std::ofstream outC(
+          cPath.c_str(),
+          std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
+  outC << std::setprecision(std::numeric_limits<decimal_t>::digits10 + 1);
+
+  for (auto&& c: r.b_closeEvents)
   {
-    outE << "e\n"; // signal for new edge
-    outE << e.first.x << " " << e.first.x << std::endl;
-    outE << e.second.x << " " << e.second.x << std::endl;
+    // (x,y, yval)
+    outC << c.point.x << " " << c.point.y << " " << c.yval << std::endl;
   }
 
-  for (auto&& ce: r.curvedEdges)
-  {
-    outE << "ce\n"; // signal for new edge
-    for (auto&& ePt : ce)
-    {
-      outE << ePt.x << " " << ePt.y << std::endl;
-    }
-  }
-  outE.close();
+  outC.close();
 }
 
 std::shared_ptr<vec2> intersectStraightArcs(std::shared_ptr<Node> l, std::shared_ptr<Node> r, double directrix)
@@ -804,7 +769,7 @@ ComputeResult fortune(std::vector<Event> queue, double const& sweepline, std::st
     }
 
     rMsg += ": Count:" + count;
-    ComputeResult rslt{{}, g_edges, g_curvedEdges, {}, {}};
+    ComputeResult rslt{{}, g_edges, g_curvedEdges, {}, {}, closeEvents};
 
     if (!root)
       rMsg += ": Root node null";

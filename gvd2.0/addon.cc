@@ -50,6 +50,7 @@ void ComputeGVD(const v8::FunctionCallbackInfo<v8::Value>& args)
   std::string pPath("./output_polygons.txt");
   std::string ePath("./output_edges.txt");
   std::string bPath("./output_beachline.txt");
+  std::string cPath("./output_close.txt");
   try
   {
     if (args.Length() < 2)
@@ -72,7 +73,7 @@ void ComputeGVD(const v8::FunctionCallbackInfo<v8::Value>& args)
     auto gvdResults = fortune(tmp, sweepline, msg, err);
     gvdResults.polygons = polygons;
 
-    writeResults(gvdResults, pPath, ePath, bPath);
+    writeResults(gvdResults, pPath, ePath, bPath, cPath);
   }
   catch(const std::exception& e)
   {
@@ -84,6 +85,7 @@ void ComputeGVD(const v8::FunctionCallbackInfo<v8::Value>& args)
   result->Set(v8::String::NewFromUtf8(isolate, "sites"), v8::String::NewFromUtf8(isolate, pPath.c_str()));
   result->Set(v8::String::NewFromUtf8(isolate, "edges"), v8::String::NewFromUtf8(isolate, ePath.c_str()));
   result->Set(v8::String::NewFromUtf8(isolate, "beachline"), v8::String::NewFromUtf8(isolate, bPath.c_str()));
+  result->Set(v8::String::NewFromUtf8(isolate, "closeEvents"), v8::String::NewFromUtf8(isolate, cPath.c_str()));
   result->Set(v8::String::NewFromUtf8(isolate, "msg"), v8::String::NewFromUtf8(isolate, msg.c_str()));
   result->Set(v8::String::NewFromUtf8(isolate, "err"), v8::String::NewFromUtf8(isolate, err.c_str()));
   args.GetReturnValue().Set(result);
@@ -97,6 +99,7 @@ void Update(const v8::FunctionCallbackInfo<v8::Value>& args)
   std::string pPath("./output_polygons.txt");
   std::string ePath("./output_edges.txt");
   std::string bPath("./output_beachline.txt");
+  std::string cPath("./output_close.txt");
   try
   {
     if (args.Length() < 1)
@@ -110,7 +113,7 @@ void Update(const v8::FunctionCallbackInfo<v8::Value>& args)
     auto gvdResults = fortune(tmp, sweepline, msg, err);
     // gvdResults.polygons = polygons;
 
-    writeResults(gvdResults, pPath, ePath, bPath);
+    writeResults(gvdResults, pPath, ePath, bPath, cPath);
   }
   catch(const std::exception& e)
   {
@@ -122,6 +125,7 @@ void Update(const v8::FunctionCallbackInfo<v8::Value>& args)
   result->Set(v8::String::NewFromUtf8(isolate, "sites"), v8::String::NewFromUtf8(isolate, pPath.c_str()));
   result->Set(v8::String::NewFromUtf8(isolate, "edges"), v8::String::NewFromUtf8(isolate, ePath.c_str()));
   result->Set(v8::String::NewFromUtf8(isolate, "beachline"), v8::String::NewFromUtf8(isolate, bPath.c_str()));
+  result->Set(v8::String::NewFromUtf8(isolate, "closeEvents"), v8::String::NewFromUtf8(isolate, cPath.c_str()));
   result->Set(v8::String::NewFromUtf8(isolate, "msg"), v8::String::NewFromUtf8(isolate, msg.c_str()));
   result->Set(v8::String::NewFromUtf8(isolate, "err"), v8::String::NewFromUtf8(isolate, err.c_str()));
   args.GetReturnValue().Set(result);
