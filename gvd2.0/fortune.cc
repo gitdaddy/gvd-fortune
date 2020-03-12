@@ -719,14 +719,12 @@ ComputeResult fortune(std::vector<Event> queue, double const& sweepline, std::st
 
   try
   {
-    while (queue.size() > 0)
+    while (!queue.empty() || !closeEvents.empty())
     {
       count++;
       std::cout << "Count:" << count << std::endl;
-      event = queue.back();
-      curY = math::getEventY(event);
       // get the next event closest to the sweepline
-      if (!closeEvents.empty() && closeEvents.back().yval >= curY)
+      if (queue.empty() || (!closeEvents.empty() && closeEvents.back().yval >= math::getEventY(queue.back())))
       {
         onClose = true;
         cEvent = closeEvents.back();
@@ -736,7 +734,9 @@ ComputeResult fortune(std::vector<Event> queue, double const& sweepline, std::st
       else
       {
         onClose = false;
+        event = queue.back();
         queue.pop_back();
+        curY = math::getEventY(event);
       }
       if (curY < sweepline)
         break;
@@ -749,8 +749,8 @@ ComputeResult fortune(std::vector<Event> queue, double const& sweepline, std::st
         auto newEvents = remove(cEvent.arcNode, cEvent.point, curY, closeEvents);
         for (auto&& e : newEvents)
         {
-          // if (e.yval < curY - 0.000001 || std::abs(e.yval - curY) < 1e-6) // Simplify?
-          if (e.yval < curY)
+          // if (e.yval < curY)
+          if (e.yval < curY - 0.000001 || std::abs(e.yval - curY) < 1e-6) // Simplify?
             sortedInsert(e, closeEvents);
         }
       }
@@ -761,8 +761,8 @@ ComputeResult fortune(std::vector<Event> queue, double const& sweepline, std::st
         auto newEvents = add(packet, closeEvents);
         for (auto&& e : newEvents)
         {
-          // if (e.yval < curY - 0.000001 || std::abs(e.yval - curY) < 1e-6) // Simplify?
-          if (e.yval < curY)
+          // if (e.yval < curY)
+          if (e.yval < curY - 0.000001 || std::abs(e.yval - curY) < 1e-6) // Simplify?
             sortedInsert(e, closeEvents);
         }
       }

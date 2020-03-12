@@ -1052,8 +1052,8 @@ function rescaleView(newX, newY) {
   if (g_settings.showGVDVer.value) {
     d3.select("#gvd")
     .selectAll(".gvd-edge-vertex")
-    .attr('cx', d => newX(d.point[0]))
-    .attr('cy', d => newY(d.point[1]))
+    .attr('cx', d => newX(d[0]))
+    .attr('cy', d => newY(d[1]))
     ;
   }
 
@@ -1118,26 +1118,26 @@ function rescaleView(newX, newY) {
     // update Edges
     d3.select('#gvd')
     .selectAll('.gvd-surface-parabola')
-    .attr("d", p => line(p.drawPoints))
+    .attr("d", p => line(p))
     .style("stroke-width", g_gvdSurfaceWidth)
     ;
 
     d3.select('#gvd')
     .selectAll('.gvd-surface')
-    .attr('x1', e => newX(e.origin.point[0]))
-    .attr('y1', e => newY(e.origin.point[1]))
-    .attr('x2', e => newX(e.dest.point[0]))
-    .attr('y2', e => newY(e.dest.point[1]))
+    .attr('x1', e => newX(e.origin[0]))
+    .attr('y1', e => newY(e.origin[1]))
+    .attr('x2', e => newX(e.dest[0]))
+    .attr('y2', e => newY(e.dest[1]))
     .style("stroke-width", g_gvdSurfaceWidth)
     ;
   }
 
   if (g_settings.showMedial.value) {
     d3.selectAll(".gvd-iso-surface")
-    .attr('x1', e => newX(e.origin.point[0]))
-    .attr('y1', e => newY(e.origin.point[1]))
-    .attr('x2', e => newX(e.dest.point[0]))
-    .attr('y2', e => newY(e.dest.point[1]))
+    .attr('x1', e => newX(e.origin[0]))
+    .attr('y1', e => newY(e.origin[1]))
+    .attr('x2', e => newX(e.dest[0]))
+    .attr('y2', e => newY(e.dest[1]))
     ;
     d3.selectAll('.gvd-iso-surface-parabola')
     .attr("d", p => line(p.drawPoints))

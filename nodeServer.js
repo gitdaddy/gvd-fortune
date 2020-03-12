@@ -5,6 +5,7 @@ var fs = require('fs');
 var _ = require('lodash');
 var file_io = require('./fileIO.js')
 const gvd_Addon = require("./gvd2.0/build/Release/addon.node");
+// const gvd_Addon = require("./gvd2.0/build/Debug/addon.node");
 
 const hostname = 'localhost';
 const port = 8083;
