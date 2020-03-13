@@ -29,7 +29,7 @@ int main(int argc, char** argv)
     auto queue = createDataQueue(polygons);
     std::string msg;
     std::string err;
-    fortune(queue, -0.345, msg, err);
+    fortune(queue, -0.0355, msg, err);
     std::cout << "Msg: " << msg << std::endl;
     std::cout << "Error: " << err << std::endl;
     auto end = std::chrono::system_clock::now();

@@ -16,15 +16,11 @@ namespace
 
   EventPacket getEventPacket(Event const& e, std::vector<Event>& rQueue)
   {
-    // auto n = rQueue.end()--;
-    auto n = rQueue.back();
-    auto nn = rQueue[rQueue.size() - 2];
-    // auto nn = n--;
+    auto n = rQueue.back(); // right
+    auto nn = rQueue[rQueue.size() - 2]; // left
     if (nn.type == EventType_e::SEG && n.type == EventType_e::SEG)
     {
-      EventPacket ret = {e, {n, nn}};
-      // rQueue.erase(n);
-      // rQueue.erase(nn);
+      EventPacket ret = {e, {nn, n}};
       rQueue.pop_back();
       rQueue.pop_back();
       return ret;

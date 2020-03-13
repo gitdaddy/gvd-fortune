@@ -425,8 +425,8 @@ namespace math
 
   std::vector<vec2> vvIntersect(V const& v1, V const& v2)
   {
-    auto s1 = makeSegment(v1.b, v1.a, 0);
-    auto s2 = makeSegment(v2.b, v2.a, 0);
+    auto s1 = makeSegment(v1.b, v1.a, 0, true);
+    auto s2 = makeSegment(v2.b, v2.a, 0, true);
 
     auto optConnection = connected(s1, s2);
     if (optConnection) {
@@ -662,16 +662,16 @@ namespace math
     }
     else if (d2 < d1 && d2 < d3 && d2 < d4)
     {
-      s2 = makeSegment(s2.b, s2.a, true);
+      s2 = makeSegment(s2.b, s2.a, 0, true);
     }
     else if (d3 < d1 && d3 < d2 && d3 < d4)
     {
-      s1 = makeSegment(s1.b, s1.a, true);
+      s1 = makeSegment(s1.b, s1.a, 0, true);
     }
     else if (d4 < d1 && d4 < d2 && d4 < d3)
     {
-      s1 = makeSegment(s1.b, s1.a, true);
-      s2 = makeSegment(s2.b, s2.a, true);
+      s1 = makeSegment(s1.b, s1.a, 0, true);
+      s2 = makeSegment(s2.b, s2.a, 0, true);
     }
 
     auto beta = getSegmentsBisectorAngle(s1, s2);
@@ -916,6 +916,7 @@ std::vector<vec2> prepDraw(V const& v,  decimal_t const& x0, decimal_t const& x1
   if (x1 < -1.1 || x0 > 1.1) return {};
   auto lx = x0 < -1.1 ? -1.1 : x0;
   auto dx = x1 > 1.1 ? 1.1 : x1;
+  if (x0 > v.point.x || v.point.x > x1) return {vec2(x0, f_x(v, x0)), vec2(x0, f_x(v, x1))};
   return {vec2(x0, f_x(v, x0)), v.point, vec2(x1, f_x(v, x1))};
 }
 

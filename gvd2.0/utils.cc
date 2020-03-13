@@ -25,7 +25,7 @@ namespace
     auto f = std::find_if(polygons.begin(), polygons.end(), [label](Polygon poly){
       if (label == poly.getLabel())
         return true;
-      return false;  
+      return false;
     });
     if (f != polygons.end())
       return (*f);
@@ -99,47 +99,3 @@ std::vector<Event> createDataQueue(std::vector<Polygon> const& polygons)
   }
   return rslt;
 }
-
-// std::vector<Event> createDataQueue(std::vector<Polygon> const& polygons)
-// {
-//   std::vector<Event> rslt;
-//   std::vector<Event> points;
-//   for (auto&& p : polygons)
-//   {
-//     for (auto s : p.orderedPointSites)
-//     {
-//       points.push_back(s);
-//     }
-//   }
-
-//   // sanitize across sites
-//   sanitizePointSiteData(points);
-
-//   std::map<uint32_t, std::vector<Event>> generatedSegs;
-//   for(auto&& sortedP : points)
-//   {
-//     std::vector<Event> ss;
-//     if (generatedSegs.find(sortedP.label) != generatedSegs.end())
-//     {
-//       ss = generatedSegs.at(sortedP.label);
-//     }
-//     else
-//     {
-//       auto poly = getPolyByLabel(sortedP.label, polygons);
-//       ss = poly.getSegments();
-//       generatedSegs.emplace(sortedP.label, ss);
-//     }
-//     rslt.insert(sortedP);
-//   }
-
-//   for (auto&& segs : generatedSegs)
-//   {
-//     for (auto&& s : segs.second)
-//     {
-//       std::cout << "Insert new seg:";
-//       printEvent(s);
-//       rslt.insert(s);
-//     }
-//   }
-//   return rslt;
-// }

@@ -186,7 +186,7 @@ inline void printCloseEvent(CloseEvent const& e)
   << e.point.y << ") yval(" << e.yval << ") " << std::endl;
 }
 
-Event makeSegment(vec2 p1, vec2 p2, uint32_t label, bool forceOrder = false);
+Event makeSegment(vec2 p1, vec2 p2, uint32_t label, bool forceOrder);
 
 class Polygon
 {
@@ -203,7 +203,7 @@ public:
     if (orderedPointSites.size() < 2) return {};
     if (orderedPointSites.size() == 2)
     {
-      return {makeSegment(orderedPointSites[0].point, orderedPointSites[1].point, label)};
+      return {makeSegment(orderedPointSites[0].point, orderedPointSites[1].point, label, false)};
     };
 
     std::vector<Event> rslt;
@@ -211,12 +211,12 @@ public:
     for (size_t i = 1; i < orderedPointSites.size(); ++i)
     {
       auto p2 = orderedPointSites[i].point;
-      rslt.push_back(makeSegment(p1, p2, label));
+      rslt.push_back(makeSegment(p1, p2, label, false));
       p1 = p2;
     }
     auto start = orderedPointSites[0].point;
     // terminate the wrap around
-    rslt.push_back(makeSegment(start, p1, label));
+    rslt.push_back(makeSegment(start, p1, label, false));
 
     return rslt;
   }
