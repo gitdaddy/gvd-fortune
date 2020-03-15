@@ -916,7 +916,7 @@ std::vector<vec2> prepDraw(V const& v,  decimal_t const& x0, decimal_t const& x1
   if (x1 < -1.1 || x0 > 1.1) return {};
   auto lx = x0 < -1.1 ? -1.1 : x0;
   auto dx = x1 > 1.1 ? 1.1 : x1;
-  if (x0 > v.point.x || v.point.x > x1) return {vec2(x0, f_x(v, x0)), vec2(x0, f_x(v, x1))};
+  if (x0 > v.point.x || v.point.x > x1) return {vec2(x0, f_x(v, x0)), vec2(x1, f_x(v, x1))};
   return {vec2(x0, f_x(v, x0)), v.point, vec2(x1, f_x(v, x1))};
 }
 

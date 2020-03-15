@@ -1311,7 +1311,7 @@ function renderData(sites, edges, beachline, closeEvents) {
     var ps = [];
     _.each(beachline, function (elem) {
       var e = convertPoints(elem.points);
-      if (e.length === 3) {
+      if (e.length !== 0 && e.length < 4) {
         // Line
         vs.push({
           drawPoints: e,

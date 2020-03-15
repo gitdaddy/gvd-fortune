@@ -426,7 +426,7 @@ router.get('/line_change', function(req, res) {
   res.type('json');
   var val = parseFloat(req.query.sweepline);
   if (val > 1.0 || val < -1.0) return;
-  console.log("Update @ val:" + val);
+  // console.log("Update @ val:" + val);
   let jsonObj = gvd_Addon.Update(val);
   if (!jsonObj)
     console.log("Server failed to perform task");

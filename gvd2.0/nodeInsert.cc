@@ -160,7 +160,7 @@ namespace
     if (closingData)
     {
       // DEBUG ONLY
-      if (child->aType == ArcType_e::ARC_V) throw std::runtime_error("Invalid node insertion");
+      if (child->aType != ArcType_e::ARC_V) throw std::runtime_error("Invalid node insertion");
       auto edgeToUpdate = child->prevEdge();
       if (*closingData)
       {
@@ -207,9 +207,8 @@ SubTreeRslt generateSubTree(EventPacket const& e,
     if (optChild)
     {
       tree = splitArcNode(optChild, arcNode, nodesToClose, rCQueue);
-      auto parent = arcNode->pParent;
       auto childEdge = insertEdge(arcNode, newEdge, arcNode->point, nodesToClose, rCQueue);
-      math::setChild(arcNode->pParent, childEdge, Side_e::LEFT);
+      math::setChild(tree->pRight, childEdge, Side_e::LEFT);
     }
     else
       tree = insertEdge(arcNode, newEdge, arcNode->point, nodesToClose, rCQueue, false);
