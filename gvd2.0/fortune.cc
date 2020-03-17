@@ -158,6 +158,7 @@ namespace
   std::vector<vec2> getDrawPointsFromBisector(vec2 const& start, vec2 const& end, math::Bisector const& b)
   {
     if (b.isLine) return {start, end};
+    // This seems broken...
     return prepDraw(*b.optGeneralParabola, start, end);
   }
 
@@ -496,7 +497,6 @@ std::shared_ptr<vec2> intersectParabolicToStraightArc(std::shared_ptr<Node> l, s
   return std::make_shared<vec2>(ints[idx]);
 }
 
-// non ptr type?
 std::shared_ptr<vec2> intersectParabolicArcs(std::shared_ptr<Node> l, std::shared_ptr<Node> r, double directrix)
 {
   auto left = math::createParabola(l->point, directrix, l->id);

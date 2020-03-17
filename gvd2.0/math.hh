@@ -122,8 +122,8 @@ namespace math
     // if (node->aType == ArcType_e::EDGE) throw std::runtime_error("Attempt to build event from edge!");
     auto eType = node->aType == ArcType_e::ARC_PARA ? EventType_e::POINT : EventType_e::SEG;
     return eType == EventType_e::POINT ?
-     Event(eType, g_labelCount++, node->point)
-     : Event(eType, g_labelCount++, vec2(0.0,0.0), node->a, node->b);
+     Event(eType, node->label, node->point)
+     : Event(eType, node->label, vec2(0.0,0.0), node->a, node->b);
   }
 
   inline V createV(vec2 a, vec2 b, decimal_t directrix, uint32_t id)

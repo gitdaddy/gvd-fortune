@@ -100,8 +100,8 @@ namespace
     }
     auto eType = toSplit->aType == ArcType_e::ARC_PARA ? EventType_e::POINT : EventType_e::SEG;
     auto newEvent = eType == EventType_e::POINT ?
-     Event(eType, g_labelCount++, toSplit->point)
-     : Event(eType, g_labelCount++, vec2(0.0,0.0), toSplit->a, toSplit->b);
+     Event(eType, toSplit->label, toSplit->point)
+     : Event(eType, toSplit->label, vec2(0.0,0.0), toSplit->a, toSplit->b);
     auto right = math::createArcNode(newEvent);
 
     nodesToClose.push_back(toSplit);
@@ -118,8 +118,8 @@ namespace
     removeCloseEventFromQueue(toSplit->id, rCQueue);
     auto eType = toSplit->aType == ArcType_e::ARC_PARA ? EventType_e::POINT : EventType_e::SEG;
     auto newEvent = eType == EventType_e::POINT ?
-     Event(eType, g_labelCount++, toSplit->point)
-     : Event(eType, g_labelCount++, vec2(0.0,0.0), toSplit->a, toSplit->b);
+     Event(eType, toSplit->label, toSplit->point)
+     : Event(eType, toSplit->label, vec2(0.0,0.0), toSplit->a, toSplit->b);
     auto right = math::createArcNode(newEvent);
     if (addCloseNodes)
     {

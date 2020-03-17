@@ -1,13 +1,7 @@
 "use strict";
 
-// TODO
-// bug 200
-// Selected/brushing zoom CTRL+DRAG
-
 var g_sweepline = {x1: -1, x2:1, y: -1};
 var g_eventThresh = 1e-6;
-
-// let g_datasets = [];
 
 let g_polygons = [];
 let g_queue = {};
@@ -134,8 +128,8 @@ function keydown(event) {
     // Prevent scroll
     event.preventDefault();
     document.getElementById("sweeplineInput").value = g_sweepline.y.toFixed(10);
-  sweeplineUpdate_C_addon(localStorage.setIdx);
-    // render();
+    // sweeplineUpdate_C_addon(localStorage.setIdx);
+    render();
   }
 }
 
@@ -166,7 +160,8 @@ function init() {
   //   var idx = localStorage.setIdx;
   // }
   document.getElementById("dataset-select").selectedIndex = idx;
-  datasetChange_C_addon(idx);
+  // datasetChange_C_addon(idx);
+  datasetChange(idx);
 }
 
 function datasetChange_C_addon(idx) {
@@ -332,8 +327,8 @@ function fortune(reorder) {
 
 function moveSweepline(y) {
   setSweepline(y);
-  sweeplineUpdate_C_addon(localStorage.setIdx);
-  // render();
+  // sweeplineUpdate_C_addon(localStorage.setIdx);
+  render();
 }
 
 function render(reorder = false) {
