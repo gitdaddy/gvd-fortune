@@ -138,7 +138,7 @@ function keydown(event) {
 }
 
 function init() {
-  setExampleDataset();
+  // setExampleDataset();
   if (localStorage.sweepline && !_.isNaN(localStorage.sweepline)
   && localStorage.sweepline !== "NaN") {
     g_sweepline.y = parseFloat(localStorage.sweepline);
@@ -171,8 +171,9 @@ function init() {
 }
 
 function datasetChange_C_addon(idx) {
+  g_datasetList[idx].c_init = true;
   localStorage.setIdx = idx;
-  var query = '/data_new/?value=' + g_datasetList[idx].filePath + "&sweepline=" + g_sweepline.y.toFixed(10);
+  var query = '/gvd_cpp/?value=' + g_datasetList[idx].filePath + "&sweepline=" + g_sweepline.y.toFixed(10);
   $.get(query).then(function (json) {
     if (json.err && json.err.length > 0) {
       console.error("Server error: " + json.err);
@@ -193,9 +194,14 @@ function datasetChange_C_addon(idx) {
 }
 
 function sweeplineUpdate_C_addon(idx) {
+  if (!g_datasetList[idx].c_init){
+    datasetChange_C_addon(idx);
+    return;
+  }
+
   localStorage.setIdx = idx;
   drawSweepline(g_sweepline);
-  var query = '/line_change/?value=' + g_datasetList[idx].filePath + "&sweepline=" + g_sweepline.y.toFixed(10);
+  var query = '/gvd_cpp_inc/?value=' + g_datasetList[idx].filePath + "&sweepline=" + g_sweepline.y.toFixed(10);
   $.get(query).then(function (json) {
     if (json.err && json.err.length > 0) {
       console.error("Server error: " + json.err);

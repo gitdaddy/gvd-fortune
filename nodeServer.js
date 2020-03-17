@@ -271,7 +271,6 @@ function getDatasetJson(path) {
     if (file[0] !== '#' && file.length !== 0) {
       var inputPoints = fs.readFileSync(file.trim(), 'utf-8').split('\n');
       var dataPoints = [];
-      inputPoints = _.compact(inputPoints);
       if (inputPoints.length === 2) {
         var p = inputPoints[0].split(" ");
         var newElem = {x: parseFloat(p[0]), y: parseFloat(p[1])};
@@ -408,7 +407,7 @@ router.get('/data', function(req, res) {
   res.json(getDatasetJson(req.query.value));
 });
 
-router.get('/data_new', function(req, res) {
+router.get('/gvd_cpp', function(req, res) {
   res.type('json');
   var val = parseFloat(req.query.sweepline);
   if (val > 1.0 || val < -1.0) return;
@@ -422,7 +421,7 @@ router.get('/data_new', function(req, res) {
   res.json(j);
 });
 
-router.get('/line_change', function(req, res) {
+router.get('/gvd_cpp_inc', function(req, res) {
   res.type('json');
   var val = parseFloat(req.query.sweepline);
   if (val > 1.0 || val < -1.0) return;

@@ -718,7 +718,7 @@ ComputeResult fortune(std::vector<Event> queue, double const& sweepline, std::st
     while (!queue.empty() || !closeEvents.empty())
     {
       count++;
-      std::cout << "Count:" << count << std::endl;
+      // std::cout << "Count:" << count << std::endl;
       // get the next event closest to the sweepline
       if (queue.empty() || (!closeEvents.empty() && closeEvents.back().yval >= math::getEventY(queue.back())))
       {

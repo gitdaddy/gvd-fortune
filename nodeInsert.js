@@ -14,10 +14,16 @@ function isLeftHull(sLower, sUpper) {
 function isClosing(child, p) {
   if (p.type !== "vec") throw "Invalid close test";
 
-  var r = child.nextArc().site;
-  var c = child.site;
-  var l = child.prevArc().site;
+  var rn = child.nextArc();
+  var ln = child.prevArc();
 
+  if (!rn || !ln) {
+    return null;
+  }
+
+  var r = rn.site;
+  var c = child.site;
+  var l = ln.site;
 
   /* cases:
   1. l and c are segments and end at p
