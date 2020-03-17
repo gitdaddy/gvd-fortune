@@ -785,6 +785,21 @@ function bisect(a, b) {
 // a and b must be either lines or parabolas.
 //------------------------------------------------------------
 function intersect(a, b) {
+  if (a.length === 2 && b.length === 2)
+    return intersectLeftRightLines(a, b);
+  else if (b.length === 2) {
+    if (a instanceof Line)
+      return intersectLeftRightLines([a], b);
+    else
+      throw "Invalid intersection"
+  }
+  else if (a.length === 2){
+    if (b instanceof Line)
+      return intersectLeftRightLines(a, [b]);
+    else
+      throw "Invalid intersection"
+  }
+
   let intersection = null;
   if (a instanceof Line && b instanceof Line) {
     // two lines

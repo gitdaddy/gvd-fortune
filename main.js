@@ -49,6 +49,7 @@ let g_sInc = 0.01;
 let g_xInc = 0.001;
 
 let g_settings = {
+  Enable_C: {label: "Enable C++", value: false},
   showEvents: {label: "Show Events", value: true},
   showGVDVer: {label: "Show GVD vertices", value: true},
   showGVDSeg: {label: "Show GVD segments", value: true},
@@ -58,7 +59,7 @@ let g_settings = {
   showDebugObjs: {label: "Show Debug Input", value: false}, // debugging only
   showTree: {label: "Show Tree", value: false},
   showBeachLine: {label: "Show beachline", value: true},
-  showOverview: {label: "Show Overview", value: false},
+  showOverview: {label: "Show Overview", value: false}
 };
 
 let g_treeId = "#treeTagId";
@@ -128,8 +129,11 @@ function keydown(event) {
     // Prevent scroll
     event.preventDefault();
     document.getElementById("sweeplineInput").value = g_sweepline.y.toFixed(10);
-    // sweeplineUpdate_C_addon(localStorage.setIdx);
-    render();
+
+    if (g_settings.Enable_C.value)
+      sweeplineUpdate_C_addon(localStorage.setIdx);
+    else
+      render();
   }
 }
 
@@ -160,8 +164,10 @@ function init() {
   //   var idx = localStorage.setIdx;
   // }
   document.getElementById("dataset-select").selectedIndex = idx;
-  // datasetChange_C_addon(idx);
-  datasetChange(idx);
+  if (g_settings.Enable_C.value)
+    datasetChange_C_addon(idx);
+  else
+    datasetChange(idx);
 }
 
 function datasetChange_C_addon(idx) {
@@ -208,7 +214,6 @@ function sweeplineUpdate_C_addon(idx) {
   });
 }
 
-// TODO deprecate
 function datasetChange(idx) {
   localStorage.setIdx = idx;
   if (!g_datasetList[idx].data) {
@@ -327,8 +332,10 @@ function fortune(reorder) {
 
 function moveSweepline(y) {
   setSweepline(y);
-  // sweeplineUpdate_C_addon(localStorage.setIdx);
-  render();
+  if (g_settings.Enable_C.value)
+  sweeplineUpdate_C_addon(localStorage.setIdx);
+  else
+    render();
 }
 
 function render(reorder = false) {

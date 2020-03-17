@@ -809,8 +809,8 @@ function drawSurface(dcel) {
     .append("circle")
     .attr("class", "gvd-edge-vertex")
     .attr("id", (d,i) => `edge-vertex-${i}`)
-    .attr("cx", d => xRev(d[0]))
-    .attr("cy", d => yRev(d[1]))
+    .attr("cx", d => xRev(d.point[0]))
+    .attr("cy", d => yRev(d.point[1]))
     .attr("r", g_siteRadius)
     .on("click", onEdgeVertexClick)
     .on("mouseover", onEdgeVertexMouseOver)
@@ -1052,8 +1052,8 @@ function rescaleView(newX, newY) {
   if (g_settings.showGVDVer.value) {
     d3.select("#gvd")
     .selectAll(".gvd-edge-vertex")
-    .attr('cx', d => newX(d[0]))
-    .attr('cy', d => newY(d[1]))
+    .attr('cx', d => newX(d.point[0]))
+    .attr('cy', d => newY(d.point[1]))
     ;
   }
 
@@ -1118,26 +1118,26 @@ function rescaleView(newX, newY) {
     // update Edges
     d3.select('#gvd')
     .selectAll('.gvd-surface-parabola')
-    .attr("d", p => line(p))
+    .attr("d", p => line(p.drawPoints))
     .style("stroke-width", g_gvdSurfaceWidth)
     ;
 
     d3.select('#gvd')
     .selectAll('.gvd-surface')
-    .attr('x1', e => newX(e.origin[0]))
-    .attr('y1', e => newY(e.origin[1]))
-    .attr('x2', e => newX(e.dest[0]))
-    .attr('y2', e => newY(e.dest[1]))
+    .attr('x1', e => newX(e.origin.point[0]))
+    .attr('y1', e => newY(e.origin.point[1]))
+    .attr('x2', e => newX(e.dest.point[0]))
+    .attr('y2', e => newY(e.dest.point[1]))
     .style("stroke-width", g_gvdSurfaceWidth)
     ;
   }
 
   if (g_settings.showMedial.value) {
     d3.selectAll(".gvd-iso-surface")
-    .attr('x1', e => newX(e.origin[0]))
-    .attr('y1', e => newY(e.origin[1]))
-    .attr('x2', e => newX(e.dest[0]))
-    .attr('y2', e => newY(e.dest[1]))
+    .attr('x1', e => newX(e.origin.point[0]))
+    .attr('y1', e => newY(e.origin.point[1]))
+    .attr('x2', e => newX(e.dest.point[0]))
+    .attr('y2', e => newY(e.dest.point[1]))
     ;
     d3.selectAll('.gvd-iso-surface-parabola')
     .attr("d", p => line(p.drawPoints))
@@ -1243,12 +1243,12 @@ function renderData(sites, edges, beachline, closeEvents) {
       var e = convertPoints(elem.points);
       if (e.length === 2) {
         // Line
-        edgesVertices.push(e[0]);
-        edgesVertices.push(e[1]);
-        tmp_edges.push({origin: e[0], dest: e[1]});
+        edgesVertices.push({point:e[0]});
+        edgesVertices.push({point:e[1]});
+        tmp_edges.push({origin: {point:e[0]}, dest: {point:e[1]}});
       } else if (e.length > 3) {
         // GP
-        generalEdges.push(e);
+        generalEdges.push({drawPoints:e});
       }
     });
 
@@ -1265,7 +1265,7 @@ function renderData(sites, edges, beachline, closeEvents) {
         // .attr("id", d => )
         .merge(d3generalEdges)
         .style("stroke-width", getSurfaceWidth(true))
-        .attr("d", d => line(d))
+        .attr("d", d => line(d.drawPoints))
         // .attr("transform", p => p.transform)
       ;
 
@@ -1278,10 +1278,10 @@ function renderData(sites, edges, beachline, closeEvents) {
         .attr("vector-effect", "non-scaling-stroke")
         // .attr("id", d => getEdgeId(d))
         .merge(d3edges)
-        .attr('x1', e => xRev(e.origin[0]))
-        .attr('y1', e => yRev(e.origin[1]))
-        .attr('x2', e => xRev(e.dest[0]))
-        .attr('y2', e => yRev(e.dest[1]))
+        .attr('x1', e => xRev(e.origin.point[0]))
+        .attr('y1', e => yRev(e.origin.point[1]))
+        .attr('x2', e => xRev(e.dest.point[0]))
+        .attr('y2', e => yRev(e.dest.point[1]))
         .style("stroke-width", e => getSurfaceWidth(true))
       ;
     }
@@ -1295,8 +1295,8 @@ function renderData(sites, edges, beachline, closeEvents) {
         ev.enter()
         .append("circle")
         .attr("class", "gvd-edge-vertex")
-        .attr("cx", d => xRev(d[0]))
-        .attr("cy", d => yRev(d[1]))
+        .attr("cx", d => xRev(d.point[0]))
+        .attr("cy", d => yRev(d.point[1]))
         .attr("r", g_siteRadius)
         // .on("click", onEdgeVertexClick)
         // .on("mouseover", onEdgeVertexMouseOver)
