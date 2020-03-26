@@ -4,7 +4,7 @@ var router = express();
 var fs = require('fs');
 var _ = require('lodash');
 var file_io = require('./fileIO.js')
-const gvd_Addon = require("./gvd2.0/build/Release/addon.node");
+// const gvd_Addon = require("./gvd2.0/build/Release/addon.node");
 // const gvd_Addon = require("./gvd2.0/build/Debug/addon.node");
 
 const hostname = 'localhost';
@@ -407,33 +407,33 @@ router.get('/data', function(req, res) {
   res.json(getDatasetJson(req.query.value));
 });
 
-router.get('/gvd_cpp', function(req, res) {
-  res.type('json');
-  var val = parseFloat(req.query.sweepline);
-  if (val > 1.0 || val < -1.0) return;
-  console.log("Compute @ val:" + val);
-  let jsonObj = gvd_Addon.ComputeGVD(req.query.value, val);
-  if (!jsonObj)
-    console.log("Server failed to perform task");
-  var j = file_io.readOutputFiles(jsonObj);
-  j.msg = jsonObj.msg;
-  j.err = jsonObj.err;
-  res.json(j);
-});
+// router.get('/gvd_cpp', function(req, res) {
+//   res.type('json');
+//   var val = parseFloat(req.query.sweepline);
+//   if (val > 1.0 || val < -1.0) return;
+//   console.log("Compute @ val:" + val);
+//   let jsonObj = gvd_Addon.ComputeGVD(req.query.value, val);
+//   if (!jsonObj)
+//     console.log("Server failed to perform task");
+//   var j = file_io.readOutputFiles(jsonObj);
+//   j.msg = jsonObj.msg;
+//   j.err = jsonObj.err;
+//   res.json(j);
+// });
 
-router.get('/gvd_cpp_inc', function(req, res) {
-  res.type('json');
-  var val = parseFloat(req.query.sweepline);
-  if (val > 1.0 || val < -1.0) return;
-  // console.log("Update @ val:" + val);
-  let jsonObj = gvd_Addon.Update(val);
-  if (!jsonObj)
-    console.log("Server failed to perform task");
-  var j = file_io.readOutputFiles(jsonObj);
-  j.msg = jsonObj.msg;
-  j.err = jsonObj.err;
-  res.json(j);
-});
+// router.get('/gvd_cpp_inc', function(req, res) {
+//   res.type('json');
+//   var val = parseFloat(req.query.sweepline);
+//   if (val > 1.0 || val < -1.0) return;
+//   // console.log("Update @ val:" + val);
+//   let jsonObj = gvd_Addon.Update(val);
+//   if (!jsonObj)
+//     console.log("Server failed to perform task");
+//   var j = file_io.readOutputFiles(jsonObj);
+//   j.msg = jsonObj.msg;
+//   j.err = jsonObj.err;
+//   res.json(j);
+// });
 
 router.get('/map', function(req, res) {
   var filePath = req.query.value;

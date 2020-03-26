@@ -486,46 +486,44 @@ function isColinear(p1, p2, p3, optTolerance) {
  function setExampleDataset() {
    var polygons = [];
 
-  // bounding box
-  // g_boundingBox = new Polygon();
-  // g_boundingBox.addPoint(vec3(0.002, 2.71, 0));
-  // g_boundingBox.addPoint(vec3(2.8235, -0.0051, 0));
-  // g_boundingBox.addPoint(vec3(-0.001, -2.656, 0));
-  // g_boundingBox.addPoint(vec3(-2.443, 0.007, 0));
-  // g_boundingBox.createSegment(0,1);
-  // g_boundingBox.createSegment(1,2);
-  // g_boundingBox.createSegment(2,3);
-  // g_boundingBox.createSegment(3,0);
+  // var p11 = new Polygon();
+  // p11.addPoint(vec3(-0.27, 0.61, 0));
+  // p11.addPoint(vec3(0.32, -0.31, 0));
 
-  var p11 = new Polygon();
-  p11.addPoint(vec3(-0.27, 0.61, 0));
-  p11.addPoint(vec3(0.32, -0.31, 0));
+  // p11.createSegment(0, 1);
 
-  p11.createSegment(0, 1);
+  // var p12 = new Polygon();
+  // p12.addPoint(vec3(0.17, -0.152, 0));
 
-  var p12 = new Polygon();
-  p12.addPoint(vec3(0.17, -0.152, 0));
+  // var p13 = new Polygon();
+  // p13.addPoint(vec3(-0.12, -0.21, 0));
 
-  var p13 = new Polygon();
-  p13.addPoint(vec3(-0.12, -0.21, 0));
+  // var p14 = new Polygon();
+  // p14.addPoint(vec3(-0.12, 0.81, 0));
 
-  var p14 = new Polygon();
-  p14.addPoint(vec3(-0.12, 0.81, 0));
+  // var p15 = new Polygon();
+  // p15.addPoint(vec3(-0.62, 0.1, 0));
+  // p15.addPoint(vec3(-0.42, -0.14, 0));
+  // p15.addPoint(vec3(-0.82, -0.31, 0));
 
-  var p15 = new Polygon();
-  p15.addPoint(vec3(-0.62, 0.1, 0));
-  p15.addPoint(vec3(-0.42, -0.14, 0));
-  p15.addPoint(vec3(-0.82, -0.31, 0));
+  // p15.createSegment(0,1);
+  // p15.createSegment(1,2);
+  // p15.createSegment(2,0);
 
-  p15.createSegment(0,1);
-  p15.createSegment(1,2);
-  p15.createSegment(2,0);
+  // polygons.push(p11);
+  // polygons.push(p12);
+  // polygons.push(p13);
+  // polygons.push(p14);
+  // polygons.push(p15);
 
-  polygons.push(p11);
-  polygons.push(p12);
-  polygons.push(p13);
-  polygons.push(p14);
-  polygons.push(p15);
+  Math.seedrandom('3');
+  var numRandom2 = 100;	  // var numRandom2 = 100;
+  var polygons = [];	  // var polygons5 = [];
+  for (var i = 0; i < numRandom2; ++i) {	  // for (var i = 0; i < numRandom2; ++i) {
+    var p = new Polygon();	  //   var p = new Polygon();
+  	p.addPoint(vec3(Math.random()*2-1, Math.random()*2-1, 0));	  // 	p.addPoint(vec3(Math.random()*2-1, Math.random()*2-1, 0));
+  	polygons.push(p);	  // 	polygons5.push(p);
+  }
 
   // the final dataset is reserved for manual testing
   g_datasetList[g_datasetList.length - 1].data = polygons;

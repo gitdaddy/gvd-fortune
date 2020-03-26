@@ -1,6 +1,6 @@
 
   // set the dimensions and margins of the diagram
-  let marginT = {top: 20, right: 20, bottom: 20, left: 20},
+  let marginT = {top: 10, right: 10, bottom: 10, left: 10},
   widthT = 600 - marginT.left - marginT.right,
   heightT = 600 - marginT.top - marginT.bottom;
 
@@ -97,7 +97,8 @@ function showTree(treeData) {
   d3.select(g_treeId).html("");
   var svg = d3.select(g_treeId)
     .attr("width", widthT + marginT.left + marginT.right)
-    .attr("height", heightT + marginT.top + marginT.bottom),
+    .attr("height", heightT + marginT.top + marginT.bottom)
+    .attr("class", "tree-svg");
   g = svg.append("g")
     .attr("transform",
           "translate(" + marginT.left + "," + marginT.top + ")")

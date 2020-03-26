@@ -23,7 +23,6 @@ body {
 
 .settings-col {
     width: 30%;
-    height: 100%;
     /* overflow-x: scroll; */
     /* overflow-y: scroll; */
     z-index: 1;
@@ -36,9 +35,30 @@ body {
     padding-top: 10px;
 }
 
+.collapsible {
+    background-color: #777;
+    color: white;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+    padding: 10px;
+}
+
+.active, .collapsible:hover {
+    background-color: #555;
+}
+
 .gvd-switches {
     padding: 40px;
     width: 50%;
+    /* padding: 0 18px; */
+    display: none;
+    overflow: hidden;
+    background-color: #f1f1f1;
 }
 
 .hidden-canvas {
@@ -249,4 +269,9 @@ path.beachline {
 
 .side-panel-view {
     padding: 10px;
+    height: 100%;
+}
+
+.tree-svg {
+    height: inherit;
 }

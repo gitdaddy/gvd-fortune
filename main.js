@@ -49,7 +49,7 @@ let g_sInc = 0.01;
 let g_xInc = 0.001;
 
 let g_settings = {
-  Enable_C: {label: "Enable C++", value: false},
+  // Enable_C: {label: "Enable C++", value: false},
   showEvents: {label: "Show Events", value: true},
   showGVDVer: {label: "Show GVD vertices", value: true},
   showGVDSeg: {label: "Show GVD segments", value: true},
@@ -130,7 +130,7 @@ function keydown(event) {
     event.preventDefault();
     document.getElementById("sweeplineInput").value = g_sweepline.y.toFixed(10);
 
-    if (g_settings.Enable_C.value)
+    if (g_settings.Enable_C && g_settings.Enable_C.value)
       sweeplineUpdate_C_addon(localStorage.setIdx);
     else
       render();
@@ -138,7 +138,7 @@ function keydown(event) {
 }
 
 function init() {
-  // setExampleDataset();
+  setExampleDataset();
   if (localStorage.sweepline && !_.isNaN(localStorage.sweepline)
   && localStorage.sweepline !== "NaN") {
     g_sweepline.y = parseFloat(localStorage.sweepline);
@@ -164,7 +164,7 @@ function init() {
   //   var idx = localStorage.setIdx;
   // }
   document.getElementById("dataset-select").selectedIndex = idx;
-  if (g_settings.Enable_C.value)
+  if (g_settings.Enable_C && g_settings.Enable_C.value)
     datasetChange_C_addon(idx);
   else
     datasetChange(idx);
@@ -338,7 +338,7 @@ function fortune(reorder) {
 
 function moveSweepline(y) {
   setSweepline(y);
-  if (g_settings.Enable_C.value)
+  if (g_settings.Enable_C && g_settings.Enable_C.value)
   sweeplineUpdate_C_addon(localStorage.setIdx);
   else
     render();

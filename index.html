@@ -58,6 +58,7 @@
       <!-- <span class="title-group">
         <button onclick="startVideo()">Video</button>
       </span> -->
+      <button type="button" class="collapsible">Open Settings</button>
       <div id="gvd-settings" class="gvd-switches">
       </div>
       <div class="side-panel-view">
@@ -90,6 +91,24 @@
     <canvas id="myCanvas" class="hidden-canvas" width="1" height="1">
       Your browser does not support the HTML5 canvas tag.</canvas>
   </div>
+
+  <script>
+    var coll = document.getElementsByClassName("collapsible");
+    var i;
+
+    for (i = 0; i < coll.length; i++) {
+      coll[i].addEventListener("click", function() {
+        this.classList.toggle("active");
+        var content = this.nextElementSibling;
+        if (content.style.display === "block") {
+          content.style.display = "none";
+        } else {
+          content.style.display = "block";
+        }
+      });
+    }
+  </script>
+
 </body>
 
 </html>
