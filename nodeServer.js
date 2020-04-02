@@ -271,6 +271,7 @@ function getDatasetJson(path) {
     if (file[0] !== '#' && file.length !== 0) {
       var inputPoints = fs.readFileSync(file.trim(), 'utf-8').split('\n');
       var dataPoints = [];
+      inputPoints = _.compact(inputPoints);
       if (inputPoints.length === 2) {
         var p = inputPoints[0].split(" ");
         var newElem = {x: parseFloat(p[0]), y: parseFloat(p[1])};

@@ -116,11 +116,11 @@ function getLines(l, r){
 // Intersect the V with a parabola.
 V.prototype.intersect = function(obj) {
   // debugging only
-  // if (this.id === g_debugIdLeft && obj.id === g_debugIdRight) {
-  //   g_addDebug = true;
-  // } else {
-  //   g_addDebug = false;
-  // }
+  if (this.id === g_debugIdLeft && obj.id === g_debugIdRight) {
+    g_addDebug = true;
+  } else {
+    g_addDebug = false;
+  }
 
   if (obj instanceof Parabola) {
     ret = [];
@@ -167,9 +167,9 @@ V.prototype.intersect = function(obj) {
       var bisector = smallAngleBisectSegments(s1, s2, optConnection);
 
       // debugging only
-      // if (g_addDebug) {
-      //   g_debugObjs.push(bisector.line);
-      // }
+      if (g_addDebug) {
+        g_debugObjs.push(bisector.line);
+      }
 
       // often P is too close to p2 increment the height by a 0.01 to get a better width for each vector
       if (zArea < 0) {
@@ -185,14 +185,14 @@ V.prototype.intersect = function(obj) {
       var lines = getLines(this, obj);
 
       // debugging only
-      // if (g_addDebug) {
-      //   _.forEach(lines.left, function(l) {
-      //     g_debugObjs.push(l);
-      //   });
-      //   _.forEach(lines.right, function(l) {
-      //     g_debugObjs.push(l);
-      //   });
-      // }
+      if (g_addDebug) {
+        _.forEach(lines.left, function(l) {
+          g_debugObjs.push(l);
+        });
+        _.forEach(lines.right, function(l) {
+          g_debugObjs.push(l);
+        });
+      }
       var intersects = [];
       _.forEach(lines.left, function(l) {
         _.forEach(lines.right, function(r) {

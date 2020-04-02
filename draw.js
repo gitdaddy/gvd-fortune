@@ -47,6 +47,10 @@ let xToGVD = d3.scaleLinear()
     .domain([0, width])
     .range([-1.1, 1.1]);
 
+let rScale = d3.scaleLinear()
+    .domain([0, 2.2])
+    .range([0, width]);
+
   // Set the zoom and Pan features: how much you can zoom, on which part, and what to do when there is a zoom
 let zoom = d3.zoom()
   .scaleExtent([.5, ZOOM_EXTENT])
@@ -398,6 +402,8 @@ function enforceSettings() {
     .style('visibility', null);
   }
 
+  d3.select("#sweepline").style('visibility', g_settings.showSweepline.value ? null : 'hidden')
+
   // debugging only
   if (g_settings.showDebugObjs.value) {
     d3.selectAll(".debug-inputs")
@@ -533,14 +539,13 @@ function initDebugCircumcircle() {
 }
 
 function showDebugCircumcircle(cx, cy, r) {
-  let rScale = d3.scaleLinear()
-    .domain([0, 2.2])
-    .range([0, width]);
+  console.log(r);
 
   d3.selectAll(".debug-circumcircle")
     .attr("cx", xRev(cx))
     .attr("cy", yRev(cy))
     .attr("r", rScale(r))
+    // .attr("r", r)
     .attr("opacity", 1)
     .style("stroke-width", g_isoEdgeWidth)
   ;
@@ -572,6 +577,13 @@ function drawDebugObjs(objs) {
   var lines = _.filter(objs, function (o) {
     return o instanceof Line;
   });
+
+  // TODO REMOVE
+  if (lines.length > 1) {
+    lines[0].p2 = negate(lines[0].p2);
+    lines[1].p2 = intersectLines(lines[0].p1, lines[0].p2, lines[1].p1, lines[1].p2);
+  }
+
   let selB = d3.select("#gvd")
   .selectAll(".debug-line")
   .data(lines);
@@ -818,59 +830,14 @@ function drawSurface(dcel) {
     ;
 }
 
-function drawCloseEvents_2(eventPoints) {
-
-  let highlight = function(event) {
-    // Highlight the arc
-    showDebugCircumcircle(event.x, event.y, Math.abs(event.y - event.yval));
-  };
-
-  let unhighlight = function(event) {
-    hideDebugCircumcircle();
-  };
-
-  let selection = d3.select("#gvd").selectAll(".close-event")
-    .data(eventPoints);
-  // exit
-  selection.exit().remove();
-  // enter
-  selection.enter()
-    .append("circle")
-    .attr('class', "close-event")
-    .attr("vector-effect", "non-scaling-stroke")
-    .on('mouseover', highlight)
-    .on('mouseout', unhighlight)
-    .merge(selection)
-    .attr('fill', "blue")
-    .attr('r', g_siteRadius)
-    .attr('cx', d => xRev(d.x))
-    .attr('cy', d => yRev(d.y))
-    .attr('visibility', g_settings.showEvents.value ? null : 'hidden')
-  ;
-}
-
-// function drawCloseEvents(eventPoints) {
-//   eventPoints = eventPoints.filter(d => d.live);
+// function drawCloseEvents_2(eventPoints) {
 
 //   let highlight = function(event) {
-//     let arcNode = event.arcNode;
-
 //     // Highlight the arc
-//     let arcElement = d3.select(`#treenode${arcNode.id}`);
-//     arcElement.style("stroke-width", g_isoEdgeWidth * 5);
-
-//     showDebugCircumcircle(event.point[0], event.point[1], event.r);
+//     showDebugCircumcircle(event.x, event.y, Math.abs(event.y - event.yval));
 //   };
 
 //   let unhighlight = function(event) {
-//     let arcNode = event.arcNode;
-
-//     // Unhighlight the arc
-//     let arcElement = d3.select(`#treenode${arcNode.id}`);
-//     arcElement.style("stroke-width", g_isoEdgeWidth);
-
-//     // Unhighlight the sites
-//     // d3.select(`#site${arcNode.site.id}`).attr("r", SITE_RADIUS);
 //     hideDebugCircumcircle();
 //   };
 
@@ -886,12 +853,57 @@ function drawCloseEvents_2(eventPoints) {
 //     .on('mouseover', highlight)
 //     .on('mouseout', unhighlight)
 //     .merge(selection)
+//     .attr('fill', "blue")
 //     .attr('r', g_siteRadius)
-//     .attr('cx', d => xRev(d.point[0]))
-//     .attr('cy', d => yRev(d.point[1]))
+//     .attr('cx', d => xRev(d.x))
+//     .attr('cy', d => yRev(d.y))
 //     .attr('visibility', g_settings.showEvents.value ? null : 'hidden')
 //   ;
 // }
+
+function drawCloseEvents(eventPoints) {
+  eventPoints = eventPoints.filter(d => d.live);
+
+  let highlight = function(event) {
+    let arcNode = event.arcNode;
+
+    // Highlight the arc
+    let arcElement = d3.select(`#treenode${arcNode.id}`);
+    arcElement.style("stroke-width", g_isoEdgeWidth * 5);
+
+    showDebugCircumcircle(event.point[0], event.point[1], event.r);
+  };
+
+  let unhighlight = function(event) {
+    let arcNode = event.arcNode;
+
+    // Unhighlight the arc
+    let arcElement = d3.select(`#treenode${arcNode.id}`);
+    arcElement.style("stroke-width", g_isoEdgeWidth);
+
+    // Unhighlight the sites
+    // d3.select(`#site${arcNode.site.id}`).attr("r", SITE_RADIUS);
+    hideDebugCircumcircle();
+  };
+
+  let selection = d3.select("#gvd").selectAll(".close-event")
+    .data(eventPoints);
+  // exit
+  selection.exit().remove();
+  // enter
+  selection.enter()
+    .append("circle")
+    .attr('class', "close-event")
+    .attr("vector-effect", "non-scaling-stroke")
+    .on('mouseover', highlight)
+    .on('mouseout', unhighlight)
+    .merge(selection)
+    .attr('r', g_siteRadius)
+    .attr('cx', d => xRev(d.point[0]))
+    .attr('cy', d => yRev(d.point[1]))
+    .attr('visibility', g_settings.showEvents.value ? null : 'hidden')
+  ;
+}
 
 function renderVS(vs) {
   //------------------------------
@@ -1084,19 +1096,21 @@ function rescaleView(newX, newY) {
     ;
   }
 
-  d3.select("#sweepline")
-    .attr("x1", d => newX(d.x1))
-    .attr("y1", d => newY(d.y))
-    .attr("x2", d => newX(d.x2))
-    .attr("y2", d => newY(d.y))
-    ;
+  if (g_settings.showSweepline.value) {
+    d3.select("#sweepline")
+      .attr("x1", d => newX(d.x1))
+      .attr("y1", d => newY(d.y))
+      .attr("x2", d => newX(d.x2))
+      .attr("y2", d => newY(d.y))
+      ;
+  }
 
   // debug
   if (g_settings.showEvents.value) {
     d3.select("#gvd")
     .selectAll(".close-event")
-    .attr('cx', d => newX(d.x))
-    .attr('cy', d => newY(d.y))
+    .attr('cx', d => newX(d.point[0]))
+    .attr('cy', d => newY(d.point[1]))
     ;
   }
 
@@ -1169,6 +1183,11 @@ function zoomed() {
   // recover the new scale
   var newX = d3.event.transform.rescaleX(xRevOrigin);
   var newY = d3.event.transform.rescaleY(yRevOrigin);
+
+  var domainLimit = 2.2 / d3.event.transform.k;
+  rScale = d3.scaleLinear()
+    .domain([0, domainLimit])
+    .range([0, width]);
 
   rescaleView(newX, newY);
 }
@@ -1361,7 +1380,7 @@ function renderData(sites, edges, beachline, closeEvents) {
   }
 
   // draw close events
-  if (g_settings.showEvents.value) {
-    drawCloseEvents_2(closeEvents);
-  }
+  // if (g_settings.showEvents.value) {
+  //   drawCloseEvents(closeEvents);
+  // }
 }

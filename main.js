@@ -51,6 +51,7 @@ let g_xInc = 0.001;
 let g_settings = {
   // Enable_C: {label: "Enable C++", value: false},
   showEvents: {label: "Show Events", value: true},
+  showSweepline: {label: "Show Sweepline", value: true},
   showGVDVer: {label: "Show GVD vertices", value: true},
   showGVDSeg: {label: "Show GVD segments", value: true},
   showObjVer: {label: "Show object vertices", value: true},
@@ -70,12 +71,13 @@ function updateDebugVars() {
   g_xInc = _.isNaN(p) ? g_xInc : p;
   var i = document.getElementsByName("incVal")[0].valueAsNumber;
   g_sInc = _.isNaN(i) ? g_sInc : i;
-  // g_debugIdLeft = document.getElementsByName("leftId")[0].valueAsNumber;
-  // localStorage.g_debugIdLeft = g_debugIdLeft;
-  // g_debugIdMiddle = document.getElementsByName("middleId")[0].valueAsNumber;
-  // localStorage.g_debugIdMiddle = g_debugIdMiddle;
-  // g_debugIdRight = document.getElementsByName("rightId")[0].valueAsNumber;
-  // localStorage.g_debugIdRight = g_debugIdRight;
+
+  g_debugIdLeft = document.getElementsByName("leftId")[0].valueAsNumber;
+  localStorage.g_debugIdLeft = g_debugIdLeft;
+  g_debugIdMiddle = document.getElementsByName("middleId")[0].valueAsNumber;
+  localStorage.g_debugIdMiddle = g_debugIdMiddle;
+  g_debugIdRight = document.getElementsByName("rightId")[0].valueAsNumber;
+  localStorage.g_debugIdRight = g_debugIdRight;
 }
 
 function setSweepline(d) {
@@ -355,7 +357,7 @@ function render(reorder = false) {
 
   var t2 = performance.now();
   drawBeachline(beachline, g_sweepline.y);
-  // drawCloseEvents(closeEventPoints);
+  drawCloseEvents(closeEventPoints);
   drawSweepline(g_sweepline);
   drawSurface(dcel);
   var t3 = performance.now();

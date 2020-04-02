@@ -191,14 +191,14 @@ function intersectLines(p1, p2, p3, p4) {
 
 function intersectLeftRightLines(leftLines, rightLines) {
   // debugging only
-  // if (g_addDebug) {
-  //   _.forEach(leftLines, function(l) {
-  //     g_debugObjs.push(l);
-  //   });
-  //   _.forEach(rightLines, function(l) {
-  //     g_debugObjs.push(l);
-  //   });
-  // }
+  if (g_addDebug) {
+    _.forEach(leftLines, function(l) {
+      g_debugObjs.push(l);
+    });
+    _.forEach(rightLines, function(l) {
+      g_debugObjs.push(l);
+    });
+  }
   var rslts = [];
   _.forEach(leftLines, function(l1) {
     _.forEach(rightLines, function(l2) {
@@ -838,9 +838,9 @@ function equidistant(left, arc, right) {
         var ii = [];
         _.forEach(blines, function(line) {
           // debugging only
-          // if (g_addDebug) {
-          //   g_debugObjs.push(line);
-          // }
+          if (g_addDebug) {
+            g_debugObjs.push(line);
+          }
           var i = intersect(line, b1);
           if (i) {
             if (i.type && i.type === "vec")
@@ -856,9 +856,9 @@ function equidistant(left, arc, right) {
         var ii = [];
         _.forEach(blines, function(line) {
           // debugging only
-          // if (g_addDebug) {
-          //   g_debugObjs.push(line);
-          // }
+          if (g_addDebug) {
+            g_debugObjs.push(line);
+          }
           var i = intersect(line, b1);
           if (i) {
             if (i.type && i.type === "vec")
@@ -900,10 +900,11 @@ function equidistant(left, arc, right) {
   }
 
   // debugging only
-  // if (g_addDebug) {
-  //   g_debugObjs.push(b1);
-  //   g_debugObjs.push(b2);
-  // }
+  if (g_addDebug) {
+    g_debugObjs.push(b1);
+    g_debugObjs.push(b2);
+  }
+
   // always return an array or nil
   var i = intersect(b1, b2);
   if (!i || i.length === 0) return null;
