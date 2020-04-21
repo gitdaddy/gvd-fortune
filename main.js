@@ -13,14 +13,14 @@ let g_datasetList = [
   {label:"200 Random", num:200, filePath: "./data/random_200/_files.txt"},
   {label:"500 Random", num:500, filePath: "./data/random_500/_files.txt"},
   {label:"1000 Random", num:1000, filePath: "./data/random_1000/_files.txt"},
-  // {label:"Sydney city dataset", isMap: true, filename:"Sydney_2_512.map"}, // TODO add more versions
-  // {label:"Berlin city dataset", isMap: true, filename:"Berlin_0_256.map"},
-  // {label:"Boston city dataset", isMap: true, filename:"Boston_0_256.map"},
-  // {label:"Moscow city dataset", isMap: true, filename:"Moscow_1_256.map"},
-  // {label:"Denver city dataset", isMap: true, filename:"Denver_0_256.map"}, // TODO FIX
-  // {label:"Milan city dataset", isMap: true, filename:"Milan_0_256.map"}, // TODO FIX
-  // {label:"NewYork city dataset", isMap: true, filename:"NewYork_1_256.map"}, // TODO FIX
-  // {label:"Paris city dataset", isMap: true, filename:"Paris_0_256.map"}, // TODO FIX
+  {label:"Sydney city dataset", isMap: true, filename:"Sydney_2_512.map"},
+  {label:"Berlin city dataset", isMap: true, filename:"Berlin_0_256.map"},
+  {label:"Boston city dataset", isMap: true, filename:"Boston_0_256.map"},
+  {label:"Moscow city dataset", isMap: true, filename:"Moscow_1_256.map"},
+  // {label:"Denver city dataset", isMap: true, filename:"Denver_0_256.map"},
+  // {label:"Milan city dataset", isMap: true, filename:"Milan_0_256.map"},
+  // {label:"NewYork city dataset", isMap: true, filename:"NewYork_1_256.map"},
+  // {label:"Paris city dataset", isMap: true, filename:"Paris_0_256.map"},
   // {label:"Shanghai city dataset", isMap: true, filename:"Shanghai_2_256.map"},
   {label:"Holes-64", filePath: "./data/holes/h_64/_files.txt"},
   {label:"Holes-128", filePath: "./data/holes/h_128/_files.txt"},
@@ -38,7 +38,7 @@ let g_datasetList = [
   {label:"RPG 512", filePath: "./data/rpg_512/_files.txt"},
   {label:"RPG 1024", filePath: "./data/rpg_1024/_files.txt"},
   {label:"RPG 2048", filePath: "./data/rpg_2048/_files.txt"},
-  // {label:"RPG 4096", filePath: "./data/rpg_4096/_files.txt"},
+  {label:"RPG 4096", filePath: "./data/rpg_4096/_files.txt"},
   // {label:"RPG 8192", filePath: "./data/rpg_8192/_files.txt"},
   // {label:"RPG 16384", filePath: "./data/rpg_16384/_files.txt"},
   // {label:"RPG 32768", filePath: "./data/rpg_32768/_files.txt"},
