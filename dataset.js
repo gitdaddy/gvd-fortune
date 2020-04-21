@@ -151,10 +151,9 @@ function dataCorrection(srcArray) {
   for (var k = 0; k < objs.length; k++) {
     var vSet = _.filter(objs, function (p, idx) {return idx !== k; });
     linesToUpdate = objs[k];
-    var iteration = 1;
+    // var iteration = 1;
     while(linesToUpdate.length > 0) {
       linesToUpdate = getOverlappingLines(linesToUpdate, vSet);
-      console.log("iteration:" + iteration++);
       // update the lines
       _.each(linesToUpdate, function(curLine) {
         var mult = 0.1; // 0.01
@@ -499,6 +498,7 @@ function isColinear(p1, p2, p3, optTolerance) {
 
   var p13 = new Polygon();
   p13.addPoint(vec3(-0.12, -0.21, 0));
+  p13.addPoint(vec3(0.12, -0.21, 0));
 
   var p14 = new Polygon();
   p14.addPoint(vec3(-0.12, 0.81, 0));
@@ -512,9 +512,9 @@ function isColinear(p1, p2, p3, optTolerance) {
   p15.createSegment(1,2);
   p15.createSegment(2,0);
 
-  polygons.push(p11);
-  polygons.push(p12);
-  // polygons.push(p13);
+  // polygons.push(p11);
+  // polygons.push(p12);
+  polygons.push(p13);
   // polygons.push(p14);
   // polygons.push(p15);
 

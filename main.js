@@ -39,7 +39,7 @@ let g_datasetList = [
   {label:"RPG 1024", filePath: "./data/rpg_1024/_files.txt"},
   {label:"RPG 2048", filePath: "./data/rpg_2048/_files.txt"},
   {label:"RPG 4096", filePath: "./data/rpg_4096/_files.txt"},
-  // {label:"RPG 8192", filePath: "./data/rpg_8192/_files.txt"},
+  {label:"RPG 8192", filePath: "./data/rpg_8192/_files.txt"},
   // {label:"RPG 16384", filePath: "./data/rpg_16384/_files.txt"},
   // {label:"RPG 32768", filePath: "./data/rpg_32768/_files.txt"},
   {label:"Data Testing", filePath: "./data/test/_files.txt"}

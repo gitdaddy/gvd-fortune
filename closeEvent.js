@@ -22,7 +22,7 @@ var CloseEvent = function (y, arcNode, leftNode, rightNode, point, radius) {
 
 function validDiff(diff, id) {
   // WATCH VALUE
-  var MAX_DIFF = 2e-2;
+  var MAX_DIFF = 1e-2;
   if (diff > MAX_DIFF){
     // console.log("Max diff exceeded when closing node:" + id + " value:" + diff);
     return false;
@@ -46,9 +46,21 @@ function getDiff(left, node, right, p, directrix) {
   var i0 = getIntercept(left, node, newY);
   var i1 = getIntercept(node, right, newY);
   if (!i0 || !i1) return 1e10;
-  var diffX = Math.abs(i0[0] - i1[0]);
-  var diffY = Math.abs(i0[1] - i1[1]);
-  return diffX + diffY;
+
+  // left right test
+  if (node.isV) {
+    var s = node.site;
+    if (!isRightOfLine(s.a, s.b, i0) && isRightOfLine(s.a, s.b, i1))
+      return 1e10;
+  }
+
+  var diff0X = Math.abs(i0[0] - p[0]);
+  var diff0Y = Math.abs(i0[1] - p[1]);
+  var d1 = diff0X + diff0Y;
+  var diff1X = Math.abs(i1[0] - p[0]);
+  var diff1Y = Math.abs(i1[1] - p[1]);
+  var d2 = diff1X + diff1Y;
+  return d1 > d2 ? d1 : d2;
 }
 
 function getRadius(point, left, node, right) {
