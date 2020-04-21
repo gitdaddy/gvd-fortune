@@ -1,0 +1,2 @@
+./data/rpg_64/rpg_1.txt
+./data/rpg_64/rpg_2.txt

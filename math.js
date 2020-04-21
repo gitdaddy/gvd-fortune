@@ -874,7 +874,12 @@ function equidistant(left, arc, right) {
         var ii = [];
         _.forEach(blines, function(line) {
           var i = intersect(line, b1);
-          ii = _.concat(ii, i);
+          if (i) {
+            if (i.type && i.type === "vec")
+              ii.push(i);
+            else
+              ii = _.concat(ii, i);
+          }
         });
         return ii;
       }

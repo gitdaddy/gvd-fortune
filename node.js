@@ -423,7 +423,15 @@ function intersectParabolicToStraightArc(left, right, isFlipped, directrix){
   }
 
   if (intersections.length > 2) {
-    var x = left.isParabola ? left.site[0] : right.site[0];
+    var x;
+    // debugging only
+    if (left.isV && right.isV || left.isParabola && right.isParabola)
+      throw "Unexpected ERROR";
+
+    if (left.isV)
+      x = pleft.p[0];
+    else
+      x = pright.p[0];
     // Test get the center intersections
     intersections = consolidate(intersections, x);
     if (intersections.length == 1) {

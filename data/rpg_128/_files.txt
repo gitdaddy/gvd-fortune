@@ -1,0 +1,2 @@
+./data/rpg_128/rpg_1.txt
+./data/rpg_128/rpg_2.txt
