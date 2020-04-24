@@ -461,7 +461,6 @@ function intersectParabolicToStraightArc(left, right, directrix){
   //     _____________________________
   //
   // if the point is flipped and is connected to the V
-  // if (isFlipped && belongsToSegmentEndpoint(left, right)) {
   if (belongsToSegmentEndpoint(left, right)) {
     idx = lower;
   }

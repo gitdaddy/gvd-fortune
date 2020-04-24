@@ -3,11 +3,12 @@
 var g_sweepline = {x1: -1, x2:1, y: -1};
 var g_eventThresh = 1e-6;
 
-let g_polygons = [];
 let g_queue = {};
 
 let g_vertexProcessing = 0;
 let g_addTime = 0;
+
+let g_setIdx = 0;
 
 let g_datasetList = [
   {label:"Maze Dataset", sanitize: true, filePath: "./data/maze/_files.txt"},
@@ -15,10 +16,10 @@ let g_datasetList = [
   {label:"100 Random", num:100, filePath: "./data/random_100/_files.txt"},
   {label:"500 Random", num:500, filePath: "./data/random_500/_files.txt"},
   {label:"1000 Random", num:1000, filePath: "./data/random_1000/_files.txt"},
-  {label:"Sydney city dataset", sanitize: true, isMap: true, filename:"Sydney_2_512.map"},
-  {label:"Berlin city dataset", sanitize: true, isMap: true, filename:"Berlin_0_256.map"},
-  {label:"Boston city dataset", sanitize: true, isMap: true, filename:"Boston_0_256.map"},
-  {label:"Moscow city dataset", sanitize: true, isMap: true, filename:"Moscow_1_256.map"},
+  // {label:"Sydney city dataset", sanitize: true, isMap: true, filename:"Sydney_2_512.map"},
+  // {label:"Berlin city dataset", sanitize: true, isMap: true, filename:"Berlin_0_256.map"},
+  // {label:"Boston city dataset", sanitize: true, isMap: true, filename:"Boston_0_256.map"},
+  // {label:"Moscow city dataset", sanitize: true, isMap: true, filename:"Moscow_1_256.map"},
   // {label:"Denver city dataset", isMap: true, filename:"Denver_0_256.map"},
   // {label:"Milan city dataset", isMap: true, filename:"Milan_0_256.map"},
   // {label:"NewYork city dataset", isMap: true, filename:"NewYork_1_256.map"},
@@ -177,15 +178,14 @@ function init() {
     document.getElementById("dataset-select").add(option);
   });
 
-  var idx = 15;
   if (localStorage.setIdx) {
-    var idx = localStorage.setIdx;
+    g_setIdx = parseInt(localStorage.setIdx);
   }
-  document.getElementById("dataset-select").selectedIndex = idx;
+  document.getElementById("dataset-select").selectedIndex = g_setIdx;
   if (g_settings.Enable_C && g_settings.Enable_C.value)
-    datasetChange_C_addon(idx);
+    datasetChange_C_addon(g_setIdx);
   else
-    datasetChange(idx);
+    datasetChange(g_setIdx);
 }
 
 function datasetChange_C_addon(idx) {
@@ -238,31 +238,9 @@ function sweeplineUpdate_C_addon(idx) {
 }
 
 function datasetChange(idx) {
+  g_setIdx = idx;
   if (!g_datasetList[idx].data) {
-    var sanitize = g_datasetList[idx].sanitize;
-    if (g_datasetList[idx].isMap) {
-      var query = '/map/?value=' + './data/maps/' + g_datasetList[idx].filename;
-      $.get(query).then(function (json) {
-        var polygons = parseInputMap(json);
-        g_datasetList[idx].data = polygons;
-        g_polygons = polygons;
-        processNewDataset(sanitize);
-      });
-    } else {
-      console.log("query sent:" + performance.now());
-      var query = '/data/?value=' + g_datasetList[idx].filePath;
-      $.get(query).then(function (json) {
-        console.log("query received:" + performance.now());
-        var polygons = parseInputJSON(json, sanitize);
-        console.log("Input Parsed:" + performance.now());
-        g_datasetList[idx].data = polygons;
-        g_polygons = polygons;
-        processNewDataset(sanitize);
-      });
-    }
-  } else {
-    g_polygons = g_datasetList[idx].data; // load the cached data
-    processNewDataset(g_datasetList[idx].sanitize);
+    processNewDataset(idx);
   }
   localStorage.setIdx = idx;
 }

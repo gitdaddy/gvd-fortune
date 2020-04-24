@@ -280,6 +280,7 @@ Polygon.prototype.createSegment = function (pIdxStart, pIdxEnd, optColor = null)
   s.label = this.label;
   s.color = optColor;
   this.segments.push(s);
+  return s;
 }
 
 // testing only
@@ -396,71 +397,10 @@ function parseInputMap(jsonStr) {
   return canvasToPolygons(objs, data.width, data.height);
 }
 
-function parseInputJSON(jsonStr, sanitize) {
-  var data = JSON.parse(jsonStr);
-  console.log("JSON Parsed:" + performance.now());
-  if (!data)
-    console.error("unable to parse data");
-  var result = [];
-
-  _.forEach(data.polygons, function(polygon) {
-    var poly = new Polygon();
-    if (polygon.points.length > 1) {
-      if (sanitize)
-        polygon.points = sanitizeData(polygon.points);
-
-      var p1 = new vec3(polygon.points[0].x,  polygon.points[0].y, 0);
-      poly.addPoint(p1);
-      for(var i = 1; i < polygon.points.length-1; ++i) {
-        var p = new vec3(polygon.points[i].x,  polygon.points[i].y, 0);
-        // point.fileId = polygon.fileId;
-        poly.addPoint(p);
-        poly.createSegment(i-1, i);
-      }
-      // last segment in the polygon (end, start)
-      poly.createSegment(polygon.points.length-2, 0);
-
-    } else {
-      // only a single point
-      var point = new vec3(polygon.points[0].x,  polygon.points[0].y, 0);
-      point.fileId = polygon.fileId;
-      poly.addPoint(point);
-    }
-    result.push(poly);
-  });
-  return result;
-}
-
-function isFlipped(p, segs) {
-  var endPoint = false;
-  // return true if point is lowest of all segments it is a part of
-   segs.forEach(function(s) {
-    if (fastFloorEqual(p, s.b)) {
-      endPoint = true;
-      return;
-    }
-  });
-  return endPoint;
-}
 
 function getPolygonByLabel(label) {
-  var idx = _.findIndex(g_polygons, {'label': label});
-  return g_polygons[idx];
-}
-
-function findNeighborSegments(node) {
-  if (node.isV) return [node.site];
-  return findConnectedSegments(node.site);
-}
-
-// much like findNeighborSegments but using a point site
-function findConnectedSegments(pointSite) {
-  if (!pointSite.type || pointSite.type !== "vec") return [];
-  var poly = getPolygonByLabel(pointSite.label);
-  var rslt = _.filter(poly.segments, function(s) {
-    return fastFloorEqual(s.a, pointSite) || fastFloorEqual(s.b, pointSite);
-  });
-  return rslt;
+  var idx = _.findIndex(g_datasetList[g_setIdx].data, {'label': label});
+  return g_datasetList[g_setIdx].data[idx];
 }
 
 function isColinear(p1, p2, p3, optTolerance) {
