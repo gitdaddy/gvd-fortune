@@ -80,8 +80,7 @@ function getIntercept(left, right, directrix) {
   if (left.isV && right.isV) {
     obj = intersectStraightArcs(left, right, directrix);
   } else if (left.isV || right.isV) {
-    var flipped = left.site.flipped || right.site.flipped;
-    obj = intersectParabolicToStraightArc(left, right, flipped, directrix);
+    obj = intersectParabolicToStraightArc(left, right, directrix);
   } else {
     obj = intersectParabolicArcs(left, right, directrix);
   }

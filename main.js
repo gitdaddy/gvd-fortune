@@ -13,7 +13,6 @@ let g_datasetList = [
   {label:"Maze Dataset", sanitize: true, filePath: "./data/maze/_files.txt"},
   // {label:"Maze Dataset", filePath: "./gvd2.0/test_output/_files.txt"},
   {label:"100 Random", num:100, filePath: "./data/random_100/_files.txt"},
-  {label:"200 Random", num:200, filePath: "./data/random_200/_files.txt"},
   {label:"500 Random", num:500, filePath: "./data/random_500/_files.txt"},
   {label:"1000 Random", num:1000, filePath: "./data/random_1000/_files.txt"},
   {label:"Sydney city dataset", sanitize: true, isMap: true, filename:"Sydney_2_512.map"},
@@ -44,8 +43,8 @@ let g_datasetList = [
   {label:"RPG 4096", filePath: "./data/rpg_4096/_files.txt"},
   {label:"RPG 8192", filePath: "./data/rpg_8192/_files.txt"},
   {label:"RPG 16384", filePath: "./data/rpg_16384/_files.txt"},
-  {label:"RPG 32768", filePath: "./data/rpg_32768/_files.txt"},
-  {label:"Data Testing", filePath: "./data/test/_files.txt"}
+  // {label:"RPG 32768", filePath: "./data/rpg_32768/_files.txt"},
+  // {label:"Data Testing", filePath: "./data/test/_files.txt"}
  ];
 
 let closeEventPoints = [];
@@ -153,6 +152,10 @@ function keydown(event) {
 }
 
 function init() {
+  var s = getLocalSettings();
+  if (s)
+    g_settings = s;
+
   setExampleDataset();
   if (localStorage.sweepline && !_.isNaN(localStorage.sweepline)
   && localStorage.sweepline !== "NaN") {
@@ -175,9 +178,9 @@ function init() {
   });
 
   var idx = 15;
-  // if (localStorage.setIdx) {
-  //   var idx = localStorage.setIdx;
-  // }
+  if (localStorage.setIdx) {
+    var idx = localStorage.setIdx;
+  }
   document.getElementById("dataset-select").selectedIndex = idx;
   if (g_settings.Enable_C && g_settings.Enable_C.value)
     datasetChange_C_addon(idx);
@@ -226,7 +229,6 @@ function sweeplineUpdate_C_addon(idx) {
     if (json.msg && json.msg.length > 0) {
       console.log("Server message: " + json.msg);
     }
-    // var sites = JSON.parse(json.sites);
     var edges = JSON.parse(json.edges);
     var beachline = JSON.parse(json.beachline);
     var closeEvents = JSON.parse(json.closeEvents);
@@ -236,7 +238,6 @@ function sweeplineUpdate_C_addon(idx) {
 }
 
 function datasetChange(idx) {
-  localStorage.setIdx = idx;
   if (!g_datasetList[idx].data) {
     var sanitize = g_datasetList[idx].sanitize;
     if (g_datasetList[idx].isMap) {
@@ -263,6 +264,7 @@ function datasetChange(idx) {
     g_polygons = g_datasetList[idx].data; // load the cached data
     processNewDataset(g_datasetList[idx].sanitize);
   }
+  localStorage.setIdx = idx;
 }
 
 function fortune(reorder) {

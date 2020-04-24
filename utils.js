@@ -239,3 +239,12 @@ function onSiteDrag() {
 function setTreeDebug(msg) {
   console.log(msg);
 }
+
+function getLocalSettings() {
+  if (localStorage.settings)
+    return JSON.parse(localStorage.settings)
+}
+
+function storeLocalSettings(settings) {
+  localStorage.settings = JSON.stringify(settings);
+}

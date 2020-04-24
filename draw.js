@@ -304,7 +304,7 @@ function getCurrentImgURL() {
 // 2. on a dataset change
 // TODO zoom and overview linking
 function updateOverview() {
-  if (g_settings.showOverview.value) {
+  if (g_settings.showOverview && g_settings.showOverview.value) {
     resetView();
     // TODO store current zoom settings
     // reset view - export, restore zoom
@@ -490,8 +490,12 @@ function enforceSettings() {
 
 function onSettingChecked(event) {
   g_settings[event.value].value = event.checked;
-  rescaleView(xRev, yRev);
-  updateOverview();
+  if (g_settings.showOverview && g_settings.showOverview.value) {
+    rescaleView(xRev, yRev);
+    updateOverview();
+  }
+
+  storeLocalSettings(g_settings);
   enforceSettings();
 }
 

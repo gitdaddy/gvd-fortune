@@ -280,11 +280,6 @@ Polygon.prototype.createSegment = function (pIdxStart, pIdxEnd, optColor = null)
   s.label = this.label;
   s.color = optColor;
   this.segments.push(s);
-  if (this.points[pIdxStart][1] == this.points[pIdxEnd][1]) {
-    console.error("Horizontal segment detected with y values of: " + this.points[pIdxEnd][1]);
-  }
-  this.points[pIdxStart].flipped = isFlipped(this.points[pIdxStart], this.segments);
-  this.points[pIdxEnd].flipped = isFlipped(this.points[pIdxEnd], this.segments);
 }
 
 // testing only
@@ -403,28 +398,28 @@ function parseInputMap(jsonStr) {
 
 function parseInputJSON(jsonStr, sanitize) {
   var data = JSON.parse(jsonStr);
+  console.log("JSON Parsed:" + performance.now());
   if (!data)
     console.error("unable to parse data");
   var result = [];
+
   _.forEach(data.polygons, function(polygon) {
     var poly = new Polygon();
     if (polygon.points.length > 1) {
       if (sanitize)
         polygon.points = sanitizeData(polygon.points);
-      for(var i = 0; i < polygon.points.length; i++) {
-        if (i !== polygon.points.length - 1) {
-          var point = new vec3(polygon.points[i].x,  polygon.points[i].y, 0);
-          point.fileId = polygon.fileId;
-          poly.addPoint(point);
-          if (i !== 0) {
-            // if not the first point in the polygon
-             poly.createSegment(i-1, i);
-          }
-        } else {
-          // last segment in the polygon (end, start)
-          poly.createSegment(i-1, 0);
-        }
+
+      var p1 = new vec3(polygon.points[0].x,  polygon.points[0].y, 0);
+      poly.addPoint(p1);
+      for(var i = 1; i < polygon.points.length-1; ++i) {
+        var p = new vec3(polygon.points[i].x,  polygon.points[i].y, 0);
+        // point.fileId = polygon.fileId;
+        poly.addPoint(p);
+        poly.createSegment(i-1, i);
       }
+      // last segment in the polygon (end, start)
+      poly.createSegment(polygon.points.length-2, 0);
+
     } else {
       // only a single point
       var point = new vec3(polygon.points[0].x,  polygon.points[0].y, 0);

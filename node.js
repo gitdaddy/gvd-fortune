@@ -201,23 +201,13 @@ Object.defineProperty(EdgeNode.prototype, "isGeneralSurface", {
   },
 });
 
-Object.defineProperty(EdgeNode.prototype, "flipped", {
-  configurable: true,
-  get: function () {
-    return this.prevArc().site.flipped || this.nextArc().site.flipped;
-  },
-});
-
 EdgeNode.prototype.updateEdge = function (vertex, dcel, optNeighborEdges = [], optEndingEdges = []) {
   this.dcelEdge = dcel.makeEdge();
   this.dcelEdge.origin.point = vertex;
   if (optEndingEdges.length > 0) {
-    // testing only remove after tested
-    if (optEndingEdges.length > 2) throw "MORE THAN 2";
 
     // All of the nodes share a reference to the connectedEdges array
     if (optEndingEdges[1]) optEndingEdges[1].dest.connectedEdges = optEndingEdges[0].dest.connectedEdges;
-    // this.dcelEdge.origin = destVertex;
     this.dcelEdge.origin.connectedEdges = optEndingEdges[0].dest.connectedEdges;
     this.dcelEdge.origin.point = vertex;
     var sharedEdges = this.dcelEdge.origin.connectedEdges;
@@ -226,7 +216,6 @@ EdgeNode.prototype.updateEdge = function (vertex, dcel, optNeighborEdges = [], o
       e.dest.point = vertex;
       // set the edges origin with itself
       e.origin.connectedEdges[getEdgeId(e)] = e;
-      // setEdgeDestination(e, vertex, optEndingEdges);
     });
   }
   var next = this.nextArc();
@@ -316,7 +305,7 @@ EdgeNode.prototype.intersection = function (directrix) {
   if (leftArcNode.isV && rightArcNode.isV) {
     obj = intersectStraightArcs(leftArcNode, rightArcNode, directrix);
   } else if (leftArcNode.isV || rightArcNode.isV) {
-    obj = intersectParabolicToStraightArc(leftArcNode, rightArcNode, this.flipped, directrix);
+    obj = intersectParabolicToStraightArc(leftArcNode, rightArcNode, directrix);
   } else {
     obj = intersectParabolicArcs(leftArcNode, rightArcNode, directrix);
   }
@@ -382,7 +371,7 @@ function intersectStraightArcs(left, right, directrix){
 }
 
 // Function supports the intersection of a parabolic arc to any other arc type
-function intersectParabolicToStraightArc(left, right, isFlipped, directrix){
+function intersectParabolicToStraightArc(left, right, directrix){
 
   // debugging only
   if (left.id === g_debugIdLeft && right.id === g_debugIdRight) {
@@ -472,7 +461,8 @@ function intersectParabolicToStraightArc(left, right, isFlipped, directrix){
   //     _____________________________
   //
   // if the point is flipped and is connected to the V
-  if (isFlipped && belongsToSegmentEndpoint(left, right)) {
+  // if (isFlipped && belongsToSegmentEndpoint(left, right)) {
+  if (belongsToSegmentEndpoint(left, right)) {
     idx = lower;
   }
   return {
