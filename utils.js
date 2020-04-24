@@ -109,7 +109,7 @@ function sanitizePointSiteData(polygons) {
   }
 }
 
-function processNewDataset() {
+function processNewDataset(sanitize) {
   var t0 = performance.now();
   var segments = [];
   var points = [];
@@ -118,7 +118,8 @@ function processNewDataset() {
     points = points.concat(poly.points);
   });
 
-  sanitizePointSiteData(g_polygons);
+  if (sanitize)
+    sanitizePointSiteData(g_polygons);
 
   drawSites(points);
   drawSegments(segments);

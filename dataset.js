@@ -174,7 +174,7 @@ function dataCorrection(srcArray) {
   return objs;
 }
 
-function getRandomAdjustment(dataPoints, match) {
+function getAdjustment(dataPoints, match) {
   var xDiff = Math.abs(dataPoints[match.s1Idx].x - dataPoints[match.s2Idx].x);
   var value = xDiff * 0.007;
   // var value = Math.random() * 1e-6;
@@ -254,7 +254,7 @@ function sanitizeData(orderedPoints, optTolerance, optXoffset) {
 
   var match = getMatch(orderedPoints);
   while(match) {
-    orderedPoints[match.s2Idx].y -= getRandomAdjustment(orderedPoints, match);
+    orderedPoints[match.s2Idx].y -= getAdjustment(orderedPoints, match);
     match = getMatch(orderedPoints);
   }
 
@@ -401,7 +401,7 @@ function parseInputMap(jsonStr) {
   return canvasToPolygons(objs, data.width, data.height);
 }
 
-function parseInputJSON(jsonStr) {
+function parseInputJSON(jsonStr, sanitize) {
   var data = JSON.parse(jsonStr);
   if (!data)
     console.error("unable to parse data");
@@ -409,7 +409,8 @@ function parseInputJSON(jsonStr) {
   _.forEach(data.polygons, function(polygon) {
     var poly = new Polygon();
     if (polygon.points.length > 1) {
-      polygon.points = sanitizeData(polygon.points);
+      if (sanitize)
+        polygon.points = sanitizeData(polygon.points);
       for(var i = 0; i < polygon.points.length; i++) {
         if (i !== polygon.points.length - 1) {
           var point = new vec3(polygon.points[i].x,  polygon.points[i].y, 0);

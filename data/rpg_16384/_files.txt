@@ -1,2 +1,1 @@
 ./data/rpg_16384/rpg_1.txt
-./data/rpg_16384/rpg_2.txt

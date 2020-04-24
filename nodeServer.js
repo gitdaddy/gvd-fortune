@@ -3,11 +3,13 @@ const express = require('express');
 var router = express();
 var fs = require('fs');
 var _ = require('lodash');
-var file_io = require('./fileIO.js')
+// var file_io = require('./fileIO.js')
+
+// C++ Custom Addons
 // const gvd_Addon = require("./gvd2.0/build/Release/addon.node");
+// Debug version
 // const gvd_Addon = require("./gvd2.0/build/Debug/addon.node");
 
-const hostname = 'localhost';
 const port = 8083;
 
 function sameSign(a,b) {
@@ -154,114 +156,7 @@ function overlapsAny(x0, y0, x1, y1, lines) {
 //   });
 // }
 
-// approach not useful for over 40 sided polygon
-// function rpgWrite(size) {
-//   // all bounds are within -1, 1
-//   var outputFile = "./data/RPG/rpg_" + size + ".txt";
-
-//   // add a line that doesn't intersect any previous line
-//   var lines = [];
-//   var points = [];
-//   var i = 0;
-//   var isOverLapping = false;
-//   while (i < size || isOverLapping) {
-//     var negativeY = Math.random() > 0.5;
-//     var negativeX = Math.random() > 0.5;
-//     var x = Math.random();
-//     if (negativeX) x = -x;
-//     var y = Math.random();
-//     if (negativeY) y = -y;
-//     if (i !== 0) {
-//       var xPrev = points[i-1][0];
-//       var yPrev = points[i-1][1];
-//       if (overlapsAny(xPrev, yPrev, x, y, lines)) {
-//         console.log("overlapped i:" + i)
-//         isOverLapping = true;
-//       } else {
-//         isOverLapping = false;
-//         lines.push({x0: xPrev, y0: yPrev, x1: x, y1: y});
-//         points.push([x, y]);
-//         i++;
-//       }
-//     } else {
-//       points.push([x, y]);
-//       i++;
-//     }
-//   }
-
-//   var data = "";
-//   _.each(points, pt => {
-//     data += `${pt[0]} ${pt[1]}\n`;
-//   });
-
-//   // complete the cycle
-//   // TODO can we test for overlap here?
-//   data += `${points[0][0]} ${points[0][1]}\n`;
-
-//   fs.writeFile(outputFile, data, function (err) {
-//     if (err) throw err;
-//   });
-// }
-
-// function holesWrite(numSegments, datasetIdx) {
-//   // all bounds are within -1, 1
-//   var dir = "./data/holes/h_" + numSegments + "/";
-//   var boxes = [];
-
-//   var outerBox = [
-//     [-.95, 0.95],
-//     [.95, 0.95],
-//     [.95, -0.95],
-//     [-.95, -0.95],
-//     [-.95, 0.95],
-//   ];
-//   boxes.push(outerBox);
-
-//   var numHoles = (numSegments / 4) - 1;
-//   var dim = Math.ceil(Math.sqrt(numHoles));
-//   if ((dim + 1) === 0) throw "invalid hole dim";
-//   var step = 1.9 / (dim + 1);
-
-//   var startCenter = [outerBox[0][0] + step, outerBox[0][1] - step];
-//   for (var i = 0; i < dim; i++){
-//     for (var j = 0; j < dim; j++){
-//       if ((i+1) * (j+1) > numHoles) {
-//         // console.log("i * j =" + i * j  +" > " + numHoles)
-//         break;
-//       }
-//       var newCenter = [startCenter[0] + step*i, startCenter[1] - step*j];
-//       var nw = [newCenter[0] - (step/3), newCenter[1] + (step/3)];
-//       var ne = [newCenter[0] + (step/3), newCenter[1] + (step/3)];
-//       var sw = [newCenter[0] + (step/3), newCenter[1] - (step/3)];
-//       var se = [newCenter[0] - (step/3), newCenter[1] - (step/3)];
-//       var newBox = [nw, ne, sw, se, nw];
-//       boxes.push(newBox);
-//     }
-//   }
-
-//   var files = "";
-//   var count = 1;
-//   _.each(boxes, b => {
-//     var data = "";
-//     _.each(b, pt => {
-//       data += `${pt[0]} ${pt[1]}\n`;
-//     });
-//     var filename = "box_" + count + ".txt";
-//     files += dir + filename + "\n";
-//     fs.writeFile(dir + filename, data, function (err) {
-//       if (err) throw err;
-//     });
-//     count++;
-//   });
-
-//   console.log("writing holes dataset to file")
-
-//   fs.writeFile(`./data/dataset${datasetIdx}.txt`, files, function (err) {
-//     if (err) throw err;
-//   });
-// }
-
-function getDatasetJson(path) {
+function getDatasetJson(path, sanitize) {
   // read in the files
   var json = {};
   var polygons = [];
@@ -402,7 +297,6 @@ router.get('/', function(req, res) {
   res.sendFile('index.html', {root: __dirname});
 });
 
-// TODO old deprecate
 router.get('/data', function(req, res) {
   res.type('json');
   res.json(getDatasetJson(req.query.value));
@@ -448,10 +342,6 @@ router.get('/map', function(req, res) {
 //   // writeRandom(200, "dataset3");
 //   // writeRandom(500, "dataset4");
 //   writeRandom(1000, "dataset5");
-// });
-
-// router.get('/rpg', function(req, res) {
-//   rpgWrite(32);
 // });
 
 // router.get('/holes', function(req, res) {

@@ -78,6 +78,7 @@ Beachline.prototype.add = function (eventPacket) {
 
   // Do a binary search to find the arc node that the new
   // site intersects with
+  var aStart = performance.now();
   var x = parent.intersection(directrix)[0];
   side = (eventPacket.site[0] < x) ? LEFT_CHILD : RIGHT_CHILD;
   child = parent.getChild(side);
@@ -98,11 +99,18 @@ Beachline.prototype.add = function (eventPacket) {
 
   var subTreeData = generateSubTree(eventPacket, arcNode, dcel, child);
   parent.setChild(subTreeData.root, side);
+  var aEnd = performance.now();
+  g_addTime += aEnd - aStart;
+
   // if (subTreeData.optRemoveNode) {
   //   var newEvents = this.remove(subTreeData.optRemoveNode, subTreeData.optRemovePoint, directrix);
   //   return newEvents.concat(processCloseEvents(subTreeData.closingNodes, directrix));
   // }
-  return processCloseEvents(subTreeData.closingNodes, directrix);
+  var cStart = performance.now();
+  var ret =  processCloseEvents(subTreeData.closingNodes, directrix);
+  var cEnd = performance.now();
+  g_vertexProcessing += cEnd - cStart;
+  return ret;
 }
 
 //------------------------------------------------------------
@@ -139,6 +147,8 @@ Beachline.prototype.remove = function (arcNode, point, directrix, endingEdges) {
 
   // Cancel the close event for this arc and adjoining arcs.
   // Add new close events for adjoining arcs.
+  var cStart = performance.now();
+
   var closeEvents = [];
   var prevArc = newEdge.prevArc();
   if (prevArc.closeEvent) {
@@ -156,6 +166,9 @@ Beachline.prototype.remove = function (arcNode, point, directrix, endingEdges) {
   if (e != null) {
     closeEvents.push(e);
   }
+  var cEnd = performance.now();
+  g_vertexProcessing += cEnd - cStart;
+
   return closeEvents;
 }
 
