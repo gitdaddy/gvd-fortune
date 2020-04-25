@@ -352,8 +352,7 @@ function canvasToPolygons(srcArray, width, height){
   return polygons;
 }
 
-function parseInputMap(jsonStr) {
-  var data = JSON.parse(jsonStr);
+function parseInputMap(data) {
   var canvas = document.getElementById("myCanvas");
   canvas.width = data.width;
   canvas.height = data.height;

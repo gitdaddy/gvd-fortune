@@ -12,19 +12,20 @@ let g_setIdx = 0;
 
 let g_datasetList = [
   {label:"Maze Dataset", sanitize: true, filePath: "./data/maze/_files.txt"},
-  // {label:"Maze Dataset", filePath: "./gvd2.0/test_output/_files.txt"},
-  {label:"100 Random", num:100, filePath: "./data/random_100/_files.txt"},
-  {label:"500 Random", num:500, filePath: "./data/random_500/_files.txt"},
-  {label:"1000 Random", num:1000, filePath: "./data/random_1000/_files.txt"},
-  // {label:"Sydney city dataset", sanitize: true, isMap: true, filename:"Sydney_2_512.map"},
-  // {label:"Berlin city dataset", sanitize: true, isMap: true, filename:"Berlin_0_256.map"},
-  // {label:"Boston city dataset", sanitize: true, isMap: true, filename:"Boston_0_256.map"},
-  // {label:"Moscow city dataset", sanitize: true, isMap: true, filename:"Moscow_1_256.map"},
-  // {label:"Denver city dataset", isMap: true, filename:"Denver_0_256.map"},
-  // {label:"Milan city dataset", isMap: true, filename:"Milan_0_256.map"},
-  // {label:"NewYork city dataset", isMap: true, filename:"NewYork_1_256.map"},
-  // {label:"Paris city dataset", isMap: true, filename:"Paris_0_256.map"},
-  // {label:"Shanghai city dataset", isMap: true, filename:"Shanghai_2_256.map"},
+  {label:"100 Random Lines", num:100, filePath: "./data/random_100/_files.txt"},
+  {label:"500 Random Lines", num:500, filePath: "./data/random_500/_files.txt"},
+  {label:"1000 Random Lines", num:1000, filePath: "./data/random_1000/_files.txt"},
+  {label:"Sydney city dataset", sanitize: true, isMap: true, filePath:"./data/maps/Sydney_2_512.map"},
+  {label:"Berlin city dataset", sanitize: true, isMap: true, filePath:"./data/maps/Berlin_0_256.map"},
+  {label:"Boston city dataset", sanitize: true, isMap: true, filePath:"./data/maps/Boston_0_256.map"},
+  {label:"Moscow city dataset", sanitize: true, isMap: true, filePath:"./data/maps/Moscow_1_256.map"},
+
+  // TODO updates
+  // {label:"Denver city dataset", isMap: true, filePath:"./data/maps/Denver_0_256.map"},
+  // {label:"Milan city dataset", isMap: true, filePath:"./data/maps/Milan_0_256.map"},
+  // {label:"NewYork city dataset", isMap: true, filePath:"./data/maps/NewYork_1_256.map"},
+  // {label:"Paris city dataset", isMap: true, filePath:"./data/maps/Paris_0_256.map"},
+  // {label:"Shanghai city dataset", isMap: true, filePath:"./data/maps/Shanghai_2_256.map"},
   {label:"Holes-64", sanitize: true, filePath: "./data/holes/h_64/_files.txt"},
   {label:"Holes-128", sanitize: true, filePath: "./data/holes/h_128/_files.txt"},
   {label:"Holes-256", sanitize: true, filePath: "./data/holes/h_256/_files.txt"},
@@ -239,12 +240,12 @@ function sweeplineUpdate_C_addon(idx) {
 
 function datasetChange(idx) {
   g_setIdx = idx;
-  if (!g_datasetList[idx].data) {
-    processNewDataset(idx);
+  if (!g_datasetList[g_setIdx].data) {
+    processNewDataset();
   } else {
     var segments = [];
     var points = [];
-    g_datasetList[idx].data.forEach(function(poly) {
+    g_datasetList[g_setIdx].data.forEach(function(poly) {
       segments = segments.concat(poly.segments);
       points = points.concat(poly.points);
     });
@@ -256,7 +257,7 @@ function datasetChange(idx) {
     updateOverview();
   }
 
-  localStorage.setIdx = idx;
+  localStorage.setIdx = g_setIdx;
 }
 
 function fortune(reorder) {

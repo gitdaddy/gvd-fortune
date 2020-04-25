@@ -109,10 +109,10 @@ function sanitizePointSiteData(polygons) {
   }
 }
 
-function processNewDataset(setIdx) {
-  g_datasetList[setIdx].isMap ?
-    readMapData(g_datasetList[setIdx].filename) :
-    readDataset(setIdx);
+function processNewDataset() {
+  g_datasetList[g_setIdx].isMap ?
+    readMapData(g_datasetList[g_setIdx].filePath) :
+    readDataset();
 }
 
 function x2win(x) {
@@ -380,39 +380,57 @@ function labelConnectedComponents(src, height, width) {
 }
 
 // TODO maps
-// function readMapData(filePath) {
-//   var json = {};
+function readMapData(filePath) {
 //  var lines = fs.readFileSync(filePath, 'utf-8').split('\n');
-//   var padding = 50;
-//   json.height = lines.length - 4 + padding;
-//   json.width = lines[4].length - 1 + padding;
 
-//   var oneDimPixelArray = new Uint8Array(json.height * json.width);
+ d3.text(filePath, (fileData) => {
+    var lines = fileData.split('\n');
+    var padding = 50;
+    var height = lines.length - 4 + padding;
+    var width = lines[4].length - 1 + padding;
 
-//   for (var i = 4; i < lines.length; i++) {
-//     for (var k = 0; k < lines[i].length-1; k++) {
-//       if (lines[i][k] === '@') { // non-passable object
-//         // compute the current idx
-//         var pI = ((i + padding/2) - 4) * json.width;
-//         var pK = k + padding;
-//         oneDimPixelArray[pI + pK] = 255;// black
-//       }
-//     }
-//   }
+    var oneDimPixelArray = new Uint8Array(height*width);
 
-//   var output = labelConnectedComponents(oneDimPixelArray, json.height, json.width);
-//   json.value = output;
-//   return JSON.stringify(json);
-// }
+    for (var i = 4; i < lines.length; i++) {
+      for (var k = 0; k < lines[i].length-1; k++) {
+        if (lines[i][k] === '@') { // non-passable object
+          // compute the current idx
+          var pI = ((i + padding/2) - 4) * width;
+          var pK = k + padding;
+          oneDimPixelArray[pI + pK] = 255;// black
+        }
+      }
+    }
+
+    var data = labelConnectedComponents(oneDimPixelArray, height, width);
+    g_datasetList[g_setIdx].data = parseInputMap({ value:data, height:height, width:width });
+    // process post data
+    if (g_datasetList[g_setIdx].sanitize)
+      sanitizePointSiteData(g_datasetList[g_setIdx].data);
+
+    var segments = [];
+    var points = [];
+    g_datasetList[g_setIdx].data.forEach(function(poly) {
+      segments = segments.concat(poly.segments);
+      points = points.concat(poly.points);
+    });
+
+    drawSites(points);
+    drawSegments(segments);
+
+    render();
+    updateOverview();
+  });
+}
 
 // Merge with dataset.js
-function readDataset(setIdx) {
+function readDataset() {
   // read in the files
   var points = [];
   var segments = [];
   var t0 = performance.now();
 
-  d3.text(g_datasetList[setIdx].filePath, (fileData) => {
+  d3.text(g_datasetList[g_setIdx].filePath, (fileData) => {
     var files = fileData.split("\n");
     var size = files.length;
     var count = 0;
@@ -442,7 +460,7 @@ function readDataset(setIdx) {
 
           var poly = new Polygon();
           if (dataPoints.length > 1) {
-            if (g_datasetList[setIdx].sanitize)
+            if (g_datasetList[g_setIdx].sanitize)
               dataPoints = sanitizeData(dataPoints);
 
             var p1 = new vec3(dataPoints[0].x,  dataPoints[0].y, 0);
@@ -464,14 +482,14 @@ function readDataset(setIdx) {
             poly.addPoint(point);
           }
           // one file per polygon
-          if (!g_datasetList[setIdx].data) g_datasetList[setIdx].data = [];
-          g_datasetList[setIdx].data.push(poly);
+          if (!g_datasetList[g_setIdx].data) g_datasetList[g_setIdx].data = [];
+          g_datasetList[g_setIdx].data.push(poly);
 
           count++;
           if (count === size) {
             // end
-            if (g_datasetList[setIdx].sanitize)
-              sanitizePointSiteData(g_datasetList[setIdx].data);
+            if (g_datasetList[g_setIdx].sanitize)
+              sanitizePointSiteData(g_datasetList[g_setIdx].data);
 
             drawSites(points);
             drawSegments(segments);
