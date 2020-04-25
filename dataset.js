@@ -448,9 +448,9 @@ function isColinear(p1, p2, p3, optTolerance) {
   p15.createSegment(1,2);
   p15.createSegment(2,0);
 
-  // polygons.push(p11);
-  // polygons.push(p12);
-  polygons.push(p13);
+  polygons.push(p11);
+  polygons.push(p12);
+  // polygons.push(p13);
   // polygons.push(p14);
   // polygons.push(p15);
 

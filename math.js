@@ -4,7 +4,7 @@
 //------------------------------------------------------------
 //------------------------------------------------------------
 
-let g_bisectorsMemo = {};
+// let g_bisectorsMemo = {};
 
 function getEventY(event)
 {
@@ -634,10 +634,10 @@ var l = [];
 //------------------------------------------------------------
 function bisectSegments2(s1, s2) {
   var combineId = s1.id.toString() + s2.id.toString();
-  if (g_bisectorsMemo[combineId])
-  {
-    return g_bisectorsMemo[combineId];
-  }
+  // if (g_bisectorsMemo[combineId])
+  // {
+  //   return g_bisectorsMemo[combineId];
+  // }
 
   // if connected segments
   var optCon = connected(s1, s2);
@@ -658,15 +658,17 @@ function bisectSegments2(s1, s2) {
   var v1CounterClockwise = new vec3(-AB[1], AB[0], 0);
   var intersect = bisectData.optPoint ? bisectData.optPoint : intersectLines(s1.a, s1.b, s2.a, s2.b);
   if (!intersect) {
-    g_bisectorsMemo[combineId] = [s];
-    return g_bisectorsMemo[combineId];
+    // g_bisectorsMemo[combineId] = [s];
+    // return g_bisectorsMemo[combineId];
+    return [s];
   }
   var v1 = vec3(v1Clockwise[0] + intersect[0], v1Clockwise[1] + intersect[1], 0);
   var v2 = vec3(v1CounterClockwise[0] + intersect[0], v1CounterClockwise[1] + intersect[1], 0);
   // var l = new Line(add(v1Clockwise, intersect), add(v1CounterClockwise, intersect));
   var l = new Line(v1, v2);
-  g_bisectorsMemo[combineId] = [s, l];
-  return g_bisectorsMemo[combineId];
+  // g_bisectorsMemo[combineId] = [s, l];
+  // return g_bisectorsMemo[combineId];
+  return [s,l];
 }
 
 function fastFloorEqual(f1, f2) {
@@ -761,10 +763,11 @@ function smallAngleBisectSegments(s1, s2, optIntersect) {
 //------------------------------------------------------------
 function bisect(a, b) {
   var abId = a.id.toString() + b.id.toString();
-  if (g_bisectorsMemo[abId])
-  {
-    return g_bisectorsMemo[abId];
-  }
+  // if (g_bisectorsMemo[abId])
+  // {
+  //   console.log("using id stored b");
+  //   return g_bisectorsMemo[abId];
+  // }
   var bisector = null;
   if (a.type == 'vec' && b.type == 'vec') {
     // Returns a line
@@ -774,7 +777,7 @@ function bisect(a, b) {
   } else if (b.type == 'vec') {
     bisector = bisectPointSegment(b, a);
   }
-  g_bisectorsMemo[abId] = bisector;
+  // g_bisectorsMemo[abId] = bisector;
   return bisector;
 }
 

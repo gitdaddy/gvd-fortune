@@ -110,7 +110,6 @@ function sanitizePointSiteData(polygons) {
 }
 
 function processNewDataset(setIdx) {
-
   g_datasetList[setIdx].isMap ?
     readMapData(g_datasetList[setIdx].filename) :
     readDataset(setIdx);

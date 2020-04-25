@@ -45,7 +45,7 @@ let g_datasetList = [
   {label:"RPG 8192", filePath: "./data/rpg_8192/_files.txt"},
   {label:"RPG 16384", filePath: "./data/rpg_16384/_files.txt"},
   // {label:"RPG 32768", filePath: "./data/rpg_32768/_files.txt"},
-  // {label:"Data Testing", filePath: "./data/test/_files.txt"}
+  {label:"Data Testing", filePath: "./data/test/_files.txt"}
  ];
 
 let closeEventPoints = [];
@@ -241,7 +241,21 @@ function datasetChange(idx) {
   g_setIdx = idx;
   if (!g_datasetList[idx].data) {
     processNewDataset(idx);
+  } else {
+    var segments = [];
+    var points = [];
+    g_datasetList[idx].data.forEach(function(poly) {
+      segments = segments.concat(poly.segments);
+      points = points.concat(poly.points);
+    });
+
+    drawSites(points);
+    drawSegments(segments);
+
+    render();
+    updateOverview();
   }
+
   localStorage.setIdx = idx;
 }
 
