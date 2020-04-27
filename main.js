@@ -12,7 +12,7 @@ let g_setIdx = 0;
 
 let g_datasetList = [
   {label:"Maze Dataset", sanitize: true, filePath: "./data/maze/_files.txt"},
-  {label:"100 Random Lines", num:100, filePath: "./data/random_100/_files.txt"},
+  {label:"100 Random Lines", num:100, filePath: "./data/random_100/files.txt"},
   {label:"500 Random Lines", num:500, filePath: "./data/random_500/_files.txt"},
   {label:"1000 Random Lines", num:1000, filePath: "./data/random_1000/_files.txt"},
   {label:"Sydney city dataset", sanitize: true, isMap: true, filePath:"./data/maps/Sydney_2_512.map"},
