@@ -474,7 +474,8 @@ function readDataset() {
               segments.push(poly.createSegment(i-1, i));
             }
             // last segment in the polygon (end, start)
-            segments.push(poly.createSegment(dataPoints.length-2, 0));
+            if (dataPoints.length > 3)
+              segments.push(poly.createSegment(dataPoints.length-2, 0));
           } else {
             // only a single point
             var point = new vec3(dataPoints[0].x,  dataPoints[0].y, 0);
