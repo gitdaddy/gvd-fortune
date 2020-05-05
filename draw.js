@@ -9,6 +9,8 @@ let g_surfaceHighlightWidth = 7;
 let g_pathStartElemIdx = undefined;
 var g_gvdVertices = [];
 
+var g_pathHighlightInfo = {};
+
 // start, end, default
 let g_edgeColors = [ 'blue', 'limegreen', 'red', 'black'];
 
@@ -57,6 +59,11 @@ let zoom = d3.zoom()
   .extent([[0, 0], [width, height]])
   .on("zoom", zoomed);
 
+/////////////// Div Tool Tips /////////////////////
+// var minToolTip = d3.select("body").append("div")
+// .attr("class", "tooltip")
+// .style("opacity", 0);
+
 /////////////// Handler Functions /////////////////
 
 function getEdgeId(d) {
@@ -93,19 +100,46 @@ function onEdgeVertexClick(d, i) {
 
 function onEdgeVertexMouseOver(d, i) {
   d3.select(`#${this.id}`).attr("r", g_siteRadius * 3);
-  if (_.isUndefined(g_pathStartElemIdx)) return;
-  var edges = _.sortBy(_.values(d.connectedEdges), e => {
-    return e.tCost;
-  });
 
-  if (i != g_pathStartElemIdx && edges[0].tCost) {
-    highlightPath(edges[0], g_edgeColors[0]);
+  if (!_.isUndefined(g_pathStartElemIdx)) {
+    var edges = _.sortBy(_.values(d.connectedEdges), e => {
+      return e.tCost;
+    });
+    if (i != g_pathStartElemIdx && edges[0].tCost) {
+      var radiusData = highlightPath(edges[0], g_edgeColors[0]);
+      // g_pathHighlightInfo.minId = radiusData.minId;
+      // g_pathHighlightInfo.maxId = radiusData.maxId;
+      // var minVtx = d3.select(`#${radiusData.minId}`);
+      // minVtx.attr("r", g_siteRadius * 3)
+      // minVtx.style("fill", g_edgeColors[2]);
+
+      // var maxVtx = d3.select(`#${radiusData.maxId}`);
+      // maxVtx.attr("r", g_siteRadius * 3)
+      // maxVtx.style("fill", g_edgeColors[1]);
+
+      var ttMsg = "<span>Cross Section: <br> Max: " + radiusData.max + "<br>" + "Min: " + radiusData.min + "<span>";
+      var tt = d3.select("#tool-tip-a");
+      tt.transition().duration(200).style("opacity", .9);
+      tt.html(ttMsg).style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px");
+    }
   }
 }
 
 function onEdgeVertexMouseOut(d, i) {
   d3.select(`#${this.id}`).attr("r", g_siteRadius);
   unHighlightPaths();
+
+  // un-highlight cross section details
+  // var minVtx = d3.select(`#${g_pathHighlightInfo.minId}`);
+  // minVtx.attr("r", g_siteRadius)
+  // minVtx.style("fill", g_edgeColors[3]);
+  // var maxVtx = d3.select(`#${g_pathHighlightInfo.maxId}`);
+  // maxVtx.attr("r", g_siteRadius)
+  // maxVtx.style("fill", g_edgeColors[3]);
+
+  d3.select("#tool-tip-a").transition()
+    .duration(500)
+    .style("opacity", 0);
 }
 
 ///////////////////////////////////////////////////
@@ -157,13 +191,18 @@ function drawInit(sweepline, settings) {
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom)
   .style("pointer-events", "mousedown, dbclick, wheel.zoom")
-  .call(zoom)
-  .append("g")
+  .call(zoom);
+
+  var svgGraph = svg.append("g")
   .attr("id", "gvd")
   .attr("transform", `translate(${margin.left} ,${margin.top})`)
   ;
 
-  svg.selectAll("line")
+  minToolTip = svg.append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+  svgGraph.selectAll("line")
     .data([sweepline])
     .enter()
     .append("line")
@@ -175,16 +214,16 @@ function drawInit(sweepline, settings) {
     .attr("vector-effect", "non-scaling-stroke")
     ;
 
-  xAxis = svg.append('g')
+  xAxis = svgGraph.append('g')
     .attr("transform", `translate(${margin.left}, ${height})`)
     .call(d3.axisBottom(xRev));
 
-  yAxis = svg.append('g')
+  yAxis = svgGraph.append('g')
     .attr("transform", `translate(${margin.left},0)`)
     .call(d3.axisLeft(yRev));
 
   // Add a clipPath: everything out of this area won't be drawn.
-  svg.append("defs").append("svg:clipPath")
+  svgGraph.append("defs").append("svg:clipPath")
   .attr("id", "clip")
   .append("svg:rect")
   .attr("width", width + 20)
@@ -194,7 +233,7 @@ function drawInit(sweepline, settings) {
   .attr("x", 0)
   .attr("y", 0);
 
-  svg.attr("clip-path", "url(#clip)");
+  svgGraph.attr("clip-path", "url(#clip)");
 
   // add settings
   var settings = _.map(g_settings, function (val, key) {
@@ -824,7 +863,11 @@ function drawSurface(dcel) {
   edgeVertices.enter()
     .append("circle")
     .attr("class", "gvd-edge-vertex")
-    .attr("id", (d,i) => `edge-vertex-${i}`)
+    .attr("id", (d,i) => {
+      if (d.id) return getEdgeVertexId(d.id);
+      d.id = getEdgeVertexId(g_edgeVtxId++);
+      return d.id;
+    })
     .attr("cx", d => xRev(d.point[0]))
     .attr("cy", d => yRev(d.point[1]))
     .attr("r", g_siteRadius)

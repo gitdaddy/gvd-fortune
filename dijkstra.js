@@ -91,15 +91,29 @@ function highlightPath(oEdge, color) {
   g_currentHighlightedPaths.push(getEdgeId(oEdge));
   var path = oEdge.path;
 
+  var minR = 100;
+  var maxR = -100;
+  var minId, maxId;
   while(!_.isUndefined(path) && path.length != 0) {
     var selected = d3.select(`#${path}`);
     selected.style('stroke', color);
     selected.style("stroke-width", g_surfaceHighlightWidth);
     g_currentHighlightedPaths.push(path);
     selected.each(function(d) {
+      if (d.destVertex.optR) {
+        if (d.destVertex.optR > maxR) {
+          maxR = d.destVertex.optR;
+          maxId = getEdgeVertexId(d.destVertex.id);
+        }
+        if (d.destVertex.optR < minR) {
+          minR = d.destVertex.optR;
+          minId = getEdgeVertexId(d.destVertex.id);
+        }
+      }
       path = d.path;
     });
   }
+  return {min: minR, minId: minId, max: maxR, maxId: maxId};
 }
 
 function unHighlightPaths() {

@@ -3,6 +3,7 @@
 //---------------------------------------------------------------------------
 
 var nodeId = 0;
+var g_edgeVtxId = 1;
 
 var ArcNode = function (site) {
   this.site = site;
@@ -201,19 +202,22 @@ Object.defineProperty(EdgeNode.prototype, "isGeneralSurface", {
   },
 });
 
-EdgeNode.prototype.updateEdge = function (vertex, dcel, optNeighborEdges = [], optEndingEdges = []) {
+EdgeNode.prototype.updateEdge = function (vertex, dcel, optNeighborEdges = [], optEndingEdges = [], optR = undefined) {
   this.dcelEdge = dcel.makeEdge();
   this.dcelEdge.origin.point = vertex;
+  this.dcelEdge.origin.optR = optR;
+  this.dcelEdge.origin.id = g_edgeVtxId++;
   if (optEndingEdges.length > 0) {
 
     // All of the nodes share a reference to the connectedEdges array
     if (optEndingEdges[1]) optEndingEdges[1].dest.connectedEdges = optEndingEdges[0].dest.connectedEdges;
     this.dcelEdge.origin.connectedEdges = optEndingEdges[0].dest.connectedEdges;
-    this.dcelEdge.origin.point = vertex;
     var sharedEdges = this.dcelEdge.origin.connectedEdges;
     _.each(optEndingEdges, function (e) {
       sharedEdges[getEdgeId(e)] = e;
       e.dest.point = vertex;
+      e.dest.optR = optR;
+      e.dest.id = g_edgeVtxId++;
       // set the edges origin with itself
       e.origin.connectedEdges[getEdgeId(e)] = e;
     });
