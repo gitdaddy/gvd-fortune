@@ -116,7 +116,7 @@ Beachline.prototype.add = function (eventPacket) {
 //------------------------------------------------------------
 // remove
 //------------------------------------------------------------
-Beachline.prototype.remove = function (arcNode, point, directrix, endingEdges) {
+Beachline.prototype.remove = function (arcNode, point, directrix, endingEdges, radius) {
   if (!arcNode.isArc) throw "Unexpected edge in remove";
 
   // debugging only
@@ -141,7 +141,7 @@ Beachline.prototype.remove = function (arcNode, point, directrix, endingEdges) {
   grandparent.setChild(sibling, parentSide);
   sibling.parent = grandparent;
 
-  newEdge.updateEdge(point, this.dcel, [], endingEdges);
+  newEdge.updateEdge(point, this.dcel, [], endingEdges, radius);
   if(arcNode.closeEvent)
     arcNode.closeEvent.live = false;
 

@@ -275,3 +275,17 @@ path.beachline {
 .tree-svg {
     height: inherit;
 }
+
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    width: 200;
+    height: 60px;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+}
+

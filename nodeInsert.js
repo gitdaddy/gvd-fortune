@@ -197,7 +197,7 @@ function generateSubTree(eventPacket, arcNode, dcel, optChild) {
       tree = insertEdge(arcNode, newEdge, arcNode.site, dcel);
     }
   } else if (eventPacket.type === PACKET_TYPE.PARENT) {
-    if (optChild && optChild.isV) {
+    if (optChild && optChild.isV && fastFloorEqual(eventPacket.site, optChild.site.b)) {
       // if (!optChild.isV) throw 'Invalid insert operation';
       var childArcNode = new ArcNode(eventPacket.child);
       tree = splitArcNode(optChild, arcNode, dcel, nodesToClose);
