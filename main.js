@@ -384,3 +384,25 @@ function render(reorder = false) {
   enforceSettings();
   // runTests();
 }
+
+
+function snap() {
+  console.log('Taking SVG snapshot');
+  let XMLS = new XMLSerializer();
+  let svgtext = XMLS.serializeToString(document.getElementById('mainView'));
+
+  // console.log(svgtext);
+  let textarea = document.getElementById("snapshot-output");
+  // textarea.innerHTML = svgtext;
+  textarea.value = svgtext;
+
+  textarea.select();
+  document.execCommand('copy');
+
+  // const el = document.createElement('textarea');
+  // el.value = svgtext;
+  // document.body.appendChild(el);
+  // el.select();
+  // document.execCommand('copy');
+  // document.body.removeChild(el);
+}
