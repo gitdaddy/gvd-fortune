@@ -73,6 +73,13 @@ function shortestPath(gvdVertex) {
     _.each(nextLinks, edgeLink => {
       var destVertex = getDestVertex(currentVertex.point, edgeLink);
       var estimatedCost = dist(destVertex.point, currentVertex.point) + destEdge.tCost;
+      if (g_settings.setMinPathCrossSection.value && g_settings.setMinPathCrossSection.num > 0) {
+        if (destVertex.optR && destVertex.optR * 2.0 < g_settings.setMinPathCrossSection.num) {
+          // we cant take this route
+          estimatedCost += 10000;
+          edgeLink.tCost = 20000;
+        }
+      }
       if (!edgeLink.tCost || estimatedCost < edgeLink.tCost) {
         edgeLink.tCost = estimatedCost;
         edgeLink.path = getEdgeId(destEdge);
@@ -91,8 +98,8 @@ function highlightPath(oEdge, color) {
   g_currentHighlightedPaths.push(getEdgeId(oEdge));
   var path = oEdge.path;
 
-  var minR = 100;
-  var maxR = -100;
+  var minD = 100.0;
+  var maxD = -100.0;
   var minId, maxId;
   while(!_.isUndefined(path) && path.length != 0) {
     var selected = d3.select(`#${path}`);
@@ -101,19 +108,20 @@ function highlightPath(oEdge, color) {
     g_currentHighlightedPaths.push(path);
     selected.each(function(d) {
       if (d.destVertex.optR) {
-        if (d.destVertex.optR > maxR) {
-          maxR = d.destVertex.optR;
+        var dVal = d.destVertex.optR * 2.0;
+        if (dVal > maxD) {
+          maxD = dVal;
           maxId = getEdgeVertexId(d.destVertex.id);
         }
-        if (d.destVertex.optR < minR) {
-          minR = d.destVertex.optR;
+        if (dVal < minD) {
+          minD = dVal;
           minId = getEdgeVertexId(d.destVertex.id);
         }
       }
       path = d.path;
     });
   }
-  return {min: minR, minId: minId, max: maxR, maxId: maxId};
+  return {min: minD, minId: minId, max: maxD, maxId: maxId};
 }
 
 function unHighlightPaths() {

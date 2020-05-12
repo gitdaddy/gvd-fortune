@@ -73,26 +73,37 @@ let g_settings = {
   showObjSeg: {label: "Show object segments", value: true},
   showMedial: {label: "Show Medial Axis", value: false},
   showDebugObjs: {label: "Show Debug Input", value: false}, // debugging only
-  showTree: {label: "Show Tree", value: false},
-  showBeachLine: {label: "Show beachline", value: true},
-  showOverview: {label: "Show Overview", value: false}
+  showTree: {label: "Show Beach Line Tree", value: false},
+  showBeachLine: {label: "Show Beach Line", value: true},
+  setMinPathCrossSection: {label: "Set Min Path Cross Section", value: false, num: undefined},
+  // showOverview: {label: "Show Overview", value: false}
 };
 
 let g_treeId = "#treeTagId";
 
 // debugging only
 function updateDebugVars() {
-  var p = document.getElementsByName("xIncVal")[0].valueAsNumber;
-  g_xInc = _.isNaN(p) ? g_xInc : p;
-  var i = document.getElementsByName("incVal")[0].valueAsNumber;
-  g_sInc = _.isNaN(i) ? g_sInc : i;
 
-  g_debugIdLeft = document.getElementsByName("leftId")[0].valueAsNumber;
-  localStorage.g_debugIdLeft = g_debugIdLeft;
-  g_debugIdMiddle = document.getElementsByName("middleId")[0].valueAsNumber;
-  localStorage.g_debugIdMiddle = g_debugIdMiddle;
-  g_debugIdRight = document.getElementsByName("rightId")[0].valueAsNumber;
-  localStorage.g_debugIdRight = g_debugIdRight;
+  if (g_settings.showDebugObjs) {
+    var p = document.getElementsByName("xIncVal")[0].valueAsNumber;
+    g_xInc = _.isNaN(p) ? g_xInc : p;
+    var i = document.getElementsByName("incVal")[0].valueAsNumber;
+    g_sInc = _.isNaN(i) ? g_sInc : i;
+  
+    g_debugIdLeft = document.getElementsByName("leftId")[0].valueAsNumber;
+    localStorage.g_debugIdLeft = g_debugIdLeft;
+    g_debugIdMiddle = document.getElementsByName("middleId")[0].valueAsNumber;
+    localStorage.g_debugIdMiddle = g_debugIdMiddle;
+    g_debugIdRight = document.getElementsByName("rightId")[0].valueAsNumber;
+    localStorage.g_debugIdRight = g_debugIdRight;
+  }
+
+  if (g_settings.setMinPathCrossSection) {
+    // min cross section
+    var minC = document.getElementsByName("minCrossSection")[0].valueAsNumber;
+    g_settings.setMinPathCrossSection.num = minC;
+    localStorage.minC = minC;
+  }
 }
 
 function setSweepline(d) {

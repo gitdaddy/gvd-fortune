@@ -79,8 +79,8 @@ function onEdgeVertexClick(d, i) {
   d3.event.stopPropagation();
 
   if (g_pathStartElemIdx) {
-    d3.select('#' + getEdgeVertexId(g_pathStartElemIdx))
-      .style("fill", g_edgeColors[3]);
+    var prev = d3.select('#' + getEdgeVertexId(g_pathStartElemIdx));
+    prev.style("fill", g_edgeColors[3]);
   }
   this.style["fill"] = g_edgeColors[1];
   g_pathStartElemIdx = i;
@@ -117,7 +117,15 @@ function onEdgeVertexMouseOver(d, i) {
       // maxVtx.attr("r", g_siteRadius * 3)
       // maxVtx.style("fill", g_edgeColors[1]);
 
-      var ttMsg = "<span>Cross Section: <br> Max: " + radiusData.max + "<br>" + "Min: " + radiusData.min + "<span>";
+      var ttMsg = "<span>Cross Section: <br> Max: " + radiusData.max.toFixed(5) + 
+        "<br>" + "Min: " + radiusData.min.toFixed(5) + "<span>";
+
+      if (g_settings.setMinPathCrossSection.value && g_settings.setMinPathCrossSection.num > 0.0) {
+        var val = g_settings.setMinPathCrossSection.num; 
+        ttMsg = "<span>Cross Section: <br> Max: " + radiusData.max.toFixed(5) + 
+        "<br> Min: " + radiusData.min.toFixed(5) + "<br> Path restricted to min diameter of: " + val + "<span>";
+      }
+
       var tt = d3.select("#tool-tip-a");
       tt.transition().duration(200).style("opacity", .9);
       tt.html(ttMsg).style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px");
@@ -525,6 +533,13 @@ function enforceSettings() {
   .selectAll(".beach-v")
   .style("stroke-width", g_settings.showBeachLine.value ? g_isoEdgeWidth : 0);
   ;
+
+  // if min cross section
+  if (g_settings.setMinPathCrossSection.value) {
+    d3.selectAll(".min-cross-inputs").style("visibility", null);
+  } else {
+    d3.selectAll(".min-cross-inputs").style("visibility", "hidden");
+  }
 }
 
 function onSettingChecked(event) {
@@ -621,12 +636,6 @@ function drawDebugObjs(objs) {
     return o instanceof Line;
   });
 
-  // TODO REMOVE
-  if (lines.length > 1) {
-    lines[0].p2 = negate(lines[0].p2);
-    lines[1].p2 = intersectLines(lines[0].p1, lines[0].p2, lines[1].p1, lines[1].p2);
-  }
-
   let selB = d3.select("#gvd")
   .selectAll(".debug-line")
   .data(lines);
@@ -677,6 +686,7 @@ function drawDebugObjs(objs) {
     .attr("vector-effect", "non-scaling-stroke")
     .merge(debugSelectionPara)
     .style("stroke-width", g_isoEdgeWidth * 5)
+    .style("stroke", d3.schemeCategory10[6])
     .attr("d", p => line(p.drawPoints))
     .attr("transform", p => p.transform)
     .attr('visibility', g_settings.showDebugObjs.value ? null : 'hidden')
@@ -695,7 +705,7 @@ function drawDebugObjs(objs) {
   ptsSelection.enter()
     .append("circle")
     .attr("class", "debug-point")
-    .attr("r", g_siteRadius * 2)
+    .attr("r", g_siteRadius)
     .merge(ptsSelection)
     .attr("cx", p => xRev(p[0]))
     .attr("cy", p => yRev(p[1]))
@@ -763,6 +773,10 @@ function getSurfaceClass(onGvd) {
   return onGvd ? "gvd-surface" : "gvd-iso-surface";
 }
 
+function getGVDStroke() {
+  return "black";
+}
+
 function getSurfaceParabolaClass(onGvd) {
   return onGvd ? "gvd-surface-parabola" : "gvd-iso-surface-parabola";
 }
@@ -825,6 +839,7 @@ function drawSurface(dcel) {
     .attr("id", d => getEdgeId(d))
     .merge(d3generalEdges)
     .style("stroke-width", e => getSurfaceWidth(e.splitSite))
+    .style("stroke", getGVDStroke())
     .attr("d", p => line(p.drawPoints))
     .attr("transform", p => p.transform)
   ;
@@ -844,6 +859,7 @@ function drawSurface(dcel) {
     .attr('x2', e => xRev(e.dest.point[0]))
     .attr('y2', e => yRev(e.dest.point[1]))
     .style("stroke-width", e => getSurfaceWidth(e.splitSite))
+    .style("stroke", getGVDStroke())
   ;
 
   d3.select('#gvd').selectAll(".gvd-edge-vertex").remove();
@@ -1331,6 +1347,7 @@ function renderData(sites, edges, beachline, closeEvents) {
         // .attr("id", d => )
         .merge(d3generalEdges)
         .style("stroke-width", getSurfaceWidth(true))
+        .style("stroke", getGVDStroke())
         .attr("d", d => line(d.drawPoints))
         // .attr("transform", p => p.transform)
       ;
@@ -1349,6 +1366,7 @@ function renderData(sites, edges, beachline, closeEvents) {
         .attr('x2', e => xRev(e.dest.point[0]))
         .attr('y2', e => yRev(e.dest.point[1]))
         .style("stroke-width", e => getSurfaceWidth(true))
+        .style("stroke", getGVDStroke())
       ;
     }
 

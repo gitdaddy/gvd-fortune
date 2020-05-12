@@ -138,11 +138,13 @@ line#sweepline {
 
 .debug-line {
     stroke: blue;
+    fill: none;
     /* stroke-dasharray: 3, 3; */
 }
 
 .debug-parabola {
-    stroke: rgb(63, 226, 63);
+    /* stroke: rgb(63, 226, 63); */
+    fill: none;
     /* stroke-dasharray: 3, 3; */
 }
 
@@ -258,6 +260,11 @@ path.beachline {
     text-align: right;
 }
 
+.min-cross-inputs {
+    width: 50%;
+    text-align: right;
+}
+
 .debug-input {
     padding: 5px;
 }
@@ -279,10 +286,10 @@ path.beachline {
 div.tooltip {
     position: absolute;
     text-align: center;
-    width: 200;
-    height: 60px;
+    width: 320;
+    height: 95px;
     padding: 2px;
-    font: 12px sans-serif;
+    font: 20px sans-serif;
     background: lightsteelblue;
     border: 0px;
     border-radius: 8px;

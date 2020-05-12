@@ -62,18 +62,22 @@
       <div id="gvd-settings" class="gvd-switches">
       </div>
       <div class="side-panel-view">
-        <div class="debug-inputs">
+        <div class="debug-inputs" style="visibility:hidden">
           <div>
             <div class="debug-input">Draw Inc:<input type="number" name="xIncVal"></div>
             <div class="debug-input">Shift Inc:<input type="number" name="incVal"></div>
           </div>
           <br>
-          <div class="debug-inputs">
+          <div class="debug-inputs" style="visibility:hidden">
             <div class="debug-input">Left Id:<input type="number" name="leftId"></div>
             <div class="debug-input">Middle Id:<input type="number" name="middleId"></div>
             <div class="debug-input">Right Id:<input type="number" name="rightId"></div>
             <button onclick="updateDebugVars()">Update</button>
           </div>
+        </div>
+        <div class="min-cross-inputs" style="visibility:hidden">
+          <div>Set Min Path Cross Section Diameter:<input type="number" name="minCrossSection"></div>
+          <button onclick="updateDebugVars()">Update</button>
         </div>
         <!-- <div class="debug-events">
           <label>Events:</label>
