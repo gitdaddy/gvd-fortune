@@ -45,8 +45,9 @@ let g_datasetList = [
   {label:"RPG 4096", filePath: "./data/rpg_4096/files.txt"},
   {label:"RPG 8192", filePath: "./data/rpg_8192/files.txt"},
   {label:"RPG 16384", filePath: "./data/rpg_16384/files.txt"},
-  // {label:"RPG 32768", filePath: "./data/rpg_32768/files.txt"},
-  {label:"Data Testing", filePath: "./data/test/files.txt"}
+  {label:"Cluster 1024", filePath: "./data/rpg_cluster_1024/files.txt"},
+  {label:"Star 1024", filePath: "./data/rpg_star_1024/files.txt"},
+  {label:"Test Data", filePath: "./data/test/files.txt"}
  ];
 
 let closeEventPoints = [];
