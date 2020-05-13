@@ -296,3 +296,7 @@ div.tooltip {
     pointer-events: none;
 }
 
+div.custom-dataset-div {
+    width: 50%;
+    text-align: left;
+}

@@ -9,8 +9,14 @@ let g_vertexProcessing = 0;
 let g_addTime = 0;
 
 let g_setIdx = 0;
+/*
+ Custom set todo
+ - events
+ - store data
+ */
 
 let g_datasetList = [
+  {label:"Build Your Own", sanitize: true, customSet:true},
   {label:"Maze Dataset", sanitize: true, filePath: "./data/maze/files.txt"},
   {label:"100 Random Lines", num:100, filePath: "./data/random_100/files.txt"},
   {label:"500 Random Lines", num:500, filePath: "./data/random_500/files.txt"},
@@ -45,9 +51,8 @@ let g_datasetList = [
   {label:"RPG 4096", filePath: "./data/rpg_4096/files.txt"},
   {label:"RPG 8192", filePath: "./data/rpg_8192/files.txt"},
   {label:"RPG 16384", filePath: "./data/rpg_16384/files.txt"},
-  {label:"Cluster 1024", filePath: "./data/rpg_cluster_1024/files.txt"},
-  {label:"Star 1024", filePath: "./data/rpg_star_1024/files.txt"},
-  {label:"Test Data", filePath: "./data/test/files.txt"}
+  // {label:"RPG 32768", filePath: "./data/rpg_32768/files.txt"},
+  {label:"Data Testing", filePath: "./data/test/files.txt"}
  ];
 
 let closeEventPoints = [];
@@ -83,13 +88,12 @@ let g_treeId = "#treeTagId";
 
 // debugging only
 function updateDebugVars() {
-
   if (g_settings.showDebugObjs) {
     var p = document.getElementsByName("xIncVal")[0].valueAsNumber;
     g_xInc = _.isNaN(p) ? g_xInc : p;
     var i = document.getElementsByName("incVal")[0].valueAsNumber;
     g_sInc = _.isNaN(i) ? g_sInc : i;
-  
+
     g_debugIdLeft = document.getElementsByName("leftId")[0].valueAsNumber;
     localStorage.g_debugIdLeft = g_debugIdLeft;
     g_debugIdMiddle = document.getElementsByName("middleId")[0].valueAsNumber;
@@ -157,18 +161,14 @@ function keydown(event) {
     // Prevent scroll
     event.preventDefault();
     document.getElementById("sweeplineInput").value = g_sweepline.y.toFixed(10);
-
-    if (g_settings.Enable_C && g_settings.Enable_C.value)
-      sweeplineUpdate_C_addon(localStorage.setIdx);
-    else
-      render();
+    render();
   }
 }
 
 function init() {
   var s = getLocalSettings();
   if (s)
-    g_settings = s;
+    _.assign(g_settings, s);
 
   setExampleDataset();
   if (localStorage.sweepline && !_.isNaN(localStorage.sweepline)
@@ -195,81 +195,40 @@ function init() {
     g_setIdx = parseInt(localStorage.setIdx);
   }
   document.getElementById("dataset-select").selectedIndex = g_setIdx;
-  if (g_settings.Enable_C && g_settings.Enable_C.value)
-    datasetChange_C_addon(g_setIdx);
-  else
-    datasetChange(g_setIdx);
-}
-
-function datasetChange_C_addon(idx) {
-  g_datasetList[idx].c_init = true;
-  localStorage.setIdx = idx;
-  var query = '/gvd_cpp/?value=' + g_datasetList[idx].filePath + "&sweepline=" + g_sweepline.y.toFixed(10);
-  $.get(query).then(function (json) {
-    if (json.err && json.err.length > 0) {
-      console.error("Server error: " + json.err);
-      return;
-    }
-
-    if (json.msg && json.msg.length > 0) {
-      console.log("Server message: " + json.msg);
-    }
-
-    var sites = JSON.parse(json.sites);
-    var edges = JSON.parse(json.edges);
-    var beachline = JSON.parse(json.beachline);
-    var closeEvents = JSON.parse(json.closeEvents);
-
-    renderData(sites, edges, beachline, closeEvents);
-  });
-}
-
-function sweeplineUpdate_C_addon(idx) {
-  if (!g_datasetList[idx].c_init){
-    datasetChange_C_addon(idx);
-    return;
-  }
-
-  localStorage.setIdx = idx;
-  drawSweepline(g_sweepline);
-  var query = '/gvd_cpp_inc/?value=' + g_datasetList[idx].filePath + "&sweepline=" + g_sweepline.y.toFixed(10);
-  $.get(query).then(function (json) {
-    if (json.err && json.err.length > 0) {
-      console.error("Server error: " + json.err);
-      return;
-    }
-
-    if (json.msg && json.msg.length > 0) {
-      console.log("Server message: " + json.msg);
-    }
-    var edges = JSON.parse(json.edges);
-    var beachline = JSON.parse(json.beachline);
-    var closeEvents = JSON.parse(json.closeEvents);
-    renderData([], edges, beachline, closeEvents);
-    enforceSettings();
-  });
+  datasetChange(g_setIdx);
 }
 
 function datasetChange(idx) {
   g_setIdx = idx;
-  if (!g_datasetList[g_setIdx].data) {
+
+  if (g_datasetList[g_setIdx].customSet) {
+    resetView();
+    clearSurface();
+    clearSites();
+    clearBeachLine();
+    enforceSettings();
+  } else if (!g_datasetList[g_setIdx].data) {
     processNewDataset();
   } else {
-    var segments = [];
-    var points = [];
-    g_datasetList[g_setIdx].data.forEach(function(poly) {
-      segments = segments.concat(poly.segments);
-      points = points.concat(poly.points);
-    });
-
-    drawSites(points);
-    drawSegments(segments);
-
-    render();
-    updateOverview();
+    datasetUpdate();
   }
 
   localStorage.setIdx = g_setIdx;
+}
+
+function datasetUpdate() {
+  var segments = [];
+  var points = [];
+  g_datasetList[g_setIdx].data.forEach(function(poly) {
+    segments = segments.concat(poly.segments);
+    points = points.concat(poly.points);
+  });
+
+  drawSites(points);
+  drawSegments(segments);
+
+  render();
+  updateOverview();
 }
 
 function fortune(reorder) {
@@ -365,34 +324,35 @@ function fortune(reorder) {
 
 function moveSweepline(y) {
   setSweepline(y);
-  if (g_settings.Enable_C && g_settings.Enable_C.value)
-  sweeplineUpdate_C_addon(localStorage.setIdx);
-  else
-    render();
+  render();
 }
 
 function render(reorder = false) {
   clearSurface();
-  g_debugObjs = [];
-  var t0 = performance.now();
-  var beachline = fortune(reorder);
-  var t1 = performance.now();
-  var processTime = t1 - t0;
-  console.log("Process Time:" + processTime.toFixed(6) + "(ms)");
 
-  var t2 = performance.now();
-  drawBeachline(beachline, g_sweepline.y);
-  drawCloseEvents(closeEventPoints);
-  drawSweepline(g_sweepline);
-  drawSurface(dcel);
-  var t3 = performance.now();
-  var drawTime = t3 - t2;
-  console.log("Draw Time:" + drawTime.toFixed(6) + "(ms)");
+  if (g_datasetList[g_setIdx].data) {
+    g_debugObjs = [];
+    var t0 = performance.now();
+    reorder = reorder || g_datasetList[g_setIdx].customSet;
+    var beachline = fortune(reorder);
+    var t1 = performance.now();
+    var processTime = t1 - t0;
+    console.log("Process Time:" + processTime.toFixed(6) + "(ms)");
 
-  if (g_settings.showTree.value){
-    showTree(beachline.root);
+    var t2 = performance.now();
+    drawBeachline(beachline, g_sweepline.y);
+    drawCloseEvents(closeEventPoints);
+    drawSurface(dcel);
+    var t3 = performance.now();
+    var drawTime = t3 - t2;
+    console.log("Draw Time:" + drawTime.toFixed(6) + "(ms)");
+
+    if (g_settings.showTree.value){
+      showTree(beachline.root);
+    }
   }
 
+  drawSweepline(g_sweepline);
   enforceSettings();
   // runTests();
 }

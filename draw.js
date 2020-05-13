@@ -42,12 +42,12 @@ let yRevOrigin = d3.scaleLinear()
     .range([0, height]);
 
 let yToGVD = d3.scaleLinear()
-    .domain([0, height])
-    .range([1.1, -1.1]);
+    .domain([0, height + margin.bottom + margin.top])
+    .range([1.22, -1.22]);
 
 let xToGVD = d3.scaleLinear()
-    .domain([0, width])
-    .range([-1.1, 1.1]);
+    .domain([0, width + margin.left + margin.right])
+    .range([-1.22, 1.22]);
 
 let rScale = d3.scaleLinear()
     .domain([0, 2.2])
@@ -117,12 +117,12 @@ function onEdgeVertexMouseOver(d, i) {
       // maxVtx.attr("r", g_siteRadius * 3)
       // maxVtx.style("fill", g_edgeColors[1]);
 
-      var ttMsg = "<span>Cross Section: <br> Max: " + radiusData.max.toFixed(5) + 
+      var ttMsg = "<span>Cross Section: <br> Max: " + radiusData.max.toFixed(5) +
         "<br>" + "Min: " + radiusData.min.toFixed(5) + "<span>";
 
       if (g_settings.setMinPathCrossSection.value && g_settings.setMinPathCrossSection.num > 0.0) {
-        var val = g_settings.setMinPathCrossSection.num; 
-        ttMsg = "<span>Cross Section: <br> Max: " + radiusData.max.toFixed(5) + 
+        var val = g_settings.setMinPathCrossSection.num;
+        ttMsg = "<span>Cross Section: <br> Max: " + radiusData.max.toFixed(5) +
         "<br> Min: " + radiusData.min.toFixed(5) + "<br> Path restricted to min diameter of: " + val + "<span>";
       }
 
@@ -198,6 +198,7 @@ function drawInit(sweepline, settings) {
   svg = d3.select('#mainView')
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom)
+  .on("click", customSetClick)
   .style("pointer-events", "mousedown, dbclick, wheel.zoom")
   .call(zoom);
 
@@ -536,9 +537,16 @@ function enforceSettings() {
 
   // if min cross section
   if (g_settings.setMinPathCrossSection.value) {
-    d3.selectAll(".min-cross-inputs").style("visibility", null);
+    d3.selectAll(".min-cross-inputs").style("visibility", null).style("height", "100px");
   } else {
-    d3.selectAll(".min-cross-inputs").style("visibility", "hidden");
+    d3.selectAll(".min-cross-inputs").style("visibility", "hidden").style("height", "0px");
+  }
+
+  // custom dataset
+  if (g_datasetList[g_setIdx].customSet) {
+    d3.selectAll(".custom-dataset-div").style("visibility", null).style("height", "50px");
+  } else {
+    d3.selectAll(".custom-dataset-div").style("visibility", "hidden").style("height", "0px");
   }
 }
 
@@ -580,6 +588,30 @@ function clearSurface() {
 
   d3.select('#gvd')
   .selectAll('.gvd-iso-surface')
+  .remove()
+  ;
+}
+
+function clearSites() {
+  d3.select("#gvd")
+  .selectAll(".point-site")
+  .remove()
+  ;
+
+  d3.select("#gvd")
+  .selectAll(".segment-site")
+  .remove()
+  ;
+}
+
+function clearBeachLine() {
+  d3.select("#gvd")
+  .selectAll(".beach-v")
+  .remove()
+  ;
+
+  d3.select("#gvd")
+  .selectAll(".beach-parabola")
   .remove()
   ;
 }
@@ -1239,6 +1271,9 @@ function rescaleView(newX, newY) {
 }
 
 function zoomed() {
+  // zoom disabled for the custom set
+  if (g_datasetList[g_setIdx].customSet) return;
+
   g_zoomed = true;
 
   // console.log(`Zoom scale: ${d3.event.transform.k}, x: ${d3.event.transform.x}, y:${d3.event.transform.y}`);

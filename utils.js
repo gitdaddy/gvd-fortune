@@ -110,6 +110,7 @@ function sanitizePointSiteData(polygons) {
 }
 
 function processNewDataset() {
+  if (g_datasetList[g_setIdx].customSet) return;
   g_datasetList[g_setIdx].isMap ?
     readMapData(g_datasetList[g_setIdx].filePath) :
     readDataset();
@@ -153,8 +154,8 @@ function sortedInsertion(queue, newEvent) {
 // Create the queue for the current dataset
 function createDataQueue(reorder) {
   if (!reorder) {
-    if (g_queue[localStorage.setIdx.toString()])
-      return [...g_queue[localStorage.setIdx.toString()]];
+    if (g_queue[g_setIdx])
+      return [...g_queue[g_setIdx]];
   }
   var rslt = [];
   var points = [];
@@ -186,7 +187,7 @@ function createDataQueue(reorder) {
   });
 
   // create a clone of the result to access again
-  g_queue[localStorage.setIdx.toString()] = [...rslt];
+  g_queue[g_setIdx] = [...rslt];
   return rslt;
 }
 
