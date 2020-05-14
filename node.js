@@ -181,11 +181,11 @@ EdgeNode.prototype.toString = function () {
   We return the half edge either right or left
   in parametric form
  */
-EdgeNode.prototype.eLeft = function {
+EdgeNode.prototype.eLeft = function() {
   console.log("Not implemented yet");
 }
 
-EdgeNode.prototype.eRight = function {
+EdgeNode.prototype.eRight = function() {
   console.log("Not implemented yet");
 }
 

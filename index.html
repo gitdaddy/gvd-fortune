@@ -2,6 +2,8 @@
 <html>
 <head>
   <link rel="stylesheet" href="style.css">
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
+  <script src="https://kit.fontawesome.com/a076d05399.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta charset="UTF-8">
 
@@ -38,28 +40,32 @@
 </head>
 
 <body onload="init()">
-  <div class="tooltip" id="tool-tip-a" style="opacity: 0.0; left: 456px; top: 589px;">HELLO WORLD</div>
+  <div class="tooltip" id="tool-tip-a" style="opacity: 0.0; left: 456px; top: 589px;"></div>
   <div class="row">
     <svg id="mainView" class="main-view-center"></svg>
     <div class="settings-col">
+      <div class="user-controls">
+        <div>User Controls: </div>
+        <span>Use up and down arrow keys <i class="fas fa-arrows-alt-v"></i> to move the sweep line</span>
+        <div>Hold the shift key or ctrl key for smaller or larger movement </div>
+      </div>
       <span class="title-group">
-        <!-- Dataset: <select id="dataset-select" onchange="datasetChange_C_addon(this.selectedIndex)"></select> -->
         Dataset: <select id="dataset-select" onchange="datasetChange(this.selectedIndex)"></select>
       </span>
       <div class="title-group">
-        y value=<input type="number" id="sweeplineInput"></input>
+        sweep line y value=<input type="number" id="sweeplineInput"></input>
         <button onclick="updateSweepline()">Update</button>
       </div>
-      <span class="title-group">
+      <div class="title-group">
         <button onclick="resetView()">Reset View</button>
-      </span>
+      </div>
       <!-- <span class="title-group">
         <button onclick="callServer()">TMP Server</button>
       </span> -->
       <!-- <span class="title-group">
         <button onclick="startVideo()">Video</button>
       </span> -->
-      <button type="button" class="collapsible">Open Settings</button>
+      <button type="button" class="collapsible"> <i class="fas fa-cog"></i> Open Settings</button>
       <div id="gvd-settings" class="gvd-switches">
       </div>
       <div class="side-panel-view">

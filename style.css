@@ -252,6 +252,12 @@ path.beachline {
 
 .title-group {
     padding: 10px;
+    /* text-align: center; */
+    width: 100%;
+    font: 20px sans-serif;
+    /* background: rgb(72, 164, 255); */
+    border: 2px;
+    border-radius: 8px;
 }
 
 .debug-inputs {
@@ -263,6 +269,13 @@ path.beachline {
 .min-cross-inputs {
     width: 50%;
     text-align: right;
+    padding: 10px;
+    /* text-align: center; */
+    width: 100%;
+    font: 20px sans-serif;
+    /* background: rgb(72, 164, 255); */
+    border: 2px;
+    border-radius: 8px;
 }
 
 .debug-input {
@@ -299,4 +312,15 @@ div.tooltip {
 div.custom-dataset-div {
     width: 50%;
     text-align: left;
+}
+
+.user-controls {
+    text-align: center;
+    width: 100%;
+    padding: 10px;
+    font: 20px sans-serif;
+    background: rgb(72, 164, 255);
+    border: 2px;
+    border-radius: 8px;
+    pointer-events: none;
 }
