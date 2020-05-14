@@ -176,6 +176,19 @@ EdgeNode.prototype.toString = function () {
   return `Type: edge<br>`;
 }
 
+/* Left and right half edge query functions
+  From the edge origin point: this.dcelEdge.origin.point
+  We return the half edge either right or left
+  in parametric form
+ */
+EdgeNode.prototype.eLeft = function {
+  console.log("Not implemented yet");
+}
+
+EdgeNode.prototype.eRight = function {
+  console.log("Not implemented yet");
+}
+
 Object.defineProperty(EdgeNode.prototype, "id", {
   configurable: true,
   enumerable: true,

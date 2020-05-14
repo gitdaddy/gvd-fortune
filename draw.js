@@ -123,7 +123,7 @@ function onEdgeVertexMouseOver(d, i) {
       if (g_settings.setMinPathCrossSection.value && g_settings.setMinPathCrossSection.num > 0.0) {
         var val = g_settings.setMinPathCrossSection.num;
         ttMsg = "<span>Cross Section: <br> Max: " + radiusData.max.toFixed(5) +
-        "<br> Min: " + radiusData.min.toFixed(5) + "<br> Path restricted to min diameter of: " + val + "<span>";
+        "<br> Min: " + radiusData.min.toFixed(5) + "<br> Path minimum diameter: " + val + "<span>";
       }
 
       var tt = d3.select("#tool-tip-a");
@@ -588,6 +588,16 @@ function clearSurface() {
 
   d3.select('#gvd')
   .selectAll('.gvd-iso-surface')
+  .remove()
+  ;
+
+  d3.select('#gvd')
+  .selectAll('.gvd-edge-vertex')
+  .remove()
+  ;
+
+  d3.select('#gvd')
+  .selectAll('.close-event')
   .remove()
   ;
 }
