@@ -109,14 +109,14 @@ function chooseClosePoint(left, node, right, points, directrix) {
 //------------------------------------------------------------
 //  createCloseEventFortune
 //------------------------------------------------------------
-function createCloseEventFortune(arcNode, directrix) {
+function createCloseEventFortune(arcNode) {
   // TODO implement
   var e0 = arcNode.prevEdge();
   var e1 = arcNode.nextEdge();
-  // var halfEdgeLeft = e0.getRight();
-  // var halfEdgeRight = e1.getLeft();
+  var halfEdgeLeft = e0.halfEdge;
+  var halfEdgeRight = e1.halfEdge;
   // var optIntersect = halfEdgeIntersect(halfEdgeLeft, halfEdgeRight);
-  
+
   // if optIntersect create and return close event
   // otherwise return null
 }

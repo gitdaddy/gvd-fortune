@@ -12,8 +12,8 @@ var PACKET_TYPE = {
 
 // Logic in the remove method depends on these two values
 // being 0 and 1.
-const LEFT_CHILD = 0;
-const RIGHT_CHILD = 1;
+const LEFT_SIDE = 0;
+const RIGHT_SIDE = 1;
 const UNDEFINED_SIDE = 2;
 
 
@@ -80,7 +80,7 @@ Beachline.prototype.add = function (eventPacket) {
   // site intersects with
   var aStart = performance.now();
   var x = parent.intersection(directrix)[0];
-  side = (eventPacket.site[0] < x) ? LEFT_CHILD : RIGHT_CHILD;
+  side = (eventPacket.site[0] < x) ? LEFT_SIDE : RIGHT_SIDE;
   child = parent.getChild(side);
   while (child.isEdge) {
     parent = child;
@@ -93,7 +93,7 @@ Beachline.prototype.add = function (eventPacket) {
     // if (eventPacket.site[0] == x) {
     //   console.log("Site and intersect values equal:" + x + " for intersection: " + parent.id);
     // }
-    side = (eventPacket.site[0] < x) ? LEFT_CHILD : RIGHT_CHILD;
+    side = (eventPacket.site[0] < x) ? LEFT_SIDE : RIGHT_SIDE;
     child = parent.getChild(side);
   }
 
@@ -128,12 +128,12 @@ Beachline.prototype.remove = function (arcNode, point, directrix, endingEdges, r
 
   var parent = arcNode.parent;
   var grandparent = parent.parent;
-  var side = (parent.left == arcNode) ? LEFT_CHILD : RIGHT_CHILD;
-  var parentSide = (grandparent.left == parent) ? LEFT_CHILD : RIGHT_CHILD;
+  var side = (parent.left == arcNode) ? LEFT_SIDE : RIGHT_SIDE;
+  var parentSide = (grandparent.left == parent) ? LEFT_SIDE : RIGHT_SIDE;
 
   // Get newEdge (an EdgeNode) before updating children etc.
   var newEdge = arcNode.nextEdge();
-  if (side == LEFT_CHILD) {
+  if (side == LEFT_SIDE) {
     newEdge = arcNode.prevEdge();
   }
 
@@ -141,7 +141,7 @@ Beachline.prototype.remove = function (arcNode, point, directrix, endingEdges, r
   grandparent.setChild(sibling, parentSide);
   sibling.parent = grandparent;
 
-  newEdge.updateEdge(point, this.dcel, [], endingEdges, radius);
+  newEdge.updateEdge(point, this.dcel, side, [], endingEdges, radius); // TODO report correct side
   if(arcNode.closeEvent)
     arcNode.closeEvent.live = false;
 

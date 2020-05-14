@@ -46,7 +46,7 @@ function isClosing(child, p) {
 }
 
 // function to create an edge node
-function createNewEdge(left, right, vertex, dcel) {
+function createNewEdge(left, right, vertex, dcel, side) {
   if (left.closeEvent) {
     left.closeEvent.live = false;
   }
@@ -54,7 +54,7 @@ function createNewEdge(left, right, vertex, dcel) {
     right.closeEvent.live = false;
   }
 
-  return new EdgeNode(left, right, vertex, dcel);
+  return new EdgeNode(left, right, vertex, dcel, side);
 }
 
 //------------------------------------------------------------
@@ -67,9 +67,9 @@ function createNewEdge(left, right, vertex, dcel) {
 //------------------------------------------------------------
 function closePointSplit(left, right, dcel) {
   if (left.isV && right.isParabola) {
-    return new EdgeNode(left, right, right.site, dcel);
+    return new EdgeNode(left, right, right.site, dcel, LEFT_SIDE);
   } else if (left.isParabola && right.isV) {
-    return new EdgeNode(left, right, left.site, dcel);
+    return new EdgeNode(left, right, left.site, dcel, RIGHT_SIDE);
   } else {
     throw 'invalid close joint split';
   }
@@ -111,7 +111,7 @@ function splitArcNode(toSplit, node, dcel, nodesToClose) {
   nodesToClose.push(left);
   nodesToClose.push(right);
   return new EdgeNode(
-      left, new EdgeNode(node, right, vertex, dcel), vertex, dcel);
+      left, new EdgeNode(node, right, vertex, dcel, RIGHT_SIDE), vertex, dcel, LEFT_SIDE);
 }
 
 function insertEdge(toSplit, edge, vertex, dcel, optNodesToClose) {
@@ -127,7 +127,7 @@ function insertEdge(toSplit, edge, vertex, dcel, optNodesToClose) {
     optNodesToClose.push(right);
   }
   return new EdgeNode(
-      left, new EdgeNode(edge, right, vertex, dcel), vertex, dcel);
+      left, new EdgeNode(edge, right, vertex, dcel, RIGHT_SIDE), vertex, dcel, LEFT_SIDE);
 }
 
 // Child is guaranteed to be the parabola arc
@@ -137,13 +137,13 @@ function VRegularInsert(arcNode, childArcNode, dcel, parentV) {
     // // Set edge information since we are using a left joint split
     var nextEdge = arcNode.nextEdge();
     if (nextEdge) nextEdge.dcelEdge.generalEdge = false;
-    return createNewEdge(arcNode, childArcNode, childArcNode.site.a, dcel);
+    return createNewEdge(arcNode, childArcNode, childArcNode.site.a, dcel, LEFT_SIDE);
   } else {
     // // Set edge information since we are using a right joint split
     var prevEdge = arcNode.prevEdge();
     if (prevEdge) prevEdge.dcelEdge.generalEdge = false;
     // is a arc created by the right hull joint
-    return createNewEdge(childArcNode, arcNode, childArcNode.site.a, dcel);
+    return createNewEdge(childArcNode, arcNode, childArcNode.site.a, dcel, RIGHT_SIDE);
   }
 }
 
@@ -185,13 +185,13 @@ function generateSubTree(eventPacket, arcNode, dcel, optChild) {
     leftArcNode = new ArcNode(eventPacket.leftChild);
     rightArcNode = new ArcNode(eventPacket.rightChild);
     var newEdge = createNewEdge(
-        leftArcNode, rightArcNode, arcNode.site, dcel);
+        leftArcNode, rightArcNode, arcNode.site, dcel, UNDEFINED_SIDE);
     if (optChild) {
       tree = splitArcNode(optChild, arcNode, dcel, nodesToClose);
       var parent = arcNode.parent;
       var childEdge =
           insertEdge(arcNode, newEdge, arcNode.site, dcel, nodesToClose);
-      parent.setChild(childEdge, LEFT_CHILD);
+      parent.setChild(childEdge, LEFT_SIDE);
     }
     else {
       tree = insertEdge(arcNode, newEdge, arcNode.site, dcel);
@@ -203,13 +203,13 @@ function generateSubTree(eventPacket, arcNode, dcel, optChild) {
       tree = splitArcNode(optChild, arcNode, dcel, nodesToClose);
       var parent = arcNode.parent;
       var newEdge = VRegularInsert(arcNode, childArcNode, dcel, optChild);
-      parent.setChild(newEdge, LEFT_CHILD);
+      parent.setChild(newEdge, LEFT_SIDE);
     } else if (optChild) {
       tree = splitArcNode(optChild, arcNode, dcel, nodesToClose);
       var parent = arcNode.parent;
       var childArcNode = new ArcNode(eventPacket.child);
       var newEdge = splitArcNode(arcNode, childArcNode, dcel, nodesToClose);
-      parent.setChild(newEdge, LEFT_CHILD);
+      parent.setChild(newEdge, LEFT_SIDE);
     } else {
       // case where site is the root
       var childArcNode = new ArcNode(eventPacket.child);

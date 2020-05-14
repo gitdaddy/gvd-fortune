@@ -49,15 +49,13 @@
         <span>Use up and down arrow keys <i class="fas fa-arrows-alt-v"></i> to move the sweep line</span>
         <div>Hold the shift key or ctrl key for smaller or larger movement </div>
       </div>
-      <span class="title-group">
+      <div class="title-group">
         Dataset: <select id="dataset-select" onchange="datasetChange(this.selectedIndex)"></select>
-      </span>
+        <button onclick="resetView()">Reset Zoom</button>
+      </div>
       <div class="title-group">
         sweep line y value=<input type="number" id="sweeplineInput"></input>
         <button onclick="updateSweepline()">Update</button>
-      </div>
-      <div class="title-group">
-        <button onclick="resetView()">Reset View</button>
       </div>
       <!-- <span class="title-group">
         <button onclick="callServer()">TMP Server</button>

@@ -62,6 +62,9 @@ function highlight(d) {
     msg = msg + ` (${i[0].toFixed(1)}, ${i[1].toFixed(1)})`;
     msg = msg + ` id=${edge.id}`;
     setTreeDebug(msg);
+
+    console.log("Half edge:");
+    console.log(edge.halfEdge);
   }
 }
 
