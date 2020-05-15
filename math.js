@@ -16,6 +16,32 @@ function getEventY(event)
   throw "Undefined event Y";
 }
 
+function rayToRayIntersect(p1, v1, p2, v2) {
+  // a = p1, c = p2
+  // b = v1, d = v2
+  // L=a+t.b // t is the paramerter, a & b are vectors
+  // M=c+u.d //u is parameter, c & d are vectors
+  // M=L exist
+  // p1 + t * v1
+  // p2 + u * v2
+
+   // t=(dx(ay-cy) +dy(cx-ax))/(bx.dy-by.dx)
+   var a1 = v2[0] * (p1[1]-p2[1]);
+   var b1 = v2[1] * (p2[0]-p1[0]);
+   var c1 = v1[0]*v2[1] - v1[1]*v2[0];
+   if (c1 === 0.0) return null;
+   var t = (a1 + b1) / c1;
+
+  // u=(bx(cy-ay) +by(ax-cx))/(dx.by-dy.bx)
+  var a2 = v1[0] * (p2[1]-p1[1]);
+  var b2 = v1[1] * (p1[0]-p2[0]);
+  var c2 = v2[0]*v1[1] - v2[1]*v1[0];
+  if (c2 === 0.0) return null;
+  var u = (a2 + b2) / c2;
+  if (t < 0 || u < 0) return null;
+  return vec3(p1[0] + t*v1[0], p1[1] + t*v1[1], 0);
+}
+
 //------------------------------------------------------------
 // Segment "class"
 //------------------------------------------------------------

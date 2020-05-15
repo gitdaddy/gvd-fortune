@@ -6,7 +6,7 @@ var nodeId = 0;
 var g_edgeVtxId = 1;
 
 let HALF_PI = Math.PI / 2.0;
-let THREE_FORTHS_PI = 3.0 * Math.PI / 4.0;
+let THREE_HALFS_PI = 3.0 * Math.PI / 2.0;
 
 var ArcNode = function (site) {
   this.site = site;
@@ -184,16 +184,16 @@ function computeHalfEdgeStraightVector(line, side) {
   var pLower = sortedPoints[0];
   var pUpper = sortedPoints[1];
   var theta = Math.atan2(pUpper[1]-pLower[1], pUpper[0]-pLower[0]);
-  console.log("Theta:" + theta + " - in degrees: " + degrees(theta));
+  // console.log("Theta:" + theta + " - in degrees: " + degrees(theta));
   var beta = theta + Math.PI; // 180 degrees opposite
-  console.log("Beta:" + beta + " - in degrees: " + degrees(beta));
+  // console.log("Beta:" + beta + " - in degrees: " + degrees(beta));
 
   // in case the half edge is straight down
-  if (theta === HALF_PI || theta === THREE_FORTHS_PI) {
+  if (theta === HALF_PI || theta === THREE_HALFS_PI) {
     // straight down - there is no going up
     var v = vec3(0, -1.0, 0);
     return v;
-  } else if (theta > HALF_PI && theta < THREE_FORTHS_PI) {
+  } else if (theta > HALF_PI && theta < THREE_HALFS_PI) {
     // t - left, t + PI - right
     if (side === LEFT_SIDE) {
       return vec3(Math.cos(theta), Math.sin(theta), 0);
@@ -293,12 +293,12 @@ EdgeNode.prototype.updateEdge = function (vertex, dcel, halfEdgeSide, optNeighbo
   // TODO Compute the half edge data
   // p to p, v to v,
   // p to v, v to p
-
+  
   // if (prev.isV && next.isV) {
   //   if (connected(prev.site, next.site)) {
   //     var b = bisectSegments2(prev.site, next.site);
   //     if (b.length !== 1) throw "Invalid bisector";
-  //     this.halfEdge = {type: "vec", v: b[0].v, p: vertex};
+  //     this.halfEdge = {isVec:true, v: b[0].v, p: vertex};
   //     return;
   //   }
   //   //////////// disjoint segments
@@ -313,14 +313,14 @@ EdgeNode.prototype.updateEdge = function (vertex, dcel, halfEdgeSide, optNeighbo
   //   }
 
   //   var v = computeHalfEdgeStraightVector(line, halfEdgeSide);
-  //   this.halfEdge = {type: "vec", v: v, p: vertex};
+  //   this.halfEdge = {isVec: true, v: v, p: vertex};
   //   return;
   // }
 
   // if (prev.isParabola && next.isParabola) {
   //   var b = bisect(prev.site, next.site);
   //   var v = computeHalfEdgeStraightVector(b, halfEdgeSide);
-  //   this.halfEdge = {type: "vec", v: v, p: vertex};
+  //   this.halfEdge = {isVec: true, v: v, p: vertex};
   // }
 }
 

@@ -1,12 +1,14 @@
 // File handles close event logic
 
+let g_eventId = 0;
+
 //------------------------------------------------------------
 // CloseEvent
 //
 // y is where the event should occur, while point is where the
 // arcs will converge into a Voronoi vertex.
 //------------------------------------------------------------
-var CloseEvent = function (y, arcNode, leftNode, rightNode, point, radius) {
+var CloseEvent = function (y, arcNode, point, radius) {
   this.yval = y;
   // Point that is equidistant from the three points
   this.point = point;
@@ -15,7 +17,8 @@ var CloseEvent = function (y, arcNode, leftNode, rightNode, point, radius) {
   this.isCloseEvent = true;
   this.live = true;
   this.r = radius;
-  this.id = leftNode.id + "-" + arcNode.id + "-" + rightNode.id;
+  this.id = g_eventId++;
+  // this.id = leftNode.id + "-" + arcNode.id + "-" + rightNode.id;
 };
 
 ///////////////////// Utility Functions ///////////////////////////////////
@@ -110,15 +113,30 @@ function chooseClosePoint(left, node, right, points, directrix) {
 //  createCloseEventFortune
 //------------------------------------------------------------
 function createCloseEventFortune(arcNode) {
-  // TODO implement
   var e0 = arcNode.prevEdge();
   var e1 = arcNode.nextEdge();
-  var halfEdgeLeft = e0.halfEdge;
-  var halfEdgeRight = e1.halfEdge;
-  // var optIntersect = halfEdgeIntersect(halfEdgeLeft, halfEdgeRight);
+  if (!e0 || !e1) return null;
 
-  // if optIntersect create and return close event
-  // otherwise return null
+  var v0 = e0.halfEdge;
+  var v1 = e1.halfEdge;
+
+  var optIntersect;
+  if (v0.isVec && v1.isVec) {
+    optIntersect = rayToRayIntersect(v0.p, v0.v, v1.p, v1.v);
+  } else if (v0.isParabola && v1.isParabola) {
+    console.log("TODO");
+  } else if (v0.isVec) {
+    console.log("TODO");
+  } else {
+    console.log("TODO");
+  }
+
+  if (!optIntersect) return null;
+
+  // var radius = getRadius(optIntersect, left, arcNode, right);
+  var radius = dist(optIntersect, arcNode.site);
+  if (_.isUndefined(radius)) throw "invalid radius";
+  return new CloseEvent(optIntersect[1] - radius, arcNode, optIntersect, radius);
 }
 
 //------------------------------------------------------------
@@ -126,6 +144,10 @@ function createCloseEventFortune(arcNode) {
 //------------------------------------------------------------
 function createCloseEvent(arcNode, directrix) {
   if (arcNode == null) return null;
+
+  // for testing only until finished
+  // return createCloseEventFortune(arcNode);
+
   var left = arcNode.prevArc();
   var right = arcNode.nextArc();
   if (left == null || right == null) return null;
@@ -154,7 +176,7 @@ function createCloseEvent(arcNode, directrix) {
     if (cross(u, v)[2] < 0) {
       let r = length(subtract(arcNode.site, closePoint));
       let event_y = closePoint[1] - r;
-      return new CloseEvent(event_y, arcNode, left, right, closePoint, r);
+      return new CloseEvent(event_y, arcNode, closePoint, r);
     }
     return null;
   }
@@ -201,7 +223,7 @@ function createCloseEvent(arcNode, directrix) {
   var radius = getRadius(closePoint, left, arcNode, right);
   if (_.isUndefined(radius)) throw "invalid radius";
 
-  return new CloseEvent(closePoint[1] - radius, arcNode, left, right, closePoint, radius);
+  return new CloseEvent(closePoint[1] - radius, arcNode, closePoint, radius);
 }
 
 

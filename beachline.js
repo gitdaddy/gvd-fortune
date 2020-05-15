@@ -50,11 +50,11 @@ Beachline.prototype.add = function (eventPacket) {
   var directrix = eventPacket.site[1];
 
   // debugging only
-  // if (arcNode.id === g_debugIdMiddle) {
-  //   g_addDebug = true;
-  // } else {
-  //   g_addDebug = false;
-  // }
+  if (arcNode.id === g_debugIdMiddle) {
+    g_addDebug = true;
+  } else {
+    g_addDebug = false;
+  }
 
   if (this.root == null) {
     var subTreeData = generateSubTree(eventPacket, arcNode, this.dcel);
@@ -113,6 +113,22 @@ Beachline.prototype.add = function (eventPacket) {
   return ret;
 }
 
+function computeCloseHES(newEdge) {
+  var l = newEdge.prevArc();
+  var r = newEdge.nextArc();
+  if (l.isParabola && r.isParabola) {
+    // if left is higher then right we have a left side vector
+    // if left is lower than right we have a right side vector
+    return l.site[1] > r.site[1] ? LEFT_SIDE : RIGHT_SIDE;
+  } else if (l.isV && r.isV) {
+    console.log("TODO");
+  } else if (l.isParabola) { // r.isV
+    console.log("TODO");
+  } else { // l.isV and r.isParabola
+    console.log("TODO");
+  }
+}
+
 //------------------------------------------------------------
 // remove
 //------------------------------------------------------------
@@ -141,7 +157,9 @@ Beachline.prototype.remove = function (arcNode, point, directrix, endingEdges, r
   grandparent.setChild(sibling, parentSide);
   sibling.parent = grandparent;
 
-  newEdge.updateEdge(point, this.dcel, side, [], endingEdges, radius); // TODO report correct side
+  var halfEdgeSide = computeCloseHES(newEdge);
+
+  newEdge.updateEdge(point, this.dcel, halfEdgeSide, [], endingEdges, radius);
   if(arcNode.closeEvent)
     arcNode.closeEvent.live = false;
 
