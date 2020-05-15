@@ -5,7 +5,6 @@ var g_eventThresh = 1e-6;
 
 let g_queue = {};
 
-let g_vertexProcessing = 0;
 let g_addTime = 0;
 
 let g_setIdx = 0;
@@ -241,7 +240,6 @@ function fortune(reorder) {
   var nextY = getEventY(queue[queue.length - 1]);
 
   g_addTime = 0;
-  g_vertexProcessing = 0;
   while (queue.length > 0 && nextY > g_sweepline.y) {
     var event = queue.pop();
     if (event.isCloseEvent) {
@@ -293,7 +291,6 @@ function fortune(reorder) {
   // Processing metrics
   // console.log("Time in loop:" + loopTime.toFixed(6) + "(ms)");
   console.log("Time adding:" + g_addTime.toFixed(6) + "(ms)");
-  console.log("Time closing:" + g_vertexProcessing.toFixed(6) + "(ms)");
 
   // debugging only
   // var ev = '';

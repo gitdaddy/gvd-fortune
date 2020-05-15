@@ -46,7 +46,7 @@ function isClosing(child, p) {
 }
 
 // function to create an edge node
-function createNewEdge(left, right, vertex, dcel, side) {
+function createNewEdge(left, right, vertex, dcel) {
   if (left.closeEvent) {
     left.closeEvent.live = false;
   }
@@ -54,7 +54,7 @@ function createNewEdge(left, right, vertex, dcel, side) {
     right.closeEvent.live = false;
   }
 
-  return new EdgeNode(left, right, vertex, dcel, side);
+  return new EdgeNode(left, right, vertex, dcel);
 }
 
 //------------------------------------------------------------
@@ -67,9 +67,9 @@ function createNewEdge(left, right, vertex, dcel, side) {
 //------------------------------------------------------------
 function closePointSplit(left, right, dcel) {
   if (left.isV && right.isParabola) {
-    return new EdgeNode(left, right, right.site, dcel, LEFT_SIDE);
+    return new EdgeNode(left, right, right.site, dcel);
   } else if (left.isParabola && right.isV) {
-    return new EdgeNode(left, right, left.site, dcel, RIGHT_SIDE);
+    return new EdgeNode(left, right, left.site, dcel);
   } else {
     throw 'invalid close joint split';
   }
@@ -111,7 +111,7 @@ function splitArcNode(toSplit, node, dcel, nodesToClose) {
   nodesToClose.push(left);
   nodesToClose.push(right);
   return new EdgeNode(
-      left, new EdgeNode(node, right, vertex, dcel, RIGHT_SIDE), vertex, dcel, LEFT_SIDE);
+      left, new EdgeNode(node, right, vertex, dcel), vertex, dcel);
 }
 
 function insertEdge(toSplit, edge, vertex, dcel, optNodesToClose) {
@@ -127,7 +127,7 @@ function insertEdge(toSplit, edge, vertex, dcel, optNodesToClose) {
     optNodesToClose.push(right);
   }
   return new EdgeNode(
-      left, new EdgeNode(edge, right, vertex, dcel, RIGHT_SIDE), vertex, dcel, LEFT_SIDE);
+      left, new EdgeNode(edge, right, vertex, dcel), vertex, dcel);
 }
 
 // Child is guaranteed to be the parabola arc
@@ -137,13 +137,13 @@ function VRegularInsert(arcNode, childArcNode, dcel, parentV) {
     // // Set edge information since we are using a left joint split
     var nextEdge = arcNode.nextEdge();
     if (nextEdge) nextEdge.dcelEdge.generalEdge = false;
-    return createNewEdge(arcNode, childArcNode, childArcNode.site.a, dcel, LEFT_SIDE);
+    return createNewEdge(arcNode, childArcNode, childArcNode.site.a, dcel);
   } else {
     // // Set edge information since we are using a right joint split
     var prevEdge = arcNode.prevEdge();
     if (prevEdge) prevEdge.dcelEdge.generalEdge = false;
     // is a arc created by the right hull joint
-    return createNewEdge(childArcNode, arcNode, childArcNode.site.a, dcel, RIGHT_SIDE);
+    return createNewEdge(childArcNode, arcNode, childArcNode.site.a, dcel);
   }
 }
 
@@ -185,7 +185,7 @@ function generateSubTree(eventPacket, arcNode, dcel, optChild) {
     leftArcNode = new ArcNode(eventPacket.leftChild);
     rightArcNode = new ArcNode(eventPacket.rightChild);
     var newEdge = createNewEdge(
-        leftArcNode, rightArcNode, arcNode.site, dcel, UNDEFINED_SIDE);
+        leftArcNode, rightArcNode, arcNode.site, dcel);
     if (optChild) {
       tree = splitArcNode(optChild, arcNode, dcel, nodesToClose);
       var parent = arcNode.parent;

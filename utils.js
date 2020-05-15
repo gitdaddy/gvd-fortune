@@ -380,7 +380,6 @@ function labelConnectedComponents(src, height, width) {
   return src;
 }
 
-// TODO maps
 function readMapData(filePath) {
 //  var lines = fs.readFileSync(filePath, 'utf-8').split('\n');
 
@@ -424,13 +423,11 @@ function readMapData(filePath) {
   });
 }
 
-// Merge with dataset.js
 function readDataset() {
   // read in the files
   var points = [];
   var segments = [];
   var t0 = performance.now();
-
   d3.text(g_datasetList[g_setIdx].filePath, (fileData) => {
     var files = fileData.split("\n");
     var size = files.length;

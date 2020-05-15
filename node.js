@@ -8,6 +8,72 @@ var g_edgeVtxId = 1;
 let HALF_PI = Math.PI / 2.0;
 let THREE_HALFS_PI = 3.0 * Math.PI / 2.0;
 
+////////////////// HALF EDGE HELPER FUNCTIONS ///////////////////////////////
+function computeHalfEdgeStraightVector(line, side) {
+  if (!(line instanceof Line) || side == UNDEFINED_SIDE) throw "Invalid edge param";
+  // p1 lower than p2
+  var sortedPoints = _.sortBy([line.p1, line.p2], p => { return p[1]; });
+  var pLower = sortedPoints[0];
+  var pUpper = sortedPoints[1];
+  var theta = Math.atan2(pUpper[1]-pLower[1], pUpper[0]-pLower[0]);
+  // console.log("Theta:" + theta + " - in degrees: " + degrees(theta));
+  var beta = theta + Math.PI; // 180 degrees opposite
+  // console.log("Beta:" + beta + " - in degrees: " + degrees(beta));
+
+  // in case the half edge is straight down
+  if (theta === HALF_PI || theta === THREE_HALFS_PI) {
+    // straight down - there is no going up
+    var v = vec3(0, -1.0, 0);
+    return v;
+  } else if (theta > HALF_PI && theta < THREE_HALFS_PI) {
+    // t - left, t + PI - right
+    if (side === LEFT_SIDE) {
+      return vec3(Math.cos(theta), Math.sin(theta), 0);
+    }
+    return vec3(Math.cos(beta), Math.sin(beta), 0);
+  }
+  // else theta is between THREE_FORTHS and HALF PI
+  // t - right, t + PI - left
+  if (side === LEFT_SIDE) {
+    return vec3(Math.cos(beta), Math.sin(beta), 0);
+  }
+  return vec3(Math.cos(theta), Math.sin(theta), 0);
+}
+
+function computeHalfEdgeVector(vertex, prev, next) {
+  // TODO Compute the half edge data
+  // p to p, v to v,
+  // p to v, v to p
+
+  // if (prev.isV && next.isV) {
+  //   if (connected(prev.site, next.site)) {
+  //     var b = bisectSegments2(prev.site, next.site);
+  //     if (b.length !== 1) throw "Invalid bisector";
+  //     return {isVec:true, v: b[0].v, p: vertex};
+  //   }
+  //   //////////// disjoint segments
+  //   // if parallel get the v between both sites
+  //   var line;
+  //   if (parallelTest(prev.site, next.site)) {
+  //     line = getAverage(prev.site, next.site);
+  //   } else {
+  //     var i = intersectLines(prev.site.a, prev.site.b , next.site.a, next.site.b);
+  //     if (!i) throw "invalid edge intersect";
+  //     line = new Line(i, vertex);
+  //   }
+
+  //   var v = computeHalfEdgeStraightVector(line, halfEdgeSide);
+  //   return {isVec: true, v: v, p: vertex};
+  // }
+
+  if (prev.isParabola && next.isParabola) {
+    var b = bisect(prev.site, next.site);
+    var side = prev.site[1] > next.site[1] ? LEFT_SIDE : RIGHT_SIDE;
+    var v = computeHalfEdgeStraightVector(b, side);
+    return {isVec: true, v: v, p: vertex};
+  }
+}
+
 var ArcNode = function (site) {
   this.site = site;
   this.isArc = true;
@@ -153,13 +219,13 @@ ArcNode.prototype.nextArc = function () {
 // left is always an ArcNode. Right may be an ArcNode or
 // EdgeNode.
 //------------------------------------------------------------
-var EdgeNode = function (left, right, vertex, dcel, side) {
+var EdgeNode = function (left, right, vertex, dcel) {
   this.isArc = false;
   this.isEdge = true;
   this.left = left;
   this.right = right;
   var neighborEdges = _.filter([left, right], e => { return e.isEdge; });
-  this.updateEdge(vertex, dcel, side, neighborEdges);
+  this.updateEdge(vertex, dcel, neighborEdges);
 
   left.parent = this;
   right.parent = this;
@@ -167,6 +233,7 @@ var EdgeNode = function (left, right, vertex, dcel, side) {
   this.toDot = function () {
     return "\"" + this.id + "\"";
   };
+  // this.halfEdge = computeHalfEdgeVector(vertex, this.prevArc(), this.nextArc());
 }
 
 EdgeNode.prototype.hasId = function (id) {
@@ -175,37 +242,6 @@ EdgeNode.prototype.hasId = function (id) {
 
 EdgeNode.prototype.toString = function () {
   return `Type: edge<br>`;
-}
-
-function computeHalfEdgeStraightVector(line, side) {
-  if (!(line instanceof Line) || side == UNDEFINED_SIDE) throw "Invalid edge param";
-  // p1 lower than p2
-  var sortedPoints = _.sortBy([line.p1, line.p2], p => { return p[1]; });
-  var pLower = sortedPoints[0];
-  var pUpper = sortedPoints[1];
-  var theta = Math.atan2(pUpper[1]-pLower[1], pUpper[0]-pLower[0]);
-  // console.log("Theta:" + theta + " - in degrees: " + degrees(theta));
-  var beta = theta + Math.PI; // 180 degrees opposite
-  // console.log("Beta:" + beta + " - in degrees: " + degrees(beta));
-
-  // in case the half edge is straight down
-  if (theta === HALF_PI || theta === THREE_HALFS_PI) {
-    // straight down - there is no going up
-    var v = vec3(0, -1.0, 0);
-    return v;
-  } else if (theta > HALF_PI && theta < THREE_HALFS_PI) {
-    // t - left, t + PI - right
-    if (side === LEFT_SIDE) {
-      return vec3(Math.cos(theta), Math.sin(theta), 0);
-    }
-    return vec3(Math.cos(beta), Math.sin(beta), 0);
-  }
-  // else theta is between THREE_FORTHS and HALF PI
-  // t - right, t + PI - left
-  if (side === LEFT_SIDE) {
-    return vec3(Math.cos(beta), Math.sin(beta), 0);
-  }
-  return vec3(Math.cos(theta), Math.sin(theta), 0);
 }
 
 
@@ -235,7 +271,7 @@ Object.defineProperty(EdgeNode.prototype, "isGeneralSurface", {
   },
 });
 
-EdgeNode.prototype.updateEdge = function (vertex, dcel, halfEdgeSide, optNeighborEdges = [], optEndingEdges = [], optR = undefined) {
+EdgeNode.prototype.updateEdge = function (vertex, dcel, optNeighborEdges = [], optEndingEdges = [], optR = undefined) {
   this.dcelEdge = dcel.makeEdge();
   this.dcelEdge.origin.point = vertex;
   this.dcelEdge.origin.optR = optR;
@@ -288,40 +324,7 @@ EdgeNode.prototype.updateEdge = function (vertex, dcel, halfEdgeSide, optNeighbo
       }
     });
   }
-  this.dcelEdge.generalEdge = prev.isParabola && next.isV || prev.isV && next.isParabola
-
-  // TODO Compute the half edge data
-  // p to p, v to v,
-  // p to v, v to p
-  
-  // if (prev.isV && next.isV) {
-  //   if (connected(prev.site, next.site)) {
-  //     var b = bisectSegments2(prev.site, next.site);
-  //     if (b.length !== 1) throw "Invalid bisector";
-  //     this.halfEdge = {isVec:true, v: b[0].v, p: vertex};
-  //     return;
-  //   }
-  //   //////////// disjoint segments
-  //   // if parallel get the v between both sites
-  //   var line;
-  //   if (parallelTest(prev.site, next.site)) {
-  //     line = getAverage(prev.site, next.site);
-  //   } else {
-  //     var i = intersectLines(prev.site.a, prev.site.b , next.site.a, next.site.b);
-  //     if (!i) throw "invalid edge intersect";
-  //     line = Line(i, vertex);
-  //   }
-
-  //   var v = computeHalfEdgeStraightVector(line, halfEdgeSide);
-  //   this.halfEdge = {isVec: true, v: v, p: vertex};
-  //   return;
-  // }
-
-  // if (prev.isParabola && next.isParabola) {
-  //   var b = bisect(prev.site, next.site);
-  //   var v = computeHalfEdgeStraightVector(b, halfEdgeSide);
-  //   this.halfEdge = {isVec: true, v: v, p: vertex};
-  // }
+  this.dcelEdge.generalEdge = prev.isParabola && next.isV || prev.isV && next.isParabola;
 }
 
 EdgeNode.prototype.prevArc = function () {

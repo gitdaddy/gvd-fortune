@@ -106,27 +106,8 @@ Beachline.prototype.add = function (eventPacket) {
   //   var newEvents = this.remove(subTreeData.optRemoveNode, subTreeData.optRemovePoint, directrix);
   //   return newEvents.concat(processCloseEvents(subTreeData.closingNodes, directrix));
   // }
-  var cStart = performance.now();
   var ret =  processCloseEvents(subTreeData.closingNodes, directrix);
-  var cEnd = performance.now();
-  g_vertexProcessing += cEnd - cStart;
   return ret;
-}
-
-function computeCloseHES(newEdge) {
-  var l = newEdge.prevArc();
-  var r = newEdge.nextArc();
-  if (l.isParabola && r.isParabola) {
-    // if left is higher then right we have a left side vector
-    // if left is lower than right we have a right side vector
-    return l.site[1] > r.site[1] ? LEFT_SIDE : RIGHT_SIDE;
-  } else if (l.isV && r.isV) {
-    console.log("TODO");
-  } else if (l.isParabola) { // r.isV
-    console.log("TODO");
-  } else { // l.isV and r.isParabola
-    console.log("TODO");
-  }
 }
 
 //------------------------------------------------------------
@@ -157,18 +138,17 @@ Beachline.prototype.remove = function (arcNode, point, directrix, endingEdges, r
   grandparent.setChild(sibling, parentSide);
   sibling.parent = grandparent;
 
-  var halfEdgeSide = computeCloseHES(newEdge);
-
-  newEdge.updateEdge(point, this.dcel, halfEdgeSide, [], endingEdges, radius);
+  newEdge.updateEdge(point, this.dcel, [], endingEdges, radius);
   if(arcNode.closeEvent)
     arcNode.closeEvent.live = false;
 
+  var prevArc = newEdge.prevArc();
+  var nextArc = newEdge.nextArc();
+  // newEdge.halfEdge = computeHalfEdgeVector(point, prevArc, nextArc);
+
   // Cancel the close event for this arc and adjoining arcs.
   // Add new close events for adjoining arcs.
-  var cStart = performance.now();
-
   var closeEvents = [];
-  var prevArc = newEdge.prevArc();
   if (prevArc.closeEvent) {
     prevArc.closeEvent.live = false;
   }
@@ -176,7 +156,6 @@ Beachline.prototype.remove = function (arcNode, point, directrix, endingEdges, r
   if (e != null) {
     closeEvents.push(e);
   }
-  var nextArc = newEdge.nextArc();
   if (nextArc.closeEvent) {
     nextArc.closeEvent.live = false;
   }
@@ -184,8 +163,6 @@ Beachline.prototype.remove = function (arcNode, point, directrix, endingEdges, r
   if (e != null) {
     closeEvents.push(e);
   }
-  var cEnd = performance.now();
-  g_vertexProcessing += cEnd - cStart;
 
   return closeEvents;
 }
