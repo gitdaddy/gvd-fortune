@@ -659,7 +659,7 @@ var l = [];
 // NOTE: this bisects LINES not SEGMENTS.
 //------------------------------------------------------------
 function bisectSegments2(s1, s2) {
-  var combineId = s1.id.toString() + s2.id.toString();
+  // var combineId = s1.id.toString() + s2.id.toString();
   // if (g_bisectorsMemo[combineId])
   // {
   //   return g_bisectorsMemo[combineId];

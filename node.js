@@ -9,13 +9,19 @@ let HALF_PI = Math.PI / 2.0;
 let THREE_HALFS_PI = 3.0 * Math.PI / 2.0;
 
 ////////////////// HALF EDGE HELPER FUNCTIONS ///////////////////////////////
-function computeHalfEdgeStraightVector(line, side) {
+
+function computeHalfEdgeStraightVector(line, side, optTheta = undefined) {
   if (!(line instanceof Line) || side == UNDEFINED_SIDE) throw "Invalid edge param";
   // p1 lower than p2
-  var sortedPoints = _.sortBy([line.p1, line.p2], p => { return p[1]; });
-  var pLower = sortedPoints[0];
-  var pUpper = sortedPoints[1];
-  var theta = Math.atan2(pUpper[1]-pLower[1], pUpper[0]-pLower[0]);
+  var theta;
+  if (optTheta) {
+    theta = optTheta;
+  } else {
+    var sortedPoints = _.sortBy([line.p1, line.p2], p => { return p[1]; });
+    var pLower = sortedPoints[0];
+    var pUpper = sortedPoints[1];
+    theta = Math.atan2(pUpper[1]-pLower[1], pUpper[0]-pLower[0]);
+  }
   // console.log("Theta:" + theta + " - in degrees: " + degrees(theta));
   var beta = theta + Math.PI; // 180 degrees opposite
   // console.log("Beta:" + beta + " - in degrees: " + degrees(beta));
@@ -40,31 +46,59 @@ function computeHalfEdgeStraightVector(line, side) {
   return vec3(Math.cos(theta), Math.sin(theta), 0);
 }
 
-function computeHalfEdgeVector(vertex, prev, next) {
-  // TODO Compute the half edge data
+function computeHalfEdgeVector(vertex, prev, next, optDirectrix) {
   // p to p, v to v,
-  // p to v, v to p
+  // p to v, v to p TODO
 
-  // if (prev.isV && next.isV) {
-  //   if (connected(prev.site, next.site)) {
-  //     var b = bisectSegments2(prev.site, next.site);
-  //     if (b.length !== 1) throw "Invalid bisector";
-  //     return {isVec:true, v: b[0].v, p: vertex};
-  //   }
-  //   //////////// disjoint segments
-  //   // if parallel get the v between both sites
-  //   var line;
-  //   if (parallelTest(prev.site, next.site)) {
-  //     line = getAverage(prev.site, next.site);
-  //   } else {
-  //     var i = intersectLines(prev.site.a, prev.site.b , next.site.a, next.site.b);
-  //     if (!i) throw "invalid edge intersect";
-  //     line = new Line(i, vertex);
-  //   }
+  if (prev.isV && next.isV) {
+    if (connected(prev.site, next.site)) {
+      var b = bisectSegments2(prev.site, next.site);
+      if (b.length !== 1) throw "Invalid bisector";
+      return {isVec:true, v: b[0].v, p: vertex};
+    }
 
-  //   var v = computeHalfEdgeStraightVector(line, halfEdgeSide);
-  //   return {isVec: true, v: v, p: vertex};
-  // }
+    if (!optDirectrix) throw "no directrix supplied";
+
+    //////////// disjoint segments
+    // if parallel get the v between both sites
+    var line, p;
+    if (parallelTest(prev.site, next.site)) {
+      line = getAverage(prev.site, next.site);
+    } else {
+      p = intersectLines(prev.site.a, prev.site.b , next.site.a, next.site.b);
+      line = new Line(p, vertex);
+    }
+
+    if (p) {
+      var s1 = prev.site;
+      var s2 = next.site;
+      // check if p.y is on one of the segments
+      var onS1 = s1.a[1] > p[1] && s1.b[1] < p[1];
+      var onS2 = s2.a[1] > p[1] && s2.b[1] < p[1];
+      if (onS1 || onS2) {
+        if (onS2 && onS1) throw "Invalid intercept";
+        var s = onS1 ? s1 : s2;
+        // has the sweep line passed the intercept point
+        if (optDirectrix < p[1]) {
+          // away from s
+          return {isVec: true, v: line.v, p: vertex};
+        } else {
+            // towards s
+            return {isVec: true, v: negate(line.v), p: vertex};
+        }
+      }
+    }
+
+    // neither segments project on each other
+    var sortedPoints = _.sortBy([line.p1, line.p2], p => { return p[1]; });
+    var pLower = sortedPoints[0];
+    var pUpper = sortedPoints[1];
+    var theta = Math.atan2(pUpper[1]-pLower[1], pUpper[0]-pLower[0]);
+
+    var side = theta > HALF_PI ? RIGHT_SIDE : LEFT_SIDE;
+    var v = computeHalfEdgeStraightVector(line, side, theta);
+    return {isVec: true, v: v, p: vertex};
+  }
 
   if (prev.isParabola && next.isParabola) {
     var b = bisect(prev.site, next.site);

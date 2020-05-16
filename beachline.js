@@ -144,7 +144,7 @@ Beachline.prototype.remove = function (arcNode, point, directrix, endingEdges, r
 
   var prevArc = newEdge.prevArc();
   var nextArc = newEdge.nextArc();
-  // newEdge.halfEdge = computeHalfEdgeVector(point, prevArc, nextArc);
+  // newEdge.halfEdge = computeHalfEdgeVector(point, prevArc, nextArc, directrix);
 
   // Cancel the close event for this arc and adjoining arcs.
   // Add new close events for adjoining arcs.

@@ -8,11 +8,6 @@ let g_queue = {};
 let g_addTime = 0;
 
 let g_setIdx = 0;
-/*
- Custom set todo
- - events
- - store data
- */
 
 let g_datasetList = [
   {label:"Build Your Own", sanitize: true, customSet:true},
@@ -24,13 +19,6 @@ let g_datasetList = [
   {label:"Berlin city dataset", sanitize: true, isMap: true, filePath:"./data/maps/Berlin_0_256.map"},
   {label:"Boston city dataset", sanitize: true, isMap: true, filePath:"./data/maps/Boston_0_256.map"},
   {label:"Moscow city dataset", sanitize: true, isMap: true, filePath:"./data/maps/Moscow_1_256.map"},
-
-  // TODO updates
-  // {label:"Denver city dataset", isMap: true, filePath:"./data/maps/Denver_0_256.map"},
-  // {label:"Milan city dataset", isMap: true, filePath:"./data/maps/Milan_0_256.map"},
-  // {label:"NewYork city dataset", isMap: true, filePath:"./data/maps/NewYork_1_256.map"},
-  // {label:"Paris city dataset", isMap: true, filePath:"./data/maps/Paris_0_256.map"},
-  // {label:"Shanghai city dataset", isMap: true, filePath:"./data/maps/Shanghai_2_256.map"},
   {label:"Holes-64", sanitize: true, filePath: "./data/holes/h_64/files.txt"},
   {label:"Holes-128", sanitize: true, filePath: "./data/holes/h_128/files.txt"},
   {label:"Holes-256", sanitize: true, filePath: "./data/holes/h_256/files.txt"},

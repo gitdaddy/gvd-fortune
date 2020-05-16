@@ -63,8 +63,10 @@ function highlight(d) {
     msg = msg + ` id=${edge.id}`;
     setTreeDebug(msg);
 
-    console.log("Half edge:");
-    console.log(edge.halfEdge);
+    if (edge.halfEdge) {
+      console.log("Half edge:");
+      console.log(`vec: ${edge.halfEdge.v}, p: ${edge.halfEdge.p},`);
+    }
   }
 }
 

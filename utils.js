@@ -104,7 +104,7 @@ function sanitizePointSiteData(polygons) {
       console.log("applying offset to overlapping point");
       // offset the data point of i
       // WATCH VALUE
-      sp[i][1] -= 0.000001;
+      sp[i][1] -= 0.000007;
     }
   }
 }
