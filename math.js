@@ -421,6 +421,21 @@ function fallsInBoundary(A, B, point) {
   return r0 < 1.5708 && r1 < 1.5708;
 }
 
+// minimum distance between sites where the result is greater than zero
+function minSiteDist(site1, site2) {
+  var d;
+  if (site1.type == "vec" && site2.type == "vec") {
+    d = dist(site1, site2);
+  } else if (site1.type == "vec" && site2.type == "segment") {
+    d = dist(site1, site2);
+  } else {
+    var a = Math.min(dist(site1.a, site2), dist(site1.b, site2));
+    var b = Math.min(dist(site1, site2.a), dist(site1, site2.a));
+    d = Math.min(a, b);
+  }
+  return d > 0.0 ? d : 10000;
+}
+
 //------------------------------------------------------------
 // Returns the distance between objects 1 and 2.
 //------------------------------------------------------------

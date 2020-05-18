@@ -420,28 +420,14 @@ function isColinear(p1, p2, p3, optTolerance) {
  function setExampleDataset() {
    var polygons = [];
 
-  // set 1 -
-  var p1 = new Polygon();
-  p1.addPoint(vec3(-0.77, 0.76, 0));
-  p1.addPoint(vec3(0.82, 0.82, 0));
-  p1.createSegment(0, 1);
-
-  var p2 = new Polygon();
-  p2.addPoint(vec3(0.22, 0.61, 0));
-
-  var p3 = new Polygon();
-  p2.addPoint(vec3(0.21, 0.51, 0));
-
-  polygons.push(p1);
-  polygons.push(p2);
-  polygons.push(p3);
-
   // set 2
   var p11 = new Polygon();
   p11.addPoint(vec3(0.77, 0.86, 0));
   p11.addPoint(vec3(0.82, -0.62, 0));
-
+  p11.addPoint(vec3(0.07, -0.52, 0));
   p11.createSegment(0, 1);
+  p11.createSegment(2, 1);
+  p11.createSegment(2, 0);
 
   var p12 = new Polygon();
   p12.addPoint(vec3(0.137, 0.094, 0));
@@ -452,13 +438,13 @@ function isColinear(p1, p2, p3, optTolerance) {
   p12.createSegment(0, 2);
 
   var p13 = new Polygon();
-  p13.addPoint(vec3(0.72, -0.31, 0));
+  p13.addPoint(vec3(-0.52, 0.71, 0));
 
   var p14 = new Polygon();
   p14.addPoint(vec3(0.217, -0.09, 0));
 
   var p15 = new Polygon();
-  p15.addPoint(vec3(-0.62, -0.4, 0));
+  p15.addPoint(vec3(-0.32, -0.41, 0));
   p15.addPoint(vec3(-0.42, -0.14, 0));
   p15.addPoint(vec3(-0.82, -0.31, 0));
 
@@ -466,11 +452,11 @@ function isColinear(p1, p2, p3, optTolerance) {
   p15.createSegment(0,2);
   // p15.createSegment(2,0);
 
-  // polygons.push(p11);
-  // polygons.push(p12);
-  // polygons.push(p13);
+  polygons.push(p11);
+  polygons.push(p12);
+  polygons.push(p13);
   // polygons.push(p14);
-  // polygons.push(p15);
+  polygons.push(p15);
 
   // Math.seedrandom('3');
   // var numRandom2 = 100;	  // var numRandom2 = 100;

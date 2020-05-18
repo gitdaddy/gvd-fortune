@@ -246,7 +246,7 @@ function fortune(reorder) {
         }
 
         var curY = getEventY(event);
-        var newEvents = beachline.remove(event.arcNode, event.point, curY, endingEdges, event.r);
+        var newEvents = beachline.remove(event.arcNode, event.point, curY, endingEdges, event.minR);
         newEvents.forEach(function (ev) {
             var newY = getEventY(ev);
             if (newY < curY - g_eventThresh || Math.abs(newY - curY) < g_eventThresh) {

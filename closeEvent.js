@@ -8,7 +8,7 @@ let g_eventId = 0;
 // y is where the event should occur, while point is where the
 // arcs will converge into a Voronoi vertex.
 //------------------------------------------------------------
-var CloseEvent = function (y, arcNode, point, radius) {
+var CloseEvent = function (y, arcNode, point, radius, minR) {
   this.yval = y;
   // Point that is equidistant from the three points
   this.point = point;
@@ -17,6 +17,7 @@ var CloseEvent = function (y, arcNode, point, radius) {
   this.isCloseEvent = true;
   this.live = true;
   this.r = radius;
+  this.minR = minR;
   this.id = g_eventId++;
   // this.id = leftNode.id + "-" + arcNode.id + "-" + rightNode.id;
 };
@@ -136,7 +137,15 @@ function createCloseEventFortune(arcNode) {
   // var radius = getRadius(optIntersect, left, arcNode, right);
   var radius = dist(optIntersect, arcNode.site);
   if (_.isUndefined(radius)) throw "invalid radius";
-  return new CloseEvent(optIntersect[1] - radius, arcNode, optIntersect, radius);
+
+
+  var left = arcNode.prevArc();
+  var right = arcNode.nextArc();
+
+  // minR
+  var minR = Math.min(minSiteDist(left.site, arcNode.site), minSiteDist(arcNode.site, right.site));
+  minR = Math.min(minR, radius);
+  return new CloseEvent(optIntersect[1] - radius, arcNode, optIntersect, radius, minR);
 }
 
 //------------------------------------------------------------
@@ -176,7 +185,9 @@ function createCloseEvent(arcNode, directrix) {
     if (cross(u, v)[2] < 0) {
       let r = length(subtract(arcNode.site, closePoint));
       let event_y = closePoint[1] - r;
-      return new CloseEvent(event_y, arcNode, closePoint, r);
+      var minR = Math.min(minSiteDist(left.site, arcNode.site), minSiteDist(arcNode.site, right.site));
+      minR = Math.min(minR, radius);
+      return new CloseEvent(event_y, arcNode, closePoint, r, minR);
     }
     return null;
   }
@@ -223,7 +234,9 @@ function createCloseEvent(arcNode, directrix) {
   var radius = getRadius(closePoint, left, arcNode, right);
   if (_.isUndefined(radius)) throw "invalid radius";
 
-  return new CloseEvent(closePoint[1] - radius, arcNode, closePoint, radius);
+  var minR = Math.min(minSiteDist(left.site, arcNode.site), minSiteDist(arcNode.site, right.site));
+  minR = Math.min(minR, radius);
+  return new CloseEvent(closePoint[1] - radius, arcNode, closePoint, radius, minR);
 }
 
 

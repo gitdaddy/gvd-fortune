@@ -3,7 +3,7 @@ let g_zoomed = false;
 let g_siteRadius = 3;
 let g_isoEdgeWidth = 1;
 let g_gvdSurfaceWidth = 2;
-let g_surfaceHighlightWidth = 7;
+let g_surfaceHighlightWidth = 10;
 
 // dijkstra's controls
 let g_pathStartElemIdx = undefined;
@@ -123,19 +123,19 @@ function onEdgeVertexMouseOver(d, i) {
       if (g_settings.setMinPathCrossSection.value && g_settings.setMinPathCrossSection.num > 0.0) {
         var val = g_settings.setMinPathCrossSection.num;
         ttMsg = "<span>Cross Section: <br> Max: " + radiusData.max.toFixed(5) +
-        "<br> Min: " + radiusData.min.toFixed(5) + "<br> Path minimum diameter: " + val + "<span>";
+        "<br> Min: " + radiusData.min.toFixed(5) + "<br> Diameter Min Constraint: " + val + "<span>";
       }
 
       var tt = d3.select("#tool-tip-a");
       tt.transition().duration(200).style("opacity", .9);
-      tt.html(ttMsg).style("left", (d3.event.pageX) + "px").style("top", (d3.event.pageY - 28) + "px");
+      tt.html(ttMsg).style("left", (d3.event.pageX + 15) + "px").style("top", (d3.event.pageY - 28) + "px");
     }
   }
 }
 
 function onEdgeVertexMouseOut(d, i) {
   d3.select(`#${this.id}`).attr("r", g_siteRadius);
-  unHighlightPaths();
+  // unHighlightPaths();
 
   // un-highlight cross section details
   // var minVtx = d3.select(`#${g_pathHighlightInfo.minId}`);
@@ -145,9 +145,9 @@ function onEdgeVertexMouseOut(d, i) {
   // maxVtx.attr("r", g_siteRadius)
   // maxVtx.style("fill", g_edgeColors[3]);
 
-  d3.select("#tool-tip-a").transition()
-    .duration(500)
-    .style("opacity", 0);
+  // d3.select("#tool-tip-a").transition()
+  //   .duration(500)
+  //   .style("opacity", 0);
 }
 
 ///////////////////////////////////////////////////
@@ -1117,7 +1117,9 @@ function drawBeachline(beachline, directrix) {
       // .attr("id", p => p.id)
       .attr("id", p => `treenode${p.id}`)
       .attr("transform", p => p.transform)
-      .style("stroke-width", g_isoEdgeWidth);
+      .style("stroke-width", g_isoEdgeWidth)
+      .style("stroke", getGVDStroke())
+      ;
 
     let lineSelection = d3.select("#gvd").selectAll(".gvd-surface-active")
       .data(lines);
@@ -1134,7 +1136,9 @@ function drawBeachline(beachline, directrix) {
       .attr('x2', d => xRev(d.x1))
       .attr('y2', d => yRev(d.y1))
       .attr("id", p => `treenode${p.id}`)
-      .style("stroke-width", g_isoEdgeWidth);
+      .style("stroke-width", g_isoEdgeWidth)
+      .style("stroke", getGVDStroke())
+      ;
     ;
   }
   //------------------------------
