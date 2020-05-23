@@ -65,7 +65,11 @@ function highlight(d) {
 
     if (edge.halfEdge) {
       console.log("Half edge:");
-      console.log(`vec: ${edge.halfEdge.v}, p: ${edge.halfEdge.p},`);
+      if (edge.halfEdge.isVec) {
+        console.log(`vec: ${edge.halfEdge.v}, p: ${edge.halfEdge.p}, id ${edge.nodeId}`);
+      } else if (edge.halfEdge.isPara) {
+        console.log(`rightSide: ${edge.halfEdge.rightSide}, p: ${edge.halfEdge.p}, id ${edge.nodeId}`);
+      }
     }
   }
 }

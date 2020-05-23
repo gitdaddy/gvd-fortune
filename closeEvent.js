@@ -2,6 +2,39 @@
 
 let g_eventId = 0;
 
+function getBisectorGivenPoints(p1, p2, b1, b2, s1, s2) {
+  var p = intersectLines(s1.a, s1.b , s2.a, s2.b);
+  var onS1 = s1.a[1] > p[1] && s1.b[1] < p[1];
+  var onS2 = s2.a[1] > p[1] && s2.b[1] < p[1];
+
+  var bp1 = fastFloorEqual(b1.p1, p) ? b1.p2 : b1.p1;
+  var bp2 = fastFloorEqual(b2.p1, p) ? b2.p2 : b2.p1;
+
+  if (onS1 || onS2) {
+    if (onS2 && onS1) throw "Invalid intercept";
+    if (!onS2 && !onS1) throw "Invalid intercept";
+    // has the sweep line passed the intercept point
+    var s = onS1 ? s2 : s1;
+    var r1 = isRightOfLine(s.a, s.b, p1);
+    var r2 = isRightOfLine(s.a, s.b, p2);
+    var r3 = isRightOfLine(s.a, s.b, bp1);
+    var r4 = isRightOfLine(s.a, s.b, bp2);
+    if (r1 && r2 && r3) {
+      return b1;
+    } else if (r1 && r2 && r4) {
+      return b2;
+    } else if (!r1 && !r2 && !r3) {
+      return b1;
+    } else if (!r1 && !r2 && !r4) {
+      return b2;
+    }
+    console.warn("invalid case");
+    return b1;
+  }
+  console.warn("invalid case");
+  return b1;
+}
+
 //------------------------------------------------------------
 // CloseEvent
 //
@@ -113,40 +146,108 @@ function chooseClosePoint(left, node, right, points, directrix) {
 //------------------------------------------------------------
 //  createCloseEventFortune
 //------------------------------------------------------------
-function createCloseEventFortune(arcNode) {
-  var e0 = arcNode.prevEdge();
-  var e1 = arcNode.nextEdge();
-  if (!e0 || !e1) return null;
+// function createCloseEventFortune(arcNode) {
 
-  var v0 = e0.halfEdge;
-  var v1 = e1.halfEdge;
+//   // debugging only
+//   if (arcNode.id === g_debugIdMiddle) {
+//     g_addDebug = true;
+//   } else {
+//     g_addDebug = false;
+//   }
 
-  var optIntersect;
-  if (v0.isVec && v1.isVec) {
-    optIntersect = rayToRayIntersect(v0.p, v0.v, v1.p, v1.v);
-  } else if (v0.isParabola && v1.isParabola) {
-    console.log("TODO");
-  } else if (v0.isVec) {
-    console.log("TODO");
-  } else {
-    console.log("TODO");
-  }
+//   var e0 = arcNode.prevEdge();
+//   var e1 = arcNode.nextEdge();
+//   if (!e0 || !e1) return null;
 
-  if (!optIntersect) return null;
+//   var v0 = e0.halfEdge;
+//   var v1 = e1.halfEdge;
 
-  // var radius = getRadius(optIntersect, left, arcNode, right);
-  var radius = dist(optIntersect, arcNode.site);
-  if (_.isUndefined(radius)) throw "invalid radius";
+//   var optIntersect;
+//   if (v0.isVec && v1.isVec) {
+//     optIntersect = rayToRayIntersect(v0.p, v0.v, v1.p, v1.v);
+//   } else if (v0.isPara && v1.isPara) {
+//     var a1 = e0.prevArc();
+//     var a2 = e1.prevArc();
+//     var a3 = e1.nextArc();
+
+//     var pointSites = [];
+//     var segs = [];
+
+//     _.each([a1.site, a2.site, a3.site], s => {
+//       if (s.type === "vec") {
+//         pointSites.push(s);
+//       } else {
+//         segs.push(s);
+//       }
+//     });
+//     var b;
+//     if (pointSites.length === 2 ) {
+//       b = bisect(pointSites[0], pointSites[1]);
+//     } else if (segs.length === 2) {
+//       var bisectors = bisectSegmentsNew(segs[0], segs[1]);
+//       if (bisectors.length === 2) {
+//         b = getBisectorGivenPoints(v0.p, v1.p, bisectors[0], bisectors[1], segs[0], segs[1]);
+//       } else {
+//         b = bisectors[0];
+//       }
+//     } else {
+//       throw "Invalid intersection";
+//     }
+
+//     // noise reduction
+//     var Threshold = 400;
+//     if ((Math.abs(b.p1[0]) + Math.abs(b.p1[1])) > Threshold) {
+//       console.log("Applying noise reduction");
+//       if (segs.length !== 2) throw "invalid bisector";
+//       b = getAverage(segs[0], segs[1]);
+//     }
+
+//     // TODO
+//     var i0 = gpIntersection(v0.gp, v0.p, v0.rightSide, v1.gp, v1.p, v1.rightSide);
+//     optIntersect = i0[0];
+
+//     // var i0 = v0.gp.intersectRayWithBound(b.p1, b.v, v0.rightSide, v0.p, true);
+//     // var i1 = v1.gp.intersectRayWithBound(b.p1, b.v, v1.rightSide, v1.p, true);
+//     // if (!i0 || !i1) return null;
+
+//     // var commonPoints = _.filter(i0, ia => {
+//     //   var keep = false;
+//     //   _.each(i1, ib => {
+//     //     if (fastFloorEqual(ia, ib, 5)) keep = true;
+//     //   });
+//     //   return keep;
+//     // });
+
+//     // if (commonPoints.length > 1) throw "invalid multiple points";
+//     // if (commonPoints.length === 1)
+//     //  optIntersect = commonPoints[0];
+//   } else if (v0.isVec) {
+//     // var i0 = v1.gp.intersectRay(v0.p, v0.v);
+//     var i0 = v1.gp.intersectRayWithBound(v0.p, v0.v, v1.rightSide, v1.p);
+//     if (i0.length !== 1) return null;
+//     optIntersect = i0[0];
+//   } else {
+//     // var i0 = v0.gp.intersectRay(v1.p, v1.v);
+//     var i0 = v0.gp.intersectRayWithBound(v1.p, v1.v, v0.rightSide, v0.p);
+//     if (i0.length !== 1) return null;
+//     optIntersect = i0[0];
+//   }
+
+//   if (!optIntersect) return null;
+
+//   // var radius = getRadius(optIntersect, left, arcNode, right);
+//   var radius = dist(optIntersect, arcNode.site);
+//   if (_.isUndefined(radius)) throw "invalid radius";
 
 
-  var left = arcNode.prevArc();
-  var right = arcNode.nextArc();
+//   var left = arcNode.prevArc();
+//   var right = arcNode.nextArc();
 
-  // minR
-  var minR = Math.min(minSiteDist(left.site, arcNode.site), minSiteDist(arcNode.site, right.site));
-  minR = Math.min(minR, radius);
-  return new CloseEvent(optIntersect[1] - radius, arcNode, optIntersect, radius, minR);
-}
+//   // minR
+//   var minR = Math.min(minSiteDist(left.site, arcNode.site), minSiteDist(arcNode.site, right.site));
+//   minR = Math.min(minR, radius);
+//   return new CloseEvent(optIntersect[1] - radius, arcNode, optIntersect, radius, minR);
+// }
 
 //------------------------------------------------------------
 // createCloseEvent

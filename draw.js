@@ -1,6 +1,6 @@
 let g_zoomed = false;
 
-let g_siteRadius = 3;
+let g_siteRadius = 4;
 let g_isoEdgeWidth = 1;
 let g_gvdSurfaceWidth = 2;
 let g_surfaceHighlightWidth = 10;
@@ -1088,7 +1088,7 @@ function drawBeachline(beachline, directrix) {
   let lines = [];
   var generalSurfaces = [];
   let events = [];
-  beachline.prepDraw(directrix, beachline.root, -10000, 10000, arcElements, lines, generalSurfaces, events);
+  beachline.prepDraw(directrix, beachline.root, -1000000, 1000000, arcElements, lines, generalSurfaces, events);
 
   renderParabolas(arcElements.filter(d => d.type == "parabola"));
   renderVS(arcElements.filter(d => d.type == "v"));

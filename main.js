@@ -5,7 +5,7 @@ var g_eventThresh = 1e-6;
 
 let g_queue = {};
 
-let g_addTime = 0;
+// let g_addTime = 0;
 
 let g_setIdx = 0;
 
@@ -194,6 +194,8 @@ function datasetChange(idx) {
     clearSites();
     clearBeachLine();
     enforceSettings();
+    // d3.select("#spinner")
+    // .style('visibility', 'hidden');
   } else if (!g_datasetList[g_setIdx].data) {
     processNewDataset();
   } else {
@@ -227,7 +229,7 @@ function fortune(reorder) {
   if (queue.length < 1) return beachline;
   var nextY = getEventY(queue[queue.length - 1]);
 
-  g_addTime = 0;
+  // g_addTime = 0;
   while (queue.length > 0 && nextY > g_sweepline.y) {
     var event = queue.pop();
     if (event.isCloseEvent) {
@@ -278,7 +280,7 @@ function fortune(reorder) {
 
   // Processing metrics
   // console.log("Time in loop:" + loopTime.toFixed(6) + "(ms)");
-  console.log("Time adding:" + g_addTime.toFixed(6) + "(ms)");
+  // console.log("Time adding:" + g_addTime.toFixed(6) + "(ms)");
 
   // debugging only
   // var ev = '';
@@ -313,24 +315,25 @@ function moveSweepline(y) {
 }
 
 function render(reorder = false) {
+
   clearSurface();
 
   if (g_datasetList[g_setIdx].data) {
     g_debugObjs = [];
-    var t0 = performance.now();
+    // var t0 = performance.now();
     reorder = reorder || g_datasetList[g_setIdx].customSet;
     var beachline = fortune(reorder);
-    var t1 = performance.now();
-    var processTime = t1 - t0;
-    console.log("Process Time:" + processTime.toFixed(6) + "(ms)");
+    // var t1 = performance.now();
+    // var processTime = t1 - t0;
+    // console.log("Process Time:" + processTime.toFixed(6) + "(ms)");
 
-    var t2 = performance.now();
+    // var t2 = performance.now();
     drawBeachline(beachline, g_sweepline.y);
     drawCloseEvents(closeEventPoints);
     drawSurface(dcel);
-    var t3 = performance.now();
-    var drawTime = t3 - t2;
-    console.log("Draw Time:" + drawTime.toFixed(6) + "(ms)");
+    // var t3 = performance.now();
+    // var drawTime = t3 - t2;
+    // console.log("Draw Time:" + drawTime.toFixed(6) + "(ms)");
 
     if (g_settings.showTree.value){
       showTree(beachline.root);

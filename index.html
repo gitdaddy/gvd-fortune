@@ -57,12 +57,6 @@
         sweep line y value=<input type="number" id="sweeplineInput"></input>
         <button onclick="updateSweepline()">Update</button>
       </div>
-      <!-- <span class="title-group">
-        <button onclick="callServer()">TMP Server</button>
-      </span> -->
-      <!-- <span class="title-group">
-        <button onclick="startVideo()">Video</button>
-      </span> -->
       <button type="button" class="collapsible"> <i class="fas fa-cog"></i> Open Settings</button>
       <div id="gvd-settings" class="gvd-switches">
       </div>
@@ -92,7 +86,9 @@
             <option value="segments">Segments</option>
             <option value="polylines">Polylines</option>
           </select>
-          <button onclick="customClearSites()">Clear Sites</button>
+          <div>
+            <button onclick="customClearSites()">Clear Sites</button>
+          </div>
         </div>
         <!-- <div class="debug-events">
           <label>Events:</label>

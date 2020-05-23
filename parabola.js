@@ -4,6 +4,9 @@ function parabola_f(x, h, k, p) {
   return (x - h) * (x - h) / (4 * p) + k;
 }
 
+// reduce noise
+let MAX_T_VAL = 1e10;
+
 // Computes the inverse of f
 // function parabola_f_(y, h, k, p) {
 //   return quadratic(1 / (4 * p), -2 * h / (4 * p), h * h / (4 * p) + k - y);
@@ -28,6 +31,9 @@ Parabola = function (focus, h, k, p, id) {//, theta, offset) {
 }
 
 // The directrix is assumed to be horizontal and is given as a y-value.
+// H - focus.x
+// K - mid value (y)
+// p - the dist between focus and directrix
 function createParabola(focus, directrix, id) {
   var h = focus[0];
   var k = (directrix + focus[1]) / 2;
@@ -329,6 +335,11 @@ GeneralParabola.prototype.intersectRay = function (pOrigin, vOrigin) {
   var v = this.transformVector(vOrigin);
 
   var tvals = lpIntersect(this.parabola.h, this.parabola.k, this.parabola.p, p, v);
+
+  tvals = _.filter(tvals, t => {
+    return Math.abs(t) < MAX_T_VAL;
+  });
+
   // Sort tvals in increasing order
   if (tvals.length == 2 && tvals[1] < tvals[0]) {
     tvals = [tvals[1], tvals[0]];
@@ -345,7 +356,7 @@ GeneralParabola.prototype.intersectRay = function (pOrigin, vOrigin) {
       pt = vec3(p[0], y, 0);
       pt = pthis.untransformPoint(pt);
       ret.push(pt);
-    } else if (Math.abs(t < 1e10)) {
+    } else {
       var q = vec3(p[0] + (v[0] * t), p[1] + (v[1] * t), 0);
       // var q = add(p, mult(v, t));
       q = pthis.untransformPoint(q);
@@ -361,13 +372,99 @@ GeneralParabola.prototype.intersectRay = function (pOrigin, vOrigin) {
   return ret.length == 1 ? ret[0] : ret;
 }
 
+GeneralParabola.prototype.intersectRayWithBound = function (pOrigin, vOrigin,
+    rightSide, boundP, unlimitedT = false) {
+  var p = this.transformPoint(pOrigin);
+  var v = this.transformVector(vOrigin);
+
+  var bp = this.transformPoint(boundP);
+  // var bq = this.transformPoint(boundQ);
+
+  var tvals = lpIntersect(this.parabola.h, this.parabola.k, this.parabola.p, p, v);
+
+  tvals = _.filter(tvals, t => {
+    return Math.abs(t) < MAX_T_VAL;
+  });
+
+  // Sort tvals in increasing order
+  if (tvals.length == 2 && tvals[1] < tvals[0]) {
+    tvals = [tvals[1], tvals[0]];
+  }
+
+  pthis = this;
+  var ret = [];
+  tvals.forEach(function (t) {
+    if (t === 0) {
+      // horizontal or vertical direction
+      // derive y
+      var y = parabola_f(p[0], pthis.parabola.h, pthis.parabola.k, pthis.parabola.p);
+      var pt = vec3(p[0], y, 0);
+
+      var keepGoing = false;
+      if (rightSide) {
+       keepGoing = pt[0] > bp[0];
+      } else {
+       keepGoing = pt[0] < bp[0];
+      }
+
+      if (keepGoing) {
+        pt = pthis.untransformPoint(pt);
+        if (unlimitedT || pointAlongVector(pOrigin, vOrigin, pt))
+          ret.push(pt);
+      }
+    } else {
+      var q = vec3(p[0] + (v[0] * t), p[1] + (v[1] * t), 0);
+
+      var keepGoing = false;
+      if (rightSide) {
+       keepGoing = q[0] > bp[0];
+      } else {
+       keepGoing = q[0] < bp[0];
+      }
+
+      if (keepGoing) {
+        // var q = add(p, mult(v, t));
+        q = pthis.untransformPoint(q);
+        // ret.push(q);
+        if (unlimitedT || pointAlongVector(pOrigin, vOrigin, q))
+          ret.push(q);
+      }
+    }
+  });
+
+  // var sortedPoints = _.sortBy([boundP, boundQ], p => { return p[1]; });
+  // var pLower = sortedPoints[0];
+  // var pUpper = sortedPoints[1];
+  // var theta = Math.atan2(pUpper[1]-pLower[1], pUpper[0]-pLower[0]);
+
+  // var theta = Math.abs(Math.atan2(boundP[0]-boundQ[0], boundP[1]-boundQ[1])); // angle from bound q -> p
+
+  // ret = _.filter(ret, i => {
+  //   if (isRightOfLine(su, sl, boundP)) { // right
+  //     return rightSdie ? !isRightOfLine(boundP, boundQ, i) : isRightOfLine(boundP, boundQ, i);
+  //   }
+  //   // left
+  //   return rightSdie ? isRightOfLine(boundP, boundQ, i) : !isRightOfLine(boundP, boundQ, i);
+  // });
+
+  return ret;
+}
+
 // Prepares this parabola for drawing
 GeneralParabola.prototype.prepDraw = function (id, origin, dest) {
   this.origin = origin;
   this.dest = dest;
+  var p0, p1;
+  if (origin.point) {
+    p0 = origin.point;
+    p1 = dest.point;
+  } else {
+    p0 = origin;
+    p1 = dest;
+  }
   this.id = id;
-  var x0 = this.transformPoint(origin.point)[0];
-  var x1 = this.transformPoint(dest.point)[0];
+  var x0 = this.transformPoint(p0)[0];
+  var x1 = this.transformPoint(p1)[0];
   if (x0 > x1) {
     var temp = x1;
     x1 = x0;

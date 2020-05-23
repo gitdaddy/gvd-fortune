@@ -69,10 +69,6 @@ Beachline.prototype.add = function (eventPacket) {
     child = this.root;
     var subTreeData = generateSubTree(eventPacket, arcNode, dcel, child);
     this.root = subTreeData.root;
-    // if (subTreeData.optRemoveNode) {
-    //   var newEvents = this.remove(subTreeData.optRemoveNode, subTreeData.optRemovePoint, directrix);
-    //   return newEvents.concat(processCloseEvents(subTreeData.closingNodes, directrix));
-    // }
     return processCloseEvents(subTreeData.closingNodes, directrix);
   }
 
@@ -90,22 +86,27 @@ Beachline.prototype.add = function (eventPacket) {
     } else {
       x = i[0];
     }
-    // if (eventPacket.site[0] == x) {
-    //   console.log("Site and intersect values equal:" + x + " for intersection: " + parent.id);
-    // }
     side = (eventPacket.site[0] < x) ? LEFT_SIDE : RIGHT_SIDE;
     child = parent.getChild(side);
   }
 
   var subTreeData = generateSubTree(eventPacket, arcNode, dcel, child);
   parent.setChild(subTreeData.root, side);
-  var aEnd = performance.now();
-  g_addTime += aEnd - aStart;
 
-  // if (subTreeData.optRemoveNode) {
-  //   var newEvents = this.remove(subTreeData.optRemoveNode, subTreeData.optRemovePoint, directrix);
-  //   return newEvents.concat(processCloseEvents(subTreeData.closingNodes, directrix));
+
+  // if (subTreeData.closeSplitNode) {
+  //   // TODO put old line data somewhere for display
+  //   var e0 = subTreeData.closeSplitNode.prevEdge();
+  //   var e1 = subTreeData.closeSplitNode.nextEdge();
+  //   e0.dcelEdge.origin.point = subTreeData.closeSplitNode.site;
+  //   e1.dcelEdge.origin.point = subTreeData.closeSplitNode.site;
+  //   populateTreeWithHalfEdgeData(e0, directrix, true);
+  //   populateTreeWithHalfEdgeData(e1, directrix, true);
   // }
+
+  // var aEnd = performance.now();
+  // g_addTime += aEnd - aStart;
+
   var ret =  processCloseEvents(subTreeData.closingNodes, directrix);
   return ret;
 }
@@ -117,11 +118,11 @@ Beachline.prototype.remove = function (arcNode, point, directrix, endingEdges, r
   if (!arcNode.isArc) throw "Unexpected edge in remove";
 
   // debugging only
-  // if (arcNode.id === g_debugIdMiddle) {
-  //   g_addDebug = true;
-  // } else {
-  //   g_addDebug = false;
-  // }
+  if (arcNode.id === g_debugIdMiddle) {
+    g_addDebug = true;
+  } else {
+    g_addDebug = false;
+  }
 
   var parent = arcNode.parent;
   var grandparent = parent.parent;
@@ -129,9 +130,11 @@ Beachline.prototype.remove = function (arcNode, point, directrix, endingEdges, r
   var parentSide = (grandparent.left == parent) ? LEFT_SIDE : RIGHT_SIDE;
 
   // Get newEdge (an EdgeNode) before updating children etc.
-  var newEdge = arcNode.nextEdge();
+  var prevEdge = arcNode.prevEdge();
+  var nextEdge = arcNode.nextEdge();
+  var newEdge = nextEdge;
   if (side == LEFT_SIDE) {
-    newEdge = arcNode.prevEdge();
+    newEdge = prevEdge;
   }
 
   var sibling = parent.getChild(1 - side);
@@ -142,10 +145,11 @@ Beachline.prototype.remove = function (arcNode, point, directrix, endingEdges, r
   if(arcNode.closeEvent)
     arcNode.closeEvent.live = false;
 
+  // populateTreeWithHalfEdgeData(prevEdge, directrix);
+  // populateTreeWithHalfEdgeData(nextEdge, directrix);
+
   var prevArc = newEdge.prevArc();
   var nextArc = newEdge.nextArc();
-  // newEdge.halfEdge = computeHalfEdgeVector(point, prevArc, nextArc, directrix);
-
   // Cancel the close event for this arc and adjoining arcs.
   // Add new close events for adjoining arcs.
   var closeEvents = [];

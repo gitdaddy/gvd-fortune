@@ -7,6 +7,7 @@ var g_edgeVtxId = 1;
 
 let HALF_PI = Math.PI / 2.0;
 let THREE_HALFS_PI = 3.0 * Math.PI / 2.0;
+let FIVE_HALFS_PI = 5.0 * Math.PI / 2.0;
 
 ////////////////// HALF EDGE HELPER FUNCTIONS ///////////////////////////////
 
@@ -47,8 +48,35 @@ function computeHalfEdgeStraightVector(line, side, optTheta = undefined) {
 }
 
 function computeHalfEdgeVector(vertex, prev, next, optDirectrix) {
-  // p to p, v to v,
-  // p to v, v to p TODO
+  var pt, seg;
+  if (prev.isV && next.isParabola) {
+    pt = next.site;
+    seg = prev.site;
+  } else if (prev.isParabola && next.isV) {
+    pt = prev.site;
+    seg = next.site;
+  }
+  if (pt && seg) { // Point segment bisector
+    var b = bisect(pt, seg);
+    var pUpper = seg.a;
+    var pLower = seg.b;
+    var theta = Math.atan2(pUpper[1]-pLower[1], pUpper[0]-pLower[0]);
+    theta = theta - HALF_PI;
+
+    if (b instanceof Line) {
+      if (pt[1] >= seg.a[1]) { // above or at seg.a
+        theta = prev.isV ? theta : theta + Math.PI;
+      } else { // below or at seg.b
+        theta = prev.isV ? theta + Math.PI : theta;
+      }
+      var v = vec3(Math.cos(theta), Math.sin(theta), 0);
+      return {isVec:true, v: v, p: vertex};
+    }
+
+    var rightSide = prev.isV ? true : false;
+    // return {isPara:true, q:q, rightSide: rightSide, p: vertex, gp:b.para, su: pUpper, sl: pLower };
+    return {isPara:true, rightSide: rightSide, p: vertex, gp:b.para, su: pUpper, sl: pLower };
+  }
 
   if (prev.isV && next.isV) {
     if (connected(prev.site, next.site)) {
@@ -77,7 +105,6 @@ function computeHalfEdgeVector(vertex, prev, next, optDirectrix) {
       var onS2 = s2.a[1] > p[1] && s2.b[1] < p[1];
       if (onS1 || onS2) {
         if (onS2 && onS1) throw "Invalid intercept";
-        var s = onS1 ? s1 : s2;
         // has the sweep line passed the intercept point
         if (optDirectrix < p[1]) {
           // away from s
@@ -86,6 +113,19 @@ function computeHalfEdgeVector(vertex, prev, next, optDirectrix) {
             // towards s
             return {isVec: true, v: negate(line.v), p: vertex};
         }
+      }
+      // Between s1 and s2
+      var belowS1 = s1.a[1] > p[1] && s1.b[1] > p[1];
+      var belowS2 = s2.a[1] > p[1] && s2.b[1] > p[1];
+      var aboveS1 = s1.a[1] < p[1] && s1.b[1] < p[1];
+      var aboveS2 = s2.a[1] < p[1] && s2.b[1] < p[1];
+      if (belowS1 && aboveS2 || belowS2 && aboveS1) {
+        // var isLeft = s1.a[0] > p[0] && s1.b[0] > p[x];
+        // var side = isLeft ? RIGHT_SIDE : LEFT_SIDE;
+        // var v = computeHalfEdgeStraightVector(line, side);
+        var v = vec3(vertex[0] - p[0], vertex[1] - p[1], 0);
+        // Just use theta
+        return {isVec: true, v: v, p: vertex};
       }
     }
 
@@ -97,6 +137,7 @@ function computeHalfEdgeVector(vertex, prev, next, optDirectrix) {
 
     var side = theta > HALF_PI ? RIGHT_SIDE : LEFT_SIDE;
     var v = computeHalfEdgeStraightVector(line, side, theta);
+    // Just use theta
     return {isVec: true, v: v, p: vertex};
   }
 
@@ -105,6 +146,24 @@ function computeHalfEdgeVector(vertex, prev, next, optDirectrix) {
     var side = prev.site[1] > next.site[1] ? LEFT_SIDE : RIGHT_SIDE;
     var v = computeHalfEdgeStraightVector(b, side);
     return {isVec: true, v: v, p: vertex};
+  }
+}
+
+function populateTreeWithHalfEdgeData(node, optDirectrix = undefined, once = false) {
+  if (!node || node.isArc) return;
+
+  // debugging only
+  if (node.nodeId && node.nodeId === g_debugIdMiddle) {
+    g_addDebug = true;
+  } else {
+    g_addDebug = false;
+  }
+
+  node.halfEdge = computeHalfEdgeVector(node.dcelEdge.origin.point, node.prevArc(), node.nextArc(), optDirectrix);
+
+  if (!once) {
+    populateTreeWithHalfEdgeData(node.left, optDirectrix);
+    populateTreeWithHalfEdgeData(node.right, optDirectrix);
   }
 }
 
@@ -267,7 +326,7 @@ var EdgeNode = function (left, right, vertex, dcel) {
   this.toDot = function () {
     return "\"" + this.id + "\"";
   };
-  // this.halfEdge = computeHalfEdgeVector(vertex, this.prevArc(), this.nextArc());
+  this.nodeId = nodeId++;
 }
 
 EdgeNode.prototype.hasId = function (id) {

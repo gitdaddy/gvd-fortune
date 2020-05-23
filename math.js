@@ -97,6 +97,19 @@ function isRightOfLine(upper, lower, p) {
   return z < 0;
 }
 
+function pointAlongVector(pOrigin, vOrigin, pt) {
+  // use x component
+  // var x0 = subtract(pt, pOrigin);
+  if (vOrigin[0] != 0.0) {
+    var x0 = pt[0] - pOrigin[0];
+    var t = x0 / vOrigin[0];
+    return t >= 0;
+  }
+  var y0 = pt[1] - pOrigin[1];
+  var t = y0 / vOrigin[1];
+  return t >= 0;
+}
+
 //------------------------------------------------------------
 // Line class
 //------------------------------------------------------------
@@ -118,7 +131,7 @@ Line = function(p1, p2) {
 //------------------------------------------------------------
 function quadratic(a, b, c) {
   // WATCH VALUE
-  var thresh = 1e-3;
+  var thresh = 1e-4;
   if (a == 0) return [0];
   // var disc = Math.sqrt(b*b-4*a*c);
   var disc = b*b-4*a*c;
@@ -666,6 +679,60 @@ var l = [];
   };
 }
 
+// function bisectSegmentsNew(s1, s2, optOnlySmall) {
+//   // var combineId = s1.id.toString() + s2.id.toString();
+//   // if (g_bisectorsMemo[combineId]) PERFORMANCE
+//   // {
+//   //   return g_bisectorsMemo[combineId];
+//   // }
+
+//   if (parallelTest(s1, s2)) {
+//     // console.log("Parallel Sites:" + s1.a.fileId + " and " + s2.a.fileId
+//     //  + " - using average");
+//     return [getAverage(s1, s2)];
+//   }
+
+//   var p = undefined;
+//   var optCon = connected(s1, s2);
+//   if (optCon) {
+//     p = optCon;
+//   } else {
+//     p = intersectLines(s1.a, s1.b , s2.a, s2.b);
+//   }
+//   if (!p) throw "Invalid intersection";
+
+//   var angles = getBigSmallAngles(s1, s2, p);
+
+//   var vSmall = new vec3(Math.cos(angles.small), Math.sin(angles.small), 0);
+//   var vs = vec3(p[0] + vSmall[0], p[1] + vSmall[1], 0);
+//   var ls = new Line(p, vs);
+
+//   // debugging only
+//   if (g_addDebug)
+//     g_debugObjs.push(ls);
+
+//   // if connected segments
+//   if (optCon || optOnlySmall){
+//     return [ls];
+//   }
+
+//   var onS1 = s1.a[1] > p[1] && s1.b[1] < p[1];
+//   var onS2 = s2.a[1] > p[1] && s2.b[1] < p[1];
+
+//   if (!onS1 && !onS2) return [ls];
+
+//   if (!angles.large) throw "Invalid angle";
+//   var vLarge = new vec3(Math.cos(angles.large), Math.sin(angles.large), 0);
+//   var vl = vec3(p[0] + vLarge[0], p[1] + vLarge[1], 0);
+//   var ll = new Line(p, vl);
+
+//   // debugging only
+//   if (g_addDebug)
+//     g_debugObjs.push(ll);
+
+//   return [ls, ll];
+// }
+
 //------------------------------------------------------------
 // bisectSegments2
 // Return the lines bisecting two segments using large and small angles.
@@ -712,13 +779,14 @@ function bisectSegments2(s1, s2) {
   return [s,l];
 }
 
-function fastFloorEqual(f1, f2) {
+function fastFloorEqual(f1, f2, optPrecision = 10) {
   // if (!f1.type || f1.type !== "vec") throw "Invalid type";
   // if (!f2.type || f2.type !== "vec") throw "Invalid type";
-  var x1 = Math.round(f1[0] * 1e10);
-  var x2 = Math.round(f2[0] * 1e10);
-  var y1 = Math.round(f1[1] * 1e10);
-  var y2 = Math.round(f2[1] * 1e10);
+  var p = Math.pow(10, optPrecision);
+  var x1 = Math.round(f1[0] * p);
+  var x2 = Math.round(f2[0] * p);
+  var y1 = Math.round(f1[1] * p);
+  var y2 = Math.round(f2[1] * p);
   return x1 === x2 && y1 === y2;
 }
 
@@ -738,6 +806,164 @@ function getAverage(s1, s2) {
   var p2 = vec3(((s1.b[0] + s2.b[0]) / 2.0), ((s1.b[1] + s2.b[1]) / 2.0), 0);
   return new Line(p1, p2);
 }
+
+function gpIntersection(g1, p1, g1Right, g2, p2, g2Right) {
+  // TODO transform parabola??
+  // doesn't support regular parabolas....
+  var r = ppIntersect(g1.parabola.h, g1.parabola.k, g1.parabola.p, g2.parabola.h, g2.parabola.k, g2.parabola.p);
+  // filter based on p1
+  var keep = [];
+  var pb1 = g1.transformPoint(p1);
+  var pb2 = g1.transformPoint(p2);
+
+  for (var i = 0; i < r.length; i++){
+    var pt1 = g1.transformPoint(r[i]);
+
+    var keepGoing = false;
+    if (g1Right) {
+     keepGoing = pt1[0] > pb1[0];
+    } else {
+     keepGoing = pt1[0] < pb1[0];
+    }
+
+    if (keepGoing) {
+      var pt2 = g2.transformPoint(r[i]);
+      if (g2Right) {
+        keepGoing = pt2[0] > pb2[0];
+       } else {
+        keepGoing = pt2[0] < pb2[0];
+       }
+    }
+
+    if (keepGoing)
+      keep.push(r[i]);
+  }
+  return keep;
+}
+
+ /*
+ * Calculates the angle ABC (in radians)
+ *
+ * A first point, ex: {x: 0, y: 0}
+ * C second point
+ * B center point
+ */
+// function find_angle(A,B,C) {
+//   var AB = Math.sqrt(Math.pow(B[0]-A[0],2)+ Math.pow(B[1]-A[1],2));
+//   var BC = Math.sqrt(Math.pow(B[0]-C[0],2)+ Math.pow(B[1]-C[1],2));
+//   var AC = Math.sqrt(Math.pow(C[0]-A[0],2)+ Math.pow(C[1]-A[1],2));
+//   return Math.acos((BC*BC+AB*AB-AC*AC)/(2*BC*AB));
+// }
+
+// function getBigSmallAngles(s1, s2, p) {
+//   var onS1 = s1.a[1] > p[1] && s1.b[1] < p[1];
+//   var onS2 = s2.a[1] > p[1] && s2.b[1] < p[1];
+
+//   // just return the small angle
+//   if (!onS1 && !onS2) {
+
+//     var belowS1 = s1.a[1] > p[1] && s1.b[1] > p[1];
+//     var belowS2 = s2.a[1] > p[1] && s2.b[1] > p[1];
+//     var aboveS1 = s1.a[1] < p[1] && s1.b[1] < p[1];
+//     var aboveS2 = s2.a[1] < p[1] && s2.b[1] < p[1];
+
+//     if (belowS1 && aboveS2 || belowS2 && aboveS1) {
+//       var d1 = dist(s1.a, p);
+//       var d2 = dist(s1.b, p);
+//       if (d2 < d1) { // s1 reverse
+//         s1 = makeSegment(s1.b, s1.a, true);
+//       } else { // s2 reverse
+//         s2 = makeSegment(s2.b, s2.a, true);
+//       }
+//     } else if (belowS1 && belowS2) { // below beta between pi and 0
+//       s1 = makeSegment(s1.b, s1.a, true);
+//       s2 = makeSegment(s2.b, s2.a, true);
+//     } // above - do nothing
+
+//     var beta = getSegmentsBisectorAngle(s1, s2, false);
+
+//     // is p below, left, right or above?
+//     if (belowS1 && aboveS2 || belowS2 && aboveS1) {
+//       // in between
+//       var isLeft = s1.a[0] > p[0] && s1.b[0] > p[0];
+//       if (isLeft) { // between pi/2 and 0 or 3 halfs and 5 halfs pi
+//         while (beta < -HALF_PI) {
+//           beta += Math.PI;
+//         }
+
+//         while (beta > FIVE_HALFS_PI) {
+//           beta -= Math.PI;
+//         }
+
+//         // check
+//         if (beta < -HALF_PI || beta > FIVE_HALFS_PI || beta < HALF_PI && beta > THREE_HALFS_PI) {
+//           console.warn("invalid angle");
+//         }
+//       } else { // between pi/2 and 3 halfs
+//         while (beta < HALF_PI) {
+//           beta += Math.PI;
+//         }
+
+//         while (beta > THREE_HALFS_PI) {
+//           beta -= Math.PI;
+//         }
+
+//         // check
+//         if (beta < HALF_PI || beta > THREE_HALFS_PI) {
+//           console.warn("invalid angle");
+//         }
+//       }
+//     } else if (belowS1 && belowS2) { // below beta between pi and 0
+//       while (beta < 0.0) {
+//         beta += Math.PI;
+//       }
+
+//       while (beta > Math.PI) {
+//         beta -= Math.PI;
+//       }
+
+//       // check
+//       if (beta < 0.0 || beta > Math.PI) {
+//         console.warn("invalid angle");
+//       }
+//     } else if (aboveS2 && aboveS1) { // above beta between pi and 2pi
+//       while (beta < Math.PI) {
+//         beta += Math.PI;
+//       }
+
+//       while (beta > (2.0 * Math.PI)) {
+//         beta -= Math.PI;
+//       }
+
+//       // check
+//       if (beta < Math.PI || beta > (2.0 * Math.PI)) {
+//         console.warn("invalid angle");
+//       }
+//     }
+
+//     return {small: beta};
+//   }
+
+//   var sOnTo = onS1 ? s1 : s2;
+//   var sOff = onS1 ? s2 : s1;
+
+//   // abs?
+//   var a1 = find_angle(sOnTo.a, p, sOff.a);
+//   var a2 = find_angle(sOnTo.b, p, sOff.a);
+//   var a3 = getAngle(sOnTo);
+//   var r = isRightOfLine(sOnTo.a, sOnTo.b, sOff.a);
+//   if (r) {
+//     if (a1 < a2) // a1 small angle
+//       return {small: a3 - (a1 / 2.0), large: (a3 - a1) - (a2 / 2.0)}
+
+//     return {small: a3 - a1 - (a2 / 2.0), large: a3 - (a1 / 2.0)}
+//   }
+
+//   if (a1 < a2) // a1 small angle
+//     return {small: a3 + (a1 / 2.0), large: (a3 + a1) + (a2 / 2.0)}
+
+//   return {small: a3 + a1 + (a2 / 2.0), large: a3 + (a1 / 2.0)}
+// }
 
 //------------------------------------------------------------
 // bisectSegments
