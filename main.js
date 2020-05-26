@@ -28,7 +28,7 @@ let g_datasetList = [
   {label:"Holes-4096", sanitize: true, filePath: "./data/holes/h_4096/files.txt"},
   {label:"Holes-8192", sanitize: true, filePath: "./data/holes/h_8192/files.txt"},
   {label:"Holes-16384", sanitize: true, filePath: "./data/holes/h_16384/files.txt"},
-  {label:"Holes-32768", sanitize: true, filePath: "./data/holes/h_32768/files.txt"},
+  // {label:"Holes-32768", sanitize: true, filePath: "./data/holes/h_32768/files.txt"},
   {label:"RPG 64", filePath: "./data/rpg_64/files.txt"},
   {label:"RPG 128", filePath: "./data/rpg_128/files.txt"},
   {label:"RPG 256", filePath: "./data/rpg_256/files.txt"},
@@ -320,20 +320,20 @@ function render(reorder = false) {
 
   if (g_datasetList[g_setIdx].data) {
     g_debugObjs = [];
-    // var t0 = performance.now();
+    var t0 = performance.now();
     reorder = reorder || g_datasetList[g_setIdx].customSet;
     var beachline = fortune(reorder);
-    // var t1 = performance.now();
-    // var processTime = t1 - t0;
-    // console.log("Process Time:" + processTime.toFixed(6) + "(ms)");
+    var t1 = performance.now();
+    var processTime = t1 - t0;
+    console.log("Process Time:" + processTime.toFixed(6) + "(ms)");
 
-    // var t2 = performance.now();
+    var t2 = performance.now();
     drawBeachline(beachline, g_sweepline.y);
     drawCloseEvents(closeEventPoints);
     drawSurface(dcel);
-    // var t3 = performance.now();
-    // var drawTime = t3 - t2;
-    // console.log("Draw Time:" + drawTime.toFixed(6) + "(ms)");
+    var t3 = performance.now();
+    var drawTime = t3 - t2;
+    console.log("Draw Time:" + drawTime.toFixed(6) + "(ms)");
 
     if (g_settings.showTree.value){
       showTree(beachline.root);

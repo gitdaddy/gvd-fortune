@@ -227,7 +227,7 @@ function generateSubTree(eventPacket, arcNode, dcel, optChild) {
     }
   }
 
-  // populateTreeWithHalfEdgeData(tree, arcNode.site[1]);
+  populateTreeWithHalfEdgeData(tree, arcNode.site[1]);
 
   return {root: tree, closingNodes: nodesToClose, closeSplitNode: closeSplitNode};
 }

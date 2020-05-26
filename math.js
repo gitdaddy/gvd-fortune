@@ -38,7 +38,8 @@ function rayToRayIntersect(p1, v1, p2, v2) {
   var c2 = v2[0]*v1[1] - v2[1]*v1[0];
   if (c2 === 0.0) return null;
   var u = (a2 + b2) / c2;
-  if (t < 0 || u < 0) return null;
+  var thresh = -1e-13;
+  if (t < thresh || u < thresh) return null;
   return vec3(p1[0] + t*v1[0], p1[1] + t*v1[1], 0);
 }
 

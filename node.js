@@ -47,7 +47,7 @@ function computeHalfEdgeStraightVector(line, side, optTheta = undefined) {
   return vec3(Math.cos(theta), Math.sin(theta), 0);
 }
 
-function computeHalfEdgeVector(vertex, prev, next, optDirectrix) {
+function computeHalfEdgeVector(vertex, prev, next, directrix) {
   var pt, seg;
   if (prev.isV && next.isParabola) {
     pt = next.site;
@@ -85,8 +85,6 @@ function computeHalfEdgeVector(vertex, prev, next, optDirectrix) {
       return {isVec:true, v: b[0].v, p: vertex};
     }
 
-    if (!optDirectrix) throw "no directrix supplied";
-
     //////////// disjoint segments
     // if parallel get the v between both sites
     var line, p;
@@ -106,7 +104,7 @@ function computeHalfEdgeVector(vertex, prev, next, optDirectrix) {
       if (onS1 || onS2) {
         if (onS2 && onS1) throw "Invalid intercept";
         // has the sweep line passed the intercept point
-        if (optDirectrix < p[1]) {
+        if (directrix < p[1]) {
           // away from s
           return {isVec: true, v: line.v, p: vertex};
         } else {
@@ -149,7 +147,7 @@ function computeHalfEdgeVector(vertex, prev, next, optDirectrix) {
   }
 }
 
-function populateTreeWithHalfEdgeData(node, optDirectrix = undefined, once = false) {
+function populateTreeWithHalfEdgeData(node, directrix, once = false) {
   if (!node || node.isArc) return;
 
   // debugging only
@@ -159,11 +157,11 @@ function populateTreeWithHalfEdgeData(node, optDirectrix = undefined, once = fal
     g_addDebug = false;
   }
 
-  node.halfEdge = computeHalfEdgeVector(node.dcelEdge.origin.point, node.prevArc(), node.nextArc(), optDirectrix);
+  node.halfEdge = computeHalfEdgeVector(node.dcelEdge.origin.point, node.prevArc(), node.nextArc(), directrix);
 
   if (!once) {
-    populateTreeWithHalfEdgeData(node.left, optDirectrix);
-    populateTreeWithHalfEdgeData(node.right, optDirectrix);
+    populateTreeWithHalfEdgeData(node.left, directrix);
+    populateTreeWithHalfEdgeData(node.right, directrix);
   }
 }
 

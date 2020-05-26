@@ -94,15 +94,26 @@ Beachline.prototype.add = function (eventPacket) {
   parent.setChild(subTreeData.root, side);
 
 
-  // if (subTreeData.closeSplitNode) {
-  //   // TODO put old line data somewhere for display
-  //   var e0 = subTreeData.closeSplitNode.prevEdge();
-  //   var e1 = subTreeData.closeSplitNode.nextEdge();
-  //   e0.dcelEdge.origin.point = subTreeData.closeSplitNode.site;
-  //   e1.dcelEdge.origin.point = subTreeData.closeSplitNode.site;
-  //   populateTreeWithHalfEdgeData(e0, directrix, true);
-  //   populateTreeWithHalfEdgeData(e1, directrix, true);
-  // }
+  if (subTreeData.closeSplitNode) {
+    // TODO put old line data somewhere for display
+    var e0 = subTreeData.closeSplitNode.prevEdge();
+    var e1 = subTreeData.closeSplitNode.nextEdge();
+    var l = subTreeData.closeSplitNode.prevArc();
+    var r = subTreeData.closeSplitNode.nextArc();
+
+    if (l && l.closeEvent) {
+      l.closeEvent.live = false;
+    }
+
+    if (r && r.closeEvent) {
+      r.closeEvent.live = false;
+    }
+
+    e0.dcelEdge.origin.point = subTreeData.closeSplitNode.site;
+    e1.dcelEdge.origin.point = subTreeData.closeSplitNode.site;
+    populateTreeWithHalfEdgeData(e0, directrix, true);
+    populateTreeWithHalfEdgeData(e1, directrix, true);
+  }
 
   // var aEnd = performance.now();
   // g_addTime += aEnd - aStart;
@@ -145,8 +156,8 @@ Beachline.prototype.remove = function (arcNode, point, directrix, endingEdges, r
   if(arcNode.closeEvent)
     arcNode.closeEvent.live = false;
 
-  // populateTreeWithHalfEdgeData(prevEdge, directrix);
-  // populateTreeWithHalfEdgeData(nextEdge, directrix);
+  populateTreeWithHalfEdgeData(prevEdge, directrix);
+  populateTreeWithHalfEdgeData(nextEdge, directrix);
 
   var prevArc = newEdge.prevArc();
   var nextArc = newEdge.nextArc();

@@ -452,20 +452,20 @@ function isColinear(p1, p2, p3, optTolerance) {
   p15.createSegment(0,2);
   // p15.createSegment(2,0);
 
-  polygons.push(p11);
-  polygons.push(p12);
-  polygons.push(p13);
+  // polygons.push(p11);
+  // polygons.push(p12);
+  // polygons.push(p13);
   // polygons.push(p14);
-  polygons.push(p15);
+  // polygons.push(p15);
 
-  // Math.seedrandom('3');
-  // var numRandom2 = 100;	  // var numRandom2 = 100;
-  // var polygons = [];	  // var polygons5 = [];
-  // for (var i = 0; i < numRandom2; ++i) {	  // for (var i = 0; i < numRandom2; ++i) {
-  //   var p = new Polygon();	  //   var p = new Polygon();
-  // 	p.addPoint(vec3(Math.random()*2-1, Math.random()*2-1, 0));	  // 	p.addPoint(vec3(Math.random()*2-1, Math.random()*2-1, 0));
-  // 	polygons.push(p);	  // 	polygons5.push(p);
-  // }
+  Math.seedrandom('4');
+  var numRandom2 = 100;	  // var numRandom2 = 100;
+  var polygons = [];	  // var polygons5 = [];
+  for (var i = 0; i < numRandom2; ++i) {	  // for (var i = 0; i < numRandom2; ++i) {
+    var p = new Polygon();	  //   var p = new Polygon();
+  	p.addPoint(vec3(Math.random()*2-1, Math.random()*2-1, 0));	  // 	p.addPoint(vec3(Math.random()*2-1, Math.random()*2-1, 0));
+  	polygons.push(p);	  // 	polygons5.push(p);
+  }
 
   // the final dataset is reserved for manual testing
   g_datasetList[g_datasetList.length - 1].data = polygons;
