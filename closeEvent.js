@@ -263,8 +263,8 @@ function createCloseEvent(arcNode, directrix) {
   // for testing only until finished
   if (
   (v0.isVec && v1.isVec)
-  // || (v0.isPara && v1.isVec)
-  // || (v0.isVec && v1.isPara)
+  || (v0.isPara && v1.isVec)
+  || (v0.isVec && v1.isPara)
   // || (v0.isPara && v1.isPara) // final
   ) {
     return createCloseEventFortune(arcNode, e0, e1);

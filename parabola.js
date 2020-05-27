@@ -398,28 +398,32 @@ GeneralParabola.prototype.intersectRayWithBound = function (pOrigin, vOrigin,
       // horizontal or vertical direction
       // derive y
       var y = parabola_f(p[0], pthis.parabola.h, pthis.parabola.k, pthis.parabola.p);
-      var pt = vec3(p[0], y, 0);
+      var q = vec3(p[0], y, 0);
 
       var keepGoing = false;
+      var x0 = Math.round(q[0] * 10e11);
+      var x1 = Math.round(bp[0] * 10e11);
       if (rightSide) {
-       keepGoing = pt[0] > bp[0];
+       keepGoing = x0 >= x1;
       } else {
-       keepGoing = pt[0] < bp[0];
+       keepGoing = x0 <= x1;
       }
 
       if (keepGoing) {
-        pt = pthis.untransformPoint(pt);
-        if (unlimitedT || pointAlongVector(pOrigin, vOrigin, pt))
-          ret.push(pt);
+        q = pthis.untransformPoint(q);
+        if (unlimitedT || pointAlongVector(pOrigin, vOrigin, q))
+          ret.push(q);
       }
     } else {
       var q = vec3(p[0] + (v[0] * t), p[1] + (v[1] * t), 0);
 
       var keepGoing = false;
+      var x0 = Math.round(q[0] * 10e11);
+      var x1 = Math.round(bp[0] * 10e11);
       if (rightSide) {
-       keepGoing = q[0] > bp[0];
+       keepGoing = x0 >= x1;
       } else {
-       keepGoing = q[0] < bp[0];
+       keepGoing = x0 <= x1;
       }
 
       if (keepGoing) {

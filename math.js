@@ -101,14 +101,15 @@ function isRightOfLine(upper, lower, p) {
 function pointAlongVector(pOrigin, vOrigin, pt) {
   // use x component
   // var x0 = subtract(pt, pOrigin);
+  var thresh = -1e-13;
   if (vOrigin[0] != 0.0) {
     var x0 = pt[0] - pOrigin[0];
     var t = x0 / vOrigin[0];
-    return t >= 0;
+    return t >= thresh;
   }
   var y0 = pt[1] - pOrigin[1];
   var t = y0 / vOrigin[1];
-  return t >= 0;
+  return t >= thresh;
 }
 
 //------------------------------------------------------------
