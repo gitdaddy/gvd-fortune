@@ -70,7 +70,7 @@ function computeHalfEdgeVector(vertex, prev, next, directrix) {
         theta = prev.isV ? theta + Math.PI : theta;
       }
       var v = vec3(Math.cos(theta), Math.sin(theta), 0);
-      return {isVec:true, v: v, p: vertex};
+      return {isVec:true, v: normalize(v), p: vertex};
     }
 
     var rightSide = prev.isV ? true : false;
@@ -123,7 +123,7 @@ function computeHalfEdgeVector(vertex, prev, next, directrix) {
         // var v = computeHalfEdgeStraightVector(line, side);
         var v = vec3(vertex[0] - p[0], vertex[1] - p[1], 0);
         // Just use theta
-        return {isVec: true, v: v, p: vertex};
+        return {isVec: true, v: normalize(v), p: vertex};
       }
     }
 
@@ -136,14 +136,14 @@ function computeHalfEdgeVector(vertex, prev, next, directrix) {
     var side = theta > HALF_PI ? RIGHT_SIDE : LEFT_SIDE;
     var v = computeHalfEdgeStraightVector(line, side, theta);
     // Just use theta
-    return {isVec: true, v: v, p: vertex};
+    return {isVec: true, v: normalize(v), p: vertex};
   }
 
   if (prev.isParabola && next.isParabola) {
     var b = bisect(prev.site, next.site);
     var side = prev.site[1] > next.site[1] ? LEFT_SIDE : RIGHT_SIDE;
     var v = computeHalfEdgeStraightVector(b, side);
-    return {isVec: true, v: v, p: vertex};
+    return {isVec: true, v: normalize(v), p: vertex};
   }
 }
 
