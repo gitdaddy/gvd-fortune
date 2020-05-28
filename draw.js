@@ -8,7 +8,7 @@ let g_surfaceHighlightWidth = 10;
 let g_medialAxisEndingEdges = [];
 
 // dijkstra's controls
-let g_pathStartElemIdx = undefined;
+let g_pathStartElemId = undefined;
 var g_gvdVertices = [];
 
 var g_pathHighlightInfo = {};
@@ -80,12 +80,11 @@ function onEdgeVertexClick(d, i) {
   // Stop the event from propagating to the SVG
   d3.event.stopPropagation();
 
-  if (g_pathStartElemIdx) {
-    var prev = d3.select('#' + getEdgeVertexId(g_pathStartElemIdx));
-    prev.style("fill", g_edgeColors[3]);
+  if (g_pathStartElemId) {
+    d3.select('#' + getEdgeVertexId(g_pathStartElemId)).style("fill", g_edgeColors[3]);
   }
   this.style["fill"] = g_edgeColors[1];
-  g_pathStartElemIdx = i;
+  g_pathStartElemId = d.id;
   var t0 = performance.now();
   // clear all path info
   _.each(g_gvdVertices, v => {
@@ -103,11 +102,11 @@ function onEdgeVertexClick(d, i) {
 function onEdgeVertexMouseOver(d, i) {
   d3.select(`#${this.id}`).attr("r", g_siteRadius * 3);
 
-  if (!_.isUndefined(g_pathStartElemIdx)) {
+  if (!_.isUndefined(g_pathStartElemId)) {
     var edges = _.sortBy(_.values(d.connectedEdges), e => {
       return e.tCost;
     });
-    if (i != g_pathStartElemIdx && edges[0].tCost) {
+    if (i != g_pathStartElemId && edges[0].tCost) {
       var radiusData = highlightPath(edges[0], g_edgeColors[0]);
       // g_pathHighlightInfo.minId = radiusData.minId;
       // g_pathHighlightInfo.maxId = radiusData.maxId;
@@ -119,13 +118,13 @@ function onEdgeVertexMouseOver(d, i) {
       // maxVtx.attr("r", g_siteRadius * 3)
       // maxVtx.style("fill", g_edgeColors[1]);
 
-      var ttMsg = "<span>Path Diameter: <br> Max: " + radiusData.max.toFixed(5) +
-        "<br>" + "Min: " + radiusData.min.toFixed(5) + "<span>";
+      var ttMsg = "<span>Path Diameter: <br> Max: " + radiusData.max.toFixed(8) +
+        "<br>" + "Min: " + radiusData.min.toFixed(8) + "<span>";
 
-      if (g_settings.setMinPathCrossSection.value && g_settings.setMinPathCrossSection.num > 0.0) {
-        var val = g_settings.setMinPathCrossSection.num;
-        ttMsg = "<span>Path Diameter: <br> Max: " + radiusData.max.toFixed(5) +
-        "<br> Min: " + radiusData.min.toFixed(5) + "<br> Diameter Min Constraint: " + val + "<span>";
+      if (g_settings.setMinPathDiameter.value && g_settings.setMinPathDiameter.num > 0.0) {
+        var val = g_settings.setMinPathDiameter.num;
+        ttMsg = "<span>Path Diameter: <br> Max: " + radiusData.max.toFixed(8) +
+        "<br> Min: " + radiusData.min.toFixed(8) + "<br> Diameter Min Constraint: " + val + "<span>";
       }
 
       var tt = d3.select("#tool-tip-a");
@@ -353,92 +352,93 @@ function getCurrentImgURL() {
 // 1. on a setting change
 // 2. on a dataset change
 // TODO zoom and overview linking
-function updateOverview() {
-  if (g_settings.showOverview && g_settings.showOverview.value) {
-    resetView();
-    // TODO store current zoom settings
-    // reset view - export, restore zoom
+// function updateOverview() {
+//   if (g_settings.showOverview && g_settings.showOverview.value) {
+//     resetView();
+//     // TODO store current zoom settings
+//     // reset view - export, restore zoom
 
-    var imageWidth = width/2;
-    var imageHeight = height/2;
+//     var imageWidth = width/2;
+//     var imageHeight = height/2;
 
-    g_overviewImg = {
-      w: imageWidth,
-      h: imageHeight,
-      url: getCurrentImgURL()
-    };
+//     g_overviewImg = {
+//       w: imageWidth,
+//       h: imageHeight,
+//       url: getCurrentImgURL()
+//     };
 
-    var imgSvg = d3.select("#overviewBrushArea");
-        var selection = imgSvg.attr("width", imageWidth)
-        .attr("height", imageHeight)
-        .selectAll("image")
-        .data([g_overviewImg])
-        ;
+//     var imgSvg = d3.select("#overviewBrushArea");
+//         var selection = imgSvg.attr("width", imageWidth)
+//         .attr("height", imageHeight)
+//         .selectAll("image")
+//         .data([g_overviewImg])
+//         ;
 
-    // enter
-    selection.enter()
-    .append("svg:image")
-    .attr("xlink:href", d => d.url)
-    .attr("width", d => d.w)
-    .attr("height", d => d.h);
+//     // enter
+//     selection.enter()
+//     .append("svg:image")
+//     .attr("xlink:href", d => d.url)
+//     .attr("width", d => d.w)
+//     .attr("height", d => d.h);
 
-    // update
-    selection.attr("xlink:href", d => d.url)
-    .attr("width", d => d.w)
-    .attr("height", d => d.h)
-    ;
+//     // update
+//     selection.attr("xlink:href", d => d.url)
+//     .attr("width", d => d.w)
+//     .attr("height", d => d.h)
+//     ;
 
-    // zoom brushing
-    imgSvg.call(
-      d3.brush().on("end", function() {
-        var sel = d3.brushSelection(this);
-        var x0 = (sel[0][0] * 2);
-        var y0 = (sel[0][1] * 2);
-        var x1 = (sel[1][0] * 2);
-        var y1 = (sel[1][1] * 2);
-        // xToGVD, yToGVD
-        var scale;
-        if (Math.abs(x0 - x1) > Math.abs(y0 - y1)) {
-          scale = Math.abs(x0 - x1) / 2.2;
-          // square based off of delta x
-          var delta2 = Math.abs(x0 - x1) / 2;
-          var cenY = (y0 + y1) / 2;
-          y0 = cenY - delta2;
-          y1 = cenY + delta2;
-        } else {
-          scale = Math.abs(y0 - y1) / 2.2;
-          var delta2 = Math.abs(y0 - y1) / 2;
-          var cenX = (x0 + x1) / 2;
-          x0 = cenX - delta2;
-          x1 = cenX + delta2;
-        }
-        console.log("brushed end x min - max:" + x0 + "-" + x1
-          + " y min - max:" + y0 + "-" + y1 + " scale:" + scale);
+//     // zoom brushing
+//     imgSvg.call(
+//       d3.brush().on("end", function() {
+//         var sel = d3.brushSelection(this);
+//         var x0 = (sel[0][0] * 2);
+//         var y0 = (sel[0][1] * 2);
+//         var x1 = (sel[1][0] * 2);
+//         var y1 = (sel[1][1] * 2);
+//         // xToGVD, yToGVD
+//         var scale;
+//         if (Math.abs(x0 - x1) > Math.abs(y0 - y1)) {
+//           scale = Math.abs(x0 - x1) / 2.2;
+//           // square based off of delta x
+//           var delta2 = Math.abs(x0 - x1) / 2;
+//           var cenY = (y0 + y1) / 2;
+//           y0 = cenY - delta2;
+//           y1 = cenY + delta2;
+//         } else {
+//           scale = Math.abs(y0 - y1) / 2.2;
+//           var delta2 = Math.abs(y0 - y1) / 2;
+//           var cenX = (x0 + x1) / 2;
+//           x0 = cenX - delta2;
+//           x1 = cenX + delta2;
+//         }
+//         console.log("brushed end x min - max:" + x0 + "-" + x1
+//           + " y min - max:" + y0 + "-" + y1 + " scale:" + scale);
 
-        // TODO clip?
+//         // TODO clip?
 
-        xRevOrigin = d3.scaleLinear()
-        .domain([xToGVD(x0), xToGVD(x1)])
-        .range([0, width]); // this may need to change
+//         xRevOrigin = d3.scaleLinear()
+//         .domain([xToGVD(x0), xToGVD(x1)])
+//         .range([0, width]); // this may need to change
 
-        yRevOrigin = d3.scaleLinear()
-        .domain([yToGVD(y0), yToGVD(y1)])
-        .range([0, height]); // this may need to change
+//         yRevOrigin = d3.scaleLinear()
+//         .domain([yToGVD(y0), yToGVD(y1)])
+//         .range([0, height]); // this may need to change
 
-        // d3.zoomIdentity.x = 0;
-        // d3.zoomIdentity.y = 0;
-        d3.zoomIdentity.scale(scale)
+//         // d3.zoomIdentity.x = 0;
+//         // d3.zoomIdentity.y = 0;
+//         d3.zoomIdentity.scale(scale)
 
-        rescaleView(xRevOrigin, yRevOrigin);
-      })
-    );
-  } else {
-    d3.select("#overviewBrushArea")
-      .attr("width", 0)
-      .attr("height", 0)
-    ;
-  }
-}
+//         rescaleView(xRevOrigin, yRevOrigin);
+//       })
+//     );
+//   }
+//   else {
+//     d3.select("#overviewBrushArea")
+//       .attr("width", 0)
+//       .attr("height", 0)
+//     ;
+//   }
+// }
 
 function enforceSettings() {
   // show events
@@ -542,7 +542,7 @@ function enforceSettings() {
   ;
 
   // if min cross section
-  if (g_settings.setMinPathCrossSection.value) {
+  if (g_settings.setMinPathDiameter.value) {
     d3.selectAll(".min-cross-inputs").style("visibility", null).style("height", "100px");
   } else {
     d3.selectAll(".min-cross-inputs").style("visibility", "hidden").style("height", "0px");
@@ -560,7 +560,7 @@ function onSettingChecked(event) {
   g_settings[event.value].value = event.checked;
   if (g_settings.showOverview && g_settings.showOverview.value) {
     rescaleView(xRev, yRev);
-    updateOverview();
+    // updateOverview();
   }
 
   storeLocalSettings(g_settings);
@@ -874,7 +874,7 @@ function drawSurface(dcel) {
     result = iter.next();
   }
 
-  g_pathStartElemIdx = undefined;
+  g_pathStartElemId = undefined;
 
   let line = d3.line()
   .x(function (d) {return xRev(d[0]);})
@@ -951,8 +951,8 @@ function drawSurface(dcel) {
     .attr("class", "gvd-edge-vertex")
     .attr("id", (d,i) => {
       if (d.id) return getEdgeVertexId(d.id);
-      d.id = getEdgeVertexId(g_edgeVtxId++);
-      return d.id;
+      d.id = g_edgeVtxId++;
+      return getEdgeVertexId(d.id);
     })
     .attr("cx", d => xRev(d.point[0]))
     .attr("cy", d => yRev(d.point[1]))

@@ -73,8 +73,8 @@ function shortestPath(gvdVertex) {
     _.each(nextLinks, edgeLink => {
       var destVertex = getDestVertex(currentVertex.point, edgeLink);
       var estimatedCost = dist(destVertex.point, currentVertex.point) + destEdge.tCost;
-      if (g_settings.setMinPathCrossSection.value && g_settings.setMinPathCrossSection.num > 0) {
-        if (destVertex.optR && destVertex.optR * 2.0 < g_settings.setMinPathCrossSection.num) {
+      if (g_settings.setMinPathDiameter.value && g_settings.setMinPathDiameter.num > 0) {
+        if (destVertex.optR && destVertex.optR * 2.0 < g_settings.setMinPathDiameter.num) {
           // we cant take this route
           estimatedCost += 10000;
           edgeLink.tCost = 20000;

@@ -809,40 +809,6 @@ function getAverage(s1, s2) {
   return new Line(p1, p2);
 }
 
-// function gpIntersection(g1, p1, g1Right, g2, p2, g2Right) {
-//   // TODO transform parabola??
-//   // doesn't support regular parabolas....
-//   var r = ppIntersect(g1.parabola.h, g1.parabola.k, g1.parabola.p, g2.parabola.h, g2.parabola.k, g2.parabola.p);
-//   // filter based on p1
-//   var keep = [];
-//   var pb1 = g1.transformPoint(p1);
-//   var pb2 = g1.transformPoint(p2);
-
-//   for (var i = 0; i < r.length; i++){
-//     var pt1 = g1.transformPoint(r[i]);
-
-//     var keepGoing = false;
-//     if (g1Right) {
-//      keepGoing = pt1[0] > pb1[0];
-//     } else {
-//      keepGoing = pt1[0] < pb1[0];
-//     }
-
-//     if (keepGoing) {
-//       var pt2 = g2.transformPoint(r[i]);
-//       if (g2Right) {
-//         keepGoing = pt2[0] > pb2[0];
-//        } else {
-//         keepGoing = pt2[0] < pb2[0];
-//        }
-//     }
-
-//     if (keepGoing)
-//       keep.push(r[i]);
-//   }
-//   return keep;
-// }
-
  /*
  * Calculates the angle ABC (in radians)
  *
@@ -854,7 +820,12 @@ function find_angle(A,B,C) {
   var AB = Math.sqrt(Math.pow(B[0]-A[0],2)+ Math.pow(B[1]-A[1],2));
   var BC = Math.sqrt(Math.pow(B[0]-C[0],2)+ Math.pow(B[1]-C[1],2));
   var AC = Math.sqrt(Math.pow(C[0]-A[0],2)+ Math.pow(C[1]-A[1],2));
-  return Math.acos((BC*BC+AB*AB-AC*AC)/(2*BC*AB));
+  var a = (BC*BC+AB*AB-AC*AC);
+  var b = (2*BC*AB);
+  var c = a/b;
+  c = Math.min(1, c);
+  c = Math.max(-1, c);
+  return Math.acos(c);
 }
 
 function getBigSmallAngles(s1, s2, p) {

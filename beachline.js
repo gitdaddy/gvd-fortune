@@ -28,19 +28,10 @@ var Beachline = function (dcel) {
 
 function createBeachlineSegment(site, directrix, id) {
   if (isSegment(site)) {
-    // TODO performance
     return new V(site, directrix, id);
   }
   return createParabola(site, directrix, id);
 }
-
-// function shareVClosing(arcNode, sibling) {
-//   if (!arcNode.isV || !sibling.isV) return false;
-//   return fastFloorEqual(arcNode.site.b, sibling.site.b);
-//   // return _.get(arcNode, "site.b.relation") == NODE_RELATION.CLOSING &&
-//   // _.get(sibling, "site.b.relation") == NODE_RELATION.CLOSING &&
-//   // fastFloorEqual(arcNode.site.b, sibling.site.b);
-// }
 
 //------------------------------------------------------------
 // add
@@ -173,14 +164,14 @@ Beachline.prototype.remove = function (arcNode, point, directrix, endingEdges, r
   if (prevArc.closeEvent) {
     prevArc.closeEvent.live = false;
   }
-  var e = createCloseEvent(prevArc, directrix);
+  var e = createCloseEventFortune(prevArc);
   if (e != null) {
     closeEvents.push(e);
   }
   if (nextArc.closeEvent) {
     nextArc.closeEvent.live = false;
   }
-  var e = createCloseEvent(nextArc, directrix);
+  var e = createCloseEventFortune(nextArc);
   if (e != null) {
     closeEvents.push(e);
   }

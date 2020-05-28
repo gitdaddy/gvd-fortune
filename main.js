@@ -67,7 +67,7 @@ let g_settings = {
   showDebugObjs: {label: "Show Debug Input", value: false}, // debugging only
   showTree: {label: "Show Beach Line Tree", value: false},
   showBeachLine: {label: "Show Beach Line", value: true},
-  setMinPathCrossSection: {label: "Set Min Path Diameter", value: false, num: undefined},
+  setMinPathDiameter: {label: "Set Min Path Diameter", value: false, num: undefined},
   // showOverview: {label: "Show Overview", value: false}
 };
 
@@ -87,12 +87,17 @@ function updateDebugVars() {
     localStorage.g_debugIdMiddle = g_debugIdMiddle;
     g_debugIdRight = document.getElementsByName("rightId")[0].valueAsNumber;
     localStorage.g_debugIdRight = g_debugIdRight;
+
+    if (g_pathStartElemId) {
+      d3.select('#' + getEdgeVertexId(g_pathStartElemId)).style("fill", g_edgeColors[3]);
+      g_pathStartElemId = undefined;
+    }
   }
 
-  if (g_settings.setMinPathCrossSection) {
+  if (g_settings.setMinPathDiameter) {
     // min cross section
     var minC = document.getElementsByName("minCrossSection")[0].valueAsNumber;
-    g_settings.setMinPathCrossSection.num = minC;
+    g_settings.setMinPathDiameter.num = minC;
     localStorage.minC = minC;
   }
 }
@@ -154,8 +159,9 @@ function keydown(event) {
 
 function init() {
   var s = getLocalSettings();
-  if (s)
+  if (s) {
     _.assign(g_settings, s);
+  }
 
   setExampleDataset();
   if (localStorage.sweepline && !_.isNaN(localStorage.sweepline)
@@ -217,7 +223,7 @@ function datasetUpdate() {
   drawSegments(segments);
 
   render();
-  updateOverview();
+  // updateOverview();
 }
 
 function fortune(reorder) {
@@ -283,30 +289,6 @@ function fortune(reorder) {
   // console.log("Time in loop:" + loopTime.toFixed(6) + "(ms)");
   // console.log("Time adding:" + g_addTime.toFixed(6) + "(ms)");
 
-  // debugging only
-  // var ev = '';
-  // while (queue.length > 0) {
-  //   var e = queue.pop();
-  //   var yval = e.type === "segment" ? e[0][1] : e[1];
-  //   var at = "(y)@:" + yval + " ";
-  //   var data;
-  //   if (e.type == "segment") {
-  //     data = at + 'a(' + e[0][0] + ',' + e[0][1] + ') - b(' + e[1][0] + ',' + e[1][1] + ')';
-  //   } else if (e.isCloseEvent) {
-  //     var live = e.live && e.arcNode.closeEvent.live ? "(Live)" : "(Dead)";
-  //     data = at + 'Close:' + e.id + " " + live + ' -point(' + e.point[0] + ',' + e.point[1] + ')';
-  //   } else {
-  //     data = at + 'point(' + e[0] + ',' + yval + ')';
-  //   }
-  //   if (e.isCloseEvent) {
-  //     ev += data;
-  //   } else {
-  //     ev += data;
-  //     // ev += data + ' r: ' + e.relation;
-  //   }
-  //   ev += '\n';
-  // }
-  // document.getElementById("events").innerHTML = ev;
   return beachline;
 }
 

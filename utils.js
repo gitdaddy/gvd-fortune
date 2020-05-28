@@ -419,7 +419,7 @@ function readMapData(filePath) {
     drawSegments(segments);
 
     render();
-    updateOverview();
+    // updateOverview();
   });
 }
 
@@ -497,7 +497,7 @@ function readDataset() {
             var processTime = t1 - t0;
             console.log("Pre-process time:" + processTime.toFixed(6) + "(ms)");
             render();
-            updateOverview();
+            // updateOverview();
           }
         });
       }
