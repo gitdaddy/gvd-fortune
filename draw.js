@@ -119,12 +119,12 @@ function onEdgeVertexMouseOver(d, i) {
       // maxVtx.attr("r", g_siteRadius * 3)
       // maxVtx.style("fill", g_edgeColors[1]);
 
-      var ttMsg = "<span>Cross Section: <br> Max: " + radiusData.max.toFixed(5) +
+      var ttMsg = "<span>Path Diameter: <br> Max: " + radiusData.max.toFixed(5) +
         "<br>" + "Min: " + radiusData.min.toFixed(5) + "<span>";
 
       if (g_settings.setMinPathCrossSection.value && g_settings.setMinPathCrossSection.num > 0.0) {
         var val = g_settings.setMinPathCrossSection.num;
-        ttMsg = "<span>Cross Section: <br> Max: " + radiusData.max.toFixed(5) +
+        ttMsg = "<span>Path Diameter: <br> Max: " + radiusData.max.toFixed(5) +
         "<br> Min: " + radiusData.min.toFixed(5) + "<br> Diameter Min Constraint: " + val + "<span>";
       }
 
@@ -137,7 +137,7 @@ function onEdgeVertexMouseOver(d, i) {
 
 function onEdgeVertexMouseOut(d, i) {
   d3.select(`#${this.id}`).attr("r", g_siteRadius);
-  // unHighlightPaths();
+  unHighlightPaths();
 
   // un-highlight cross section details
   // var minVtx = d3.select(`#${g_pathHighlightInfo.minId}`);
@@ -147,9 +147,9 @@ function onEdgeVertexMouseOut(d, i) {
   // maxVtx.attr("r", g_siteRadius)
   // maxVtx.style("fill", g_edgeColors[3]);
 
-  // d3.select("#tool-tip-a").transition()
-  //   .duration(500)
-  //   .style("opacity", 0);
+  d3.select("#tool-tip-a").transition()
+    .duration(500)
+    .style("opacity", 0);
 }
 
 ///////////////////////////////////////////////////

@@ -681,59 +681,59 @@ var l = [];
   };
 }
 
-// function bisectSegmentsNew(s1, s2, optOnlySmall) {
-//   // var combineId = s1.id.toString() + s2.id.toString();
-//   // if (g_bisectorsMemo[combineId]) PERFORMANCE
-//   // {
-//   //   return g_bisectorsMemo[combineId];
-//   // }
+function bisectSegmentsNew(s1, s2, optOnlySmall) {
+  // var combineId = s1.id.toString() + s2.id.toString();
+  // if (g_bisectorsMemo[combineId]) PERFORMANCE
+  // {
+  //   return g_bisectorsMemo[combineId];
+  // }
 
-//   if (parallelTest(s1, s2)) {
-//     // console.log("Parallel Sites:" + s1.a.fileId + " and " + s2.a.fileId
-//     //  + " - using average");
-//     return [getAverage(s1, s2)];
-//   }
+  if (parallelTest(s1, s2)) {
+    // console.log("Parallel Sites:" + s1.a.fileId + " and " + s2.a.fileId
+    //  + " - using average");
+    return [getAverage(s1, s2)];
+  }
 
-//   var p = undefined;
-//   var optCon = connected(s1, s2);
-//   if (optCon) {
-//     p = optCon;
-//   } else {
-//     p = intersectLines(s1.a, s1.b , s2.a, s2.b);
-//   }
-//   if (!p) throw "Invalid intersection";
+  var p = undefined;
+  var optCon = connected(s1, s2);
+  if (optCon) {
+    p = optCon;
+  } else {
+    p = intersectLines(s1.a, s1.b , s2.a, s2.b);
+  }
+  if (!p) throw "Invalid intersection";
 
-//   var angles = getBigSmallAngles(s1, s2, p);
+  var angles = getBigSmallAngles(s1, s2, p);
 
-//   var vSmall = new vec3(Math.cos(angles.small), Math.sin(angles.small), 0);
-//   var vs = vec3(p[0] + vSmall[0], p[1] + vSmall[1], 0);
-//   var ls = new Line(p, vs);
+  var vSmall = new vec3(Math.cos(angles.small), Math.sin(angles.small), 0);
+  var vs = vec3(p[0] + vSmall[0], p[1] + vSmall[1], 0);
+  var ls = new Line(p, vs);
 
-//   // debugging only
-//   if (g_addDebug)
-//     g_debugObjs.push(ls);
+  // debugging only
+  if (g_addDebug)
+    g_debugObjs.push(ls);
 
-//   // if connected segments
-//   if (optCon || optOnlySmall){
-//     return [ls];
-//   }
+  // if connected segments
+  if (optCon || optOnlySmall){
+    return [ls];
+  }
 
-//   var onS1 = s1.a[1] > p[1] && s1.b[1] < p[1];
-//   var onS2 = s2.a[1] > p[1] && s2.b[1] < p[1];
+  var onS1 = s1.a[1] > p[1] && s1.b[1] < p[1];
+  var onS2 = s2.a[1] > p[1] && s2.b[1] < p[1];
 
-//   if (!onS1 && !onS2) return [ls];
+  if (!onS1 && !onS2) return [ls];
 
-//   if (!angles.large) throw "Invalid angle";
-//   var vLarge = new vec3(Math.cos(angles.large), Math.sin(angles.large), 0);
-//   var vl = vec3(p[0] + vLarge[0], p[1] + vLarge[1], 0);
-//   var ll = new Line(p, vl);
+  if (!angles.large) throw "Invalid angle";
+  var vLarge = new vec3(Math.cos(angles.large), Math.sin(angles.large), 0);
+  var vl = vec3(p[0] + vLarge[0], p[1] + vLarge[1], 0);
+  var ll = new Line(p, vl);
 
-//   // debugging only
-//   if (g_addDebug)
-//     g_debugObjs.push(ll);
+  // debugging only
+  if (g_addDebug)
+    g_debugObjs.push(ll);
 
-//   return [ls, ll];
-// }
+  return [ls, ll];
+}
 
 //------------------------------------------------------------
 // bisectSegments2
@@ -809,39 +809,39 @@ function getAverage(s1, s2) {
   return new Line(p1, p2);
 }
 
-function gpIntersection(g1, p1, g1Right, g2, p2, g2Right) {
-  // TODO transform parabola??
-  // doesn't support regular parabolas....
-  var r = ppIntersect(g1.parabola.h, g1.parabola.k, g1.parabola.p, g2.parabola.h, g2.parabola.k, g2.parabola.p);
-  // filter based on p1
-  var keep = [];
-  var pb1 = g1.transformPoint(p1);
-  var pb2 = g1.transformPoint(p2);
+// function gpIntersection(g1, p1, g1Right, g2, p2, g2Right) {
+//   // TODO transform parabola??
+//   // doesn't support regular parabolas....
+//   var r = ppIntersect(g1.parabola.h, g1.parabola.k, g1.parabola.p, g2.parabola.h, g2.parabola.k, g2.parabola.p);
+//   // filter based on p1
+//   var keep = [];
+//   var pb1 = g1.transformPoint(p1);
+//   var pb2 = g1.transformPoint(p2);
 
-  for (var i = 0; i < r.length; i++){
-    var pt1 = g1.transformPoint(r[i]);
+//   for (var i = 0; i < r.length; i++){
+//     var pt1 = g1.transformPoint(r[i]);
 
-    var keepGoing = false;
-    if (g1Right) {
-     keepGoing = pt1[0] > pb1[0];
-    } else {
-     keepGoing = pt1[0] < pb1[0];
-    }
+//     var keepGoing = false;
+//     if (g1Right) {
+//      keepGoing = pt1[0] > pb1[0];
+//     } else {
+//      keepGoing = pt1[0] < pb1[0];
+//     }
 
-    if (keepGoing) {
-      var pt2 = g2.transformPoint(r[i]);
-      if (g2Right) {
-        keepGoing = pt2[0] > pb2[0];
-       } else {
-        keepGoing = pt2[0] < pb2[0];
-       }
-    }
+//     if (keepGoing) {
+//       var pt2 = g2.transformPoint(r[i]);
+//       if (g2Right) {
+//         keepGoing = pt2[0] > pb2[0];
+//        } else {
+//         keepGoing = pt2[0] < pb2[0];
+//        }
+//     }
 
-    if (keepGoing)
-      keep.push(r[i]);
-  }
-  return keep;
-}
+//     if (keepGoing)
+//       keep.push(r[i]);
+//   }
+//   return keep;
+// }
 
  /*
  * Calculates the angle ABC (in radians)
@@ -850,122 +850,122 @@ function gpIntersection(g1, p1, g1Right, g2, p2, g2Right) {
  * C second point
  * B center point
  */
-// function find_angle(A,B,C) {
-//   var AB = Math.sqrt(Math.pow(B[0]-A[0],2)+ Math.pow(B[1]-A[1],2));
-//   var BC = Math.sqrt(Math.pow(B[0]-C[0],2)+ Math.pow(B[1]-C[1],2));
-//   var AC = Math.sqrt(Math.pow(C[0]-A[0],2)+ Math.pow(C[1]-A[1],2));
-//   return Math.acos((BC*BC+AB*AB-AC*AC)/(2*BC*AB));
-// }
+function find_angle(A,B,C) {
+  var AB = Math.sqrt(Math.pow(B[0]-A[0],2)+ Math.pow(B[1]-A[1],2));
+  var BC = Math.sqrt(Math.pow(B[0]-C[0],2)+ Math.pow(B[1]-C[1],2));
+  var AC = Math.sqrt(Math.pow(C[0]-A[0],2)+ Math.pow(C[1]-A[1],2));
+  return Math.acos((BC*BC+AB*AB-AC*AC)/(2*BC*AB));
+}
 
-// function getBigSmallAngles(s1, s2, p) {
-//   var onS1 = s1.a[1] > p[1] && s1.b[1] < p[1];
-//   var onS2 = s2.a[1] > p[1] && s2.b[1] < p[1];
+function getBigSmallAngles(s1, s2, p) {
+  var onS1 = s1.a[1] > p[1] && s1.b[1] < p[1];
+  var onS2 = s2.a[1] > p[1] && s2.b[1] < p[1];
 
-//   // just return the small angle
-//   if (!onS1 && !onS2) {
+  // just return the small angle
+  if (!onS1 && !onS2) {
 
-//     var belowS1 = s1.a[1] > p[1] && s1.b[1] > p[1];
-//     var belowS2 = s2.a[1] > p[1] && s2.b[1] > p[1];
-//     var aboveS1 = s1.a[1] < p[1] && s1.b[1] < p[1];
-//     var aboveS2 = s2.a[1] < p[1] && s2.b[1] < p[1];
+    var belowS1 = s1.a[1] > p[1] && s1.b[1] > p[1];
+    var belowS2 = s2.a[1] > p[1] && s2.b[1] > p[1];
+    var aboveS1 = s1.a[1] < p[1] && s1.b[1] < p[1];
+    var aboveS2 = s2.a[1] < p[1] && s2.b[1] < p[1];
 
-//     if (belowS1 && aboveS2 || belowS2 && aboveS1) {
-//       var d1 = dist(s1.a, p);
-//       var d2 = dist(s1.b, p);
-//       if (d2 < d1) { // s1 reverse
-//         s1 = makeSegment(s1.b, s1.a, true);
-//       } else { // s2 reverse
-//         s2 = makeSegment(s2.b, s2.a, true);
-//       }
-//     } else if (belowS1 && belowS2) { // below beta between pi and 0
-//       s1 = makeSegment(s1.b, s1.a, true);
-//       s2 = makeSegment(s2.b, s2.a, true);
-//     } // above - do nothing
+    if (belowS1 && aboveS2 || belowS2 && aboveS1) {
+      var d1 = dist(s1.a, p);
+      var d2 = dist(s1.b, p);
+      if (d2 < d1) { // s1 reverse
+        s1 = makeSegment(s1.b, s1.a, true);
+      } else { // s2 reverse
+        s2 = makeSegment(s2.b, s2.a, true);
+      }
+    } else if (belowS1 && belowS2) { // below beta between pi and 0
+      s1 = makeSegment(s1.b, s1.a, true);
+      s2 = makeSegment(s2.b, s2.a, true);
+    } // above - do nothing
 
-//     var beta = getSegmentsBisectorAngle(s1, s2, false);
+    var beta = getSegmentsBisectorAngle(s1, s2, false);
 
-//     // is p below, left, right or above?
-//     if (belowS1 && aboveS2 || belowS2 && aboveS1) {
-//       // in between
-//       var isLeft = s1.a[0] > p[0] && s1.b[0] > p[0];
-//       if (isLeft) { // between pi/2 and 0 or 3 halfs and 5 halfs pi
-//         while (beta < -HALF_PI) {
-//           beta += Math.PI;
-//         }
+    // is p below, left, right or above?
+    if (belowS1 && aboveS2 || belowS2 && aboveS1) {
+      // in between
+      var isLeft = s1.a[0] > p[0] && s1.b[0] > p[0];
+      if (isLeft) { // between pi/2 and 0 or 3 halfs and 5 halfs pi
+        while (beta < -HALF_PI) {
+          beta += Math.PI;
+        }
 
-//         while (beta > FIVE_HALFS_PI) {
-//           beta -= Math.PI;
-//         }
+        while (beta > FIVE_HALFS_PI) {
+          beta -= Math.PI;
+        }
 
-//         // check
-//         if (beta < -HALF_PI || beta > FIVE_HALFS_PI || beta < HALF_PI && beta > THREE_HALFS_PI) {
-//           console.warn("invalid angle");
-//         }
-//       } else { // between pi/2 and 3 halfs
-//         while (beta < HALF_PI) {
-//           beta += Math.PI;
-//         }
+        // check
+        if (beta < -HALF_PI || beta > FIVE_HALFS_PI || beta < HALF_PI && beta > THREE_HALFS_PI) {
+          console.warn("invalid angle");
+        }
+      } else { // between pi/2 and 3 halfs
+        while (beta < HALF_PI) {
+          beta += Math.PI;
+        }
 
-//         while (beta > THREE_HALFS_PI) {
-//           beta -= Math.PI;
-//         }
+        while (beta > THREE_HALFS_PI) {
+          beta -= Math.PI;
+        }
 
-//         // check
-//         if (beta < HALF_PI || beta > THREE_HALFS_PI) {
-//           console.warn("invalid angle");
-//         }
-//       }
-//     } else if (belowS1 && belowS2) { // below beta between pi and 0
-//       while (beta < 0.0) {
-//         beta += Math.PI;
-//       }
+        // check
+        if (beta < HALF_PI || beta > THREE_HALFS_PI) {
+          console.warn("invalid angle");
+        }
+      }
+    } else if (belowS1 && belowS2) { // below beta between pi and 0
+      while (beta < 0.0) {
+        beta += Math.PI;
+      }
 
-//       while (beta > Math.PI) {
-//         beta -= Math.PI;
-//       }
+      while (beta > Math.PI) {
+        beta -= Math.PI;
+      }
 
-//       // check
-//       if (beta < 0.0 || beta > Math.PI) {
-//         console.warn("invalid angle");
-//       }
-//     } else if (aboveS2 && aboveS1) { // above beta between pi and 2pi
-//       while (beta < Math.PI) {
-//         beta += Math.PI;
-//       }
+      // check
+      if (beta < 0.0 || beta > Math.PI) {
+        console.warn("invalid angle");
+      }
+    } else if (aboveS2 && aboveS1) { // above beta between pi and 2pi
+      while (beta < Math.PI) {
+        beta += Math.PI;
+      }
 
-//       while (beta > (2.0 * Math.PI)) {
-//         beta -= Math.PI;
-//       }
+      while (beta > (2.0 * Math.PI)) {
+        beta -= Math.PI;
+      }
 
-//       // check
-//       if (beta < Math.PI || beta > (2.0 * Math.PI)) {
-//         console.warn("invalid angle");
-//       }
-//     }
+      // check
+      if (beta < Math.PI || beta > (2.0 * Math.PI)) {
+        console.warn("invalid angle");
+      }
+    }
 
-//     return {small: beta};
-//   }
+    return {small: beta};
+  }
 
-//   var sOnTo = onS1 ? s1 : s2;
-//   var sOff = onS1 ? s2 : s1;
+  var sOnTo = onS1 ? s1 : s2;
+  var sOff = onS1 ? s2 : s1;
 
-//   // abs?
-//   var a1 = find_angle(sOnTo.a, p, sOff.a);
-//   var a2 = find_angle(sOnTo.b, p, sOff.a);
-//   var a3 = getAngle(sOnTo);
-//   var r = isRightOfLine(sOnTo.a, sOnTo.b, sOff.a);
-//   if (r) {
-//     if (a1 < a2) // a1 small angle
-//       return {small: a3 - (a1 / 2.0), large: (a3 - a1) - (a2 / 2.0)}
+  // abs?
+  var a1 = find_angle(sOnTo.a, p, sOff.a);
+  var a2 = find_angle(sOnTo.b, p, sOff.a);
+  var a3 = getAngle(sOnTo);
+  var r = isRightOfLine(sOnTo.a, sOnTo.b, sOff.a);
+  if (r) {
+    if (a1 < a2) // a1 small angle
+      return {small: a3 - (a1 / 2.0), large: (a3 - a1) - (a2 / 2.0)}
 
-//     return {small: a3 - a1 - (a2 / 2.0), large: a3 - (a1 / 2.0)}
-//   }
+    return {small: a3 - a1 - (a2 / 2.0), large: a3 - (a1 / 2.0)}
+  }
 
-//   if (a1 < a2) // a1 small angle
-//     return {small: a3 + (a1 / 2.0), large: (a3 + a1) + (a2 / 2.0)}
+  if (a1 < a2) // a1 small angle
+    return {small: a3 + (a1 / 2.0), large: (a3 + a1) + (a2 / 2.0)}
 
-//   return {small: a3 + a1 + (a2 / 2.0), large: a3 + (a1 / 2.0)}
-// }
+  return {small: a3 + a1 + (a2 / 2.0), large: a3 + (a1 / 2.0)}
+}
 
 //------------------------------------------------------------
 // bisectSegments

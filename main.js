@@ -67,7 +67,7 @@ let g_settings = {
   showDebugObjs: {label: "Show Debug Input", value: false}, // debugging only
   showTree: {label: "Show Beach Line Tree", value: false},
   showBeachLine: {label: "Show Beach Line", value: true},
-  setMinPathCrossSection: {label: "Set Min Path Cross Section", value: false, num: undefined},
+  setMinPathCrossSection: {label: "Set Min Path Diameter", value: false, num: undefined},
   // showOverview: {label: "Show Overview", value: false}
 };
 

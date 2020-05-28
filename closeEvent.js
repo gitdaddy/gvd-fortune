@@ -166,45 +166,46 @@ function createCloseEventFortune(arcNode, e0, e1) {
   if (v0.isVec && v1.isVec) {
     optIntersect = rayToRayIntersect(v0.p, v0.v, v1.p, v1.v);
   } else if (v0.isPara && v1.isPara) {
-    throw "not ready yet";
-    // var a1 = e0.prevArc();
-    // var a2 = e1.prevArc();
-    // var a3 = e1.nextArc();
+    var left = arcNode.prevArc();
+    var right = arcNode.nextArc();
 
-    // var pointSites = [];
-    // var segs = [];
+    var pointSites = [];
+    var segs = [];
 
-    // _.each([a1.site, a2.site, a3.site], s => {
-    //   if (s.type === "vec") {
-    //     pointSites.push(s);
-    //   } else {
-    //     segs.push(s);
-    //   }
-    // });
-    // var b;
-    // if (pointSites.length === 2 ) {
-    //   b = bisect(pointSites[0], pointSites[1]);
-    // } else if (segs.length === 2) {
-    //   var bisectors = bisectSegmentsNew(segs[0], segs[1]);
-    //   if (bisectors.length === 2) {
-    //     b = getBisectorGivenPoints(v0.p, v1.p, bisectors[0], bisectors[1], segs[0], segs[1]);
-    //   } else {
-    //     b = bisectors[0];
-    //   }
-    // } else {
-    //   throw "Invalid intersection";
-    // }
+    _.each([left.site, arcNode.site, right.site], s => {
+      if (s.type === "vec") {
+        pointSites.push(s);
+      } else {
+        segs.push(s);
+      }
+    });
+    var b;
+    if (pointSites.length === 2 ) {
+      b = bisect(pointSites[0], pointSites[1]);
+    } else if (segs.length === 2) {
+      var bisectors = bisectSegmentsNew(segs[0], segs[1]);
+      if (bisectors.length === 2) {
+        b = getBisectorGivenPoints(v0.p, v1.p, bisectors[0], bisectors[1], segs[0], segs[1]);
+      } else {
+        b = bisectors[0];
+      }
+    } else {
+      throw "Invalid intersection";
+    }
 
-    // // noise reduction
-    // var Threshold = 400;
-    // if ((Math.abs(b.p1[0]) + Math.abs(b.p1[1])) > Threshold) {
-    //   console.log("Applying noise reduction");
-    //   if (segs.length !== 2) throw "invalid bisector";
-    //   b = getAverage(segs[0], segs[1]);
-    // }
+    // noise reduction
+    var Threshold = 400;
+    if ((Math.abs(b.p1[0]) + Math.abs(b.p1[1])) > Threshold) {
+      console.log("Applying noise reduction");
+      if (segs.length !== 2) throw "invalid bisector";
+      b = getAverage(segs[0], segs[1]);
+    }
+
+    var i0 = v0.gp.intersectRayWithBound(b.p1, b.v, v0.rightSide, v0.p, true);
+    if (!i0 || i0.length === 0) return null;
+    optIntersect = i0[0];
 
     // var i0 = gpIntersection(v0.gp, v0.p, v0.rightSide, v1.gp, v1.p, v1.rightSide);
-    // optIntersect = i0[0];
 
     // var i0 = v0.gp.intersectRayWithBound(b.p1, b.v, v0.rightSide, v0.p, true);
     // var i1 = v1.gp.intersectRayWithBound(b.p1, b.v, v1.rightSide, v1.p, true);
@@ -265,7 +266,7 @@ function createCloseEvent(arcNode, directrix) {
   (v0.isVec && v1.isVec)
   || (v0.isPara && v1.isVec)
   || (v0.isVec && v1.isPara)
-  // || (v0.isPara && v1.isPara) // final
+  // || (v0.isPara && v1.isPara)
   ) {
     return createCloseEventFortune(arcNode, e0, e1);
   }
