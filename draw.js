@@ -5,6 +5,8 @@ let g_isoEdgeWidth = 1;
 let g_gvdSurfaceWidth = 2;
 let g_surfaceHighlightWidth = 10;
 
+let g_medialAxisEndingEdges = [];
+
 // dijkstra's controls
 let g_pathStartElemIdx = undefined;
 var g_gvdVertices = [];
@@ -496,6 +498,10 @@ function enforceSettings() {
   .style("stroke-width", g_settings.showMedial.value ? g_isoEdgeWidth : 0)
   ;
 
+  d3.selectAll(".gvd-ending-surface")
+  .style("stroke-width", g_settings.showMedial.value ? g_isoEdgeWidth : 0)
+  ;
+
   d3.selectAll(".gvd-iso-surface-parabola")
   .style("stroke-width", g_settings.showMedial.value ? g_isoEdgeWidth : 0)
   ;
@@ -588,6 +594,11 @@ function clearSurface() {
 
   d3.select('#gvd')
   .selectAll('.gvd-iso-surface')
+  .remove()
+  ;
+
+  d3.select('#gvd')
+  .selectAll('.gvd-ending-surface')
   .remove()
   ;
 
@@ -904,6 +915,23 @@ function drawSurface(dcel) {
     .style("stroke", getGVDStroke())
   ;
 
+  let endingEdges = d3.select('#gvd')
+    .selectAll('.gvd-ending-surface')
+    .data(g_medialAxisEndingEdges);
+  endingEdges.exit().remove();
+  endingEdges.enter()
+  .append('line')
+  .attr('class', "gvd-ending-surface")
+  .attr("vector-effect", "non-scaling-stroke")
+  .merge(endingEdges)
+  .attr('x1', e => xRev(e.a[0]))
+  .attr('y1', e => yRev(e.a[1]))
+  .attr('x2', e => xRev(e.b[0]))
+  .attr('y2', e => yRev(e.b[1]))
+  .style("stroke-width", e => getSurfaceWidth(false))
+  .style("stroke", getGVDStroke())
+  ;
+
   d3.select('#gvd').selectAll(".gvd-edge-vertex").remove();
 
   g_gvdVertices = [];
@@ -933,6 +961,8 @@ function drawSurface(dcel) {
     .on("mouseover", onEdgeVertexMouseOver)
     .on("mouseout", onEdgeVertexMouseOut)
     ;
+
+
 }
 
 // function drawCloseEvents_2(eventPoints) {
@@ -1256,6 +1286,14 @@ function rescaleView(newX, newY) {
   }
 
   if (g_settings.showMedial.value) {
+
+    d3.selectAll(".gvd-ending-surface")
+    .attr('x1', e => newX(e.a[0]))
+    .attr('y1', e => newY(e.a[1]))
+    .attr('x2', e => newX(e.b[0]))
+    .attr('y2', e => newY(e.b[1]))
+    ;
+
     d3.selectAll(".gvd-iso-surface")
     .attr('x1', e => newX(e.origin.point[0]))
     .attr('y1', e => newY(e.origin.point[1]))

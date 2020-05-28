@@ -222,6 +222,7 @@ function datasetUpdate() {
 
 function fortune(reorder) {
   nodeId = 1;
+  g_medialAxisEndingEdges = [];
   var queue = createDataQueue(reorder);
   dcel = new DCEL();
   var beachline = new Beachline(dcel);

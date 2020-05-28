@@ -95,9 +95,15 @@ Beachline.prototype.add = function (eventPacket) {
 
 
   if (subTreeData.closeSplitNode) {
-    // TODO put old line data somewhere for display
     var e0 = subTreeData.closeSplitNode.prevEdge();
     var e1 = subTreeData.closeSplitNode.nextEdge();
+
+    if (e0.dcelEdge.dest.overridden) {
+      g_medialAxisEndingEdges.push({a:e0.dcelEdge.origin.point, b:e0.dcelEdge.dest.point});
+    } else {
+      g_medialAxisEndingEdges.push({a:e1.dcelEdge.origin.point, b:e1.dcelEdge.dest.point});
+    }
+
     var l = subTreeData.closeSplitNode.prevArc();
     var r = subTreeData.closeSplitNode.nextArc();
 

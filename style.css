@@ -110,6 +110,10 @@ line#sweepline {
     stroke: black;
 }
 
+.gvd-ending-surface {
+    stroke: black;
+}
+
 .gvd-iso-surface {
     stroke: black;
 }
