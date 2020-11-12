@@ -1,13 +1,17 @@
 let g_zoomed = false;
 
-let g_siteRadius = 3;
+let g_siteRadius = 4;
 let g_isoEdgeWidth = 1;
 let g_gvdSurfaceWidth = 2;
-let g_surfaceHighlightWidth = 7;
+let g_surfaceHighlightWidth = 10;
+
+let g_medialAxisEndingEdges = [];
 
 // dijkstra's controls
-let g_pathStartElemIdx = undefined;
+let g_pathStartElemId = undefined;
 var g_gvdVertices = [];
+
+var g_pathHighlightInfo = {};
 
 // start, end, default
 let g_edgeColors = [ 'blue', 'limegreen', 'red', 'black'];
@@ -40,12 +44,12 @@ let yRevOrigin = d3.scaleLinear()
     .range([0, height]);
 
 let yToGVD = d3.scaleLinear()
-    .domain([0, height])
-    .range([1.1, -1.1]);
+    .domain([0, height + margin.bottom + margin.top])
+    .range([1.22, -1.22]);
 
 let xToGVD = d3.scaleLinear()
-    .domain([0, width])
-    .range([-1.1, 1.1]);
+    .domain([0, width + margin.left + margin.right])
+    .range([-1.22, 1.22]);
 
 let rScale = d3.scaleLinear()
     .domain([0, 2.2])
@@ -56,6 +60,11 @@ let zoom = d3.zoom()
   .scaleExtent([.5, ZOOM_EXTENT])
   .extent([[0, 0], [width, height]])
   .on("zoom", zoomed);
+
+/////////////// Div Tool Tips /////////////////////
+// var minToolTip = d3.select("body").append("div")
+// .attr("class", "tooltip")
+// .style("opacity", 0);
 
 /////////////// Handler Functions /////////////////
 
@@ -71,12 +80,11 @@ function onEdgeVertexClick(d, i) {
   // Stop the event from propagating to the SVG
   d3.event.stopPropagation();
 
-  if (g_pathStartElemIdx) {
-    d3.select('#' + getEdgeVertexId(g_pathStartElemIdx))
-      .style("fill", g_edgeColors[3]);
+  if (g_pathStartElemId) {
+    d3.select('#' + getEdgeVertexId(g_pathStartElemId)).style("fill", g_edgeColors[3]);
   }
   this.style["fill"] = g_edgeColors[1];
-  g_pathStartElemIdx = i;
+  g_pathStartElemId = d.id;
   var t0 = performance.now();
   // clear all path info
   _.each(g_gvdVertices, v => {
@@ -93,19 +101,54 @@ function onEdgeVertexClick(d, i) {
 
 function onEdgeVertexMouseOver(d, i) {
   d3.select(`#${this.id}`).attr("r", g_siteRadius * 3);
-  if (_.isUndefined(g_pathStartElemIdx)) return;
-  var edges = _.sortBy(_.values(d.connectedEdges), e => {
-    return e.tCost;
-  });
 
-  if (i != g_pathStartElemIdx && edges[0].tCost) {
-    highlightPath(edges[0], g_edgeColors[0]);
+  if (!_.isUndefined(g_pathStartElemId)) {
+    var edges = _.sortBy(_.values(d.connectedEdges), e => {
+      return e.tCost;
+    });
+    if (i != g_pathStartElemId && edges[0].tCost) {
+      var radiusData = highlightPath(edges[0], g_edgeColors[0]);
+      // g_pathHighlightInfo.minId = radiusData.minId;
+      // g_pathHighlightInfo.maxId = radiusData.maxId;
+      // var minVtx = d3.select(`#${radiusData.minId}`);
+      // minVtx.attr("r", g_siteRadius * 3)
+      // minVtx.style("fill", g_edgeColors[2]);
+
+      // var maxVtx = d3.select(`#${radiusData.maxId}`);
+      // maxVtx.attr("r", g_siteRadius * 3)
+      // maxVtx.style("fill", g_edgeColors[1]);
+
+      var ttMsg = "<span>Path Diameter: <br> Max: " + radiusData.max.toFixed(8) +
+        "<br>" + "Min: " + radiusData.min.toFixed(8) + "<span>";
+
+      if (g_settings.setMinPathDiameter.value && g_settings.setMinPathDiameter.num > 0.0) {
+        var val = g_settings.setMinPathDiameter.num;
+        ttMsg = "<span>Path Diameter: <br> Max: " + radiusData.max.toFixed(8) +
+        "<br> Min: " + radiusData.min.toFixed(8) + "<br> Diameter Min Constraint: " + val + "<span>";
+      }
+
+      var tt = d3.select("#tool-tip-a");
+      tt.transition().duration(200).style("opacity", .9);
+      tt.html(ttMsg).style("left", (d3.event.pageX + 15) + "px").style("top", (d3.event.pageY - 28) + "px");
+    }
   }
 }
 
 function onEdgeVertexMouseOut(d, i) {
   d3.select(`#${this.id}`).attr("r", g_siteRadius);
   unHighlightPaths();
+
+  // un-highlight cross section details
+  // var minVtx = d3.select(`#${g_pathHighlightInfo.minId}`);
+  // minVtx.attr("r", g_siteRadius)
+  // minVtx.style("fill", g_edgeColors[3]);
+  // var maxVtx = d3.select(`#${g_pathHighlightInfo.maxId}`);
+  // maxVtx.attr("r", g_siteRadius)
+  // maxVtx.style("fill", g_edgeColors[3]);
+
+  d3.select("#tool-tip-a").transition()
+    .duration(500)
+    .style("opacity", 0);
 }
 
 ///////////////////////////////////////////////////
@@ -156,14 +199,20 @@ function drawInit(sweepline, settings) {
   svg = d3.select('#mainView')
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom)
+  .on("click", customSetClick)
   .style("pointer-events", "mousedown, dbclick, wheel.zoom")
-  .call(zoom)
-  .append("g")
+  .call(zoom);
+
+  var svgGraph = svg.append("g")
   .attr("id", "gvd")
   .attr("transform", `translate(${margin.left} ,${margin.top})`)
   ;
 
-  svg.selectAll("line")
+  minToolTip = svg.append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+  svgGraph.selectAll("line")
     .data([sweepline])
     .enter()
     .append("line")
@@ -175,16 +224,16 @@ function drawInit(sweepline, settings) {
     .attr("vector-effect", "non-scaling-stroke")
     ;
 
-  xAxis = svg.append('g')
+  xAxis = svgGraph.append('g')
     .attr("transform", `translate(${margin.left}, ${height})`)
     .call(d3.axisBottom(xRev));
 
-  yAxis = svg.append('g')
+  yAxis = svgGraph.append('g')
     .attr("transform", `translate(${margin.left},0)`)
     .call(d3.axisLeft(yRev));
 
   // Add a clipPath: everything out of this area won't be drawn.
-  svg.append("defs").append("svg:clipPath")
+  svgGraph.append("defs").append("svg:clipPath")
   .attr("id", "clip")
   .append("svg:rect")
   .attr("width", width + 20)
@@ -194,7 +243,7 @@ function drawInit(sweepline, settings) {
   .attr("x", 0)
   .attr("y", 0);
 
-  svg.attr("clip-path", "url(#clip)");
+  svgGraph.attr("clip-path", "url(#clip)");
 
   // add settings
   var settings = _.map(g_settings, function (val, key) {
@@ -303,92 +352,93 @@ function getCurrentImgURL() {
 // 1. on a setting change
 // 2. on a dataset change
 // TODO zoom and overview linking
-function updateOverview() {
-  if (g_settings.showOverview && g_settings.showOverview.value) {
-    resetView();
-    // TODO store current zoom settings
-    // reset view - export, restore zoom
+// function updateOverview() {
+//   if (g_settings.showOverview && g_settings.showOverview.value) {
+//     resetView();
+//     // TODO store current zoom settings
+//     // reset view - export, restore zoom
 
-    var imageWidth = width/2;
-    var imageHeight = height/2;
+//     var imageWidth = width/2;
+//     var imageHeight = height/2;
 
-    g_overviewImg = {
-      w: imageWidth,
-      h: imageHeight,
-      url: getCurrentImgURL()
-    };
+//     g_overviewImg = {
+//       w: imageWidth,
+//       h: imageHeight,
+//       url: getCurrentImgURL()
+//     };
 
-    var imgSvg = d3.select("#overviewBrushArea");
-        var selection = imgSvg.attr("width", imageWidth)
-        .attr("height", imageHeight)
-        .selectAll("image")
-        .data([g_overviewImg])
-        ;
+//     var imgSvg = d3.select("#overviewBrushArea");
+//         var selection = imgSvg.attr("width", imageWidth)
+//         .attr("height", imageHeight)
+//         .selectAll("image")
+//         .data([g_overviewImg])
+//         ;
 
-    // enter
-    selection.enter()
-    .append("svg:image")
-    .attr("xlink:href", d => d.url)
-    .attr("width", d => d.w)
-    .attr("height", d => d.h);
+//     // enter
+//     selection.enter()
+//     .append("svg:image")
+//     .attr("xlink:href", d => d.url)
+//     .attr("width", d => d.w)
+//     .attr("height", d => d.h);
 
-    // update
-    selection.attr("xlink:href", d => d.url)
-    .attr("width", d => d.w)
-    .attr("height", d => d.h)
-    ;
+//     // update
+//     selection.attr("xlink:href", d => d.url)
+//     .attr("width", d => d.w)
+//     .attr("height", d => d.h)
+//     ;
 
-    // zoom brushing
-    imgSvg.call(
-      d3.brush().on("end", function() {
-        var sel = d3.brushSelection(this);
-        var x0 = (sel[0][0] * 2);
-        var y0 = (sel[0][1] * 2);
-        var x1 = (sel[1][0] * 2);
-        var y1 = (sel[1][1] * 2);
-        // xToGVD, yToGVD
-        var scale;
-        if (Math.abs(x0 - x1) > Math.abs(y0 - y1)) {
-          scale = Math.abs(x0 - x1) / 2.2;
-          // square based off of delta x
-          var delta2 = Math.abs(x0 - x1) / 2;
-          var cenY = (y0 + y1) / 2;
-          y0 = cenY - delta2;
-          y1 = cenY + delta2;
-        } else {
-          scale = Math.abs(y0 - y1) / 2.2;
-          var delta2 = Math.abs(y0 - y1) / 2;
-          var cenX = (x0 + x1) / 2;
-          x0 = cenX - delta2;
-          x1 = cenX + delta2;
-        }
-        console.log("brushed end x min - max:" + x0 + "-" + x1
-          + " y min - max:" + y0 + "-" + y1 + " scale:" + scale);
+//     // zoom brushing
+//     imgSvg.call(
+//       d3.brush().on("end", function() {
+//         var sel = d3.brushSelection(this);
+//         var x0 = (sel[0][0] * 2);
+//         var y0 = (sel[0][1] * 2);
+//         var x1 = (sel[1][0] * 2);
+//         var y1 = (sel[1][1] * 2);
+//         // xToGVD, yToGVD
+//         var scale;
+//         if (Math.abs(x0 - x1) > Math.abs(y0 - y1)) {
+//           scale = Math.abs(x0 - x1) / 2.2;
+//           // square based off of delta x
+//           var delta2 = Math.abs(x0 - x1) / 2;
+//           var cenY = (y0 + y1) / 2;
+//           y0 = cenY - delta2;
+//           y1 = cenY + delta2;
+//         } else {
+//           scale = Math.abs(y0 - y1) / 2.2;
+//           var delta2 = Math.abs(y0 - y1) / 2;
+//           var cenX = (x0 + x1) / 2;
+//           x0 = cenX - delta2;
+//           x1 = cenX + delta2;
+//         }
+//         console.log("brushed end x min - max:" + x0 + "-" + x1
+//           + " y min - max:" + y0 + "-" + y1 + " scale:" + scale);
 
-        // TODO clip?
+//         // TODO clip?
 
-        xRevOrigin = d3.scaleLinear()
-        .domain([xToGVD(x0), xToGVD(x1)])
-        .range([0, width]); // this may need to change
+//         xRevOrigin = d3.scaleLinear()
+//         .domain([xToGVD(x0), xToGVD(x1)])
+//         .range([0, width]); // this may need to change
 
-        yRevOrigin = d3.scaleLinear()
-        .domain([yToGVD(y0), yToGVD(y1)])
-        .range([0, height]); // this may need to change
+//         yRevOrigin = d3.scaleLinear()
+//         .domain([yToGVD(y0), yToGVD(y1)])
+//         .range([0, height]); // this may need to change
 
-        // d3.zoomIdentity.x = 0;
-        // d3.zoomIdentity.y = 0;
-        d3.zoomIdentity.scale(scale)
+//         // d3.zoomIdentity.x = 0;
+//         // d3.zoomIdentity.y = 0;
+//         d3.zoomIdentity.scale(scale)
 
-        rescaleView(xRevOrigin, yRevOrigin);
-      })
-    );
-  } else {
-    d3.select("#overviewBrushArea")
-      .attr("width", 0)
-      .attr("height", 0)
-    ;
-  }
-}
+//         rescaleView(xRevOrigin, yRevOrigin);
+//       })
+//     );
+//   }
+//   else {
+//     d3.select("#overviewBrushArea")
+//       .attr("width", 0)
+//       .attr("height", 0)
+//     ;
+//   }
+// }
 
 function enforceSettings() {
   // show events
@@ -448,6 +498,10 @@ function enforceSettings() {
   .style("stroke-width", g_settings.showMedial.value ? g_isoEdgeWidth : 0)
   ;
 
+  d3.selectAll(".gvd-ending-surface")
+  .style("stroke-width", g_settings.showMedial.value ? g_isoEdgeWidth : 0)
+  ;
+
   d3.selectAll(".gvd-iso-surface-parabola")
   .style("stroke-width", g_settings.showMedial.value ? g_isoEdgeWidth : 0)
   ;
@@ -486,13 +540,27 @@ function enforceSettings() {
   .selectAll(".beach-v")
   .style("stroke-width", g_settings.showBeachLine.value ? g_isoEdgeWidth : 0);
   ;
+
+  // if min cross section
+  if (g_settings.setMinPathDiameter.value) {
+    d3.selectAll(".min-cross-inputs").style("visibility", null).style("height", "100px");
+  } else {
+    d3.selectAll(".min-cross-inputs").style("visibility", "hidden").style("height", "0px");
+  }
+
+  // custom dataset
+  if (g_datasetList[g_setIdx].customSet) {
+    d3.selectAll(".custom-dataset-div").style("visibility", null).style("height", "50px");
+  } else {
+    d3.selectAll(".custom-dataset-div").style("visibility", "hidden").style("height", "0px");
+  }
 }
 
 function onSettingChecked(event) {
   g_settings[event.value].value = event.checked;
   if (g_settings.showOverview && g_settings.showOverview.value) {
     rescaleView(xRev, yRev);
-    updateOverview();
+    // updateOverview();
   }
 
   storeLocalSettings(g_settings);
@@ -526,6 +594,45 @@ function clearSurface() {
 
   d3.select('#gvd')
   .selectAll('.gvd-iso-surface')
+  .remove()
+  ;
+
+  d3.select('#gvd')
+  .selectAll('.gvd-ending-surface')
+  .remove()
+  ;
+
+  d3.select('#gvd')
+  .selectAll('.gvd-edge-vertex')
+  .remove()
+  ;
+
+  d3.select('#gvd')
+  .selectAll('.close-event')
+  .remove()
+  ;
+}
+
+function clearSites() {
+  d3.select("#gvd")
+  .selectAll(".point-site")
+  .remove()
+  ;
+
+  d3.select("#gvd")
+  .selectAll(".segment-site")
+  .remove()
+  ;
+}
+
+function clearBeachLine() {
+  d3.select("#gvd")
+  .selectAll(".beach-v")
+  .remove()
+  ;
+
+  d3.select("#gvd")
+  .selectAll(".beach-parabola")
   .remove()
   ;
 }
@@ -582,12 +689,6 @@ function drawDebugObjs(objs) {
     return o instanceof Line;
   });
 
-  // TODO REMOVE
-  if (lines.length > 1) {
-    lines[0].p2 = negate(lines[0].p2);
-    lines[1].p2 = intersectLines(lines[0].p1, lines[0].p2, lines[1].p1, lines[1].p2);
-  }
-
   let selB = d3.select("#gvd")
   .selectAll(".debug-line")
   .data(lines);
@@ -638,6 +739,7 @@ function drawDebugObjs(objs) {
     .attr("vector-effect", "non-scaling-stroke")
     .merge(debugSelectionPara)
     .style("stroke-width", g_isoEdgeWidth * 5)
+    .style("stroke", d3.schemeCategory10[6])
     .attr("d", p => line(p.drawPoints))
     .attr("transform", p => p.transform)
     .attr('visibility', g_settings.showDebugObjs.value ? null : 'hidden')
@@ -656,7 +758,7 @@ function drawDebugObjs(objs) {
   ptsSelection.enter()
     .append("circle")
     .attr("class", "debug-point")
-    .attr("r", g_siteRadius * 2)
+    .attr("r", g_siteRadius)
     .merge(ptsSelection)
     .attr("cx", p => xRev(p[0]))
     .attr("cy", p => yRev(p[1]))
@@ -724,6 +826,10 @@ function getSurfaceClass(onGvd) {
   return onGvd ? "gvd-surface" : "gvd-iso-surface";
 }
 
+function getGVDStroke() {
+  return "black";
+}
+
 function getSurfaceParabolaClass(onGvd) {
   return onGvd ? "gvd-surface-parabola" : "gvd-iso-surface-parabola";
 }
@@ -768,7 +874,7 @@ function drawSurface(dcel) {
     result = iter.next();
   }
 
-  g_pathStartElemIdx = undefined;
+  g_pathStartElemId = undefined;
 
   let line = d3.line()
   .x(function (d) {return xRev(d[0]);})
@@ -786,6 +892,7 @@ function drawSurface(dcel) {
     .attr("id", d => getEdgeId(d))
     .merge(d3generalEdges)
     .style("stroke-width", e => getSurfaceWidth(e.splitSite))
+    .style("stroke", getGVDStroke())
     .attr("d", p => line(p.drawPoints))
     .attr("transform", p => p.transform)
   ;
@@ -805,6 +912,24 @@ function drawSurface(dcel) {
     .attr('x2', e => xRev(e.dest.point[0]))
     .attr('y2', e => yRev(e.dest.point[1]))
     .style("stroke-width", e => getSurfaceWidth(e.splitSite))
+    .style("stroke", getGVDStroke())
+  ;
+
+  let endingEdges = d3.select('#gvd')
+    .selectAll('.gvd-ending-surface')
+    .data(g_medialAxisEndingEdges);
+  endingEdges.exit().remove();
+  endingEdges.enter()
+  .append('line')
+  .attr('class', "gvd-ending-surface")
+  .attr("vector-effect", "non-scaling-stroke")
+  .merge(endingEdges)
+  .attr('x1', e => xRev(e.a[0]))
+  .attr('y1', e => yRev(e.a[1]))
+  .attr('x2', e => xRev(e.b[0]))
+  .attr('y2', e => yRev(e.b[1]))
+  .style("stroke-width", e => getSurfaceWidth(false))
+  .style("stroke", getGVDStroke())
   ;
 
   d3.select('#gvd').selectAll(".gvd-edge-vertex").remove();
@@ -824,7 +949,11 @@ function drawSurface(dcel) {
   edgeVertices.enter()
     .append("circle")
     .attr("class", "gvd-edge-vertex")
-    .attr("id", (d,i) => `edge-vertex-${i}`)
+    .attr("id", (d,i) => {
+      if (d.id) return getEdgeVertexId(d.id);
+      d.id = g_edgeVtxId++;
+      return getEdgeVertexId(d.id);
+    })
     .attr("cx", d => xRev(d.point[0]))
     .attr("cy", d => yRev(d.point[1]))
     .attr("r", g_siteRadius)
@@ -832,6 +961,8 @@ function drawSurface(dcel) {
     .on("mouseover", onEdgeVertexMouseOver)
     .on("mouseout", onEdgeVertexMouseOut)
     ;
+
+
 }
 
 // function drawCloseEvents_2(eventPoints) {
@@ -987,7 +1118,7 @@ function drawBeachline(beachline, directrix) {
   let lines = [];
   var generalSurfaces = [];
   let events = [];
-  beachline.prepDraw(directrix, beachline.root, -10000, 10000, arcElements, lines, generalSurfaces, events);
+  beachline.prepDraw(directrix, beachline.root, -1000000, 1000000, arcElements, lines, generalSurfaces, events);
 
   renderParabolas(arcElements.filter(d => d.type == "parabola"));
   renderVS(arcElements.filter(d => d.type == "v"));
@@ -1016,7 +1147,9 @@ function drawBeachline(beachline, directrix) {
       // .attr("id", p => p.id)
       .attr("id", p => `treenode${p.id}`)
       .attr("transform", p => p.transform)
-      .style("stroke-width", g_isoEdgeWidth);
+      .style("stroke-width", g_isoEdgeWidth)
+      .style("stroke", getGVDStroke())
+      ;
 
     let lineSelection = d3.select("#gvd").selectAll(".gvd-surface-active")
       .data(lines);
@@ -1033,7 +1166,9 @@ function drawBeachline(beachline, directrix) {
       .attr('x2', d => xRev(d.x1))
       .attr('y2', d => yRev(d.y1))
       .attr("id", p => `treenode${p.id}`)
-      .style("stroke-width", g_isoEdgeWidth);
+      .style("stroke-width", g_isoEdgeWidth)
+      .style("stroke", getGVDStroke())
+      ;
     ;
   }
   //------------------------------
@@ -1151,6 +1286,14 @@ function rescaleView(newX, newY) {
   }
 
   if (g_settings.showMedial.value) {
+
+    d3.selectAll(".gvd-ending-surface")
+    .attr('x1', e => newX(e.a[0]))
+    .attr('y1', e => newY(e.a[1]))
+    .attr('x2', e => newX(e.b[0]))
+    .attr('y2', e => newY(e.b[1]))
+    ;
+
     d3.selectAll(".gvd-iso-surface")
     .attr('x1', e => newX(e.origin.point[0]))
     .attr('y1', e => newY(e.origin.point[1]))
@@ -1180,6 +1323,9 @@ function rescaleView(newX, newY) {
 }
 
 function zoomed() {
+  // zoom disabled for the custom set
+  if (g_datasetList[g_setIdx].customSet) return;
+
   g_zoomed = true;
 
   // console.log(`Zoom scale: ${d3.event.transform.k}, x: ${d3.event.transform.x}, y:${d3.event.transform.y}`);
@@ -1288,6 +1434,7 @@ function renderData(sites, edges, beachline, closeEvents) {
         // .attr("id", d => )
         .merge(d3generalEdges)
         .style("stroke-width", getSurfaceWidth(true))
+        .style("stroke", getGVDStroke())
         .attr("d", d => line(d.drawPoints))
         // .attr("transform", p => p.transform)
       ;
@@ -1306,6 +1453,7 @@ function renderData(sites, edges, beachline, closeEvents) {
         .attr('x2', e => xRev(e.dest.point[0]))
         .attr('y2', e => yRev(e.dest.point[1]))
         .style("stroke-width", e => getSurfaceWidth(true))
+        .style("stroke", getGVDStroke())
       ;
     }
 

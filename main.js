@@ -5,12 +5,12 @@ var g_eventThresh = 1e-6;
 
 let g_queue = {};
 
-let g_vertexProcessing = 0;
-let g_addTime = 0;
+// let g_addTime = 0;
 
 let g_setIdx = 0;
 
 let g_datasetList = [
+  {label:"Build Your Own", sanitize: true, customSet:true},
   {label:"Maze Dataset", sanitize: true, filePath: "./data/maze/files.txt"},
   {label:"100 Random Lines", num:100, filePath: "./data/random_100/files.txt"},
   {label:"500 Random Lines", num:500, filePath: "./data/random_500/files.txt"},
@@ -19,13 +19,6 @@ let g_datasetList = [
   {label:"Berlin city dataset", sanitize: true, isMap: true, filePath:"./data/maps/Berlin_0_256.map"},
   {label:"Boston city dataset", sanitize: true, isMap: true, filePath:"./data/maps/Boston_0_256.map"},
   {label:"Moscow city dataset", sanitize: true, isMap: true, filePath:"./data/maps/Moscow_1_256.map"},
-
-  // TODO updates
-  // {label:"Denver city dataset", isMap: true, filePath:"./data/maps/Denver_0_256.map"},
-  // {label:"Milan city dataset", isMap: true, filePath:"./data/maps/Milan_0_256.map"},
-  // {label:"NewYork city dataset", isMap: true, filePath:"./data/maps/NewYork_1_256.map"},
-  // {label:"Paris city dataset", isMap: true, filePath:"./data/maps/Paris_0_256.map"},
-  // {label:"Shanghai city dataset", isMap: true, filePath:"./data/maps/Shanghai_2_256.map"},
   {label:"Holes-64", sanitize: true, filePath: "./data/holes/h_64/files.txt"},
   {label:"Holes-128", sanitize: true, filePath: "./data/holes/h_128/files.txt"},
   {label:"Holes-256", sanitize: true, filePath: "./data/holes/h_256/files.txt"},
@@ -35,7 +28,7 @@ let g_datasetList = [
   {label:"Holes-4096", sanitize: true, filePath: "./data/holes/h_4096/files.txt"},
   {label:"Holes-8192", sanitize: true, filePath: "./data/holes/h_8192/files.txt"},
   {label:"Holes-16384", sanitize: true, filePath: "./data/holes/h_16384/files.txt"},
-  {label:"Holes-32768", sanitize: true, filePath: "./data/holes/h_32768/files.txt"},
+  // {label:"Holes-32768", sanitize: true, filePath: "./data/holes/h_32768/files.txt"},
   {label:"RPG 64", filePath: "./data/rpg_64/files.txt"},
   {label:"RPG 128", filePath: "./data/rpg_128/files.txt"},
   {label:"RPG 256", filePath: "./data/rpg_256/files.txt"},
@@ -72,26 +65,41 @@ let g_settings = {
   showObjSeg: {label: "Show object segments", value: true},
   showMedial: {label: "Show Medial Axis", value: false},
   showDebugObjs: {label: "Show Debug Input", value: false}, // debugging only
-  showTree: {label: "Show Tree", value: false},
-  showBeachLine: {label: "Show beachline", value: true},
-  showOverview: {label: "Show Overview", value: false}
+  showTree: {label: "Show Beach Line Tree", value: false},
+  showBeachLine: {label: "Show Beach Line", value: true},
+  setMinPathDiameter: {label: "Set Min Path Diameter", value: false, num: undefined},
+  // showOverview: {label: "Show Overview", value: false}
 };
 
 let g_treeId = "#treeTagId";
 
 // debugging only
 function updateDebugVars() {
-  var p = document.getElementsByName("xIncVal")[0].valueAsNumber;
-  g_xInc = _.isNaN(p) ? g_xInc : p;
-  var i = document.getElementsByName("incVal")[0].valueAsNumber;
-  g_sInc = _.isNaN(i) ? g_sInc : i;
+  if (g_settings.showDebugObjs) {
+    var p = document.getElementsByName("xIncVal")[0].valueAsNumber;
+    g_xInc = _.isNaN(p) ? g_xInc : p;
+    var i = document.getElementsByName("incVal")[0].valueAsNumber;
+    g_sInc = _.isNaN(i) ? g_sInc : i;
 
-  g_debugIdLeft = document.getElementsByName("leftId")[0].valueAsNumber;
-  localStorage.g_debugIdLeft = g_debugIdLeft;
-  g_debugIdMiddle = document.getElementsByName("middleId")[0].valueAsNumber;
-  localStorage.g_debugIdMiddle = g_debugIdMiddle;
-  g_debugIdRight = document.getElementsByName("rightId")[0].valueAsNumber;
-  localStorage.g_debugIdRight = g_debugIdRight;
+    g_debugIdLeft = document.getElementsByName("leftId")[0].valueAsNumber;
+    localStorage.g_debugIdLeft = g_debugIdLeft;
+    g_debugIdMiddle = document.getElementsByName("middleId")[0].valueAsNumber;
+    localStorage.g_debugIdMiddle = g_debugIdMiddle;
+    g_debugIdRight = document.getElementsByName("rightId")[0].valueAsNumber;
+    localStorage.g_debugIdRight = g_debugIdRight;
+
+    if (g_pathStartElemId) {
+      d3.select('#' + getEdgeVertexId(g_pathStartElemId)).style("fill", g_edgeColors[3]);
+      g_pathStartElemId = undefined;
+    }
+  }
+
+  if (g_settings.setMinPathDiameter) {
+    // min cross section
+    var minC = document.getElementsByName("minCrossSection")[0].valueAsNumber;
+    g_settings.setMinPathDiameter.num = minC;
+    localStorage.minC = minC;
+  }
 }
 
 function setSweepline(d) {
@@ -145,18 +153,15 @@ function keydown(event) {
     // Prevent scroll
     event.preventDefault();
     document.getElementById("sweeplineInput").value = g_sweepline.y.toFixed(10);
-
-    if (g_settings.Enable_C && g_settings.Enable_C.value)
-      sweeplineUpdate_C_addon(localStorage.setIdx);
-    else
-      render();
+    render();
   }
 }
 
 function init() {
   var s = getLocalSettings();
-  if (s)
-    g_settings = s;
+  if (s) {
+    _.assign(g_settings, s);
+  }
 
   setExampleDataset();
   if (localStorage.sweepline && !_.isNaN(localStorage.sweepline)
@@ -183,85 +188,47 @@ function init() {
     g_setIdx = parseInt(localStorage.setIdx);
   }
   document.getElementById("dataset-select").selectedIndex = g_setIdx;
-  if (g_settings.Enable_C && g_settings.Enable_C.value)
-    datasetChange_C_addon(g_setIdx);
-  else
-    datasetChange(g_setIdx);
-}
-
-function datasetChange_C_addon(idx) {
-  g_datasetList[idx].c_init = true;
-  localStorage.setIdx = idx;
-  var query = '/gvd_cpp/?value=' + g_datasetList[idx].filePath + "&sweepline=" + g_sweepline.y.toFixed(10);
-  $.get(query).then(function (json) {
-    if (json.err && json.err.length > 0) {
-      console.error("Server error: " + json.err);
-      return;
-    }
-
-    if (json.msg && json.msg.length > 0) {
-      console.log("Server message: " + json.msg);
-    }
-
-    var sites = JSON.parse(json.sites);
-    var edges = JSON.parse(json.edges);
-    var beachline = JSON.parse(json.beachline);
-    var closeEvents = JSON.parse(json.closeEvents);
-
-    renderData(sites, edges, beachline, closeEvents);
-  });
-}
-
-function sweeplineUpdate_C_addon(idx) {
-  if (!g_datasetList[idx].c_init){
-    datasetChange_C_addon(idx);
-    return;
-  }
-
-  localStorage.setIdx = idx;
-  drawSweepline(g_sweepline);
-  var query = '/gvd_cpp_inc/?value=' + g_datasetList[idx].filePath + "&sweepline=" + g_sweepline.y.toFixed(10);
-  $.get(query).then(function (json) {
-    if (json.err && json.err.length > 0) {
-      console.error("Server error: " + json.err);
-      return;
-    }
-
-    if (json.msg && json.msg.length > 0) {
-      console.log("Server message: " + json.msg);
-    }
-    var edges = JSON.parse(json.edges);
-    var beachline = JSON.parse(json.beachline);
-    var closeEvents = JSON.parse(json.closeEvents);
-    renderData([], edges, beachline, closeEvents);
-    enforceSettings();
-  });
+  datasetChange(g_setIdx);
 }
 
 function datasetChange(idx) {
   g_setIdx = idx;
-  if (!g_datasetList[g_setIdx].data) {
+
+  if (g_datasetList[g_setIdx].customSet) {
+    resetView();
+    clearSurface();
+    clearSites();
+    clearBeachLine();
+    enforceSettings();
+    // d3.select("#spinner")
+    // .style('visibility', 'hidden');
+  } else if (!g_datasetList[g_setIdx].data) {
     processNewDataset();
   } else {
-    var segments = [];
-    var points = [];
-    g_datasetList[g_setIdx].data.forEach(function(poly) {
-      segments = segments.concat(poly.segments);
-      points = points.concat(poly.points);
-    });
-
-    drawSites(points);
-    drawSegments(segments);
-
-    render();
-    updateOverview();
+    datasetUpdate();
   }
 
   localStorage.setIdx = g_setIdx;
 }
 
+function datasetUpdate() {
+  var segments = [];
+  var points = [];
+  g_datasetList[g_setIdx].data.forEach(function(poly) {
+    segments = segments.concat(poly.segments);
+    points = points.concat(poly.points);
+  });
+
+  drawSites(points);
+  drawSegments(segments);
+
+  render();
+  // updateOverview();
+}
+
 function fortune(reorder) {
   nodeId = 1;
+  g_medialAxisEndingEdges = [];
   var queue = createDataQueue(reorder);
   dcel = new DCEL();
   var beachline = new Beachline(dcel);
@@ -269,8 +236,7 @@ function fortune(reorder) {
   if (queue.length < 1) return beachline;
   var nextY = getEventY(queue[queue.length - 1]);
 
-  g_addTime = 0;
-  g_vertexProcessing = 0;
+  // g_addTime = 0;
   while (queue.length > 0 && nextY > g_sweepline.y) {
     var event = queue.pop();
     if (event.isCloseEvent) {
@@ -289,7 +255,7 @@ function fortune(reorder) {
         }
 
         var curY = getEventY(event);
-        var newEvents = beachline.remove(event.arcNode, event.point, curY, endingEdges);
+        var newEvents = beachline.remove(event.arcNode, event.point, curY, endingEdges, event.minR);
         newEvents.forEach(function (ev) {
             var newY = getEventY(ev);
             if (newY < curY - g_eventThresh || Math.abs(newY - curY) < g_eventThresh) {
@@ -321,66 +287,65 @@ function fortune(reorder) {
 
   // Processing metrics
   // console.log("Time in loop:" + loopTime.toFixed(6) + "(ms)");
-  console.log("Time adding:" + g_addTime.toFixed(6) + "(ms)");
-  console.log("Time closing:" + g_vertexProcessing.toFixed(6) + "(ms)");
+  // console.log("Time adding:" + g_addTime.toFixed(6) + "(ms)");
 
-  // debugging only
-  // var ev = '';
-  // while (queue.length > 0) {
-  //   var e = queue.pop();
-  //   var yval = e.type === "segment" ? e[0][1] : e[1];
-  //   var at = "(y)@:" + yval + " ";
-  //   var data;
-  //   if (e.type == "segment") {
-  //     data = at + 'a(' + e[0][0] + ',' + e[0][1] + ') - b(' + e[1][0] + ',' + e[1][1] + ')';
-  //   } else if (e.isCloseEvent) {
-  //     var live = e.live && e.arcNode.closeEvent.live ? "(Live)" : "(Dead)";
-  //     data = at + 'Close:' + e.id + " " + live + ' -point(' + e.point[0] + ',' + e.point[1] + ')';
-  //   } else {
-  //     data = at + 'point(' + e[0] + ',' + yval + ')';
-  //   }
-  //   if (e.isCloseEvent) {
-  //     ev += data;
-  //   } else {
-  //     ev += data;
-  //     // ev += data + ' r: ' + e.relation;
-  //   }
-  //   ev += '\n';
-  // }
-  // document.getElementById("events").innerHTML = ev;
   return beachline;
 }
 
 function moveSweepline(y) {
   setSweepline(y);
-  if (g_settings.Enable_C && g_settings.Enable_C.value)
-  sweeplineUpdate_C_addon(localStorage.setIdx);
-  else
-    render();
+  render();
 }
 
 function render(reorder = false) {
+
   clearSurface();
-  g_debugObjs = [];
-  var t0 = performance.now();
-  var beachline = fortune(reorder);
-  var t1 = performance.now();
-  var processTime = t1 - t0;
-  console.log("Process Time:" + processTime.toFixed(6) + "(ms)");
 
-  var t2 = performance.now();
-  drawBeachline(beachline, g_sweepline.y);
-  drawCloseEvents(closeEventPoints);
-  drawSweepline(g_sweepline);
-  drawSurface(dcel);
-  var t3 = performance.now();
-  var drawTime = t3 - t2;
-  console.log("Draw Time:" + drawTime.toFixed(6) + "(ms)");
+  if (g_datasetList[g_setIdx].data) {
+    g_debugObjs = [];
+    var t0 = performance.now();
+    reorder = reorder || g_datasetList[g_setIdx].customSet;
+    var beachline = fortune(reorder);
+    var t1 = performance.now();
+    var processTime = t1 - t0;
+    console.log("Process Time:" + processTime.toFixed(6) + "(ms)");
 
-  if (g_settings.showTree.value){
-    showTree(beachline.root);
+    var t2 = performance.now();
+    drawBeachline(beachline, g_sweepline.y);
+    drawCloseEvents(closeEventPoints);
+    drawSurface(dcel);
+    var t3 = performance.now();
+    var drawTime = t3 - t2;
+    console.log("Draw Time:" + drawTime.toFixed(6) + "(ms)");
+
+    if (g_settings.showTree.value){
+      showTree(beachline.root);
+    }
   }
 
+  drawSweepline(g_sweepline);
   enforceSettings();
   // runTests();
+}
+
+
+function snap() {
+  console.log('Taking SVG snapshot');
+  let XMLS = new XMLSerializer();
+  let svgtext = XMLS.serializeToString(document.getElementById('mainView'));
+
+  // console.log(svgtext);
+  let textarea = document.getElementById("snapshot-output");
+  // textarea.innerHTML = svgtext;
+  textarea.value = svgtext;
+
+  textarea.select();
+  document.execCommand('copy');
+
+  // const el = document.createElement('textarea');
+  // el.value = svgtext;
+  // document.body.appendChild(el);
+  // el.select();
+  // document.execCommand('copy');
+  // document.body.removeChild(el);
 }

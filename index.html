@@ -2,6 +2,8 @@
 <html>
 <head>
   <link rel="stylesheet" href="style.css">
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
+  <script src="https://kit.fontawesome.com/a076d05399.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta charset="UTF-8">
 
@@ -29,6 +31,7 @@
   <script type="text/javascript" src="beachline.js"></script>
   <script type="text/javascript" src="tree.js"></script>
   <script type="text/javascript" src="seedrandom.js"></script>
+  <script type="text/javascript" src="customSet.js"></script>
   <script type="text/javascript" src="draw.js"></script>
   <script type="text/javascript" src="dataset.js"></script>
   <script type="text/javascript" src="main.js"></script>
@@ -37,50 +40,57 @@
 </head>
 
 <body onload="init()">
+  <div class="tooltip" id="tool-tip-a" style="opacity: 0.0; left: 456px; top: 589px;"></div>
   <div class="row">
     <svg id="mainView" class="main-view-center"></svg>
     <div class="settings-col">
-      <span class="title-group">
-        <!-- Dataset: <select id="dataset-select" onchange="datasetChange_C_addon(this.selectedIndex)"></select> -->
-        Dataset: <select id="dataset-select" onchange="datasetChange(this.selectedIndex)"></select>
-      </span>
+      <div class="user-controls">
+        <div>User Controls: </div>
+        <span>Use up and down arrow keys <i class="fas fa-arrows-alt-v"></i> to move the sweep line</span>
+        <div>Hold the shift key or ctrl key for smaller or larger movement </div>
+      </div>
       <div class="title-group">
-        y value=<input type="number" id="sweeplineInput"></input>
+        Dataset: <select id="dataset-select" onchange="datasetChange(this.selectedIndex)"></select>
+        <button onclick="resetView()">Reset Zoom</button>
+      </div>
+      <div class="title-group">
+        sweep line y value=<input type="number" id="sweeplineInput"></input>
         <button onclick="updateSweepline()">Update</button>
       </div>
-      <span class="title-group">
-        <button onclick="resetView()">Reset View</button>
-      </span>
-      <!-- <span class="title-group">
-        <button onclick="callServer()">TMP Server</button>
-      </span> -->
-      <!-- <span class="title-group">
-        <button onclick="startVideo()">Video</button>
-      </span> -->
-      <button type="button" class="collapsible">Open Settings</button>
+      <button type="button" class="collapsible"> <i class="fas fa-cog"></i> Open Settings</button>
       <div id="gvd-settings" class="gvd-switches">
       </div>
       <div class="side-panel-view">
-        <div class="debug-inputs">
+        <div class="debug-inputs" style="visibility:hidden">
           <div>
             <div class="debug-input">Draw Inc:<input type="number" name="xIncVal"></div>
             <div class="debug-input">Shift Inc:<input type="number" name="incVal"></div>
           </div>
           <br>
-          <div class="debug-inputs">
+          <div class="debug-inputs" style="visibility:hidden">
             <div class="debug-input">Left Id:<input type="number" name="leftId"></div>
             <div class="debug-input">Middle Id:<input type="number" name="middleId"></div>
             <div class="debug-input">Right Id:<input type="number" name="rightId"></div>
             <button onclick="updateDebugVars()">Update</button>
           </div>
         </div>
-        <!-- <div class="debug-events">
-          <label>Events:</label>
-          <br>
-          <textarea class="events-box" id="events"></textarea>
-        </div> -->
-        <!-- TODO -->
-        <svg id="overviewBrushArea"></svg>
+        <div class="min-cross-inputs" style="visibility:hidden">
+          <div>Set Min Path Diameter:<input type="number" name="minCrossSection"></div>
+          <button onclick="updateDebugVars()">Update</button>
+        </div>
+        <div class="custom-dataset-div" style="visibility:hidden">
+          <label for="types">Place site type:</label>
+          <select id="types">
+            <option value="none">None</option>
+            <option value="points">Points</option>
+            <option value="segments">Segments</option>
+            <option value="polylines">Polylines</option>
+          </select>
+          <div>
+            <button onclick="customClearSites()">Clear Sites</button>
+          </div>
+        </div>
+        <!-- <svg id="overviewBrushArea"></svg> -->
         <svg id="treeTagId"></svg>
       </div>
     </div>
@@ -107,6 +117,12 @@
       });
     }
   </script>
+  <div id="snapshot">
+    <!--a style="cursor:pointer" onclick="snap()">SVG snapshot</a-->
+    <a style="cursor:pointer" onclick="snap()">Copy SVG</a>
+    <br>
+    <textarea id="snapshot-output"></textarea>
+  </div>
 
 </body>
 

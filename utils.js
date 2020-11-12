@@ -104,12 +104,13 @@ function sanitizePointSiteData(polygons) {
       console.log("applying offset to overlapping point");
       // offset the data point of i
       // WATCH VALUE
-      sp[i][1] -= 0.00001;
+      sp[i][1] -= 0.000007;
     }
   }
 }
 
 function processNewDataset() {
+  if (g_datasetList[g_setIdx].customSet) return;
   g_datasetList[g_setIdx].isMap ?
     readMapData(g_datasetList[g_setIdx].filePath) :
     readDataset();
@@ -153,8 +154,8 @@ function sortedInsertion(queue, newEvent) {
 // Create the queue for the current dataset
 function createDataQueue(reorder) {
   if (!reorder) {
-    if (g_queue[localStorage.setIdx.toString()])
-      return [...g_queue[localStorage.setIdx.toString()]];
+    if (g_queue[g_setIdx])
+      return [...g_queue[g_setIdx]];
   }
   var rslt = [];
   var points = [];
@@ -186,7 +187,7 @@ function createDataQueue(reorder) {
   });
 
   // create a clone of the result to access again
-  g_queue[localStorage.setIdx.toString()] = [...rslt];
+  g_queue[g_setIdx] = [...rslt];
   return rslt;
 }
 
@@ -379,7 +380,6 @@ function labelConnectedComponents(src, height, width) {
   return src;
 }
 
-// TODO maps
 function readMapData(filePath) {
 //  var lines = fs.readFileSync(filePath, 'utf-8').split('\n');
 
@@ -419,17 +419,15 @@ function readMapData(filePath) {
     drawSegments(segments);
 
     render();
-    updateOverview();
+    // updateOverview();
   });
 }
 
-// Merge with dataset.js
 function readDataset() {
   // read in the files
   var points = [];
   var segments = [];
   var t0 = performance.now();
-
   d3.text(g_datasetList[g_setIdx].filePath, (fileData) => {
     var files = fileData.split("\n");
     var size = files.length;
@@ -474,7 +472,8 @@ function readDataset() {
               segments.push(poly.createSegment(i-1, i));
             }
             // last segment in the polygon (end, start)
-            segments.push(poly.createSegment(dataPoints.length-2, 0));
+            if (dataPoints.length > 3)
+              segments.push(poly.createSegment(dataPoints.length-2, 0));
           } else {
             // only a single point
             var point = new vec3(dataPoints[0].x,  dataPoints[0].y, 0);
@@ -498,7 +497,7 @@ function readDataset() {
             var processTime = t1 - t0;
             console.log("Pre-process time:" + processTime.toFixed(6) + "(ms)");
             render();
-            updateOverview();
+            // updateOverview();
           }
         });
       }

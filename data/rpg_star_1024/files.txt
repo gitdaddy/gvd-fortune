@@ -1,0 +1,1 @@
+./data/rpg_star_1024/line.txt

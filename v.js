@@ -164,22 +164,22 @@ V.prototype.intersect = function(obj) {
         return [this.p];
       }
       // choose this v left or right based on zArea
-      var bisector = smallAngleBisectSegments(s1, s2, optConnection);
+      var bisector = bisectSegments2(s1, s2, true)[0];
 
       // debugging only
       if (g_addDebug) {
-        g_debugObjs.push(bisector.line);
+        g_debugObjs.push(bisector);
       }
 
       // often P is too close to p2 increment the height by a 0.01 to get a better width for each vector
       if (zArea < 0) {
         // segment right
         var pPrime = vec3(this.f_(this.y1[1] + 0.01)[1], this.y1[1] + 0.01, 0);
-        return [intersectLines(this.p, pPrime, bisector.line.p1, bisector.line.p2)];
+        return [intersectLines(this.p, pPrime, bisector.p1, bisector.p2)];
       } else {
         // segment left
         var pPrime = vec3(this.f_(this.y1[1] + 0.01)[0], this.y1[1] + 0.01, 0);
-        return [intersectLines(this.p, pPrime, bisector.line.p1, bisector.line.p2)];
+        return [intersectLines(this.p, pPrime, bisector.p1, bisector.p2)];
       }
     } else {
       var lines = getLines(this, obj);

@@ -110,6 +110,10 @@ line#sweepline {
     stroke: black;
 }
 
+.gvd-ending-surface {
+    stroke: black;
+}
+
 .gvd-iso-surface {
     stroke: black;
 }
@@ -138,11 +142,13 @@ line#sweepline {
 
 .debug-line {
     stroke: blue;
+    fill: none;
     /* stroke-dasharray: 3, 3; */
 }
 
 .debug-parabola {
-    stroke: rgb(63, 226, 63);
+    /* stroke: rgb(63, 226, 63); */
+    fill: none;
     /* stroke-dasharray: 3, 3; */
 }
 
@@ -250,12 +256,30 @@ path.beachline {
 
 .title-group {
     padding: 10px;
+    /* text-align: center; */
+    width: 100%;
+    font: 14px sans-serif;
+    /* background: rgb(72, 164, 255); */
+    border: 2px;
+    border-radius: 8px;
 }
 
 .debug-inputs {
     /* visibility: hidden; */
     width: 50%;
     text-align: right;
+}
+
+.min-cross-inputs {
+    width: 50%;
+    text-align: left;
+    padding: 10px;
+    /* text-align: center; */
+    width: 100%;
+    font: 14px sans-serif;
+    /* background: rgb(72, 164, 255); */
+    border: 2px;
+    border-radius: 8px;
 }
 
 .debug-input {
@@ -274,4 +298,33 @@ path.beachline {
 
 .tree-svg {
     height: inherit;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    width: 340;
+    height: 100px;
+    padding: 2px;
+    font: 20px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+div.custom-dataset-div {
+    width: 50%;
+    text-align: left;
+}
+
+.user-controls {
+    text-align: center;
+    width: 100%;
+    padding: 10px;
+    font: 14px sans-serif;
+    background: rgb(72, 164, 255);
+    border: 2px;
+    border-radius: 8px;
+    pointer-events: none;
 }

@@ -3,6 +3,167 @@
 //---------------------------------------------------------------------------
 
 var nodeId = 0;
+var g_edgeVtxId = 1;
+
+let HALF_PI = Math.PI / 2.0;
+let THREE_HALFS_PI = 3.0 * Math.PI / 2.0;
+let FIVE_HALFS_PI = 5.0 * Math.PI / 2.0;
+
+////////////////// HALF EDGE HELPER FUNCTIONS ///////////////////////////////
+
+function computeHalfEdgeStraightVector(line, side, optTheta = undefined) {
+  if (!(line instanceof Line) || side == UNDEFINED_SIDE) throw "Invalid edge param";
+  // p1 lower than p2
+  var theta;
+  if (optTheta) {
+    theta = optTheta;
+  } else {
+    var sortedPoints = _.sortBy([line.p1, line.p2], p => { return p[1]; });
+    var pLower = sortedPoints[0];
+    var pUpper = sortedPoints[1];
+    theta = Math.atan2(pUpper[1]-pLower[1], pUpper[0]-pLower[0]);
+  }
+  // console.log("Theta:" + theta + " - in degrees: " + degrees(theta));
+  var beta = theta + Math.PI; // 180 degrees opposite
+  // console.log("Beta:" + beta + " - in degrees: " + degrees(beta));
+
+  // in case the half edge is straight down
+  if (theta === HALF_PI || theta === THREE_HALFS_PI) {
+    // straight down - there is no going up
+    var v = vec3(0, -1.0, 0);
+    return v;
+  } else if (theta > HALF_PI && theta < THREE_HALFS_PI) {
+    // t - left, t + PI - right
+    if (side === LEFT_SIDE) {
+      return vec3(Math.cos(theta), Math.sin(theta), 0);
+    }
+    return vec3(Math.cos(beta), Math.sin(beta), 0);
+  }
+  // else theta is between THREE_FORTHS and HALF PI
+  // t - right, t + PI - left
+  if (side === LEFT_SIDE) {
+    return vec3(Math.cos(beta), Math.sin(beta), 0);
+  }
+  return vec3(Math.cos(theta), Math.sin(theta), 0);
+}
+
+function computeHalfEdgeVector(vertex, prev, next, directrix) {
+  var pt, seg;
+  if (prev.isV && next.isParabola) {
+    pt = next.site;
+    seg = prev.site;
+  } else if (prev.isParabola && next.isV) {
+    pt = prev.site;
+    seg = next.site;
+  }
+  if (pt && seg) { // Point segment bisector
+    var b = bisect(pt, seg);
+    var pUpper = seg.a;
+    var pLower = seg.b;
+    var theta = Math.atan2(pUpper[1]-pLower[1], pUpper[0]-pLower[0]);
+    theta = theta - HALF_PI;
+
+    if (b instanceof Line) {
+      if (pt[1] >= seg.a[1]) { // above or at seg.a
+        theta = prev.isV ? theta : theta + Math.PI;
+      } else { // below or at seg.b
+        theta = prev.isV ? theta + Math.PI : theta;
+      }
+      var v = vec3(Math.cos(theta), Math.sin(theta), 0);
+      return {isVec:true, v: normalize(v), p: vertex};
+    }
+
+    var rightSide = prev.isV ? true : false;
+    // return {isPara:true, q:q, rightSide: rightSide, p: vertex, gp:b.para, su: pUpper, sl: pLower };
+    return {isPara:true, rightSide: rightSide, p: vertex, gp:b.para, su: pUpper, sl: pLower };
+  }
+
+  if (prev.isV && next.isV) {
+    if (connected(prev.site, next.site)) {
+      var b = bisectSegments2(prev.site, next.site);
+      if (b.length !== 1) throw "Invalid bisector";
+      return {isVec:true, v: b[0].v, p: vertex};
+    }
+
+    //////////// disjoint segments
+    // if parallel get the v between both sites
+    var line, p;
+    if (parallelTest(prev.site, next.site)) {
+      line = getAverage(prev.site, next.site);
+    } else {
+      p = intersectLines(prev.site.a, prev.site.b , next.site.a, next.site.b);
+      line = new Line(p, vertex);
+    }
+
+    if (p) {
+      var s1 = prev.site;
+      var s2 = next.site;
+      // check if p.y is on one of the segments
+      var onS1 = s1.a[1] > p[1] && s1.b[1] < p[1];
+      var onS2 = s2.a[1] > p[1] && s2.b[1] < p[1];
+      if (onS1 || onS2) {
+        if (onS2 && onS1) throw "Invalid intercept";
+        // has the sweep line passed the intercept point
+        if (directrix < p[1]) {
+          // away from s
+          return {isVec: true, v: line.v, p: vertex};
+        } else {
+            // towards s
+            return {isVec: true, v: negate(line.v), p: vertex};
+        }
+      }
+      // Between s1 and s2
+      var belowS1 = s1.a[1] > p[1] && s1.b[1] > p[1];
+      var belowS2 = s2.a[1] > p[1] && s2.b[1] > p[1];
+      var aboveS1 = s1.a[1] < p[1] && s1.b[1] < p[1];
+      var aboveS2 = s2.a[1] < p[1] && s2.b[1] < p[1];
+      if (belowS1 && aboveS2 || belowS2 && aboveS1) {
+        // var isLeft = s1.a[0] > p[0] && s1.b[0] > p[x];
+        // var side = isLeft ? RIGHT_SIDE : LEFT_SIDE;
+        // var v = computeHalfEdgeStraightVector(line, side);
+        var v = vec3(vertex[0] - p[0], vertex[1] - p[1], 0);
+        // Just use theta
+        return {isVec: true, v: normalize(v), p: vertex};
+      }
+    }
+
+    // neither segments project on each other
+    var sortedPoints = _.sortBy([line.p1, line.p2], p => { return p[1]; });
+    var pLower = sortedPoints[0];
+    var pUpper = sortedPoints[1];
+    var theta = Math.atan2(pUpper[1]-pLower[1], pUpper[0]-pLower[0]);
+
+    var side = theta > HALF_PI ? RIGHT_SIDE : LEFT_SIDE;
+    var v = computeHalfEdgeStraightVector(line, side, theta);
+    // Just use theta
+    return {isVec: true, v: normalize(v), p: vertex};
+  }
+
+  if (prev.isParabola && next.isParabola) {
+    var b = bisect(prev.site, next.site);
+    var side = prev.site[1] > next.site[1] ? LEFT_SIDE : RIGHT_SIDE;
+    var v = computeHalfEdgeStraightVector(b, side);
+    return {isVec: true, v: normalize(v), p: vertex};
+  }
+}
+
+function populateTreeWithHalfEdgeData(node, directrix, once = false) {
+  if (!node || node.isArc) return;
+
+  // debugging only
+  if (node.nodeId && node.nodeId === g_debugIdMiddle) {
+    g_addDebug = true;
+  } else {
+    g_addDebug = false;
+  }
+
+  node.halfEdge = computeHalfEdgeVector(node.dcelEdge.origin.point, node.prevArc(), node.nextArc(), directrix);
+
+  if (!once) {
+    populateTreeWithHalfEdgeData(node.left, directrix);
+    populateTreeWithHalfEdgeData(node.right, directrix);
+  }
+}
 
 var ArcNode = function (site) {
   this.site = site;
@@ -153,9 +314,7 @@ var EdgeNode = function (left, right, vertex, dcel) {
   this.isArc = false;
   this.isEdge = true;
   this.left = left;
-  this.left.side = LEFT_CHILD;
   this.right = right;
-  this.right.size = RIGHT_CHILD;
   var neighborEdges = _.filter([left, right], e => { return e.isEdge; });
   this.updateEdge(vertex, dcel, neighborEdges);
 
@@ -165,6 +324,7 @@ var EdgeNode = function (left, right, vertex, dcel) {
   this.toDot = function () {
     return "\"" + this.id + "\"";
   };
+  this.nodeId = nodeId++;
 }
 
 EdgeNode.prototype.hasId = function (id) {
@@ -174,6 +334,7 @@ EdgeNode.prototype.hasId = function (id) {
 EdgeNode.prototype.toString = function () {
   return `Type: edge<br>`;
 }
+
 
 Object.defineProperty(EdgeNode.prototype, "id", {
   configurable: true,
@@ -201,19 +362,22 @@ Object.defineProperty(EdgeNode.prototype, "isGeneralSurface", {
   },
 });
 
-EdgeNode.prototype.updateEdge = function (vertex, dcel, optNeighborEdges = [], optEndingEdges = []) {
+EdgeNode.prototype.updateEdge = function (vertex, dcel, optNeighborEdges = [], optEndingEdges = [], optR = undefined) {
   this.dcelEdge = dcel.makeEdge();
   this.dcelEdge.origin.point = vertex;
+  this.dcelEdge.origin.optR = optR;
+  this.dcelEdge.origin.id = g_edgeVtxId++;
   if (optEndingEdges.length > 0) {
 
     // All of the nodes share a reference to the connectedEdges array
     if (optEndingEdges[1]) optEndingEdges[1].dest.connectedEdges = optEndingEdges[0].dest.connectedEdges;
     this.dcelEdge.origin.connectedEdges = optEndingEdges[0].dest.connectedEdges;
-    this.dcelEdge.origin.point = vertex;
     var sharedEdges = this.dcelEdge.origin.connectedEdges;
     _.each(optEndingEdges, function (e) {
       sharedEdges[getEdgeId(e)] = e;
       e.dest.point = vertex;
+      e.dest.optR = optR;
+      e.dest.id = g_edgeVtxId++;
       // set the edges origin with itself
       e.origin.connectedEdges[getEdgeId(e)] = e;
     });
@@ -251,7 +415,7 @@ EdgeNode.prototype.updateEdge = function (vertex, dcel, optNeighborEdges = [], o
       }
     });
   }
-  this.dcelEdge.generalEdge = prev.isParabola && next.isV || prev.isV && next.isParabola
+  this.dcelEdge.generalEdge = prev.isParabola && next.isV || prev.isV && next.isParabola;
 }
 
 EdgeNode.prototype.prevArc = function () {
@@ -273,16 +437,16 @@ EdgeNode.prototype.nextArc = function () {
 }
 
 EdgeNode.prototype.getChild = function (side) {
-  if (side == LEFT_CHILD) return this.left;
+  if (side == LEFT_SIDE) return this.left;
   return this.right;
 }
 
 EdgeNode.prototype.setChild = function (node, side) {
-  if (side == LEFT_CHILD) {
-    node.side = LEFT_CHILD;
+  if (side == LEFT_SIDE) {
+    node.side = LEFT_SIDE;
     this.left = node;
   } else {
-    node.side = RIGHT_CHILD;
+    node.side = RIGHT_SIDE;
     this.right = node;
   }
   node.parent = this;

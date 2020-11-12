@@ -62,6 +62,15 @@ function highlight(d) {
     msg = msg + ` (${i[0].toFixed(1)}, ${i[1].toFixed(1)})`;
     msg = msg + ` id=${edge.id}`;
     setTreeDebug(msg);
+
+    if (edge.halfEdge) {
+      console.log("Half edge:");
+      if (edge.halfEdge.isVec) {
+        console.log(`vec: ${edge.halfEdge.v}, p: ${edge.halfEdge.p}, id ${edge.nodeId}`);
+      } else if (edge.halfEdge.isPara) {
+        console.log(`rightSide: ${edge.halfEdge.rightSide}, p: ${edge.halfEdge.p}, id ${edge.nodeId}`);
+      }
+    }
   }
 }
 
